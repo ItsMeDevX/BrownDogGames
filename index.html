@@ -3,175 +3,136 @@
 <head>
   <meta charset="UTF-8" />
   <title>BrownDogGames - Adult Cartoon Games</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    * {
+      box-sizing: border-box;
       margin: 0;
-      background: #2b1a1f; /* warm dark brown */
-      font-family: 'Press Start 2P', cursive;
-      color: #e0c9b0; /* soft cream */
-      text-align: center;
-      user-select: none;
+      padding: 0;
     }
 
-    h1 {
-      margin-top: 50px;
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
       font-size: 2.8rem;
-      color: #b58f6d; /* muted orange */
-      text-shadow:
-        1px 1px 0 #4a3a33;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
     }
 
     .tagline {
-      font-size: 1rem;
-      color: #d1bfa7;
-      margin: 10px 20px 40px;
-      text-shadow: 1px 1px 1px #3b2f27;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-      line-height: 1.4;
+      font-size: 1.1rem;
+      margin-top: 10px;
+      color: #ffc0cb;
     }
 
     .game-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
-      padding: 0 20px 60px;
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
-    .game-card {
-      background: #7d6754; /* muted brown */
-      border: 2px solid #bca186;
-      border-radius: 15px;
-      box-shadow:
-        2px 2px 5px #4a3a33;
-      width: 220px;
-      padding: 20px;
-      cursor: pointer;
-      transition: transform 0.25s ease;
-      color: #f0e6d2; /* light cream */
-      font-weight: bold;
-      text-transform: uppercase;
-      user-select: none;
-    }
-
-    .game-card:hover {
-      transform: scale(1.05);
-      box-shadow:
-        4px 4px 8px #6f5843;
-    }
-
-    .game-card h2 {
-      font-size: 1.1rem;
-      margin-bottom: 15px;
-      color: #f0e6d2;
-      text-shadow: 1px 1px 1px #3b2f27;
-    }
-
-    .game-card a {
+    .game-list li a {
+      display: block;
+      padding: 1.2rem;
+      background-color: #2d1a3a;
+      color: #ffccff;
       text-decoration: none;
-      background: #d4b999; /* light tan */
-      padding: 10px 25px;
-      border-radius: 20px;
-      color: #4a3a33; /* dark brown */
-      font-weight: 700;
-      box-shadow: inset 0 2px 0 #fff1d0;
-      display: inline-block;
-      transition: background 0.3s ease, color 0.3s ease;
-      user-select: none;
+      border-radius: 12px;
+      border: 2px solid #ff69b4;
+      text-align: center;
+      font-size: 1rem;
+      transition: transform 0.2s, background-color 0.2s;
     }
 
-    .game-card a:hover {
-      background: #b58f6d;
-      color: #f0e6d2;
-      box-shadow: inset 0 2px 0 #fff1d0;
+    .game-list li a:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      transform: scale(1.05);
     }
 
-    /* Age Gate Overlay */
-    #ageGate {
+    /* Age Gate */
+    #age-gate {
       position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(43, 26, 31, 0.95);
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 10000;
-      color: #b58f6d;
-      font-size: 1.3rem;
-      user-select: none;
-      text-shadow: 1px 1px 1px #3b2f27;
+      flex-direction: column;
+      z-index: 9999;
     }
 
-    #ageGate h2 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-      color: #d4b999;
-      text-shadow: 2px 2px 4px #4a3a33;
+    #age-gate h2 {
+      color: #ff69b4;
+      font-size: 2rem;
+      margin-bottom: 1rem;
     }
 
-    #ageGate button {
-      margin: 10px;
-      padding: 14px 36px;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 1rem;
-      font-weight: bold;
+    #age-gate p {
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    #age-gate button {
+      background: #ff69b4;
+      color: #1e1b2e;
       border: none;
-      border-radius: 50px;
+      padding: 0.7rem 1.4rem;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      margin: 0.5rem;
       cursor: pointer;
-      color: #4a3a33;
-      background: #d4b999;
-      box-shadow: inset 0 3px 0 #fff1d0;
-      transition: background 0.3s ease, color 0.3s ease;
-      user-select: none;
+      transition: background 0.2s;
     }
 
-    #ageGate button:hover {
-      background: #b58f6d;
-      color: #f0e6d2;
-      box-shadow: inset 0 3px 0 #fff1d0;
+    #age-gate button:hover {
+      background: #ff8edb;
     }
   </style>
 </head>
 <body>
-  <div id="ageGate">
+
+  <!-- Age Verification -->
+  <div id="age-gate">
     <h2>🔞 Adults Only</h2>
-    <p>You must be 18+ to enter BrownDogGames.</p>
-    <div>
-      <button onclick="document.getElementById('ageGate').style.display='none'">Yes, I'm 18+</button>
-      <button onclick="window.location.href='https://google.com'">No, Take Me Back</button>
-    </div>
+    <p>You must be 18 or older to access BrownDogGames.</p>
+    <button onclick="document.getElementById('age-gate').style.display='none'">Yes, I’m 18+</button>
+    <button onclick="location.href='https://google.com'">No, Take Me Back</button>
   </div>
 
-  <h1>BrownDogGames</h1>
-  <p class="tagline">
-    Dive into a quirky collection of adult-themed cartoon games — bold, funny, and designed for mature players who love edgy humor and unique animated adventures.
-  </p>
+  <!-- Main Site -->
+  <header>
+    <h1>BrownDogGames</h1>
+    <p class="tagline">A cheeky collection of adult-themed cartoon games.</p>
+  </header>
 
-  <div class="game-list">
-    <div class="game-card">
-      <h2>Streaker Run</h2>
-      <a href="streaker-run.html">Play Now</a>
-    </div>
-    <div class="game-card">
-      <h2>Pet Penis Simulator!</h2>
-      <a href="pet-penis-simulator.html">Play Now</a>
-    </div>
-    <div class="game-card">
-      <h2>Naked Fang</h2>
-      <a href="naked-fang.html">Play Now</a>
-    </div>
-    <div class="game-card">
-      <h2>Naked Craft</h2>
-      <a href="naked-craft.html">Play Now</a>
-    </div>
-    <div class="game-card">
-      <h2>Butt Blaster Arena</h2>
-      <a href="butt-blaster-arena.html">Play Now</a>
-    </div>
-  </div>
+  <main>
+    <ul class="game-list">
+      <li><a href="streaker-run.html">🩲 Streaker Run</a></li>
+      <li><a href="pet-penis-simulator.html">🐾 Pet Penis Simulator!</a></li>
+      <li><a href="naked-fang.html">🐺 Naked Fang</a></li>
+      <li><a href="naked-craft.html">🪓 Naked Craft</a></li>
+      <li><a href="butt-blaster-arena.html">🍑 Butt Blaster Arena</a></li>
+    </ul>
+  </main>
+
 </body>
 </html>
