@@ -219,6 +219,68 @@
 </body>
 </html>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Logging in - BrownDogGames</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #ffc0cb;
+      font-size: 1.2rem;
+    }
+  </style>
+  <script src="https://cdn.auth0.com/js/auth0/9.22/auth0.min.js"></script>
+</head>
+<body>
+  <h1>Logging you in...</h1>
+  <p>Please wait a moment</p>
+
+  <script>
+    var auth0 = new auth0.WebAuth({
+      domain: 'dev-kdhaob4rwgnik3bh.us.auth0.com',
+      clientID: 'EwHCWJAFNdcSa8x8HBIfEdHzntUVJMbn'
+    });
+
+    auth0.parseHash(function (err, authResult) {
+      if (authResult && authResult.idTokenPayload) {
+        const name = authResult.idTokenPayload.name || authResult.idTokenPayload.nickname || 'User';
+        alert("Welcome, " + name + "!");
+        window.location.href = "/";
+      } else if (err) {
+        console.error(err);
+        alert("Login failed: " + err.errorDescription);
+        window.location.href = "/";
+      }
+    });
+  </script>
+</body>
+</html>
+
   <main>
     <ul class="game-list">
       <li><a href="streaker-run.html">🩲 Streaker Run</a></li>
@@ -230,7 +292,6 @@
     </ul>
     
 </main>
-
 
 <div style="max-width: 400px; margin: 20px auto; background: #2f1a39; border: 3px solid #ff4f9f; border-radius: 12px; color: #fefefe; font-family: 'Rubik Mono One', sans-serif; text-align: center; padding: 12px 16px;">
 
