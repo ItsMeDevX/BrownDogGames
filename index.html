@@ -224,9 +224,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Logging in - BrownDogGames</title>
+  <title>BrownDogGames - Adult Cartoon Games</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    /* Reset & basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Rubik Mono One', sans-serif;
@@ -236,47 +243,80 @@
       padding: 20px;
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
     }
 
-    h1 {
-      font-size: 2.5rem;
+    /* Logo */
+    .logo {
+      height: 150px;
+      width: auto;
+      display: block;
+      margin: 20px auto;
+      max-width: 100%;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
       color: #ff69b4;
       text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1rem;
+      margin-bottom: 0.3rem;
     }
 
-    p {
+    .tagline {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
       color: #ffc0cb;
+    }
+
+    /* Login Button */
+    #login {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 1rem 2rem;
+      font-weight: bold;
       font-size: 1.2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 2rem;
+      min-width: 220px;
+      box-shadow: 0 0 10px #ff69b4;
+    }
+    #login:hover {
+      background-color: #ff8edb;
     }
   </style>
   <script src="https://cdn.auth0.com/js/auth0/9.22/auth0.min.js"></script>
 </head>
 <body>
-  <h1>Logging you in...</h1>
-  <p>Please wait a moment</p>
+  <!-- Logo -->
+  <a href="index.html">
+    <img 
+      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+      alt="BrownDogGames Logo" 
+      class="logo"
+    >
+  </a>
+
+  <header>
+    <h1>BrownDogGames Login</h1>
+    <p class="tagline">Sign in with your GitHub account</p>
+  </header>
+
+  <button id="login">Login with GitHub</button>
 
   <script>
     var auth0 = new auth0.WebAuth({
       domain: 'dev-kdhaob4rwgnik3bh.us.auth0.com',
-      clientID: 'EwHCWJAFNdcSa8x8HBIfEdHzntUVJMbn'
+      clientID: 'EwHCWJAFNdcSa8x8HBIfEdHzntUVJMbn',
+      redirectUri: 'https://browndoggames.com/callback.html',
+      responseType: 'token id_token',
+      scope: 'openid profile email'
     });
 
-    auth0.parseHash(function (err, authResult) {
-      if (authResult && authResult.idTokenPayload) {
-        const name = authResult.idTokenPayload.name || authResult.idTokenPayload.nickname || 'User';
-        alert("Welcome, " + name + "!");
-        window.location.href = "/";
-      } else if (err) {
-        console.error(err);
-        alert("Login failed: " + err.errorDescription);
-        window.location.href = "/";
-      }
-    });
+    document.getElementById("login").onclick = function () {
+      auth0.authorize({ connection: 'github' });
+    };
   </script>
 </body>
 </html>
