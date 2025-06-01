@@ -30,22 +30,6 @@
       font-size: 1.2rem;
       margin: 0.5rem 0;
     }
-    .message {
-      max-width: 400px;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      margin-top: 1.5rem;
-    }
-    .success {
-      background-color: #2f6f2f;
-      color: #d0f0d0;
-      box-shadow: 0 0 10px #4caf50;
-    }
-    .error {
-      background-color: #6f2f2f;
-      color: #f0d0d0;
-      box-shadow: 0 0 10px #f44336;
-    }
   </style>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -54,10 +38,6 @@
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-    const messageContainer = document.createElement('div');
-    messageContainer.classList.add('message');
-    document.body.appendChild(messageContainer);
 
     const redirectToHome = (delay = 2000) => {
       setTimeout(() => {
@@ -69,21 +49,16 @@
       try {
         const { error } = await supabase.auth.exchangeCodeForSession();
 
+        // No message box, just log error and redirect
         if (error) {
           console.error('Login failed:', error.message);
-          messageContainer.textContent = 'Login failed: ' + error.message;
-          messageContainer.classList.add('error');
           redirectToHome(4000);
           return;
         }
 
-        messageContainer.textContent = 'Login successful! Redirecting...';
-        messageContainer.classList.add('success');
         redirectToHome(2000);
       } catch (err) {
         console.error('Unexpected error:', err);
-        messageContainer.textContent = 'Unexpected error: ' + (err.message || err);
-        messageContainer.classList.add('error');
         redirectToHome(5000);
       }
     }
@@ -92,6 +67,11 @@
   </script>
 </head>
 <body>
+  <h1>Logging you in...</h1>
+  <p>Please wait a moment while we process your login.</p>
+</body>
+</html>
+
   <h1>Logging you in...</h1>
   <p>Please wait a moment while we process your login.</p>
 </body>
