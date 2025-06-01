@@ -6,77 +6,110 @@
   <title>Logging in - BrownDogGames</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1e1b2e;
       color: #fefefe;
       min-height: 100vh;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
-      text-align: center;
+      margin: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      text-align: center;
     }
-
     h1 {
       font-size: 2.5rem;
       color: #ff69b4;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1rem;
     }
-
     p {
-      color: #ffc0cb;
       font-size: 1.2rem;
+      margin: 0.5rem 0;
+    }
+    .message {
+      max-width: 400px;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+    }
+    .success {
+      background-color: #2f6f2f;
+      color: #d0f0d0;
+      box-shadow: 0 0 10px #4caf50;
+    }
+    .error {
+      background-color: #6f2f2f;
+      color: #f0d0d0;
+      box-shadow: 0 0 10px #f44336;
     }
   </style>
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+    // Initialize Supabase client with your project URL and anon key
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    async function handleLoginCallback() {
+    // Elements references
+    const messageContainer = document.createElement('div');
+    messageContainer.classList.add('message');
+    document.body.appendChild(messageContainer);
+
+    // Redirect helper
+    const redirectToHome = (delay = 2000) => {
+      setTimeout(() => {
+        window.location.href = '/';
+      }, delay);
+    };
+
+    // Main function to handle OAuth callback
+    async function handleOAuthCallback() {
       try {
-        const { data, error } = await supabase.auth.getSessionFromUrl()
-        console.log('Supabase getSessionFromUrl data:', data)
-        console.log('Supabase getSessionFromUrl error:', error)
+        // Parse the session info from URL hash after redirect
+        const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
 
         if (error) {
-          console.error('Login failed:', error.message)
-          // Instead of alert, show message and redirect after short delay
-          document.body.innerHTML += `<p style="color:#f88;">Login failed: ${error.message}</p>`
-          setTimeout(() => window.location.href = '/', 3000)
-          return
+          console.error('Login failed:', error);
+          messageContainer.textContent = `Login failed: ${error.message}`;
+          messageContainer.classList.add('error');
+          redirectToHome(4000);
+          return;
         }
 
         if (data?.session) {
-          // Successful login, redirect immediately
-          window.location.href = '/'
-        } else {
-          document.body.innerHTML += `<p style="color:#f88;">No session found. Please try logging in again.</p>`
-          setTimeout(() => window.location.href = '/', 3000)
+          console.log('Login successful:', data.session);
+          messageContainer.textContent = 'Login successful! Redirecting...';
+          messageContainer.classList.add('success');
+          redirectToHome(2000);
+          return;
         }
-      } catch (e) {
-        console.error('Unexpected error:', e)
-        document.body.innerHTML += `<p style="color:#f88;">Unexpected error occurred.</p>`
-        setTimeout(() => window.location.href = '/', 3000)
+
+        // If no session found (unexpected)
+        messageContainer.textContent = 'No valid session found. Please try logging in again.';
+        messageContainer.classList.add('error');
+        redirectToHome(4000);
+
+      } catch (err) {
+        // Catch unexpected errors
+        console.error('Unexpected error:', err);
+        messageContainer.textContent = `Unexpected error: ${err.message || err}`;
+        messageContainer.classList.add('error');
+        redirectToHome(5000);
       }
     }
 
-    handleLoginCallback()
+    // Run callback handler on load
+    window.addEventListener('DOMContentLoaded', handleOAuthCallback);
   </script>
 </head>
 <body>
   <h1>Logging you in...</h1>
-  <p>Please wait a moment</p>
-</body>
-</html>
-
+  <p>Please wait a moment while we process your login.</p>
 </body>
 </html>
