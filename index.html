@@ -223,162 +223,131 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>BrownDogGames - Auth Bar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BrownDogGames - GitHub Login</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
+      margin: 0;
       font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1e1b2e;
+      background: #1e1b2e;
       color: #fefefe;
-      min-height: 100vh;
       padding: 20px;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
     }
-
-    header {
+    #auth-bar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      background: #2a243b;
       padding: 10px 20px;
-      background-color: #2a243b;
-      border-radius: 12px;
+      border-radius: 10px;
+      margin-bottom: 20px;
       box-shadow: 0 0 12px #00000055;
-      margin-bottom: 40px;
+      color: #fff;
     }
-
-    .tagline {
-      font-size: 1.1rem;
-      color: #ffc0cb;
+    #auth-bar .auth-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
-    button {
+    #auth-bar .auth-user img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+    }
+    #auth-bar .auth-user span {
+      font-size: 0.9rem;
+    }
+    #auth-bar button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 0.8rem 1.5rem;
-      font-weight: bold;
-      font-size: 1rem;
-      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      border-radius: 8px;
       cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 6px #ff69b4;
       transition: background-color 0.3s ease;
-      box-shadow: 0 0 10px #ff69b4;
-      margin: 0 5px;
     }
-
-    button:hover {
+    #auth-bar button:hover {
       background-color: #ff8edb;
     }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .user-info img {
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      border: 3px solid #ff69b4;
-    }
-
-    .user-text {
-      display: flex;
-      flex-direction: column;
-      font-size: 0.9rem;
-    }
-
-    main {
-      text-align: center;
-      margin-top: 60px;
-      font-size: 1.3rem;
-    }
   </style>
+</head>
+<body>
+
+  <div id="auth-bar">
+    <!-- Auth UI injected here -->
+  </div>
+
+  <main>
+    <h1>Welcome to BrownDogGames</h1>
+    <p>Page content goes here...</p>
+  </main>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+    const redirectTo = 'https://browndoggames.com/callback.html';
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    const header = document.querySelector('header');
+    const container = document.getElementById('auth-bar');
 
-    const createLoginButton = () => {
-      const loginBtn = document.createElement('button');
-      loginBtn.textContent = 'Login with GitHub';
-      loginBtn.addEventListener('click', async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: {
-            redirectTo: 'https://browndoggames.com/callback.html'
-          }
-        });
-        if (error) alert('Login error: ' + error.message);
-      });
-      header.appendChild(loginBtn);
-    };
+    async function renderAuthBar() {
+      const { data: { session } } = await supabase.auth.getSession();
 
-    const showUserInfo = (user) => {
-      const { email, user_metadata } = user;
-      const name = user_metadata.full_name || 'GitHub User';
-      const avatar = user_metadata.avatar_url || '';
+      container.innerHTML = '';
 
-      const container = document.createElement('div');
-      container.classList.add('user-info');
+      if (session?.user) {
+        const { user_metadata, email } = session.user;
+        const name = user_metadata.full_name || 'GitHub User';
+        const avatar = user_metadata.avatar_url || '';
 
-      if (avatar) {
-        const img = document.createElement('img');
-        img.src = avatar;
-        img.alt = name;
-        container.appendChild(img);
+        const userDiv = document.createElement('div');
+        userDiv.className = 'auth-user';
+
+        if (avatar) {
+          const img = document.createElement('img');
+          img.src = avatar;
+          img.alt = name;
+          userDiv.appendChild(img);
+        }
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        userDiv.appendChild(nameSpan);
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = async () => {
+          await supabase.auth.signOut();
+          window.location.reload();
+        };
+
+        container.appendChild(userDiv);
+        container.appendChild(logoutBtn);
+
+      } else {
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with GitHub';
+        loginBtn.onclick = async () => {
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: { redirectTo }
+          });
+          if (error) alert('Login error: ' + error.message);
+        };
+
+        container.appendChild(loginBtn);
       }
-
-      const textDiv = document.createElement('div');
-      textDiv.classList.add('user-text');
-      textDiv.innerHTML = `<strong>${name}</strong><span>${email}</span>`;
-      container.appendChild(textDiv);
-
-      const logoutBtn = document.createElement('button');
-      logoutBtn.textContent = 'Logout';
-      logoutBtn.addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
-      });
-
-      header.appendChild(container);
-      header.appendChild(logoutBtn);
-    };
-
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session?.user) {
-      document.querySelector('.tagline').textContent = 'Welcome to BrownDogGames!';
-      showUserInfo(session.user);
-    } else {
-      createLoginButton();
     }
+
+    renderAuthBar();
   </script>
-</head>
-<body>
-
-  <header>
-    <p class="tagline">Sign in with your GitHub account</p>
-    <!-- Login/User Info injected here -->
-  </header>
-
-  <main>
-    <p>This is the BrownDogGames homepage!</p>
-  </main>
 
 </body>
 </html>
