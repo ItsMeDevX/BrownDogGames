@@ -33,12 +33,6 @@
       font-size: 1.2rem;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-  <h1>Logging you in...</h1>
-  <p>Please wait a moment</p>
-
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
@@ -47,20 +41,26 @@
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    supabase.auth.getSessionFromUrl().then(({ data, error }) => {
-      if (error) {
-        alert('Login failed: ' + error.message)
-        window.location.href = '/'
-        return
-      }
-      if (data?.session) {
-        alert('Welcome! You have successfully logged in.')
-        window.location.href = '/'
-      } else {
-        alert('No session found. Please try logging in again.')
-        window.location.href = '/'
-      }
-    })
+    // Grab session from URL after OAuth redirect
+    supabase.auth.getSessionFromUrl()
+      .then(({ data, error }) => {
+        if (error) {
+          alert('Login failed: ' + error.message)
+          window.location.href = '/'
+          return
+        }
+        if (data?.session) {
+          alert('Welcome! You have successfully logged in.')
+          window.location.href = '/'
+        } else {
+          alert('No session found. Please try logging in again.')
+          window.location.href = '/'
+        }
+      })
   </script>
+</head>
+<body>
+  <h1>Logging you in...</h1>
+  <p>Please wait a moment</p>
 </body>
 </html>
