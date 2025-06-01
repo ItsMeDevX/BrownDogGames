@@ -224,10 +224,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrownDogGames - GitHub Login</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-    /* Reset & basics */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -250,12 +250,11 @@
 
     .tagline {
       font-size: 1.1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
       color: #ffc0cb;
     }
 
-    /* Login Button */
-    #login {
+    button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
@@ -269,35 +268,97 @@
       min-width: 220px;
       box-shadow: 0 0 10px #ff69b4;
     }
-    #login:hover {
+
+    button:hover {
       background-color: #ff8edb;
+    }
+
+    .user-info {
+      margin-top: 2rem;
+      background: #292442;
+      padding: 1.5rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #5c5c8a;
+    }
+
+    .user-info img {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 1rem;
+      border: 3px solid #ff69b4;
+    }
+
+    .user-info p {
+      margin: 0.3rem 0;
+      font-size: 1rem;
+      color: #c0ffee;
     }
   </style>
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    document.getElementById('login').addEventListener('click', async () => {
+    const loginBtn = document.getElementById('login');
+    const tagline = document.querySelector('.tagline');
+
+    const showUserInfo = (user) => {
+      const { email, user_metadata } = user;
+      const name = user_metadata.full_name || 'GitHub User';
+      const avatar = user_metadata.avatar_url || '';
+
+      const container = document.createElement('div');
+      container.classList.add('user-info');
+
+      if (avatar) {
+        const img = document.createElement('img');
+        img.src = avatar;
+        img.alt = name;
+        container.appendChild(img);
+      }
+
+      container.innerHTML += `
+        <p><strong>${name}</strong></p>
+        <p>${email}</p>
+        <button id="logout">Logout</button>
+      `;
+
+      document.body.appendChild(container);
+
+      // Logout logic
+      document.getElementById('logout').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.reload();
+      });
+    };
+
+    // On load, check session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      loginBtn.style.display = 'none';
+      tagline.textContent = 'Welcome to BrownDogGames!';
+      showUserInfo(session.user);
+    }
+
+    // Login button click
+    loginBtn.addEventListener('click', async () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: 'https://browndoggames.com/callback.html'
         }
-      })
-      if (error) {
-        alert('Login error: ' + error.message)
-      }
-    })
+      });
+      if (error) alert('Login error: ' + error.message);
+    });
   </script>
 </head>
 <body>
 
   <p class="tagline">Sign in with your GitHub account</p>
-
   <button id="login">Login with GitHub</button>
 
 </body>
