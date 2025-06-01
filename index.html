@@ -224,8 +224,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrownDogGames - Adult Cartoon Games</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    /* Reset & basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Rubik Mono One', sans-serif;
@@ -235,11 +243,17 @@
       padding: 20px;
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
+    /* Removed logo and header h1 */
+
+    .tagline {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      color: #ffc0cb;
+    }
+
+    /* Login Button */
     #login {
       background-color: #ff69b4;
       color: #1e1b2e;
@@ -250,10 +264,10 @@
       border-radius: 12px;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      box-shadow: 0 0 10px #ff69b4;
+      margin-top: 2rem;
       min-width: 220px;
+      box-shadow: 0 0 10px #ff69b4;
     }
-
     #login:hover {
       background-color: #ff8edb;
     }
@@ -261,6 +275,11 @@
   <script src="https://cdn.auth0.com/js/auth0/9.22/auth0.min.js"></script>
 </head>
 <body>
+
+  <!-- Removed logo and header -->
+
+  <p class="tagline">Sign in with your GitHub account</p>
+
   <button id="login">Login with GitHub</button>
 
   <script>
@@ -272,7 +291,7 @@
       scope: 'openid profile email'
     });
 
-    document.getElementById('login').onclick = function() {
+    document.getElementById("login").onclick = function () {
       auth0.authorize({ connection: 'github' });
     };
   </script>
