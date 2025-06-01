@@ -224,52 +224,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Logging in - BrownDogGames</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    /* Reset & basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1e1b2e;
       color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      text-align: center;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      text-align: center;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      color: #ffc0cb;
+    }
+
+    /* Login Button */
+    #login {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 1rem 2rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 2rem;
+      min-width: 220px;
+      box-shadow: 0 0 10px #ff69b4;
+    }
+    #login:hover {
+      background-color: #ff8edb;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <h2>Logging you in, please wait...</h2>
+
+  <p class="tagline">Sign in with your GitHub account</p>
+
+  <button id="login">Login with GitHub</button>
 
   <script>
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'YOUR_ANON_KEY_HERE'; // Replace with your anon key
+    const supabaseAnonKey = 'YOUR_ANON_KEY_HERE';
 
     const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    async function handleLogin() {
-      const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
-      if (error) {
-        alert('Login error: ' + error.message);
-        window.location.href = '/';
-        return;
-      }
-      if (data.session) {
-        // Login successful, redirect to homepage or dashboard
-        window.location.href = '/';
-      } else {
-        alert('Login failed or cancelled.');
-        window.location.href = '/';
-      }
-    }
-
-    handleLogin();
+    document.getElementById('login').addEventListener('click', () => {
+      supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: 'https://browndoggames.com/callback.html'
+        }
+      });
+    });
   </script>
+
 </body>
 </html>
-
 
 
   <main>
