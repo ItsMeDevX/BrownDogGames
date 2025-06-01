@@ -273,7 +273,26 @@
       background-color: #ff8edb;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+    document.getElementById('login').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: 'https://browndoggames.com/callback.html'
+        }
+      })
+      if (error) {
+        alert('Login error: ' + error.message)
+      }
+    })
+  </script>
 </head>
 <body>
 
@@ -281,25 +300,8 @@
 
   <button id="login">Login with GitHub</button>
 
-  <script>
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
-
-    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-    document.getElementById('login').addEventListener('click', () => {
-      supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          redirectTo: 'https://browndoggames.com/callback.html'
-        }
-      });
-    });
-  </script>
-
 </body>
 </html>
-
 
   <main>
     <ul class="game-list">
