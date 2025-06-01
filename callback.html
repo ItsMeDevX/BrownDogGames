@@ -41,26 +41,42 @@
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    // Grab session from URL after OAuth redirect
-    supabase.auth.getSessionFromUrl()
-      .then(({ data, error }) => {
+    async function handleLoginCallback() {
+      try {
+        const { data, error } = await supabase.auth.getSessionFromUrl()
+        console.log('Supabase getSessionFromUrl data:', data)
+        console.log('Supabase getSessionFromUrl error:', error)
+
         if (error) {
-          alert('Login failed: ' + error.message)
-          window.location.href = '/'
+          console.error('Login failed:', error.message)
+          // Instead of alert, show message and redirect after short delay
+          document.body.innerHTML += `<p style="color:#f88;">Login failed: ${error.message}</p>`
+          setTimeout(() => window.location.href = '/', 3000)
           return
         }
+
         if (data?.session) {
-          alert('Welcome! You have successfully logged in.')
+          // Successful login, redirect immediately
           window.location.href = '/'
         } else {
-          alert('No session found. Please try logging in again.')
-          window.location.href = '/'
+          document.body.innerHTML += `<p style="color:#f88;">No session found. Please try logging in again.</p>`
+          setTimeout(() => window.location.href = '/', 3000)
         }
-      })
+      } catch (e) {
+        console.error('Unexpected error:', e)
+        document.body.innerHTML += `<p style="color:#f88;">Unexpected error occurred.</p>`
+        setTimeout(() => window.location.href = '/', 3000)
+      }
+    }
+
+    handleLoginCallback()
   </script>
 </head>
 <body>
   <h1>Logging you in...</h1>
   <p>Please wait a moment</p>
+</body>
+</html>
+
 </body>
 </html>
