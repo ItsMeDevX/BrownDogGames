@@ -50,61 +50,44 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    // Initialize Supabase client with your project URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Elements references
     const messageContainer = document.createElement('div');
     messageContainer.classList.add('message');
     document.body.appendChild(messageContainer);
 
-    // Redirect helper
     const redirectToHome = (delay = 2000) => {
       setTimeout(() => {
         window.location.href = '/';
       }, delay);
     };
 
-    // Main function to handle OAuth callback
     async function handleOAuthCallback() {
       try {
-        // Parse the session info from URL hash after redirect
-        const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
+        const { error } = await supabase.auth.exchangeCodeForSession();
 
         if (error) {
-          console.error('Login failed:', error);
-          messageContainer.textContent = `Login failed: ${error.message}`;
+          console.error('Login failed:', error.message);
+          messageContainer.textContent = 'Login failed: ' + error.message;
           messageContainer.classList.add('error');
           redirectToHome(4000);
           return;
         }
 
-        if (data?.session) {
-          console.log('Login successful:', data.session);
-          messageContainer.textContent = 'Login successful! Redirecting...';
-          messageContainer.classList.add('success');
-          redirectToHome(2000);
-          return;
-        }
-
-        // If no session found (unexpected)
-        messageContainer.textContent = 'No valid session found. Please try logging in again.';
-        messageContainer.classList.add('error');
-        redirectToHome(4000);
-
+        messageContainer.textContent = 'Login successful! Redirecting...';
+        messageContainer.classList.add('success');
+        redirectToHome(2000);
       } catch (err) {
-        // Catch unexpected errors
         console.error('Unexpected error:', err);
-        messageContainer.textContent = `Unexpected error: ${err.message || err}`;
+        messageContainer.textContent = 'Unexpected error: ' + (err.message || err);
         messageContainer.classList.add('error');
         redirectToHome(5000);
       }
     }
 
-    // Run callback handler on load
     window.addEventListener('DOMContentLoaded', handleOAuthCallback);
   </script>
 </head>
