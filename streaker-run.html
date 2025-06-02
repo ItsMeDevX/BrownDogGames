@@ -333,6 +333,7 @@
 
 <form id="chat-form" style="max-width:600px; margin: 0 auto; display:flex; gap:10px;">
   <input type="text" id="msg-input" placeholder="Type message..." required style="flex:1; padding:8px; border-radius:5px; border:none;">
+  <input type="text" id="github-username" placeholder="Your GitHub Username" required style="flex:1; padding:8px; border-radius:5px; border:none;">
   <button type="submit" style="padding:8px 16px; background:#ff69b4; border:none; color:#222; font-weight:bold; border-radius:5px; cursor:pointer;">Send</button>
 </form>
 
@@ -347,7 +348,8 @@
 
   const messagesDiv = document.getElementById('messages');
   const form = document.getElementById('chat-form');
-  const input = document.getElementById('msg-input');
+  const msgInput = document.getElementById('msg-input');
+  const githubUsernameInput = document.getElementById('github-username');
 
   async function loadMessages() {
     const { data, error } = await supabase
@@ -368,7 +370,7 @@
 
     messagesDiv.innerHTML = data.map(m => `
       <div style="margin-bottom:8px;">
-        <strong style="color:#ff69b4;">${m.id ? m.id.slice(0, 8) : 'Anon'}:</strong> ${m.content}
+        <strong style="color:#ff69b4;">${m.github_username || 'Anon'}:</strong> ${m.content}
       </div>
     `).join('');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -376,12 +378,14 @@
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const msg = input.value.trim();
-    if (!msg) return;
+    const msg = msgInput.value.trim();
+    const githubUsername = githubUsernameInput.value.trim();
+    
+    if (!msg || !githubUsername) return; // Ensure both fields are filled
 
     const { error } = await supabase
       .from('messages')
-      .insert([{ content: msg }]);
+      .insert([{ content: msg, github_username: githubUsername }]);
 
     if (error) {
       alert('Failed to send message: ' + error.message);
@@ -389,7 +393,8 @@
       return;
     }
 
-    input.value = '';
+    msgInput.value = '';
+    githubUsernameInput.value = ''; // Clear the GitHub username input
     loadMessages();
   });
 
