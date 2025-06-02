@@ -316,162 +316,137 @@
   <a href="index.html">← Back to Home</a>
 </div>
   
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Chat Widget Only</title>
-  <style>
-    body {
-      background: #2a243b;
-      color: #fefefe;
-      font-family: 'Rubik Mono One', sans-serif, monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-    #chat-box {
-      max-width: 800px;
-      height: 400px;
-      overflow-y: auto;
-      background: #2a243b;
-      padding: 1rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      box-shadow: 0 0 20px #ff69b444;
-      border: 2px solid #ff69b466;
-    }
-    form#chat-form {
-      max-width: 800px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 3rem;
-    }
-    input, button {
-      border-radius: 10px;
-      border: 2px solid #ff69b4;
-      background: #1e1b2e;
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-      padding: 12px;
-    }
-    input#username {
-      width: 150px;
-    }
-    input#message {
-      flex: 1;
-    }
-    button {
-      background: #ff69b4;
-      color: #1e1b2e;
-      font-weight: bold;
-      cursor: pointer;
-      min-width: 120px;
-      transition: background-color 0.3s;
-      border: none;
-    }
-    button:hover {
-      background: #ff8edb;
-    }
-  </style>
-</head>
-<body>
+<h2 style="text-align:center; color:#ff69b4; font-family: 'Rubik Mono One', sans-serif; margin-bottom: 1rem;">💬 Community Chat</h2>
 
-  <!-- No auth bar here -->
+<div id="chat-box" style="
+  max-width: 800px;
+  height: 400px;
+  overflow-y: auto;
+  background: #2a243b;
+  padding: 1rem;
+  border-radius: 12px;
+  margin: 0 auto 1rem;
+  font-family: sans-serif;
+  box-shadow: 0 0 20px #ff69b444;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.4;
+  border: 2px solid #ff69b466;
+"></div>
 
-  <!-- Chat Messages -->
-  <div id="chat-box"></div>
+<form id="chat-form" style="display:flex; gap:10px; justify-content:center; max-width:800px; margin: 0 auto 3rem;">
+  <input type="text" id="message" placeholder="Type your message..." required style="
+    flex:1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #ff69b4;
+    background: #1e1b2e;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+  ">
+  <button type="submit" style="
+    padding: 12px 20px;
+    background: #ff69b4;
+    color: #1e1b2e;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  ">Send</button>
+</form>
 
-  <!-- Chat Input Form -->
-  <form id="chat-form">
-    <input type="text" id="username" placeholder="Your name (optional)" />
-    <input type="text" id="message" placeholder="Type your message..." required />
-    <button type="submit">Send</button>
-  </form>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'YOUR_ANON_KEY_HERE'; // Replace with your anon key
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    const chatBox = document.getElementById('chat-box');
-    const chatForm = document.getElementById('chat-form');
-    const usernameInput = document.getElementById('username');
-    const messageInput = document.getElementById('message');
-    const pageId = 'game1';
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    function escapeHtml(text) {
-      return text.replace(/[&<>"']/g, m => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      })[m]);
+  const chatBox = document.getElementById('chat-box');
+  const chatForm = document.getElementById('chat-form');
+  const messageInput = document.getElementById('message');
+  let user = null;
+  const pageId = 'game1';
+
+  async function loadSession() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Error getting session:', error);
+      chatBox.innerHTML = `<p style="color:red; text-align:center;">Error getting session: ${error.message}</p>`;
+      chatForm.style.display = 'none';
+      return;
+    }
+    user = session?.user;
+
+    if (!user) {
+      chatForm.style.display = 'none';
+      chatBox.innerHTML = `<p style="text-align:center; color:#ffc0cb;">🔒 Please log in with GitHub to join the chat.</p>`;
+    } else {
+      chatForm.style.display = 'flex';
+      await loadMessages();
+    }
+  }
+
+  async function loadMessages() {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('page_id', pageId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error loading messages:', error);
+      chatBox.innerHTML = `<p style="color:red; text-align:center;">Failed to load messages: ${error.message}</p>`;
+      return;
     }
 
-    function renderMessage(msg) {
-      const div = document.createElement('div');
-      div.style.marginBottom = '12px';
-      div.innerHTML = `<strong style="color:#ff8edb">${escapeHtml(msg.username || 'Anonymous')}</strong>: <span style="color:#fefefe">${escapeHtml(msg.content)}</span>`;
-      chatBox.appendChild(div);
-    }
+    chatBox.innerHTML = '';
+    data.forEach(msg => renderMessage(msg));
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-    async function loadMessages() {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('page_id', pageId)
-        .order('created_at', { ascending: true });
-      if (error) {
-        chatBox.innerHTML = `<p style="color:red; text-align:center;">Error loading messages: ${error.message}</p>`;
-        return;
-      }
-      chatBox.innerHTML = '';
-      data.forEach(renderMessage);
+  function renderMessage(msg) {
+    const div = document.createElement('div');
+    div.style.marginBottom = '12px';
+    div.innerHTML = `<strong style="color:#ff8edb">${msg.username}</strong>: <span style="color:#fefefe">${msg.content}</span>`;
+    chatBox.appendChild(div);
+  }
+
+  async function sendMessage(content) {
+    const name = user.user_metadata.full_name || user.email;
+    const { error } = await supabase.from('messages').insert([{ username: name, content, page_id: pageId }]);
+    if (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message: ' + error.message);
+    }
+  }
+
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = messageInput.value.trim();
+    if (!text) return;
+    await sendMessage(text);
+    messageInput.value = '';
+  });
+
+  supabase.channel('chat')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `page_id=eq.'${pageId}'`
+    }, payload => {
+      renderMessage(payload.new);
       chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    })
+    .subscribe();
 
-    async function sendMessage(content, username) {
-      const { error } = await supabase.from('messages').insert([
-        { username: username || 'Anonymous', content, page_id: pageId }
-      ]);
-      if (error) alert('Failed to send message: ' + error.message);
-    }
-
-    chatForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const message = messageInput.value.trim();
-      if (!message) return;
-      const username = usernameInput.value.trim() || 'Anonymous';
-      chatForm.querySelector('button').disabled = true;
-      await sendMessage(message, username);
-      messageInput.value = '';
-      chatForm.querySelector('button').disabled = false;
-    });
-
-    supabase.channel('chat')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `page_id=eq.'${pageId}'`
-      }, (payload) => {
-        renderMessage(payload.new);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      })
-      .subscribe();
-
-    loadMessages();
-  </script>
-
-</body>
-</html>
+  loadSession();
+</script>
 
 </body>
 </html>
