@@ -146,78 +146,92 @@
     >
   </a>
 
-  <!-- Age Verification -->
-  <div id="age-gate">
-    <h2>🔞 Adults Only</h2>
-    <p>You must be 18 or older to access BrownDogGames.</p>
-    <button id="yes-btn">Yes, I’m 18+</button>
-    <button id="no-btn">No, Take Me Back</button>
-  </div>
-
 <header>
   <h1 class="brand-line">
     BrownDogGames<span class="separator"> — </span>Cheeky Adult Cartoon Games,<br class="mobile-break" /> Always Free to Download
   </h1>
 </header>
 
+<!-- Age Gate Start -->
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-  .brand-line {
-    font-family: 'Chakra Petch', sans-serif;
-    font-weight: 700;
-    font-size: 2rem;
+  #age-gate {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 9999;
     color: #ff69b4;
-    text-shadow: 2px 2px 0 #000;
+    font-family: 'Rubik Mono One', sans-serif;
     text-align: center;
-    margin: 2rem 1rem;
-    line-height: 1.3;
+    padding: 20px;
   }
 
-  .separator {
-    white-space: nowrap;
+  #age-gate h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
   }
 
-  /* Hide the <br> on desktop */
-  .mobile-break {
-    display: none;
+  #age-gate p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: #ffc0cb;
   }
 
-  /* On small/mobile screens: smaller font, show break */
-  @media (max-width: 600px) {
-    .brand-line {
-      font-size: 1.3rem;
-      line-height: 1.4;
-    }
+  #age-gate button {
+    background: #ff69b4;
+    color: #1e1b2e;
+    border: none;
+    padding: 0.7rem 1.4rem;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 8px;
+    margin: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    min-width: 120px;
+  }
 
-    .mobile-break {
-      display: inline;
-    }
+  #age-gate button:hover {
+    background: #ff8edb;
   }
 </style>
-    
-  <script>
+
+<div id="age-gate">
+  <h2>🔞 Adults Only</h2>
+  <p>You must be 18 or older to access BrownDogGames.</p>
+  <button id="yes-btn">Yes, I’m 18+</button>
+  <button id="no-btn">No, Take Me Back</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
     const ageGate = document.getElementById('age-gate');
     const yesBtn = document.getElementById('yes-btn');
     const noBtn = document.getElementById('no-btn');
 
-    // If user already verified age, hide age gate
-    if (localStorage.getItem('ageVerified') === 'true') {
-      ageGate.style.display = 'none';
+    // Check if user already passed age verification
+    if (localStorage.getItem('isAdult') === 'true') {
+      ageGate.style.display = 'none'; // Hide age gate immediately
     }
 
     yesBtn.addEventListener('click', () => {
-      localStorage.setItem('ageVerified', 'true');
+      localStorage.setItem('isAdult', 'true');
       ageGate.style.display = 'none';
     });
 
     noBtn.addEventListener('click', () => {
-      window.location.href = 'https://google.com'; // Redirect if under 18
+      alert('Sorry, you must be 18 or older to enter.');
+      window.location.href = 'https://google.com'; // Change redirect as needed
     });
-  </script>
+  });
+</script>
+<!-- Age Gate End -->
 
-</body>
-</html>
 
 <!-- Auth Bar -->
 <div id="auth-bar" style="max-width: 900px; margin: 0 auto 2rem; background-color: #2a243b; border-radius: 12px; box-shadow: 0 0 12px #00000055; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; font-family: 'Rubik Mono One', sans-serif; color: #fefefe;">
