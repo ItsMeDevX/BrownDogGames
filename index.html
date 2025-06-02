@@ -362,13 +362,13 @@
   <form id="gameSubmissionForm">
     <label for="title">Game Title:</label><br />
     <input type="text" id="title" name="title" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;" /><br />
-    
+
     <label for="description">Description:</label><br />
     <textarea id="description" name="description" required rows="3" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"></textarea><br />
-    
+
     <label for="embedUrl">Embed URL:</label><br />
     <input type="url" id="embedUrl" name="embedUrl" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;" /><br />
-    
+
     <label for="screenshot">Screenshot URL (optional):</label><br />
     <input type="url" id="screenshot" name="screenshot" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;" /><br />
 
@@ -397,10 +397,10 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+  );
 
   const form = document.getElementById('gameSubmissionForm');
   const status = document.getElementById('submitStatus');
@@ -409,32 +409,20 @@
     e.preventDefault();
     status.textContent = 'Submitting...';
 
-    // Get logged in user session
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session?.user) {
-      status.textContent = 'You must be logged in with GitHub to submit a game.';
-      return;
-    }
-
     const formData = new FormData(form);
-
-    // Prepare submission object
     const submission = {
-      user_id: session.user.id,
       title: formData.get('title'),
       description: formData.get('description'),
       embed_url: formData.get('embedUrl'),
       screenshot_url: formData.get('screenshot') || null,
     };
 
-    // Insert into Supabase table
     const { error } = await supabase.from('game_submissions').insert([submission]);
 
     if (error) {
-      status.textContent = `Error submitting your game: ${error.message}`;
+      status.textContent = `Error: ${error.message}`;
     } else {
-      status.textContent = 'Thanks for your submission!';
+      status.textContent = '✅ Thanks! Your game has been submitted.';
       form.reset();
       setTimeout(() => {
         window.location.href = 'https://browndoggames.com/thank-you.html';
