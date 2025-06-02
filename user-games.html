@@ -69,7 +69,6 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      position: relative;
     }
 
     .game-card:hover {
@@ -155,179 +154,130 @@
       background-color: #ff69b4;
       color: #1e1b2e;
     }
-
-    button.delete-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #e63946;
-      border: none;
-      color: white;
-      padding: 0.3rem 0.6rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.85rem;
-      transition: background-color 0.3s ease;
-    }
-
-    button.delete-btn:hover {
-      background: #f94144;
-    }
   </style>
 </head>
 <body>
 
-  <a href="https://browndoggames.com/index.html" class="back-link">⬅️ Submit Your Own Game</a>
+<a href="https://browndoggames.com/index.html" class="back-link">⬅️ Submit Your Own Game</a>
 
-  <h1>Community Game Submissions</h1>
-  <ul id="gameList" class="game-list"></ul>
-  <p id="loadingMessage">Loading games...</p>
+<h1>Community Game Submissions</h1>
+<ul id="gameList" class="game-list"></ul>
+<p id="loadingMessage">Loading games...</p>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY5ODg3MTk3OSwiZXhwIjoxOTk0NDQ3OTc5fQ.vGbDKiVgKplZXb1sZ2mXtxSJTuSxj4rsUzG0uVIGsAo'
-    );
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
 
-    const gameList = document.getElementById('gameList');
-    const loadingMessage = document.getElementById('loadingMessage');
+  const gameList = document.getElementById('gameList');
+  const loadingMessage = document.getElementById('loadingMessage');
 
-    let currentUserGitHub = null;
+  function isValidUrl(str) {
+    try {
+      new URL(str);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-    function isValidUrl(str) {
-      try {
-        new URL(str);
-        return true;
-      } catch {
-        return false;
-      }
+  // Check if embed_url is a safe URL to embed (basic check)
+  function isEmbedAllowed(url) {
+    try {
+      const parsed = new URL(url);
+      // Allow only https protocols and certain hosts (adjust as needed)
+      return parsed.protocol === 'https:' &&
+        (parsed.hostname.endsWith('itch.io') ||
+         parsed.hostname.endsWith('github.io') ||
+         parsed.hostname.endsWith('netlify.app') ||
+         parsed.hostname.endsWith('vercel.app') ||
+         parsed.hostname.endsWith('brown-dog-games.github.io') ||
+         parsed.hostname.endsWith('browndoggames.com'));
+    } catch {
+      return false;
+    }
+  }
+
+  async function loadGames() {
+    const { data, error } = await supabase
+      .from('game_submissions')
+      .select('title, description, embed_url, screenshot_url, github_user')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      loadingMessage.textContent = 'Error loading games: ' + error.message;
+      return;
     }
 
-    function isEmbedAllowed(url) {
-      try {
-        const parsed = new URL(url);
-        return parsed.protocol === 'https:' &&
-          (parsed.hostname.endsWith('itch.io') ||
-           parsed.hostname.endsWith('github.io') ||
-           parsed.hostname.endsWith('netlify.app') ||
-           parsed.hostname.endsWith('vercel.app') ||
-           parsed.hostname.endsWith('brown-dog-games.github.io') ||
-           parsed.hostname.endsWith('browndoggames.com'));
-      } catch {
-        return false;
-      }
+    if (!data || data.length === 0) {
+      loadingMessage.textContent = 'No games submitted yet. Be the first!';
+      return;
     }
 
-    async function loadGames() {
-      loadingMessage.textContent = 'Loading games...';
-      gameList.innerHTML = '';
+    loadingMessage.remove();
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      currentUserGitHub = sessionData?.session?.user?.user_metadata?.login || null;
+    data.forEach(({ title, description, embed_url, screenshot_url, github_user }) => {
+      const li = document.createElement('li');
+      li.className = 'game-card';
 
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('id, title, description, embed_url, screenshot_url, github_user')
-        .order('created_at', { ascending: false });
+      const titleEl = document.createElement('div');
+      titleEl.className = 'game-title';
+      titleEl.textContent = title;
 
-      if (error) {
-        console.error('Supabase error:', error);
-        loadingMessage.textContent = 'Error loading games: ' + error.message;
-        return;
+      const authorEl = document.createElement('div');
+      authorEl.className = 'game-author';
+      authorEl.textContent = Submitted by: ${github_user && github_user.trim() !== '' ? github_user : 'anon'};
+
+      const descEl = document.createElement('p');
+      descEl.className = 'game-description';
+      descEl.textContent = description;
+
+      li.appendChild(titleEl);
+      li.appendChild(authorEl);
+      li.appendChild(descEl);
+
+      if (screenshot_url && isValidUrl(screenshot_url)) {
+        const img = document.createElement('img');
+        img.className = 'screenshot';
+        img.src = screenshot_url;
+        img.alt = ${title} screenshot;
+        li.appendChild(img);
       }
 
-      if (!data || data.length === 0) {
-        loadingMessage.textContent = 'No games submitted yet. Be the first!';
-        return;
-      }
-
-      loadingMessage.textContent = '';
-
-      for (const game of data) {
-        const { id, title, description, embed_url, screenshot_url, github_user } = game;
-        const li = document.createElement('li');
-        li.className = 'game-card';
-
-        li.innerHTML = `
-          <div class="game-title">${title}</div>
-          <div class="game-author">Submitted by: ${github_user?.trim() || 'anon'}</div>
-          <p class="game-description">${description}</p>
-        `;
-
-        if (screenshot_url && isValidUrl(screenshot_url)) {
-          const img = document.createElement('img');
-          img.className = 'screenshot';
-          img.src = screenshot_url;
-          img.alt = `${title} screenshot`;
-          li.appendChild(img);
-        }
-
-        if (embed_url && isValidUrl(embed_url)) {
-          if (isEmbedAllowed(embed_url)) {
-            const iframe = document.createElement('iframe');
-            iframe.src = embed_url;
-            iframe.setAttribute('allowfullscreen', '');
-            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-            iframe.textContent = 'Your browser does not support iframes.';
-            li.appendChild(iframe);
-          } else {
-            const link = document.createElement('a');
-            link.href = embed_url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.className = 'fallback-link';
-            link.textContent = '▶️ Play the game here (opens new tab)';
-            li.appendChild(link);
-          }
+      if (embed_url && isValidUrl(embed_url)) {
+        if (isEmbedAllowed(embed_url)) {
+          const iframeEl = document.createElement('iframe');
+          iframeEl.setAttribute('allowfullscreen', '');
+          iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+          iframeEl.src = embed_url;
+          iframeEl.textContent = 'Your browser does not support iframes.';
+          li.appendChild(iframeEl);
         } else {
-          const noEmbed = document.createElement('p');
-          noEmbed.style.fontStyle = 'italic';
-          noEmbed.style.color = '#d38eb8';
-          noEmbed.textContent = 'No playable link provided.';
-          li.appendChild(noEmbed);
+          const fallbackLink = document.createElement('a');
+          fallbackLink.href = embed_url;
+          fallbackLink.target = '_blank';
+          fallbackLink.rel = 'noopener noreferrer';
+          fallbackLink.className = 'fallback-link';
+          fallbackLink.textContent = '▶️ Play the game here (opens new tab)';
+          li.appendChild(fallbackLink);
         }
-
-        if (currentUserGitHub && github_user && currentUserGitHub.toLowerCase() === github_user.toLowerCase()) {
-          const deleteBtn = document.createElement('button');
-          deleteBtn.textContent = 'Delete';
-          deleteBtn.className = 'delete-btn';
-          deleteBtn.onclick = () => {
-            if (confirm(`Are you sure you want to delete "${title}"?`)) {
-              deleteGame(id);
-            }
-          };
-          li.appendChild(deleteBtn);
-        }
-
-        gameList.appendChild(li);
-      }
-    }
-
-    async function deleteGame(id) {
-      const { error } = await supabase
-        .from('game_submissions')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert('Error deleting game: ' + error.message);
       } else {
-        alert('Game deleted successfully!');
-        loadGames();
+        const noEmbed = document.createElement('p');
+        noEmbed.style.fontStyle = 'italic';
+        noEmbed.style.color = '#d38eb8';
+        noEmbed.textContent = 'No playable link provided.';
+        li.appendChild(noEmbed);
       }
-    }
 
-    // Initial load
-    loadGames();
-
-    // Re-load games on auth state change
-    supabase.auth.onAuthStateChange(() => {
-      loadGames();
+      gameList.appendChild(li);
     });
-  </script>
+  }
+
+  loadGames();
+</script>
 
 </body>
 </html>
