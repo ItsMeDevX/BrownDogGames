@@ -316,78 +316,50 @@
   <a href="index.html">← Back to Home</a>
 </div>
   
-<h2 style="text-align:center; color:#ff69b4; font-family: 'Rubik Mono One', sans-serif; margin-bottom: 1rem;">💬 Community Chat</h2>
+<h2 style="text-align:center; color:#ff69b4;">Simple Chat & Messages Table</h2>
 
-<div id="chat-box" style="
-  max-width: 800px;
-  height: 400px;
-  overflow-y: auto;
-  background: #2a243b;
+<div id="message-list" style="
+  max-width: 600px;
+  margin: 1rem auto;
   padding: 1rem;
-  border-radius: 12px;
-  margin: 0 auto 1rem;
-  font-family: sans-serif;
-  box-shadow: 0 0 20px #ff69b444;
+  background: #222;
   color: #fff;
-  font-size: 1rem;
-  line-height: 1.4;
-  border: 2px solid #ff69b466;
+  border-radius: 8px;
+  min-height: 200px;
+  font-family: sans-serif;
+  overflow-y: auto;
+  max-height: 300px;
 "></div>
 
-<form id="chat-form" style="display:flex; gap:10px; justify-content:center; max-width:800px; margin: 0 auto 3rem;">
-  <input type="text" id="message" placeholder="Type your message..." required style="
-    flex:1;
-    padding: 12px;
-    border-radius: 10px;
-    border: 2px solid #ff69b4;
-    background: #1e1b2e;
-    color: #fff;
-    font-size: 1rem;
-    outline: none;
-  ">
-  <button type="submit" style="
-    padding: 12px 20px;
-    background: #ff69b4;
-    color: #1e1b2e;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s;
-  ">Send</button>
+<form id="chat-form" style="max-width:600px; margin: 0 auto; display:flex; gap:10px;">
+  <input type="text" id="message-input" placeholder="Enter message..." required style="flex:1; padding:8px; border-radius:5px; border:none;">
+  <button type="submit" style="padding:8px 16px; background:#ff69b4; border:none; color:#222; font-weight:bold; border-radius:5px; cursor:pointer;">Send</button>
 </form>
 
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-  const chatBox = document.getElementById('chat-box');
+  const messageList = document.getElementById('message-list');
   const chatForm = document.getElementById('chat-form');
-  const messageInput = document.getElementById('message');
-  let user = null;
-  const pageId = 'game1';
+  const messageInput = document.getElementById('message-input');
 
-  async function loadSession() {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error('Error getting session:', error);
-      chatBox.innerHTML = `<p style="color:red; text-align:center;">Error getting session: ${error.message}</p>`;
-      chatForm.style.display = 'none';
-      return;
-    }
+  let user = null;
+  const pageId = 'simple-chat';
+
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
     user = session?.user;
 
     if (!user) {
+      messageList.innerHTML = '<p style="color:#ff69b4; text-align:center;">Please log in with GitHub to chat.</p>';
       chatForm.style.display = 'none';
-      chatBox.innerHTML = `<p style="text-align:center; color:#ffc0cb;">🔒 Please log in with GitHub to join the chat.</p>`;
     } else {
       chatForm.style.display = 'flex';
-      await loadMessages();
+      loadMessages();
     }
   }
 
@@ -399,54 +371,58 @@
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error loading messages:', error);
-      chatBox.innerHTML = `<p style="color:red; text-align:center;">Failed to load messages: ${error.message}</p>`;
+      messageList.innerHTML = '<p>Error loading messages.</p>';
+      console.error(error);
       return;
     }
 
-    chatBox.innerHTML = '';
-    data.forEach(msg => renderMessage(msg));
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+    if (data.length === 0) {
+      messageList.innerHTML = '<p>No messages yet. Start the conversation!</p>';
+      return;
+    }
 
-  function renderMessage(msg) {
-    const div = document.createElement('div');
-    div.style.marginBottom = '12px';
-    div.innerHTML = `<strong style="color:#ff8edb">${msg.username}</strong>: <span style="color:#fefefe">${msg.content}</span>`;
-    chatBox.appendChild(div);
+    messageList.innerHTML = data.map(msg => `
+      <div style="margin-bottom:8px;">
+        <strong style="color:#ff69b4;">${msg.username}:</strong> ${msg.content}
+      </div>
+    `).join('');
+    messageList.scrollTop = messageList.scrollHeight;
   }
 
   async function sendMessage(content) {
-    const name = user.user_metadata.full_name || user.email;
-    const { error } = await supabase.from('messages').insert([{ username: name, content, page_id: pageId }]);
+    const username = user.user_metadata.full_name || user.email;
+
+    const { error } = await supabase.from('messages').insert([
+      { username, content, page_id: pageId }
+    ]);
+
     if (error) {
-      console.error('Error sending message:', error);
-      alert('Failed to send message: ' + error.message);
+      alert('Failed to send message.');
+      console.error(error);
     }
   }
 
-  chatForm.addEventListener('submit', async (e) => {
+  chatForm.addEventListener('submit', async e => {
     e.preventDefault();
-    const text = messageInput.value.trim();
-    if (!text) return;
-    await sendMessage(text);
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+
+    await sendMessage(msg);
     messageInput.value = '';
+    loadMessages();
   });
 
-  supabase.channel('chat')
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages',
-      filter: `page_id=eq.'${pageId}'`
-    }, payload => {
-      renderMessage(payload.new);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    })
+  // Listen for new messages in real time
+  supabase.channel('messages_channel')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `page_id=eq.${pageId}` },
+      (payload) => {
+        loadMessages();
+      })
     .subscribe();
 
-  loadSession();
+  checkSession();
 </script>
+
 
 </body>
 </html>
