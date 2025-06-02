@@ -375,13 +375,13 @@
   const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
   const chatBox = document.getElementById('chat-box');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message');
   const usernameInput = document.getElementById('username');
-  const pageId = 'game1'; // Page identifier for filtering messages
+  const pageId = 'game1';
 
+  // Load messages from the database
   async function loadMessages() {
     const { data, error } = await supabase
       .from('messages')
@@ -395,24 +395,20 @@
       return;
     }
 
-    if (!data || data.length === 0) {
-      chatBox.innerHTML = `<p style="color:#ff69b4; text-align:center;">No messages yet... Be the first to send one!</p>`;
-      return;
-    }
-
     chatBox.innerHTML = '';
     data.forEach(msg => renderMessage(msg));
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
+  // Render each message
   function renderMessage(msg) {
     const div = document.createElement('div');
     div.style.marginBottom = '12px';
-    const username = msg.username || 'Anonymous'; // Default to Anonymous if username is empty
-    div.innerHTML = `<strong style="color:#ff8edb">${escapeHtml(username)}</strong>: <span style="color:#fefefe">${escapeHtml(msg.content)}</span>`;
+    div.innerHTML = `<strong style="color:#ff8edb">${escapeHtml(msg.username || 'Anonymous')}</strong>: <span style="color:#fefefe">${escapeHtml(msg.content)}</span>`;
     chatBox.appendChild(div);
   }
 
+  // Escape HTML to prevent XSS (Cross-Site Scripting)
   function escapeHtml(text) {
     return text.replace(/[&<>"']/g, (m) => ({
       '&': '&amp;',
@@ -423,6 +419,7 @@
     })[m]);
   }
 
+  // Send message to the database
   async function sendMessage(content, username) {
     const { error } = await supabase.from('messages').insert([{ username: username || 'Anonymous', content, page_id: pageId }]);
     if (error) {
@@ -431,22 +428,20 @@
     }
   }
 
+  // Handle form submit
   chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = messageInput.value.trim();
-    const username = usernameInput.value.trim() || 'Anonymous'; // Default username is "Anonymous"
+    const username = usernameInput.value.trim() || 'Anonymous';
     if (!text) return;
 
-    // Disable the send button while sending message
     chatForm.querySelector('button').disabled = true;
-
     await sendMessage(text, username);
-    messageInput.value = ''; // Clear the message input
-
-    // Re-enable the send button
+    messageInput.value = '';
     chatForm.querySelector('button').disabled = false;
   });
 
+  // Listen for new messages from Supabase
   supabase.channel('chat')
     .on('postgres_changes', {
       event: 'INSERT',
@@ -461,6 +456,7 @@
 
   loadMessages();
 </script>
+
 
 </body>
 </html>
