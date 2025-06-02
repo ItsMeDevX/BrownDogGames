@@ -3,33 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BrownDogGames</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LogoDog.ico" type="image/x-icon">
-</head>
-  
-<!-- Logo -->
-<a href="index.html">
-  <img 
-    src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-    alt="BrownDogGames Logo" 
-    class="logo"
-  >
-</a>
-
-<style>
-  .logo {
-    height: 80px;  /* smaller height */
-    width: auto;
-    display: block;
-    margin: 20px auto;
-    max-width: 100%;
-  }
-</style>
-
-  
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logging in - BrownDogGames</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LogoDog.ico" type="image/x-icon">
+
+  <!-- Logo Style -->
+  <style>
+    .logo {
+      height: 80px;
+      width: auto;
+      display: block;
+      margin: 20px auto;
+      max-width: 100%;
+    }
+  </style>
+
+  <!-- Page Styles -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
@@ -57,11 +45,13 @@
       margin: 0.5rem 0;
     }
   </style>
+
+  <!-- Supabase Auth Callback Logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -74,14 +64,11 @@
     async function handleOAuthCallback() {
       try {
         const { error } = await supabase.auth.exchangeCodeForSession();
-
-        // No message box, just log error and redirect
         if (error) {
           console.error('Login failed:', error.message);
           redirectToHome(4000);
           return;
         }
-
         redirectToHome(2000);
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -93,7 +80,17 @@
   </script>
 </head>
 <body>
+  <!-- Logo -->
+  <a href="index.html">
+    <img 
+      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+      alt="BrownDogGames Logo" 
+      class="logo"
+    >
+  </a>
+
   <h1>Logging you in...</h1>
   <p>Please wait a moment while we process your login.</p>
 </body>
 </html>
+
