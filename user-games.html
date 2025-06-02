@@ -108,164 +108,176 @@
     }
 
     img.screenshot {
-      width: 100%;
+      max-width: 100%;
       border-radius: 10px;
       margin-bottom: 1rem;
-      box-shadow: 0 0 8px #ff69b4cc;
+      box-shadow: 0 0 10px #ff69b4aa;
       object-fit: cover;
-      max-height: 180px;
+      aspect-ratio: 16 / 9;
     }
 
-    a.fallback-link {
+    .fallback-link {
       display: inline-block;
-      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: #ff69b4;
+      border-radius: 12px;
+      color: #1e1b2e;
       font-weight: bold;
-      color: #ff69b4;
-      text-decoration: underline;
-      cursor: pointer;
-      transition: color 0.2s;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+      margin-bottom: 1rem;
     }
 
-    a.fallback-link:hover {
-      color: #ff8edb;
+    .fallback-link:hover {
+      background: #ff8edb;
+    }
+
+    #loadingMessage {
+      font-size: 1.2rem;
+      margin-top: 2rem;
+      color: #ff69b4;
     }
 
     .back-link {
       display: inline-block;
-      margin-top: 20px;
-      font-size: 1rem;
+      margin-bottom: 2rem;
       color: #ff69b4;
+      font-weight: bold;
       text-decoration: none;
-      transition: color 0.2s;
+      border: 2px solid #ff69b4;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     .back-link:hover {
-      color: #ff8edb;
-      text-decoration: underline;
-    }
-
-    #loadingMessage {
-      margin-top: 3rem;
-      font-size: 1.2rem;
-      color: #ff69b4;
-      font-weight: bold;
+      background-color: #ff69b4;
+      color: #1e1b2e;
     }
   </style>
 </head>
 <body>
 
-  <h1>🧑‍💻 User-Submitted Games</h1>
+<a href="submit-game.html" class="back-link">⬅️ Submit Your Own Game</a>
 
-  <ul class="game-list" id="gameList">
-    <li id="loadingMessage">Loading games...</li>
-  </ul>
+<h1>Community Game Submissions</h1>
+<ul id="gameList" class="game-list"></ul>
+<p id="loadingMessage">Loading games...</p>
 
-  <a href="index.html" class="back-link">⬅ Back to Main Games</a>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
-    );
+  const gameList = document.getElementById('gameList');
+  const loadingMessage = document.getElementById('loadingMessage');
 
-    const gameList = document.getElementById('gameList');
-    const loadingMessage = document.getElementById('loadingMessage');
+  function isValidUrl(str) {
+    try {
+      new URL(str);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-    function isValidUrl(url) {
-      try {
-        const parsed = new URL(url);
-        return parsed.protocol === "http:" || parsed.protocol === "https:";
-      } catch {
-        return false;
-      }
+  // Check if embed_url is a safe URL to embed (basic check)
+  function isEmbedAllowed(url) {
+    try {
+      const parsed = new URL(url);
+      // Allow only https protocols and certain hosts (adjust as needed)
+      return parsed.protocol === 'https:' &&
+        (parsed.hostname.endsWith('itch.io') ||
+         parsed.hostname.endsWith('github.io') ||
+         parsed.hostname.endsWith('netlify.app') ||
+         parsed.hostname.endsWith('vercel.app') ||
+         parsed.hostname.endsWith('brown-dog-games.github.io') ||
+         parsed.hostname.endsWith('browndoggames.com'));
+    } catch {
+      return false;
+    }
+  }
+
+  async function loadGames() {
+    const { data, error } = await supabase
+      .from('game_submissions')
+      .select('title, description, embed_url, screenshot_url, github_user')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      loadingMessage.textContent = 'Error loading games: ' + error.message;
+      return;
     }
 
-    const blockedHosts = ['itch.io', 'browndoggames.itch.io'];
-
-    function isEmbedAllowed(url) {
-      if (!isValidUrl(url)) return false;
-      const hostname = new URL(url).hostname.toLowerCase();
-      return !blockedHosts.some(blocked => hostname.includes(blocked));
+    if (!data || data.length === 0) {
+      loadingMessage.textContent = 'No games submitted yet. Be the first!';
+      return;
     }
 
-    async function loadGames() {
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('title, description, embed_url, screenshot_url, github_user')
-        .order('created_at', { ascending: false });
+    loadingMessage.remove();
 
-      if (error) {
-        loadingMessage.textContent = 'Error loading games: ' + error.message;
-        return;
+    data.forEach(({ title, description, embed_url, screenshot_url, github_user }) => {
+      const li = document.createElement('li');
+      li.className = 'game-card';
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'game-title';
+      titleEl.textContent = title;
+
+      const authorEl = document.createElement('div');
+      authorEl.className = 'game-author';
+      authorEl.textContent = `Submitted by: ${github_user && github_user.trim() !== '' ? github_user : 'anon'}`;
+
+      const descEl = document.createElement('p');
+      descEl.className = 'game-description';
+      descEl.textContent = description;
+
+      li.appendChild(titleEl);
+      li.appendChild(authorEl);
+      li.appendChild(descEl);
+
+      if (screenshot_url && isValidUrl(screenshot_url)) {
+        const img = document.createElement('img');
+        img.className = 'screenshot';
+        img.src = screenshot_url;
+        img.alt = `${title} screenshot`;
+        li.appendChild(img);
       }
 
-      if (!data || data.length === 0) {
-        loadingMessage.textContent = 'No games submitted yet. Be the first!';
-        return;
-      }
-
-      loadingMessage.remove();
-
-      data.forEach(({ title, description, embed_url, screenshot_url, github_user }) => {
-        const li = document.createElement('li');
-        li.className = 'game-card';
-
-        const titleEl = document.createElement('div');
-        titleEl.className = 'game-title';
-        titleEl.textContent = title;
-
-        const authorEl = document.createElement('div');
-        authorEl.className = 'game-author';
-        authorEl.textContent = `Submitted by: ${github_user && github_user.trim() !== '' ? github_user : 'anon'}`;
-
-        const descEl = document.createElement('p');
-        descEl.className = 'game-description';
-        descEl.textContent = description;
-
-        li.appendChild(titleEl);
-        li.appendChild(authorEl);
-        li.appendChild(descEl);
-
-        if (screenshot_url && isValidUrl(screenshot_url)) {
-          const img = document.createElement('img');
-          img.className = 'screenshot';
-          img.src = screenshot_url;
-          img.alt = `${title} screenshot`;
-          li.appendChild(img);
-        }
-
-        if (embed_url && isValidUrl(embed_url)) {
-          if (isEmbedAllowed(embed_url)) {
-            const iframeEl = document.createElement('iframe');
-            iframeEl.setAttribute('allowfullscreen', '');
-            iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-            iframeEl.src = embed_url;
-            iframeEl.textContent = 'Your browser does not support iframes.';
-            li.appendChild(iframeEl);
-          } else {
-            const fallbackLink = document.createElement('a');
-            fallbackLink.href = embed_url;
-            fallbackLink.target = '_blank';
-            fallbackLink.rel = 'noopener noreferrer';
-            fallbackLink.className = 'fallback-link';
-            fallbackLink.textContent = '▶️ Play the game here (opens new tab)';
-            li.appendChild(fallbackLink);
-          }
+      if (embed_url && isValidUrl(embed_url)) {
+        if (isEmbedAllowed(embed_url)) {
+          const iframeEl = document.createElement('iframe');
+          iframeEl.setAttribute('allowfullscreen', '');
+          iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+          iframeEl.src = embed_url;
+          iframeEl.textContent = 'Your browser does not support iframes.';
+          li.appendChild(iframeEl);
         } else {
-          const noEmbed = document.createElement('p');
-          noEmbed.style.fontStyle = 'italic';
-          noEmbed.style.color = '#d38eb8';
-          noEmbed.textContent = 'No playable link provided.';
-          li.appendChild(noEmbed);
+          const fallbackLink = document.createElement('a');
+          fallbackLink.href = embed_url;
+          fallbackLink.target = '_blank';
+          fallbackLink.rel = 'noopener noreferrer';
+          fallbackLink.className = 'fallback-link';
+          fallbackLink.textContent = '▶️ Play the game here (opens new tab)';
+          li.appendChild(fallbackLink);
         }
+      } else {
+        const noEmbed = document.createElement('p');
+        noEmbed.style.fontStyle = 'italic';
+        noEmbed.style.color = '#d38eb8';
+        noEmbed.textContent = 'No playable link provided.';
+        li.appendChild(noEmbed);
+      }
 
-        gameList.appendChild(li);
-      });
-    }
+      gameList.appendChild(li);
+    });
+  }
 
-    loadGames();
-  </script>
+  loadGames();
+</script>
+
 </body>
 </html>
