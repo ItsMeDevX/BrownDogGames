@@ -361,41 +361,32 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+  );
 
   const chatBox = document.getElementById('chat-box');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message');
-  let user = null;
 
-  // Change this per page to have separate chat rooms
-  const pageId = 'game1';  // e.g. 'game1', 'game2', 'puzzle-room'
-
-  async function loadSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    user = session?.user;
-
-    if (!user) {
-      chatForm.style.display = 'none';
-      chatBox.innerHTML = `<p style="text-align:center; color:#ffc0cb;">🔒 Please log in with GitHub to join the chat.</p>`;
-    } else {
-      chatForm.style.display = 'flex';
-      loadMessages();
-    }
-  }
+  const pageId = 'game1';
+  const username = 'Guest';
 
   async function loadMessages() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('messages')
       .select('*')
       .eq('page_id', pageId)
       .order('created_at', { ascending: true });
 
+    if (error) {
+      chatBox.innerHTML = `<p style="color:red;">Error loading messages.</p>`;
+      return;
+    }
+
     chatBox.innerHTML = '';
-    data.forEach(msg => renderMessage(msg));
+    data.forEach(renderMessage);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
@@ -407,8 +398,13 @@
   }
 
   async function sendMessage(content) {
-    const name = user.user_metadata.full_name || user.email;
-    await supabase.from('messages').insert([{ username: name, content, page_id: pageId }]);
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ username, content, page_id: pageId }]);
+
+    if (error) {
+      alert('Error sending message.');
+    }
   }
 
   chatForm.addEventListener('submit', async (e) => {
@@ -419,19 +415,20 @@
     messageInput.value = '';
   });
 
-  supabase.channel('chat')
+  supabase
+    .channel('chat-channel')
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
       table: 'messages',
-      filter: `page_id=eq.'${pageId}'`
-    }, payload => {
+      filter: `page_id=eq.${pageId}`
+    }, (payload) => {
       renderMessage(payload.new);
       chatBox.scrollTop = chatBox.scrollHeight;
     })
     .subscribe();
 
-  loadSession();
+  loadMessages();
 </script>
 
 
