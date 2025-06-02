@@ -236,21 +236,29 @@
           li.appendChild(img);
         }
 
-        if (isEmbedAllowed(embed_url)) {
-          const iframeEl = document.createElement('iframe');
-          iframeEl.setAttribute('allowfullscreen', '');
-          iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-          iframeEl.src = embed_url;
-          iframeEl.textContent = 'Your browser does not support iframes.';
-          li.appendChild(iframeEl);
+        if (embed_url && isValidUrl(embed_url)) {
+          if (isEmbedAllowed(embed_url)) {
+            const iframeEl = document.createElement('iframe');
+            iframeEl.setAttribute('allowfullscreen', '');
+            iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+            iframeEl.src = embed_url;
+            iframeEl.textContent = 'Your browser does not support iframes.';
+            li.appendChild(iframeEl);
+          } else {
+            const fallbackLink = document.createElement('a');
+            fallbackLink.href = embed_url;
+            fallbackLink.target = '_blank';
+            fallbackLink.rel = 'noopener noreferrer';
+            fallbackLink.className = 'fallback-link';
+            fallbackLink.textContent = '▶️ Play the game here (opens new tab)';
+            li.appendChild(fallbackLink);
+          }
         } else {
-          const fallbackLink = document.createElement('a');
-          fallbackLink.href = embed_url;
-          fallbackLink.target = '_blank';
-          fallbackLink.rel = 'noopener noreferrer';
-          fallbackLink.className = 'fallback-link';
-          fallbackLink.textContent = '▶️ Play the game here (opens new tab)';
-          li.appendChild(fallbackLink);
+          const noEmbed = document.createElement('p');
+          noEmbed.style.fontStyle = 'italic';
+          noEmbed.style.color = '#d38eb8';
+          noEmbed.textContent = 'No playable link provided.';
+          li.appendChild(noEmbed);
         }
 
         gameList.appendChild(li);
@@ -261,4 +269,3 @@
   </script>
 </body>
 </html>
-
