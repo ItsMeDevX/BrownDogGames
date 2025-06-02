@@ -21,13 +21,6 @@
   <title>User-Submitted Games - BrownDogGames</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background: linear-gradient(135deg, #2c1b33, #191425);
@@ -36,108 +29,76 @@
       min-height: 100vh;
       text-align: center;
     }
-
     h1 {
       font-size: 2.5rem;
       color: #ff69b4;
       margin-bottom: 2rem;
       text-shadow: 2px 2px 0 #000;
     }
-
     .game-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 2rem;
+      gap: 1.5rem;
       justify-content: center;
       max-width: 1200px;
       margin: 0 auto 3rem;
       padding: 0;
       list-style: none;
     }
-
     .game-card {
       background: #2d1a3a;
       border: 2px solid #ff69b4;
       border-radius: 16px;
       box-shadow: 0 0 12px #ff69b4aa;
-      padding: 1.5rem;
-      max-width: 400px;
+      padding: 1rem;
+      max-width: 360px;
       flex: 1 1 300px;
       color: #ffc0cb;
-      transition: transform 0.2s, background-color 0.2s;
       text-align: left;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      gap: 0.5rem;
+      transition: transform 0.2s, background-color 0.2s;
     }
-
     .game-card:hover {
       background: #ff69b4;
       color: #1e1b2e;
-      transform: scale(1.03);
+      transform: scale(1.05);
     }
-
     .game-title {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: bold;
-      margin-bottom: 0.5rem;
       color: #ffccff;
     }
-
-    .game-description {
-      font-size: 0.95rem;
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
-
     .game-author {
-      font-size: 0.85rem;
       font-style: italic;
-      margin-bottom: 1rem;
       color: #e0a0c0;
     }
-
-    iframe {
+    iframe, img.screenshot {
       width: 100%;
-      height: 250px;
-      border: none;
       border-radius: 10px;
       box-shadow: 0 0 8px #ff69b4cc;
-      margin-bottom: 1rem;
-      background: #1e1b2e;
-    }
-
-    img.screenshot {
-      max-width: 100%;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      box-shadow: 0 0 10px #ff69b4aa;
-      object-fit: cover;
       aspect-ratio: 16 / 9;
+      background: #1e1b2e;
+      border: none;
     }
-
     .fallback-link {
       display: inline-block;
-      padding: 0.6rem 1.2rem;
+      padding: 0.5rem 1rem;
       background: #ff69b4;
       border-radius: 12px;
       color: #1e1b2e;
       font-weight: bold;
       text-decoration: none;
       transition: background-color 0.3s ease;
-      margin-bottom: 1rem;
     }
-
     .fallback-link:hover {
       background: #ff8edb;
     }
-
     #loadingMessage {
       font-size: 1.2rem;
-      margin-top: 2rem;
       color: #ff69b4;
     }
-
     .back-link {
       display: inline-block;
       margin-bottom: 2rem;
@@ -149,7 +110,6 @@
       border-radius: 10px;
       transition: background-color 0.3s, color 0.3s;
     }
-
     .back-link:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
@@ -175,31 +135,30 @@
   const gameList = document.getElementById('gameList');
   const loadingMessage = document.getElementById('loadingMessage');
 
-  function isValidUrl(str) {
-    try {
-      new URL(str);
-      return true;
-    } catch {
-      return false;
-    }
-  }
+  // Basic URL validation
+  const isValidUrl = url => {
+    try { new URL(url); return true; }
+    catch { return false; }
+  };
 
-  // Check if embed_url is a safe URL to embed (basic check)
-  function isEmbedAllowed(url) {
+  // Allowed embed hosts whitelist
+  const allowedHosts = [
+    'itch.io',
+    'github.io',
+    'netlify.app',
+    'vercel.app',
+    'brown-dog-games.github.io',
+    'browndoggames.com'
+  ];
+
+  const isEmbedAllowed = url => {
     try {
-      const parsed = new URL(url);
-      // Allow only https protocols and certain hosts (adjust as needed)
-      return parsed.protocol === 'https:' &&
-        (parsed.hostname.endsWith('itch.io') ||
-         parsed.hostname.endsWith('github.io') ||
-         parsed.hostname.endsWith('netlify.app') ||
-         parsed.hostname.endsWith('vercel.app') ||
-         parsed.hostname.endsWith('brown-dog-games.github.io') ||
-         parsed.hostname.endsWith('browndoggames.com'));
+      const u = new URL(url);
+      return u.protocol === 'https:' && allowedHosts.some(host => u.hostname.endsWith(host));
     } catch {
       return false;
     }
-  }
+  };
 
   async function loadGames() {
     const { data, error } = await supabase
@@ -208,7 +167,7 @@
       .order('created_at', { ascending: false });
 
     if (error) {
-      loadingMessage.textContent = 'Error loading games: ' + error.message;
+      loadingMessage.textContent = `Error loading games: ${error.message}`;
       return;
     }
 
@@ -223,54 +182,20 @@
       const li = document.createElement('li');
       li.className = 'game-card';
 
-      const titleEl = document.createElement('div');
-      titleEl.className = 'game-title';
-      titleEl.textContent = title;
-
-      const authorEl = document.createElement('div');
-      authorEl.className = 'game-author';
-      authorEl.textContent = Submitted by: ${github_user && github_user.trim() !== '' ? github_user : 'anon'};
-
-      const descEl = document.createElement('p');
-      descEl.className = 'game-description';
-      descEl.textContent = description;
-
-      li.appendChild(titleEl);
-      li.appendChild(authorEl);
-      li.appendChild(descEl);
-
-      if (screenshot_url && isValidUrl(screenshot_url)) {
-        const img = document.createElement('img');
-        img.className = 'screenshot';
-        img.src = screenshot_url;
-        img.alt = ${title} screenshot;
-        li.appendChild(img);
-      }
-
-      if (embed_url && isValidUrl(embed_url)) {
-        if (isEmbedAllowed(embed_url)) {
-          const iframeEl = document.createElement('iframe');
-          iframeEl.setAttribute('allowfullscreen', '');
-          iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-          iframeEl.src = embed_url;
-          iframeEl.textContent = 'Your browser does not support iframes.';
-          li.appendChild(iframeEl);
-        } else {
-          const fallbackLink = document.createElement('a');
-          fallbackLink.href = embed_url;
-          fallbackLink.target = '_blank';
-          fallbackLink.rel = 'noopener noreferrer';
-          fallbackLink.className = 'fallback-link';
-          fallbackLink.textContent = '▶️ Play the game here (opens new tab)';
-          li.appendChild(fallbackLink);
+      li.innerHTML = `
+        <div class="game-title">${title}</div>
+        <div class="game-author">Submitted by: ${github_user?.trim() || 'anon'}</div>
+        <p class="game-description">${description}</p>
+        ${screenshot_url && isValidUrl(screenshot_url) ? `<img class="screenshot" src="${screenshot_url}" alt="${title} screenshot" />` : ''}
+        ${
+          embed_url && isValidUrl(embed_url)
+            ? (isEmbedAllowed(embed_url)
+                ? `<iframe src="${embed_url}" allowfullscreen sandbox="allow-scripts allow-same-origin">Your browser does not support iframes.</iframe>`
+                : `<a href="${embed_url}" target="_blank" rel="noopener noreferrer" class="fallback-link">▶️ Play the game here (opens new tab)</a>`
+              )
+            : `<p style="font-style: italic; color: #d38eb8;">No playable link provided.</p>`
         }
-      } else {
-        const noEmbed = document.createElement('p');
-        noEmbed.style.fontStyle = 'italic';
-        noEmbed.style.color = '#d38eb8';
-        noEmbed.textContent = 'No playable link provided.';
-        li.appendChild(noEmbed);
-      }
+      `;
 
       gameList.appendChild(li);
     });
