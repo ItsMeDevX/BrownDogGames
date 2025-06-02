@@ -432,7 +432,7 @@
 
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
 
   const form = document.getElementById('gameSubmissionForm');
@@ -442,16 +442,15 @@
     e.preventDefault();
     status.textContent = 'Submitting...';
 
-    const user = supabase.auth.getUser();
-    const session = await supabase.auth.getSession();
+    const { data: sessionData } = await supabase.auth.getSession();
 
-    if (!session.data?.session) {
+    if (!sessionData?.session) {
       status.textContent = '⚠️ You must be logged in to submit a game.';
       return;
     }
 
-    const userId = session.data.session.user.id;
-    const githubUser = session.data.session.user.user_metadata?.login || null;
+    const userId = sessionData.session.user.id;
+    const githubUser = sessionData.session.user.user_metadata?.login || null;
 
     const formData = new FormData(form);
 
