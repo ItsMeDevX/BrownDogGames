@@ -316,106 +316,162 @@
   <a href="index.html">← Back to Home</a>
 </div>
   
-<!-- Auth Bar -->
-<div id="auth-bar" style="max-width: 900px; margin: 0 auto 2rem; background-color: #2a243b; border-radius: 12px; box-shadow: 0 0 12px #00000055; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; font-family: 'Rubik Mono One', sans-serif; color: #fefefe;">
-  <!-- Content injected by JS -->
-</div>
-
-<!-- Rocket.Chat embed -->
-<div style="max-width: 800px; margin: 0 auto;">
-  <iframe
-    src="https://your.rocket.chat.server/channel/general"
-    width="100%"
-    height="400"
-    style="border: none; border-radius: 10px; box-shadow: 0 0 10px #ff4f9f66;">
-  </iframe>
-</div>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
-  const redirectTo = 'https://browndoggames.com/callback.html';
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-  const container = document.getElementById('auth-bar');
-
-  function createButton(text, onClick) {
-    const btn = document.createElement('button');
-    btn.textContent = text;
-    btn.style.backgroundColor = '#ff69b4';
-    btn.style.color = '#1e1b2e';
-    btn.style.border = 'none';
-    btn.style.padding = '0.7rem 1.4rem';
-    btn.style.fontWeight = 'bold';
-    btn.style.fontSize = '1rem';
-    btn.style.borderRadius = '8px';
-    btn.style.cursor = 'pointer';
-    btn.style.transition = 'background-color 0.2s';
-    btn.style.minWidth = '120px';
-    btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
-    btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
-    btn.addEventListener('click', onClick);
-    return btn;
-  }
-
-  async function renderAuthBar() {
-    const { data: { session } } = await supabase.auth.getSession();
-    container.innerHTML = '';
-
-    if (session?.user) {
-      const { user_metadata } = session.user;
-      const name = user_metadata.full_name || 'GitHub User';
-      const avatar = user_metadata.avatar_url || '';
-
-      // User info container
-      const userDiv = document.createElement('div');
-      userDiv.style.display = 'flex';
-      userDiv.style.alignItems = 'center';
-      userDiv.style.gap = '15px';
-
-      if (avatar) {
-        const img = document.createElement('img');
-        img.src = avatar;
-        img.alt = name;
-        img.style.width = '50px';
-        img.style.height = '50px';
-        img.style.borderRadius = '50%';
-        img.style.border = '3px solid #ff69b4';
-        userDiv.appendChild(img);
-      }
-
-      const userText = document.createElement('div');
-      userText.style.textAlign = 'left';
-      userText.innerHTML = `<strong style="font-size:1.1rem;">${name}</strong><br><small>${session.user.email}</small>`;
-      userDiv.appendChild(userText);
-
-      container.appendChild(userDiv);
-
-      // Logout button
-      const logoutBtn = createButton('Logout', async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
-      });
-      container.appendChild(logoutBtn);
-
-    } else {
-      // Login button
-      const loginBtn = createButton('Login with GitHub', async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo }
-        });
-        if (error) alert('Login error: ' + error.message);
-      });
-      container.appendChild(loginBtn);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat Widget Only</title>
+  <style>
+    body {
+      background: #2a243b;
+      color: #fefefe;
+      font-family: 'Rubik Mono One', sans-serif, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
     }
-  }
+    #chat-box {
+      max-width: 800px;
+      height: 400px;
+      overflow-y: auto;
+      background: #2a243b;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 20px #ff69b444;
+      border: 2px solid #ff69b466;
+    }
+    form#chat-form {
+      max-width: 800px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+    input, button {
+      border-radius: 10px;
+      border: 2px solid #ff69b4;
+      background: #1e1b2e;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      padding: 12px;
+    }
+    input#username {
+      width: 150px;
+    }
+    input#message {
+      flex: 1;
+    }
+    button {
+      background: #ff69b4;
+      color: #1e1b2e;
+      font-weight: bold;
+      cursor: pointer;
+      min-width: 120px;
+      transition: background-color 0.3s;
+      border: none;
+    }
+    button:hover {
+      background: #ff8edb;
+    }
+  </style>
+</head>
+<body>
 
-  renderAuthBar();
-</script>
+  <!-- No auth bar here -->
+
+  <!-- Chat Messages -->
+  <div id="chat-box"></div>
+
+  <!-- Chat Input Form -->
+  <form id="chat-form">
+    <input type="text" id="username" placeholder="Your name (optional)" />
+    <input type="text" id="message" placeholder="Type your message..." required />
+    <button type="submit">Send</button>
+  </form>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseAnonKey = 'YOUR_ANON_KEY_HERE'; // Replace with your anon key
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const usernameInput = document.getElementById('username');
+    const messageInput = document.getElementById('message');
+    const pageId = 'game1';
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[m]);
+    }
+
+    function renderMessage(msg) {
+      const div = document.createElement('div');
+      div.style.marginBottom = '12px';
+      div.innerHTML = `<strong style="color:#ff8edb">${escapeHtml(msg.username || 'Anonymous')}</strong>: <span style="color:#fefefe">${escapeHtml(msg.content)}</span>`;
+      chatBox.appendChild(div);
+    }
+
+    async function loadMessages() {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('page_id', pageId)
+        .order('created_at', { ascending: true });
+      if (error) {
+        chatBox.innerHTML = `<p style="color:red; text-align:center;">Error loading messages: ${error.message}</p>`;
+        return;
+      }
+      chatBox.innerHTML = '';
+      data.forEach(renderMessage);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage(content, username) {
+      const { error } = await supabase.from('messages').insert([
+        { username: username || 'Anonymous', content, page_id: pageId }
+      ]);
+      if (error) alert('Failed to send message: ' + error.message);
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = messageInput.value.trim();
+      if (!message) return;
+      const username = usernameInput.value.trim() || 'Anonymous';
+      chatForm.querySelector('button').disabled = true;
+      await sendMessage(message, username);
+      messageInput.value = '';
+      chatForm.querySelector('button').disabled = false;
+    });
+
+    supabase.channel('chat')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `page_id=eq.'${pageId}'`
+      }, (payload) => {
+        renderMessage(payload.new);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      })
+      .subscribe();
+
+    loadMessages();
+  </script>
+
+</body>
+</html>
 
 </body>
 </html>
