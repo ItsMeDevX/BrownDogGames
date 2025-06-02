@@ -139,18 +139,21 @@
     const gameList = document.getElementById('gameList');
     const loadingMessage = document.getElementById('loadingMessage');
 
-    function escapeHtml(text) {
-      return text?.replace(/[&<>"']/g, (match) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;',
-        '"': '&quot;', "'": '&#39;'
-      })[match]) || '';
+    // Basic validation for embed URL (must be http or https)
+    function isValidUrl(url) {
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+      } catch {
+        return false;
+      }
     }
 
     async function loadGames() {
       const { data, error } = await supabase
         .from('game_submissions')
         .select('title, description, embed_url')
-        .order('id', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         loadingMessage.textContent = 'Error loading games: ' + error.message;
@@ -167,11 +170,30 @@
       data.forEach(({ title, description, embed_url }) => {
         const li = document.createElement('li');
         li.className = 'game-card';
-        li.innerHTML = `
-          <div class="game-title">${escapeHtml(title)}</div>
-          <p class="game-description">${escapeHtml(description)}</p>
-          <iframe src="${escapeHtml(embed_url)}" allowfullscreen sandbox="allow-scripts allow-same-origin"></iframe>
-        `;
+
+        // Create elements separately to avoid innerHTML XSS risks
+        const titleEl = document.createElement('div');
+        titleEl.className = 'game-title';
+        titleEl.textContent = title;
+
+        const descEl = document.createElement('p');
+        descEl.className = 'game-description';
+        descEl.textContent = description;
+
+        const iframeEl = document.createElement('iframe');
+        iframeEl.setAttribute('allowfullscreen', '');
+        iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        
+        // Only set src if URL looks valid, else fallback to empty string
+        iframeEl.src = isValidUrl(embed_url) ? embed_url : '';
+
+        // Add fallback text inside iframe for accessibility
+        iframeEl.textContent = 'Your browser does not support iframes.';
+
+        li.appendChild(titleEl);
+        li.appendChild(descEl);
+        li.appendChild(iframeEl);
+
         gameList.appendChild(li);
       });
     }
