@@ -340,8 +340,8 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-
-  // Your actual Supabase anon key here:
+  
+  // Replace with your actual Supabase anon key
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
   const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -368,7 +368,7 @@
 
     messagesDiv.innerHTML = data.map(m => `
       <div style="margin-bottom:8px;">
-        <strong style="color:#ff69b4;">Anon:</strong> ${m.content}
+        <strong style="color:#ff69b4;">${m.id ? m.id.slice(0, 8) : 'Anon'}:</strong> ${m.content}
       </div>
     `).join('');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -393,7 +393,7 @@
     loadMessages();
   });
 
-  // Optional: realtime subscription to update messages instantly
+  // Optional: Realtime subscription to update messages instantly
   supabase.channel('messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
       loadMessages();
