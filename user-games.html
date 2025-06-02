@@ -96,6 +96,14 @@
       margin-bottom: 1rem;
     }
 
+    .fallback-link {
+      display: inline-block;
+      color: #ff69b4;
+      font-weight: bold;
+      text-decoration: underline;
+      margin-bottom: 1rem;
+    }
+
     .back-link {
       display: inline-block;
       margin-top: 20px;
@@ -139,7 +147,6 @@
     const gameList = document.getElementById('gameList');
     const loadingMessage = document.getElementById('loadingMessage');
 
-    // Basic validation for embed URL (must be http or https)
     function isValidUrl(url) {
       try {
         const parsed = new URL(url);
@@ -171,7 +178,6 @@
         const li = document.createElement('li');
         li.className = 'game-card';
 
-        // Create elements separately to avoid innerHTML XSS risks
         const titleEl = document.createElement('div');
         titleEl.className = 'game-title';
         titleEl.textContent = title;
@@ -180,19 +186,38 @@
         descEl.className = 'game-description';
         descEl.textContent = description;
 
-        const iframeEl = document.createElement('iframe');
-        iframeEl.setAttribute('allowfullscreen', '');
-        iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-        
-        // Only set src if URL looks valid, else fallback to empty string
-        iframeEl.src = isValidUrl(embed_url) ? embed_url : '';
-
-        // Add fallback text inside iframe for accessibility
-        iframeEl.textContent = 'Your browser does not support iframes.';
-
         li.appendChild(titleEl);
         li.appendChild(descEl);
-        li.appendChild(iframeEl);
+
+        if (isValidUrl(embed_url)) {
+          const iframeEl = document.createElement('iframe');
+          iframeEl.setAttribute('allowfullscreen', '');
+          iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+          iframeEl.src = embed_url;
+          iframeEl.textContent = 'Your browser does not support iframes.';
+
+          // Replace iframe with link if load error occurs (e.g., site blocks embedding)
+          iframeEl.onerror = () => {
+            iframeEl.remove();
+            const fallbackLink = document.createElement('a');
+            fallbackLink.href = embed_url;
+            fallbackLink.target = '_blank';
+            fallbackLink.rel = 'noopener noreferrer';
+            fallbackLink.className = 'fallback-link';
+            fallbackLink.textContent = 'Play the game here (opens new tab)';
+            li.appendChild(fallbackLink);
+          };
+
+          li.appendChild(iframeEl);
+        } else {
+          const fallbackLink = document.createElement('a');
+          fallbackLink.href = embed_url;
+          fallbackLink.target = '_blank';
+          fallbackLink.rel = 'noopener noreferrer';
+          fallbackLink.className = 'fallback-link';
+          fallbackLink.textContent = 'Play the game here (opens new tab)';
+          li.appendChild(fallbackLink);
+        }
 
         gameList.appendChild(li);
       });
