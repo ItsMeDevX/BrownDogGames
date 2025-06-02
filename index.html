@@ -378,10 +378,34 @@
       margin: 0;
     }
 
+    #auth-bar {
+      max-width: 500px;
+      width: 100%;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    #auth-bar button {
+      background: #ff69b4;
+      border: none;
+      padding: 0.5rem 1rem;
+      color: #1e1b2e;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1rem;
+      margin: 0 0.5rem;
+      transition: background-color 0.3s ease;
+    }
+
+    #auth-bar button:hover {
+      background: #ff8edb;
+    }
+
     #submit-game {
       max-width: 500px;
       width: 100%;
-      margin-top: 3rem;
+      margin-top: 0.5rem;
       text-align: left;
     }
 
@@ -430,6 +454,7 @@
     #submitStatus {
       margin-top: 1rem;
       font-weight: bold;
+      min-height: 1.5rem;
     }
 
     .link-container {
@@ -458,6 +483,12 @@
 </head>
 <body>
 
+<section id="auth-bar">
+  <button id="login-btn">Login with GitHub</button>
+  <button id="logout-btn" style="display:none;">Logout</button>
+  <span id="user-info" style="margin-left:1rem; color:#ffc0cb;"></span>
+</section>
+
 <section id="submit-game">
   <h2>Submit Your Game</h2>
   <form id="gameSubmissionForm" novalidate>
@@ -485,7 +516,6 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  // Initialize Supabase client with your project URL and anon key
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -494,11 +524,46 @@
   const form = document.getElementById('gameSubmissionForm');
   const status = document.getElementById('submitStatus');
 
+  const loginBtn = document.getElementById('login-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const userInfo = document.getElementById('user-info');
+
+  loginBtn.addEventListener('click', () => {
+    supabase.auth.signInWithOAuth({ provider: 'github' });
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    userInfo.textContent = '';
+    loginBtn.style.display = 'inline';
+    logoutBtn.style.display = 'none';
+  });
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'inline';
+      userInfo.textContent = `Logged in as ${session.user.user_metadata.login || session.user.email}`;
+    } else {
+      loginBtn.style.display = 'inline';
+      logoutBtn.style.display = 'none';
+      userInfo.textContent = '';
+    }
+  });
+
+  (async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'inline';
+      userInfo.textContent = `Logged in as ${session.user.user_metadata.login || session.user.email}`;
+    }
+  })();
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     status.textContent = 'Submitting...';
 
-    // Check user session
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData?.session) {
@@ -509,7 +574,11 @@
     const userId = sessionData.session.user.id;
     const githubUser = sessionData.session.user.user_metadata?.login || null;
 
-    // Grab form data
+    if (!githubUser) {
+      status.textContent = '⚠️ Your GitHub username is missing. Please login with GitHub to submit.';
+      return;
+    }
+
     const formData = new FormData(form);
 
     const submission = {
@@ -521,7 +590,6 @@
       screenshot_url: formData.get('screenshotUrl').trim() || null,
     };
 
-    // Insert into Supabase table
     const { error } = await supabase.from('game_submissions').insert([submission]);
 
     if (error) {
