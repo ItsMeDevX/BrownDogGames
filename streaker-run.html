@@ -22,7 +22,7 @@
 </a>
   
   <meta charset="UTF-8" />
-  <title>Pet Penis Simulator! - BrownDogGames</title>
+  <title>streaker run. - BrownDogGames</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
@@ -319,194 +319,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Chat</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
+  <meta charset="UTF-8" />
+  <title>Game Chat - BrownDogGames</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-        #messages {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      color: #fefefe;
+      margin: 0;
+      padding: 20px;
+    }
 
-        #game-id-container {
-            margin-bottom: 10px;
-        }
+    h1 {
+      text-align: center;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+    }
 
-        #game-id {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            width: 100%;
-            font-size: 16px;
-            margin-top: 5px;
-        }
+    #game-id-container {
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
 
-        #game-id-label {
-            font-weight: bold;
-            color: #333;
-            font-size: 18px;
-        }
+    #game-id-label {
+      font-size: 1.2rem;
+      color: #ff4f9f;
+      display: block;
+      margin-bottom: 5px;
+    }
 
-        #chat-form {
-            display: flex;
-            gap: 10px;
-        }
+    #game-id {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ff4f9f;
+      border-radius: 8px;
+      background-color: #2f1a39;
+      color: #fff;
+    }
 
-        #msg-input {
-            flex: 1;
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
+    #messages {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 0 auto 20px;
+      max-width: 600px;
+    }
 
-        button {
-            padding: 8px 16px;
-            background-color: #ff69b4;
-            border: none;
-            color: white;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+    #messages div {
+      margin-bottom: 12px;
+    }
 
-        button:hover {
-            background-color: #ff3385;
-        }
-    </style>
+    #messages strong {
+      color: #ff82ba;
+    }
+
+    #chat-form {
+      display: flex;
+      gap: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #msg-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    button {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #ff82ba;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>Game Chat</h1>
-    <div>
-        <div id="game-id-container">
-            <label id="game-id-label" for="game-id">Game ID:</label>
-            <input type="text" id="game-id" placeholder="Enter the Game ID to start discussion..." required>
+  <h1>Game Chat</h1>
+
+  <div id="game-id-container">
+    <label id="game-id-label" for="game-id">Game ID:</label>
+    <input type="text" id="game-id" placeholder="Enter the Game ID to start discussion..." required />
+  </div>
+
+  <div id="messages">
+    <p>Loading messages...</p>
+  </div>
+
+  <form id="chat-form">
+    <input type="text" id="msg-input" placeholder="Type a message..." required />
+    <button type="submit">Send</button>
+  </form>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
+    const gameIdInput = document.getElementById('game-id');
+
+    const urlParts = window.location.pathname.split('/');
+    const gameSlug = urlParts[urlParts.length - 1].replace('.html', '');
+
+    if (gameSlug) {
+      gameIdInput.value = gameSlug;
+    } else {
+      gameIdInput.setAttribute("placeholder", "Please enter a Game ID.");
+    }
+
+    async function getUserGitHubUsername() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { user_metadata } = session.user;
+        return user_metadata.full_name || 'GitHub User';
+      }
+      return 'Guest';
+    }
+
+    async function loadMessages() {
+      const gameId = gameIdInput.value.trim();
+      if (!gameId) return;
+
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('game_id', gameId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
+        console.error(error);
+        return;
+      }
+
+      if (!data.length) {
+        messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
+        return;
+      }
+
+      messagesDiv.innerHTML = data.map(m => `
+        <div>
+          <strong>${m.github_username || 'Guest'}:</strong> ${m.content}
         </div>
+      `).join('');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
 
-        <div id="messages">
-            <p>Loading messages...</p>
-        </div>
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const msg = msgInput.value.trim();
+      const gameId = gameIdInput.value.trim();
 
-        <form id="chat-form">
-            <input type="text" id="msg-input" placeholder="Type a message..." required>
-            <button type="submit">Send</button>
-        </form>
-    </div>
+      if (!msg || !gameId) return;
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      const githubUsername = await getUserGitHubUsername();
+      const { error } = await supabase
+        .from('messages')
+        .insert([{ content: msg, github_username: githubUsername, game_id: gameId }]);
 
-        const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-        const supabase = createClient(supabaseUrl, supabaseKey);
+      if (error) {
+        alert('Failed to send message: ' + error.message);
+        console.error(error);
+        return;
+      }
 
-        const messagesDiv = document.getElementById('messages');
-        const form = document.getElementById('chat-form');
-        const msgInput = document.getElementById('msg-input');
-        const gameIdInput = document.getElementById('game-id');
+      msgInput.value = '';
+      loadMessages();
+    });
 
-        // Extract game ID from the URL (slug)
-        const urlParts = window.location.pathname.split('/');
-        const gameSlug = urlParts[urlParts.length - 1].replace('.html', ''); // Remove ".html"
-
-        // Debugging: log the extracted Game ID
-        console.log("Extracted Game ID:", gameSlug);
-
-        // Check if the Game ID exists and auto-fill the input
-        if (gameSlug) {
-            gameIdInput.value = gameSlug;  // Auto-fill the game ID input
-        } else {
-            // No Game ID found, show a prompt
-            gameIdInput.setAttribute("placeholder", "Please enter a Game ID.");
-        }
-
-        // Function to get the logged-in user's GitHub username
-        async function getUserGitHubUsername() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-                const { user_metadata } = session.user;
-                return user_metadata.full_name || 'GitHub User';
-            }
-            return 'Guest';
-        }
-
-        // Function to load messages filtered by game_id
-        async function loadMessages() {
-            const gameId = gameIdInput.value.trim();
-            if (!gameId) return;
-
-            const { data, error } = await supabase
-                .from('messages')
-                .select('*')
-                .eq('game_id', gameId) // Filter messages by the game ID
-                .order('created_at', { ascending: true });
-
-            if (error) {
-                messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-                console.error(error);
-                return;
-            }
-
-            if (!data.length) {
-                messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
-                return;
-            }
-
-            messagesDiv.innerHTML = data.map(m => `
-                <div style="margin-bottom:8px;">
-                    <strong style="color:#ff69b4;">${m.github_username || 'Guest'}:</strong> ${m.content}
-                </div>
-            `).join('');
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        // Event listener for form submission
-        form.addEventListener('submit', async e => {
-            e.preventDefault();
-            const msg = msgInput.value.trim();
-            const gameId = gameIdInput.value.trim();
-
-            if (!msg || !gameId) return;
-
-            const githubUsername = await getUserGitHubUsername();
-            const { error } = await supabase
-                .from('messages')
-                .insert([{ content: msg, github_username: githubUsername, game_id: gameId }]);
-
-            if (error) {
-                alert('Failed to send message: ' + error.message);
-                console.error(error);
-                return;
-            }
-
-            msgInput.value = ''; 
-            loadMessages(); 
-        });
-
-        // Realtime subscription for instant message updates
-        supabase.channel('messages')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-                loadMessages();
-            })
-            .subscribe();
-
-        // Load messages on page load
+    supabase.channel('messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
         loadMessages();
-    </script>
+      })
+      .subscribe();
 
-</body>
-</html>
+    loadMessages();
+  </script>
 
 </body>
 </html>
