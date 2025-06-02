@@ -316,9 +316,9 @@
   <a href="index.html">← Back to Home</a>
 </div>
   
-<h2 style="text-align:center; color:#ff69b4;">Simple Chat & Messages Table</h2>
+<h2 style="text-align:center; color:#ff69b4;">Simple Chat</h2>
 
-<div id="message-list" style="
+<div id="messages" style="
   max-width: 600px;
   margin: 1rem auto;
   padding: 1rem;
@@ -332,7 +332,7 @@
 "></div>
 
 <form id="chat-form" style="max-width:600px; margin: 0 auto; display:flex; gap:10px;">
-  <input type="text" id="message-input" placeholder="Enter message..." required style="flex:1; padding:8px; border-radius:5px; border:none;">
+  <input type="text" id="msg-input" placeholder="Type message..." required style="flex:1; padding:8px; border-radius:5px; border:none;">
   <button type="submit" style="padding:8px 16px; background:#ff69b4; border:none; color:#222; font-weight:bold; border-radius:5px; cursor:pointer;">Send</button>
 </form>
 
@@ -343,84 +343,55 @@
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const messageList = document.getElementById('message-list');
-  const chatForm = document.getElementById('chat-form');
-  const messageInput = document.getElementById('message-input');
-
-  let user = null;
-  const pageId = 'simple-chat';
-
-  async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    user = session?.user;
-
-    if (!user) {
-      messageList.innerHTML = '<p style="color:#ff69b4; text-align:center;">Please log in with GitHub to chat.</p>';
-      chatForm.style.display = 'none';
-    } else {
-      chatForm.style.display = 'flex';
-      loadMessages();
-    }
-  }
+  const messagesDiv = document.getElementById('messages');
+  const form = document.getElementById('chat-form');
+  const input = document.getElementById('msg-input');
 
   async function loadMessages() {
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .eq('page_id', pageId)
       .order('created_at', { ascending: true });
 
     if (error) {
-      messageList.innerHTML = '<p>Error loading messages.</p>';
+      messagesDiv.innerHTML = '<p>Error loading messages</p>';
       console.error(error);
       return;
     }
 
-    if (data.length === 0) {
-      messageList.innerHTML = '<p>No messages yet. Start the conversation!</p>';
+    if (!data.length) {
+      messagesDiv.innerHTML = '<p>No messages yet. Say hi!</p>';
       return;
     }
 
-    messageList.innerHTML = data.map(msg => `
+    messagesDiv.innerHTML = data.map(m => `
       <div style="margin-bottom:8px;">
-        <strong style="color:#ff69b4;">${msg.username}:</strong> ${msg.content}
+        <strong style="color:#ff69b4;">Anon:</strong> ${m.content}
       </div>
     `).join('');
-    messageList.scrollTop = messageList.scrollHeight;
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  async function sendMessage(content) {
-    const username = user.user_metadata.full_name || user.email;
-
-    const { error } = await supabase.from('messages').insert([
-      { username, content, page_id: pageId }
-    ]);
-
-    if (error) {
-      alert('Failed to send message.');
-      console.error(error);
-    }
-  }
-
-  chatForm.addEventListener('submit', async e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
-    const msg = messageInput.value.trim();
+    const msg = input.value.trim();
     if (!msg) return;
 
-    await sendMessage(msg);
-    messageInput.value = '';
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ content: msg }]);
+
+    if (error) {
+      alert('Failed to send message');
+      console.error(error);
+      return;
+    }
+
+    input.value = '';
     loadMessages();
   });
 
-  // Listen for new messages in real time
-  supabase.channel('messages_channel')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `page_id=eq.${pageId}` },
-      (payload) => {
-        loadMessages();
-      })
-    .subscribe();
-
-  checkSession();
+  loadMessages();
 </script>
 
 
