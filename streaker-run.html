@@ -341,16 +341,25 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  
-  // Replace with your actual Supabase anon key
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const messagesDiv = document.getElementById('messages');
   const form = document.getElementById('chat-form');
   const msgInput = document.getElementById('msg-input');
-  const githubUsernameInput = document.getElementById('github-username');
+  const githubUsernameInput = document.getElementById('github-username'); // Optional
 
+  // Function to get the logged-in user's GitHub username
+  async function getUserGitHubUsername() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { user_metadata } = session.user;
+      return user_metadata.full_name || 'GitHub User'; // Default to 'GitHub User' if no name is available
+    }
+    return 'Guest'; // Changed from 'Anon' to 'Guest' if no user is logged in
+  }
+
+  // Function to load messages
   async function loadMessages() {
     const { data, error } = await supabase
       .from('messages')
@@ -370,18 +379,21 @@
 
     messagesDiv.innerHTML = data.map(m => `
       <div style="margin-bottom:8px;">
-        <strong style="color:#ff69b4;">${m.github_username || 'Anon'}:</strong> ${m.content}
+        <strong style="color:#ff69b4;">${m.github_username || 'Guest'}:</strong> ${m.content}  <!-- Changed 'Anon' to 'Guest' -->
       </div>
     `).join('');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
+  // Event listener for the form submission
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const msg = msgInput.value.trim();
-    const githubUsername = githubUsernameInput.value.trim();
+
+    // Get the logged-in user's GitHub username
+    const githubUsername = await getUserGitHubUsername();
     
-    if (!msg || !githubUsername) return; // Ensure both fields are filled
+    if (!msg) return; // Ensure the message is not empty
 
     const { error } = await supabase
       .from('messages')
@@ -393,8 +405,7 @@
       return;
     }
 
-    msgInput.value = '';
-    githubUsernameInput.value = ''; // Clear the GitHub username input
+    msgInput.value = ''; // Clear the message input
     loadMessages();
   });
 
@@ -405,8 +416,10 @@
     })
     .subscribe();
 
+  // Load messages when the page is loaded
   loadMessages();
 </script>
+
 
 </body>
 </html>
