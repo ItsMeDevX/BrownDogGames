@@ -572,12 +572,12 @@
     }
 
     const userId = sessionData.session.user.id;
-    const githubUser = sessionData.session.user.user_metadata?.login || null;
+    // Accept GitHub username, fallback to email or 'unknown'
+    const githubUser = sessionData.session.user.user_metadata?.login
+      || sessionData.session.user.email
+      || 'unknown';
 
-    if (!githubUser) {
-      status.textContent = '⚠️ Your GitHub username is missing. Please login with GitHub to submit.';
-      return;
-    }
+    // No rejection if githubUser is missing, accept all logged-in users
 
     const formData = new FormData(form);
 
