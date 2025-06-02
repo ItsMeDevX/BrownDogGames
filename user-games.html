@@ -250,17 +250,17 @@
         const li = document.createElement('li');
         li.className = 'game-card';
 
-        li.innerHTML = 
+        li.innerHTML = `
           <div class="game-title">${title}</div>
           <div class="game-author">Submitted by: ${github_user?.trim() || 'anon'}</div>
           <p class="game-description">${description}</p>
-        ;
+        `;
 
         if (screenshot_url && isValidUrl(screenshot_url)) {
           const img = document.createElement('img');
           img.className = 'screenshot';
           img.src = screenshot_url;
-          img.alt = ${title} screenshot;
+          img.alt = `${title} screenshot`;
           li.appendChild(img);
         }
 
@@ -289,12 +289,16 @@
           li.appendChild(noEmbed);
         }
 
-        if (currentUserGitHub && github_user && currentUserGitHub.toLowerCase() === github_user.toLowerCase()) {
+        if (
+          currentUserGitHub &&
+          github_user &&
+          currentUserGitHub.toLowerCase() === github_user.toLowerCase()
+        ) {
           const deleteBtn = document.createElement('button');
           deleteBtn.textContent = 'Delete';
           deleteBtn.className = 'delete-btn';
           deleteBtn.onclick = () => {
-            if (confirm(Are you sure you want to delete "${title}"?)) {
+            if (confirm(`Are you sure you want to delete "${title}"?`)) {
               deleteGame(id);
             }
           };
