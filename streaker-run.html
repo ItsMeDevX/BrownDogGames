@@ -316,27 +316,6 @@
   <a href="index.html">← Back to Home</a>
 </div>
   
-<h2 style="text-align:center; color:#ff69b4;">Simple Chat</h2>
-
-<div id="messages" style="
-  max-width: 600px;
-  margin: 1rem auto;
-  padding: 1rem;
-  background: #222;
-  color: #fff;
-  border-radius: 8px;
-  min-height: 200px;
-  font-family: sans-serif;
-  overflow-y: auto;
-  max-height: 300px;
-"></div>
-
-<form id="chat-form" style="max-width:600px; margin: 0 auto; display:flex; gap:10px;">
-  <input type="text" id="msg-input" placeholder="Type message..." required style="flex:1; padding:8px; border-radius:5px; border:none;">
-  <input type="text" id="github-username" placeholder="Your GitHub Username" required style="flex:1; padding:8px; border-radius:5px; border:none;">
-  <button type="submit" style="padding:8px 16px; background:#ff69b4; border:none; color:#222; font-weight:bold; border-radius:5px; cursor:pointer;">Send</button>
-</form>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -360,12 +339,31 @@
             margin-bottom: 20px;
         }
 
+        #game-id-container {
+            margin-bottom: 10px;
+        }
+
+        #game-id {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        #game-id-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+        }
+
         #chat-form {
             display: flex;
             gap: 10px;
         }
 
-        #msg-input, #game-id {
+        #msg-input {
             flex: 1;
             padding: 8px;
             border-radius: 5px;
@@ -391,13 +389,17 @@
 
     <h1>Game Chat</h1>
     <div>
+        <div id="game-id-container">
+            <label id="game-id-label" for="game-id">Enter Game ID:</label>
+            <input type="text" id="game-id" placeholder="Enter the Game ID to start discussion..." required>
+        </div>
+
         <div id="messages">
             <p>Loading messages...</p>
         </div>
 
         <form id="chat-form">
             <input type="text" id="msg-input" placeholder="Type a message..." required>
-            <input type="text" id="game-id" placeholder="Enter Game ID" required>
             <button type="submit">Send</button>
         </form>
     </div>
@@ -412,7 +414,7 @@
         const messagesDiv = document.getElementById('messages');
         const form = document.getElementById('chat-form');
         const msgInput = document.getElementById('msg-input');
-        const gameIdInput = document.getElementById('game-id');  // Game ID input
+        const gameIdInput = document.getElementById('game-id');
 
         // Function to get the logged-in user's GitHub username
         async function getUserGitHubUsername() {
@@ -424,9 +426,15 @@
             return 'Guest'; // If no user is logged in
         }
 
-        // Function to load messages filtered by game_id
+        // Function to load messages based on the game ID
         async function loadMessages() {
             const gameId = gameIdInput.value.trim(); // Get the game ID from input
+
+            if (!gameId) {
+                messagesDiv.innerHTML = '<p>Please enter a Game ID to start chatting!</p>';
+                return;
+            }
+
             const { data, error } = await supabase
                 .from('messages')
                 .select('*')
@@ -440,7 +448,7 @@
             }
 
             if (!data.length) {
-                messagesDiv.innerHTML = '<p>No messages yet. Say hi!</p>';
+                messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
                 return;
             }
 
@@ -458,10 +466,11 @@
             const msg = msgInput.value.trim();
             const gameId = gameIdInput.value.trim();  // Get the game ID from the input
 
+            // Ensure both message and game ID are provided
+            if (!msg || !gameId) return;
+
             // Get the logged-in user's GitHub username
             const githubUsername = await getUserGitHubUsername();
-            
-            if (!msg || !gameId) return; // Ensure both message and game ID are provided
 
             const { error } = await supabase
                 .from('messages')
@@ -474,7 +483,6 @@
             }
 
             msgInput.value = ''; // Clear the message input
-            gameIdInput.value = ''; // Clear the game ID input
             loadMessages(); // Reload messages for the current game
         });
 
@@ -488,6 +496,10 @@
         // Load messages when the page is loaded
         loadMessages();
     </script>
+
+</body>
+</html>
+
 
 </body>
 </html>
