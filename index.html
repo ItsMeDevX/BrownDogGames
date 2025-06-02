@@ -357,59 +357,87 @@
 
 </div>
 
-<section id="submit-game" style="margin-top: 3rem; max-width: 500px; margin-left:auto; margin-right:auto; color:#ffc0cb; font-family: 'Rubik Mono One', sans-serif;">
-  <h2>Submit Your Game</h2>
-  <form id="gameSubmissionForm">
-    <label for="title">Game Title:</label><br />
-    <input
-      type="text"
-      id="title"
-      name="title"
-      required
-      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
-    /><br />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submit Your Game - BrownDogGames</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-    <label for="description">Description:</label><br />
-    <textarea
-      id="description"
-      name="description"
-      required
-      rows="3"
-      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
-    ></textarea><br />
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background: linear-gradient(135deg, #2c1b33, #191425);
+      color: #ffc0cb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+      margin: 0;
+    }
 
-    <label for="embedUrl">Embed URL:</label><br />
-    <input
-      type="url"
-      id="embedUrl"
-      name="embedUrl"
-      required
-      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
-    /><br />
+    #submit-game {
+      max-width: 500px;
+      width: 100%;
+      margin-top: 3rem;
+      text-align: left;
+    }
 
-    <label for="screenshotUrl">Screenshot URL:</label><br />
-    <input
-      type="url"
-      id="screenshotUrl"
-      name="screenshotUrl"
-      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
-      placeholder="Optional screenshot URL"
-    /><br />
+    h2 {
+      color: #ff69b4;
+      margin-bottom: 1rem;
+      font-size: 2rem;
+    }
 
-    <button
-      type="submit"
-      style="background:#ff69b4; border:none; padding:0.7rem 1.4rem; color:#1e1b2e; border-radius:8px; cursor:pointer; font-weight: bold;"
-    >
-      Submit Game
-    </button>
-  </form>
-  <p id="submitStatus" style="margin-top: 1rem;"></p>
-</section>
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: bold;
+    }
 
-<div style="margin-top: 3rem;">
-  <a
-    href="user-games.html"
-    style="
+    input[type="text"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ff69b4;
+      margin-bottom: 1rem;
+      background: #2d1a3a;
+      color: #fff;
+      font-size: 1rem;
+      font-family: 'Rubik Mono One', sans-serif;
+    }
+
+    button[type="submit"] {
+      background: #ff69b4;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      color: #1e1b2e;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background: #ff8edb;
+    }
+
+    #submitStatus {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    .link-container {
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .play-link {
       display: inline-block;
       background: linear-gradient(135deg, #ff69b4, #ff8edb);
       color: #1e1b2e;
@@ -420,16 +448,44 @@
       text-decoration: none;
       box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
       transition: transform 0.2s, box-shadow 0.2s;
-    "
-    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(255, 105, 180, 0.6)'"
-    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(255, 105, 180, 0.4)'"
-    >🌟 Play Community Games</a
-  >
+    }
+
+    .play-link:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(255, 105, 180, 0.6);
+    }
+  </style>
+</head>
+<body>
+
+<section id="submit-game">
+  <h2>Submit Your Game</h2>
+  <form id="gameSubmissionForm" novalidate>
+    <label for="title">Game Title:</label>
+    <input type="text" id="title" name="title" required placeholder="Enter your game title" />
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" rows="3" required placeholder="Describe your game"></textarea>
+
+    <label for="embedUrl">Embed URL:</label>
+    <input type="url" id="embedUrl" name="embedUrl" required placeholder="https://example.com/embed" />
+
+    <label for="screenshotUrl">Screenshot URL (optional):</label>
+    <input type="url" id="screenshotUrl" name="screenshotUrl" placeholder="https://example.com/screenshot.png" />
+
+    <button type="submit">Submit Game</button>
+  </form>
+  <p id="submitStatus"></p>
+</section>
+
+<div class="link-container">
+  <a href="user-games.html" class="play-link">🌟 Play Community Games</a>
 </div>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
+  // Initialize Supabase client with your project URL and anon key
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -438,10 +494,11 @@
   const form = document.getElementById('gameSubmissionForm');
   const status = document.getElementById('submitStatus');
 
-  form.addEventListener('submit', async function (e) {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     status.textContent = 'Submitting...';
 
+    // Check user session
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData?.session) {
@@ -452,17 +509,19 @@
     const userId = sessionData.session.user.id;
     const githubUser = sessionData.session.user.user_metadata?.login || null;
 
+    // Grab form data
     const formData = new FormData(form);
 
     const submission = {
       user_id: userId,
       github_user: githubUser,
-      title: formData.get('title'),
-      description: formData.get('description'),
-      embed_url: formData.get('embedUrl'),
-      screenshot_url: formData.get('screenshotUrl') || null,
+      title: formData.get('title').trim(),
+      description: formData.get('description').trim(),
+      embed_url: formData.get('embedUrl').trim(),
+      screenshot_url: formData.get('screenshotUrl').trim() || null,
     };
 
+    // Insert into Supabase table
     const { error } = await supabase.from('game_submissions').insert([submission]);
 
     if (error) {
@@ -471,8 +530,11 @@
       status.textContent = '✅ Thanks! Your game has been submitted.';
       form.reset();
       setTimeout(() => {
-        window.location.href = 'https://browndoggames.com/thank-you.html';
+        window.location.href = 'thank-you.html';
       }, 1500);
     }
   });
 </script>
+
+</body>
+</html>
