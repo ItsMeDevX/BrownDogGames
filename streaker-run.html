@@ -340,7 +340,9 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+
+  // Replace this with your **anon** key (not service_role key)
+  const supabaseKey = 'YOUR_ANON_KEY_HERE'; 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const messagesDiv = document.getElementById('messages');
@@ -354,7 +356,7 @@
       .order('created_at', { ascending: true });
 
     if (error) {
-      messagesDiv.innerHTML = '<p>Error loading messages</p>';
+      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
       console.error(error);
       return;
     }
@@ -382,7 +384,7 @@
       .insert([{ content: msg }]);
 
     if (error) {
-      alert('Failed to send message');
+      alert('Failed to send message: ' + error.message);
       console.error(error);
       return;
     }
@@ -391,9 +393,15 @@
     loadMessages();
   });
 
+  // Optional: realtime subscription to update messages instantly
+  supabase.channel('messages')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+      loadMessages();
+    })
+    .subscribe();
+
   loadMessages();
 </script>
-
-
+  
 </body>
 </html>
