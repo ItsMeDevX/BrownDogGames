@@ -390,7 +390,7 @@
     <h1>Game Chat</h1>
     <div>
         <div id="game-id-container">
-            <label id="game-id-label" for="game-id">Enter Game ID:</label>
+            <label id="game-id-label" for="game-id">Game ID:</label>
             <input type="text" id="game-id" placeholder="Enter the Game ID to start discussion..." required>
         </div>
 
@@ -419,8 +419,10 @@
         // Extract game ID from the URL (slug)
         const urlParts = window.location.pathname.split('/');
         const gameSlug = urlParts[urlParts.length - 1].replace('.html', ''); // Remove ".html"
+
+        // Check if the Game ID exists and auto-fill the input
         if (gameSlug) {
-            gameIdInput.value = gameSlug;  // Auto-fill the game ID
+            gameIdInput.value = gameSlug;  // Auto-fill the game ID input
         }
 
         // Function to get the logged-in user's GitHub username
@@ -430,7 +432,7 @@
                 const { user_metadata } = session.user;
                 return user_metadata.full_name || 'GitHub User';
             }
-            return 'Guest'; 
+            return 'Guest';
         }
 
         // Function to load messages filtered by game_id
@@ -496,10 +498,6 @@
         // Load messages on page load
         loadMessages();
     </script>
-
-</body>
-</html>
-
 
 </body>
 </html>
