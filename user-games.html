@@ -18,339 +18,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User-Submitted Games - BrownDogGames</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #2c1b33, #191425);
-      color: #fefefe;
-      padding: 20px;
-      min-height: 100vh;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      color: #ff69b4;
-      margin-bottom: 2rem;
-      text-shadow: 2px 2px 0 #000;
-    }
-
-    .game-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      justify-content: center;
-      max-width: 1200px;
-      margin: 0 auto 3rem;
-      padding: 0;
-      list-style: none;
-    }
-
-    .game-card {
-      background: #2d1a3a;
-      border: 2px solid #ff69b4;
-      border-radius: 16px;
-      box-shadow: 0 0 12px #ff69b4aa;
-      padding: 1.5rem;
-      max-width: 400px;
-      flex: 1 1 300px;
-      color: #ffc0cb;
-      transition: transform 0.2s, background-color 0.2s;
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-    }
-
-    .game-card:hover {
-      background: #ff69b4;
-      color: #1e1b2e;
-      transform: scale(1.03);
-    }
-
-    .game-title {
-      font-size: 1.4rem;
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      color: #ffccff;
-    }
-
-    .game-description {
-      font-size: 0.95rem;
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
-
-    .game-author {
-      font-size: 0.85rem;
-      font-style: italic;
-      margin-bottom: 1rem;
-      color: #e0a0c0;
-    }
-
-    iframe {
-      width: 100%;
-      height: 250px;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 0 8px #ff69b4cc;
-      margin-bottom: 1rem;
-      background: #1e1b2e;
-    }
-
-    img.screenshot {
-      max-width: 100%;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      box-shadow: 0 0 10px #ff69b4aa;
-      object-fit: cover;
-      aspect-ratio: 16 / 9;
-    }
-
-    .fallback-link {
-      display: inline-block;
-      padding: 0.6rem 1.2rem;
-      background: #ff69b4;
-      border-radius: 12px;
-      color: #1e1b2e;
-      font-weight: bold;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
-      margin-bottom: 1rem;
-    }
-
-    .fallback-link:hover {
-      background: #ff8edb;
-    }
-
-    #loadingMessage {
-      font-size: 1.2rem;
-      margin-top: 2rem;
-      color: #ff69b4;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      color: #ff69b4;
-      font-weight: bold;
-      text-decoration: none;
-      border: 2px solid #ff69b4;
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .back-link:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-    }
-
-    button.delete-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #e63946;
-      border: none;
-      color: white;
-      padding: 0.3rem 0.6rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.85rem;
-      transition: background-color 0.3s ease;
-    }
-
-    button.delete-btn:hover {
-      background: #f94144;
-    }
-  </style>
+  <title>Simple Game List - Test</title>
 </head>
 <body>
-
-  <a href="https://browndoggames.com/index.html" class="back-link">⬅️ Submit Your Own Game</a>
-
-  <h1>Community Game Submissions</h1>
-  <ul id="gameList" class="game-list"></ul>
-  <p id="loadingMessage">Loading games...</p>
+  <h1>Game Submissions (Test)</h1>
+  <ul id="gameList"></ul>
+  <p id="errorMsg" style="color:red;"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    // Your Supabase URL and anon key (Make sure these are correct & active)
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY5ODg3MTk3OSwiZXhwIjoxOTk0NDQ3OTc5fQ.vGbDKiVgKplZXb1sZ2mXtxSJTuSxj4rsUzG0uVIGsAo';
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-    const gameList = document.getElementById('gameList');
-    const loadingMessage = document.getElementById('loadingMessage');
-
-    let currentUserGitHub = null;
-
-    function isValidUrl(str) {
-      try {
-        new URL(str);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    function isEmbedAllowed(url) {
-      try {
-        const parsed = new URL(url);
-        return parsed.protocol === 'https:' &&
-          (parsed.hostname.endsWith('itch.io') ||
-           parsed.hostname.endsWith('github.io') ||
-           parsed.hostname.endsWith('netlify.app') ||
-           parsed.hostname.endsWith('vercel.app') ||
-           parsed.hostname.endsWith('brown-dog-games.github.io') ||
-           parsed.hostname.endsWith('browndoggames.com'));
-      } catch {
-        return false;
-      }
-    }
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY5ODg3MTk3OSwiZXhwIjoxOTk0NDQ3OTc5fQ.vGbDKiVgKplZXb1sZ2mXtxSJTuSxj4rsUzG0uVIGsAo'
+    );
 
     async function loadGames() {
-      loadingMessage.textContent = 'Loading games...';
+      const gameList = document.getElementById('gameList');
+      const errorMsg = document.getElementById('errorMsg');
       gameList.innerHTML = '';
+      errorMsg.textContent = '';
 
       try {
-        // Get current session info
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-        //console.log('Session Data:', sessionData);
-
-        currentUserGitHub = sessionData?.session?.user?.user_metadata?.login || null;
-        //console.log('Current GitHub User:', currentUserGitHub);
-
-        // Fetch games
         const { data, error } = await supabase
           .from('game_submissions')
-          .select('id, title, description, embed_url, screenshot_url, github_user')
-          .order('created_at', { ascending: false });
+          .select('id, title, github_user');
 
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          loadingMessage.textContent = 'No games submitted yet. Be the first!';
+        if (error) {
+          errorMsg.textContent = 'Error loading games: ' + error.message;
+          console.error(error);
           return;
         }
 
-        loadingMessage.textContent = '';
-
-        for (const game of data) {
-          const { id, title, description, embed_url, screenshot_url, github_user } = game;
-          const li = document.createElement('li');
-          li.className = 'game-card';
-
-          li.innerHTML = `
-            <div class="game-title">${escapeHtml(title)}</div>
-            <div class="game-author">Submitted by: ${escapeHtml(github_user?.trim() || 'anon')}</div>
-            <p class="game-description">${escapeHtml(description)}</p>
-          `;
-
-          if (screenshot_url && isValidUrl(screenshot_url)) {
-            const img = document.createElement('img');
-            img.className = 'screenshot';
-            img.src = screenshot_url;
-            img.alt = `${title} screenshot`;
-            li.appendChild(img);
-          }
-
-          if (embed_url && isValidUrl(embed_url)) {
-            if (isEmbedAllowed(embed_url)) {
-              const iframe = document.createElement('iframe');
-              iframe.src = embed_url;
-              iframe.setAttribute('allowfullscreen', '');
-              iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-              iframe.textContent = 'Your browser does not support iframes.';
-              li.appendChild(iframe);
-            } else {
-              const link = document.createElement('a');
-              link.href = embed_url;
-              link.target = '_blank';
-              link.rel = 'noopener noreferrer';
-              link.className = 'fallback-link';
-              link.textContent = '▶️ Play the game here (opens new tab)';
-              li.appendChild(link);
-            }
-          } else {
-            const noEmbed = document.createElement('p');
-            noEmbed.style.fontStyle = 'italic';
-            noEmbed.style.color = '#d38eb8';
-            noEmbed.textContent = 'No playable link provided.';
-            li.appendChild(noEmbed);
-          }
-
-          // Show delete button only if logged-in user matches the github_user for this game
-          if (currentUserGitHub && github_user && currentUserGitHub.toLowerCase() === github_user.toLowerCase()) {
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.className = 'delete-btn';
-            deleteBtn.onclick = async () => {
-              if (confirm(`Are you sure you want to delete "${title}"?`)) {
-                await deleteGame(id);
-              }
-            };
-            li.appendChild(deleteBtn);
-          }
-
-          gameList.appendChild(li);
+        if (!data || data.length === 0) {
+          gameList.innerHTML = '<li>No games found.</li>';
+          return;
         }
-      } catch (error) {
-        console.error('Error loading games:', error);
-        loadingMessage.textContent = 'Error loading games: ' + error.message;
+
+        data.forEach(game => {
+          const li = document.createElement('li');
+          li.textContent = `${game.title} — submitted by ${game.github_user || 'anon'}`;
+          gameList.appendChild(li);
+        });
+      } catch (e) {
+        errorMsg.textContent = 'Unexpected error: ' + e.message;
+        console.error(e);
       }
     }
 
-    async function deleteGame(id) {
-      try {
-        const { error } = await supabase
-          .from('game_submissions')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-
-        alert('Game deleted successfully!');
-        loadGames();
-      } catch (error) {
-        alert('Error deleting game: ' + error.message);
-      }
-    }
-
-    // Escape HTML helper to prevent XSS
-    function escapeHtml(text) {
-      if (!text) return '';
-      return text.replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      })[m]);
-    }
-
-    // Initial load
     loadGames();
-
-    // Re-load games on auth state change
-    supabase.auth.onAuthStateChange(() => {
-      loadGames();
-    });
   </script>
-
 </body>
 </html>
