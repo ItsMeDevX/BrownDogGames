@@ -234,6 +234,7 @@
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error('Supabase error:', error);
         loadingMessage.textContent = 'Error loading games: ' + error.message;
         return;
       }
@@ -250,17 +251,17 @@
         const li = document.createElement('li');
         li.className = 'game-card';
 
-        li.innerHTML = 
+        li.innerHTML = `
           <div class="game-title">${title}</div>
           <div class="game-author">Submitted by: ${github_user?.trim() || 'anon'}</div>
           <p class="game-description">${description}</p>
-        ;
+        `;
 
         if (screenshot_url && isValidUrl(screenshot_url)) {
           const img = document.createElement('img');
           img.className = 'screenshot';
           img.src = screenshot_url;
-          img.alt = ${title} screenshot;
+          img.alt = `${title} screenshot`;
           li.appendChild(img);
         }
 
@@ -294,7 +295,7 @@
           deleteBtn.textContent = 'Delete';
           deleteBtn.className = 'delete-btn';
           deleteBtn.onclick = () => {
-            if (confirm(Are you sure you want to delete "${title}"?)) {
+            if (confirm(`Are you sure you want to delete "${title}"?`)) {
               deleteGame(id);
             }
           };
@@ -329,4 +330,4 @@
   </script>
 
 </body>
-</html> 
+</html>
