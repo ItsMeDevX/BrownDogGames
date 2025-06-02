@@ -30,11 +30,10 @@
 
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1e1b2e;
+      background: linear-gradient(135deg, #2c1b33, #191425);
       color: #fefefe;
-      min-height: 100vh;
       padding: 20px;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      min-height: 100vh;
       text-align: center;
     }
 
@@ -46,80 +45,63 @@
     }
 
     .game-list {
-      list-style: none;
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
       gap: 2rem;
+      justify-content: center;
       max-width: 1200px;
       margin: 0 auto 3rem;
       padding: 0;
+      list-style: none;
     }
 
     .game-card {
-      flex: 1 1 300px;
-      max-width: 400px;
-      background-color: #2d1a3a;
+      background: #2d1a3a;
       border: 2px solid #ff69b4;
       border-radius: 16px;
-      overflow: hidden;
+      box-shadow: 0 0 12px #ff69b4aa;
       padding: 1.5rem;
+      max-width: 400px;
+      flex: 1 1 300px;
+      color: #ffc0cb;
       transition: transform 0.2s, background-color 0.2s;
       text-align: left;
-      color: #ffc0cb;
-      box-shadow: 0 0 12px #ff69b4aa;
     }
 
     .game-card:hover {
-      background-color: #ff69b4;
+      background: #ff69b4;
+      color: #1e1b2e;
       transform: scale(1.03);
-      color: #1e1b2e;
-    }
-
-    .game-card:hover .game-title,
-    .game-card:hover .game-description,
-    .game-card:hover .game-link {
-      color: #1e1b2e;
     }
 
     .game-title {
       font-size: 1.4rem;
+      font-weight: bold;
       margin-bottom: 1rem;
       color: #ffccff;
-      font-weight: bold;
     }
 
     .game-description {
       font-size: 0.95rem;
-      line-height: 1.5;
       margin-bottom: 1rem;
-    }
-
-    .game-link {
-      color: #ffb3ff;
-      word-break: break-word;
-      text-decoration: underline;
-    }
-
-    .game-link:hover {
-      color: #ffffff;
+      line-height: 1.5;
     }
 
     iframe {
       width: 100%;
       height: 250px;
-      border-radius: 10px;
       border: none;
-      margin-bottom: 1rem;
+      border-radius: 10px;
       box-shadow: 0 0 8px #ff69b4cc;
+      margin-bottom: 1rem;
     }
 
     .back-link {
       display: inline-block;
       margin-top: 20px;
-      text-decoration: none;
-      color: #ff69b4;
       font-size: 1rem;
+      color: #ff69b4;
+      text-decoration: none;
       transition: color 0.2s;
     }
 
@@ -128,12 +110,11 @@
       text-decoration: underline;
     }
 
-    /* Loading and error message */
     #loadingMessage {
-      color: #ff69b4;
-      font-weight: bold;
       margin-top: 3rem;
       font-size: 1.2rem;
+      color: #ff69b4;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -150,12 +131,20 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+    );
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const gameList = document.getElementById('gameList');
     const loadingMessage = document.getElementById('loadingMessage');
+
+    function escapeHtml(text) {
+      return text?.replace(/[&<>"']/g, (match) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;',
+        '"': '&quot;', "'": '&#39;'
+      })[match]) || '';
+    }
 
     async function loadGames() {
       const { data, error } = await supabase
@@ -168,45 +157,26 @@
         return;
       }
 
-      if (!data.length) {
+      if (!data || data.length === 0) {
         loadingMessage.textContent = 'No games submitted yet. Be the first!';
         return;
       }
 
-      // Clear loading message
       loadingMessage.remove();
 
-      data.forEach(game => {
+      data.forEach(({ title, description, embed_url }) => {
         const li = document.createElement('li');
         li.className = 'game-card';
-
         li.innerHTML = `
-          <div class="game-title">${escapeHtml(game.title)}</div>
-          <p class="game-description">${escapeHtml(game.description)}</p>
-          <iframe src="${escapeHtml(game.embed_url)}" allowfullscreen sandbox="allow-scripts allow-same-origin"></iframe>
+          <div class="game-title">${escapeHtml(title)}</div>
+          <p class="game-description">${escapeHtml(description)}</p>
+          <iframe src="${escapeHtml(embed_url)}" allowfullscreen sandbox="allow-scripts allow-same-origin"></iframe>
         `;
-
         gameList.appendChild(li);
-      });
-    }
-
-    // Simple escape function to prevent injection (optional but good practice)
-    function escapeHtml(text) {
-      if (!text) return '';
-      return text.replace(/[&<>"']/g, function (match) {
-        const escape = {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        };
-        return escape[match];
       });
     }
 
     loadGames();
   </script>
-
 </body>
 </html>
