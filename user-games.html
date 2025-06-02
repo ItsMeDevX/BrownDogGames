@@ -222,100 +222,121 @@
     }
 
     async function loadGames() {
+      console.log('Loading games...');
       loadingMessage.textContent = 'Loading games...';
       gameList.innerHTML = '';
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      currentUserGitHub = sessionData?.session?.user?.user_metadata?.login || null;
-
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('id, title, description, embed_url, screenshot_url, github_user')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        loadingMessage.textContent = 'Error loading games: ' + error.message;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        loadingMessage.textContent = 'No games submitted yet. Be the first!';
-        return;
-      }
-
-      loadingMessage.textContent = '';
-
-      for (const game of data) {
-        const { id, title, description, embed_url, screenshot_url, github_user } = game;
-        const li = document.createElement('li');
-        li.className = 'game-card';
-
-        li.innerHTML = `
-          <div class="game-title">${title}</div>
-          <div class="game-author">Submitted by: ${github_user?.trim() || 'anon'}</div>
-          <p class="game-description">${description}</p>
-        `;
-
-        if (screenshot_url && isValidUrl(screenshot_url)) {
-          const img = document.createElement('img');
-          img.className = 'screenshot';
-          img.src = screenshot_url;
-          img.alt = `${title} screenshot`;
-          li.appendChild(img);
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          loadingMessage.textContent = 'Error getting session: ' + sessionError.message;
+          return;
         }
 
-        if (embed_url && isValidUrl(embed_url)) {
-          if (isEmbedAllowed(embed_url)) {
-            const iframe = document.createElement('iframe');
-            iframe.src = embed_url;
-            iframe.setAttribute('allowfullscreen', '');
-            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-            iframe.textContent = 'Your browser does not support iframes.';
-            li.appendChild(iframe);
-          } else {
-            const link = document.createElement('a');
-            link.href = embed_url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.className = 'fallback-link';
-            link.textContent = '▶️ Play the game here (opens new tab)';
-            li.appendChild(link);
+        currentUserGitHub = sessionData?.session?.user?.user_metadata?.login || null;
+        console.log('Current user GitHub:', currentUserGitHub);
+
+        const { data, error } = await supabase
+          .from('game_submissions')
+          .select('id, title, description, embed_url, screenshot_url, github_user')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading games:', error);
+          loadingMessage.textContent = 'Error loading games: ' + error.message;
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          console.log('No games found.');
+          loadingMessage.textContent = 'No games submitted yet. Be the first!';
+          return;
+        }
+
+        loadingMessage.textContent = '';
+        console.log('Games loaded:', data.length);
+
+        for (const game of data) {
+          const { id, title, description, embed_url, screenshot_url, github_user } = game;
+          const li = document.createElement('li');
+          li.className = 'game-card';
+
+          li.innerHTML = `
+            <div class="game-title">${title}</div>
+            <div class="game-author">Submitted by: ${github_user?.trim() || 'anon'}</div>
+            <p class="game-description">${description}</p>
+          `;
+
+          if (screenshot_url && isValidUrl(screenshot_url)) {
+            const img = document.createElement('img');
+            img.className = 'screenshot';
+            img.src = screenshot_url;
+            img.alt = `${title} screenshot`;
+            li.appendChild(img);
           }
-        } else {
-          const noEmbed = document.createElement('p');
-          noEmbed.style.fontStyle = 'italic';
-          noEmbed.style.color = '#d38eb8';
-          noEmbed.textContent = 'No playable link provided.';
-          li.appendChild(noEmbed);
-        }
 
-        if (currentUserGitHub && github_user && currentUserGitHub.toLowerCase() === github_user.toLowerCase()) {
-          const deleteBtn = document.createElement('button');
-          deleteBtn.textContent = 'Delete';
-          deleteBtn.className = 'delete-btn';
-          deleteBtn.onclick = () => {
-            if (confirm(`Are you sure you want to delete "${title}"?`)) {
-              deleteGame(id);
+          if (embed_url && isValidUrl(embed_url)) {
+            if (isEmbedAllowed(embed_url)) {
+              const iframe = document.createElement('iframe');
+              iframe.src = embed_url;
+              iframe.setAttribute('allowfullscreen', '');
+              iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+              iframe.textContent = 'Your browser does not support iframes.';
+              li.appendChild(iframe);
+            } else {
+              const link = document.createElement('a');
+              link.href = embed_url;
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              link.className = 'fallback-link';
+              link.textContent = '▶️ Play the game here (opens new tab)';
+              li.appendChild(link);
             }
-          };
-          li.appendChild(deleteBtn);
+          } else {
+            const noEmbed = document.createElement('p');
+            noEmbed.style.fontStyle = 'italic';
+            noEmbed.style.color = '#d38eb8';
+            noEmbed.textContent = 'No playable link provided.';
+            li.appendChild(noEmbed);
+          }
+
+          if (currentUserGitHub && github_user && currentUserGitHub.toLowerCase() === github_user.toLowerCase()) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.onclick = () => {
+              if (confirm(`Are you sure you want to delete "${title}"?`)) {
+                deleteGame(id);
+              }
+            };
+            li.appendChild(deleteBtn);
+          }
+
+          gameList.appendChild(li);
         }
 
-        gameList.appendChild(li);
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        loadingMessage.textContent = 'Unexpected error: ' + err.message;
       }
     }
 
     async function deleteGame(id) {
-      const { error } = await supabase
-        .from('game_submissions')
-        .delete()
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('game_submissions')
+          .delete()
+          .eq('id', id);
 
-      if (error) {
-        alert('Error deleting game: ' + error.message);
-      } else {
-        alert('Game deleted successfully!');
-        loadGames();
+        if (error) {
+          alert('Error deleting game: ' + error.message);
+        } else {
+          alert('Game deleted successfully!');
+          loadGames();
+        }
+      } catch (err) {
+        alert('Unexpected error deleting game: ' + err.message);
       }
     }
 
@@ -324,6 +345,7 @@
 
     // Re-load games on auth state change
     supabase.auth.onAuthStateChange(() => {
+      console.log('Auth state changed, reloading games...');
       loadGames();
     });
   </script>
