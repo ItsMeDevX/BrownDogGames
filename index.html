@@ -361,37 +361,62 @@
   <h2>Submit Your Game</h2>
   <form id="gameSubmissionForm">
     <label for="title">Game Title:</label><br />
-    <input type="text" id="title" name="title" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;" /><br />
+    <input
+      type="text"
+      id="title"
+      name="title"
+      required
+      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
+    /><br />
 
     <label for="description">Description:</label><br />
-    <textarea id="description" name="description" required rows="3" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"></textarea><br />
+    <textarea
+      id="description"
+      name="description"
+      required
+      rows="3"
+      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
+    ></textarea
+    ><br />
 
     <label for="embedUrl">Embed URL:</label><br />
-    <input type="url" id="embedUrl" name="embedUrl" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;" /><br />
+    <input
+      type="url"
+      id="embedUrl"
+      name="embedUrl"
+      required
+      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
+    /><br />
 
-    <label for="screenshot">Screenshot URL (optional):</label><br />
-    <input type="url" id="screenshot" name="screenshot" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;" /><br />
-
-    <button type="submit" style="background:#ff69b4; border:none; padding:0.7rem 1.4rem; color:#1e1b2e; border-radius:8px; cursor:pointer; font-weight: bold;">Submit Game</button>
+    <button
+      type="submit"
+      style="background:#ff69b4; border:none; padding:0.7rem 1.4rem; color:#1e1b2e; border-radius:8px; cursor:pointer; font-weight: bold;"
+    >
+      Submit Game
+    </button>
   </form>
   <p id="submitStatus" style="margin-top: 1rem;"></p>
 </section>
 
 <div style="margin-top: 3rem;">
-  <a href="user-games.html" style="
-    display: inline-block;
-    background: linear-gradient(135deg, #ff69b4, #ff8edb);
-    color: #1e1b2e;
-    padding: 1rem 2rem;
-    border-radius: 16px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    text-decoration: none;
-    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
-    transition: transform 0.2s, box-shadow 0.2s;
-  " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(255, 105, 180, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(255, 105, 180, 0.4)'">
-    🌟 Play Community Games
-  </a>
+  <a
+    href="user-games.html"
+    style="
+      display: inline-block;
+      background: linear-gradient(135deg, #ff69b4, #ff8edb);
+      color: #1e1b2e;
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    "
+    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(255, 105, 180, 0.6)'"
+    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(255, 105, 180, 0.4)'"
+    >🌟 Play Community Games</a
+  >
 </div>
 
 <script type="module">
@@ -410,11 +435,12 @@
     status.textContent = 'Submitting...';
 
     const formData = new FormData(form);
+
     const submission = {
       title: formData.get('title'),
       description: formData.get('description'),
       embed_url: formData.get('embedUrl'),
-      screenshot_url: formData.get('screenshot') || null,
+      // screenshot_url removed because table doesn't have that column
     };
 
     const { error } = await supabase.from('game_submissions').insert([submission]);
