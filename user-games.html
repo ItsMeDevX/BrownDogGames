@@ -105,15 +105,6 @@
       color: #ffffff;
     }
 
-    .game-image {
-      width: 100%;
-      height: auto;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      display: block;
-      box-shadow: 0 0 8px #ff69b4cc;
-    }
-
     iframe {
       width: 100%;
       height: 250px;
@@ -169,7 +160,7 @@
     async function loadGames() {
       const { data, error } = await supabase
         .from('game_submissions')
-        .select('title, description, embed_url, screenshot_url')
+        .select('title, description, embed_url')
         .order('id', { ascending: false });
 
       if (error) {
@@ -192,8 +183,7 @@
         li.innerHTML = `
           <div class="game-title">${escapeHtml(game.title)}</div>
           <p class="game-description">${escapeHtml(game.description)}</p>
-          <iframe src="${escapeHtml(game.embed_url)}" allowfullscreen></iframe>
-          ${game.screenshot_url ? `<img src="${escapeHtml(game.screenshot_url)}" alt="Screenshot of ${escapeHtml(game.title)}" class="game-image" />` : ''}
+          <iframe src="${escapeHtml(game.embed_url)}" allowfullscreen sandbox="allow-scripts allow-same-origin"></iframe>
         `;
 
         gameList.appendChild(li);
@@ -220,4 +210,3 @@
 
 </body>
 </html>
-
