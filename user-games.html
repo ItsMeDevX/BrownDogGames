@@ -69,6 +69,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      position: relative;
     }
 
     .game-card:hover {
@@ -154,6 +155,25 @@
       background-color: #ff69b4;
       color: #1e1b2e;
     }
+
+    button.delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #e63946;
+      border: none;
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.85rem;
+      transition: background-color 0.3s ease;
+    }
+
+    button.delete-btn:hover {
+      background: #f94144;
+    }
   </style>
 </head>
 <body>
@@ -175,6 +195,8 @@
   const gameList = document.getElementById('gameList');
   const loadingMessage = document.getElementById('loadingMessage');
 
+  let currentUserGitHub = null;
+
   function isValidUrl(str) {
     try {
       new URL(str);
@@ -184,11 +206,9 @@
     }
   }
 
-  // Check if embed_url is a safe URL to embed (basic check)
   function isEmbedAllowed(url) {
     try {
       const parsed = new URL(url);
-      // Allow only https protocols and certain hosts (adjust as needed)
       return parsed.protocol === 'https:' &&
         (parsed.hostname.endsWith('itch.io') ||
          parsed.hostname.endsWith('github.io') ||
@@ -202,9 +222,15 @@
   }
 
   async function loadGames() {
+    loadingMessage.textContent = 'Loading games...';
+    gameList.innerHTML = '';
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    currentUserGitHub = sessionData?.session?.user?.user_metadata?.login || null;
+
     const { data, error } = await supabase
       .from('game_submissions')
-      .select('title, description, embed_url, screenshot_url, github_user')
+      .select('id, title, description, embed_url, screenshot_url, github_user')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -217,9 +243,9 @@
       return;
     }
 
-    loadingMessage.remove();
+    loadingMessage.textContent = '';
 
-    data.forEach(({ title, description, embed_url, screenshot_url, github_user }) => {
+    data.forEach(({ id, title, description, embed_url, screenshot_url, github_user }) => {
       const li = document.createElement('li');
       li.className = 'game-card';
 
@@ -272,11 +298,44 @@
         li.appendChild(noEmbed);
       }
 
+      // Add Delete button only if current user is the submitter
+      if (currentUserGitHub && github_user && currentUserGitHub.toLowerCase() === github_user.toLowerCase()) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.onclick = async () => {
+          if (confirm(`Are you sure you want to delete "${title}"?`)) {
+            await deleteGame(id);
+          }
+        };
+        li.appendChild(deleteBtn);
+      }
+
       gameList.appendChild(li);
     });
   }
 
+  async function deleteGame(id) {
+    const { error } = await supabase
+      .from('game_submissions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert('Error deleting game: ' + error.message);
+    } else {
+      alert('Game deleted successfully!');
+      loadGames();
+    }
+  }
+
+  // Initial load
   loadGames();
+
+  // Optional: listen for auth state changes (if your app supports login/logout)
+  supabase.auth.onAuthStateChange(() => {
+    loadGames();
+  });
 </script>
 
 </body>
