@@ -416,24 +416,27 @@
         const msgInput = document.getElementById('msg-input');
         const gameIdInput = document.getElementById('game-id');
 
+        // Extract game ID from the URL (slug)
+        const urlParts = window.location.pathname.split('/');
+        const gameSlug = urlParts[urlParts.length - 1].replace('.html', ''); // Remove ".html"
+        if (gameSlug) {
+            gameIdInput.value = gameSlug;  // Auto-fill the game ID
+        }
+
         // Function to get the logged-in user's GitHub username
         async function getUserGitHubUsername() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
                 const { user_metadata } = session.user;
-                return user_metadata.full_name || 'GitHub User'; // Default to 'GitHub User' if no name is available
+                return user_metadata.full_name || 'GitHub User';
             }
-            return 'Guest'; // If no user is logged in
+            return 'Guest'; 
         }
 
-        // Function to load messages based on the game ID
+        // Function to load messages filtered by game_id
         async function loadMessages() {
-            const gameId = gameIdInput.value.trim(); // Get the game ID from input
-
-            if (!gameId) {
-                messagesDiv.innerHTML = '<p>Please enter a Game ID to start chatting!</p>';
-                return;
-            }
+            const gameId = gameIdInput.value.trim();
+            if (!gameId) return;
 
             const { data, error } = await supabase
                 .from('messages')
@@ -464,17 +467,14 @@
         form.addEventListener('submit', async e => {
             e.preventDefault();
             const msg = msgInput.value.trim();
-            const gameId = gameIdInput.value.trim();  // Get the game ID from the input
+            const gameId = gameIdInput.value.trim();
 
-            // Ensure both message and game ID are provided
             if (!msg || !gameId) return;
 
-            // Get the logged-in user's GitHub username
             const githubUsername = await getUserGitHubUsername();
-
             const { error } = await supabase
                 .from('messages')
-                .insert([{ content: msg, github_username: githubUsername, game_id: gameId }]); // Insert message with game_id
+                .insert([{ content: msg, github_username: githubUsername, game_id: gameId }]);
 
             if (error) {
                 alert('Failed to send message: ' + error.message);
@@ -482,18 +482,18 @@
                 return;
             }
 
-            msgInput.value = ''; // Clear the message input
-            loadMessages(); // Reload messages for the current game
+            msgInput.value = ''; 
+            loadMessages(); 
         });
 
-        // Optional: Realtime subscription to update messages instantly
+        // Realtime subscription for instant message updates
         supabase.channel('messages')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
                 loadMessages();
             })
             .subscribe();
 
-        // Load messages when the page is loaded
+        // Load messages on page load
         loadMessages();
     </script>
 
