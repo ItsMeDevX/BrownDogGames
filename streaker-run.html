@@ -361,15 +361,18 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ...'
-  );
+  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const chatBox = document.getElementById('chat-box');
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message');
   let user = null;
+
+  // Change this per page to have separate chat rooms
+  const pageId = 'game1';  // e.g. 'game1', 'game2', 'puzzle-room'
 
   async function loadSession() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -388,6 +391,7 @@
     const { data } = await supabase
       .from('messages')
       .select('*')
+      .eq('page_id', pageId)
       .order('created_at', { ascending: true });
 
     chatBox.innerHTML = '';
@@ -404,7 +408,7 @@
 
   async function sendMessage(content) {
     const name = user.user_metadata.full_name || user.email;
-    await supabase.from('messages').insert([{ username: name, content }]);
+    await supabase.from('messages').insert([{ username: name, content, page_id: pageId }]);
   }
 
   chatForm.addEventListener('submit', async (e) => {
@@ -419,7 +423,8 @@
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
-      table: 'messages'
+      table: 'messages',
+      filter: `page_id=eq.${pageId}`
     }, payload => {
       renderMessage(payload.new);
       chatBox.scrollTop = chatBox.scrollHeight;
