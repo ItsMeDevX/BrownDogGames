@@ -135,15 +135,13 @@
   const gameList = document.getElementById('gameList');
   const loadingMessage = document.getElementById('loadingMessage');
 
-  // Basic URL validation
   const isValidUrl = url => {
     try { new URL(url); return true; }
     catch { return false; }
   };
 
-  // Allowed embed hosts whitelist
+  // Allowed hosts for embedding — itch.io REMOVED because it disallows iframe embedding
   const allowedHosts = [
-    'itch.io',
     'github.io',
     'netlify.app',
     'vercel.app',
@@ -159,6 +157,13 @@
       return false;
     }
   };
+
+  // Strip email to username if email format, otherwise return as-is or 'anon'
+  function getDisplayName(user) {
+    if (!user) return 'anon';
+    if (user.includes('@')) return user.split('@')[0];
+    return user;
+  }
 
   async function loadGames() {
     const { data, error } = await supabase
@@ -184,7 +189,7 @@
 
       li.innerHTML = `
         <div class="game-title">${title}</div>
-        <div class="game-author">Submitted by: ${github_user?.trim() || 'anon'}</div>
+        <div class="game-author">Submitted by: ${getDisplayName(github_user)}</div>
         <p class="game-description">${description}</p>
         ${screenshot_url && isValidUrl(screenshot_url) ? `<img class="screenshot" src="${screenshot_url}" alt="${title} screenshot" />` : ''}
         ${
