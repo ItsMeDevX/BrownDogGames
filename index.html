@@ -396,15 +396,6 @@
       placeholder="Optional screenshot URL"
     /><br />
 
-    <label for="githubUser">GitHub Username:</label><br />
-    <input
-      type="text"
-      id="githubUser"
-      name="githubUser"
-      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
-      placeholder="Optional GitHub username"
-    /><br />
-
     <button
       type="submit"
       style="background:#ff69b4; border:none; padding:0.7rem 1.4rem; color:#1e1b2e; border-radius:8px; cursor:pointer; font-weight: bold;"
@@ -451,14 +442,22 @@
     e.preventDefault();
     status.textContent = 'Submitting...';
 
-    const formData = new FormData(form);
+    const user = supabase.auth.getUser();
+    const session = await supabase.auth.getSession();
 
-    // Example: replace this with your actual user_id or handle authentication
-    const userId = null;  // or some UUID if you have user login
+    if (!session.data?.session) {
+      status.textContent = '⚠️ You must be logged in to submit a game.';
+      return;
+    }
+
+    const userId = session.data.session.user.id;
+    const githubUser = session.data.session.user.user_metadata?.login || null;
+
+    const formData = new FormData(form);
 
     const submission = {
       user_id: userId,
-      github_user: formData.get('githubUser') || null,
+      github_user: githubUser,
       title: formData.get('title'),
       description: formData.get('description'),
       embed_url: formData.get('embedUrl'),
