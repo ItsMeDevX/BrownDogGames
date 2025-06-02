@@ -420,9 +420,15 @@
         const urlParts = window.location.pathname.split('/');
         const gameSlug = urlParts[urlParts.length - 1].replace('.html', ''); // Remove ".html"
 
+        // Debugging: log the extracted Game ID
+        console.log("Extracted Game ID:", gameSlug);
+
         // Check if the Game ID exists and auto-fill the input
         if (gameSlug) {
             gameIdInput.value = gameSlug;  // Auto-fill the game ID input
+        } else {
+            // No Game ID found, show a prompt
+            gameIdInput.setAttribute("placeholder", "Please enter a Game ID.");
         }
 
         // Function to get the logged-in user's GitHub username
@@ -498,6 +504,9 @@
         // Load messages on page load
         loadMessages();
     </script>
+
+</body>
+</html>
 
 </body>
 </html>
