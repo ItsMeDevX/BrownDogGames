@@ -376,8 +376,7 @@
       required
       rows="3"
       style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
-    ></textarea
-    ><br />
+    ></textarea><br />
 
     <label for="embedUrl">Embed URL:</label><br />
     <input
@@ -386,6 +385,24 @@
       name="embedUrl"
       required
       style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
+    /><br />
+
+    <label for="screenshotUrl">Screenshot URL:</label><br />
+    <input
+      type="url"
+      id="screenshotUrl"
+      name="screenshotUrl"
+      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
+      placeholder="Optional screenshot URL"
+    /><br />
+
+    <label for="githubUser">GitHub Username:</label><br />
+    <input
+      type="text"
+      id="githubUser"
+      name="githubUser"
+      style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ff69b4; margin-bottom: 10px; background:#2d1a3a; color:#fff;"
+      placeholder="Optional GitHub username"
     /><br />
 
     <button
@@ -436,11 +453,16 @@
 
     const formData = new FormData(form);
 
+    // Example: replace this with your actual user_id or handle authentication
+    const userId = null;  // or some UUID if you have user login
+
     const submission = {
+      user_id: userId,
+      github_user: formData.get('githubUser') || null,
       title: formData.get('title'),
       description: formData.get('description'),
       embed_url: formData.get('embedUrl'),
-      // screenshot_url removed because table doesn't have that column
+      screenshot_url: formData.get('screenshotUrl') || null,
     };
 
     const { error } = await supabase.from('game_submissions').insert([submission]);
