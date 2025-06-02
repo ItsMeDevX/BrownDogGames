@@ -380,7 +380,7 @@
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message');
   const usernameInput = document.getElementById('username');
-  const pageId = 'game1';
+  const pageId = 'game1'; // Page identifier for filtering messages
 
   async function loadMessages() {
     const { data, error } = await supabase
@@ -403,7 +403,8 @@
   function renderMessage(msg) {
     const div = document.createElement('div');
     div.style.marginBottom = '12px';
-    div.innerHTML = `<strong style="color:#ff8edb">${escapeHtml(msg.username || 'Anonymous')}</strong>: <span style="color:#fefefe">${escapeHtml(msg.content)}</span>`;
+    const username = msg.username || 'Anonymous'; // Default to Anonymous if username is empty
+    div.innerHTML = `<strong style="color:#ff8edb">${escapeHtml(username)}</strong>: <span style="color:#fefefe">${escapeHtml(msg.content)}</span>`;
     chatBox.appendChild(div);
   }
 
@@ -428,12 +429,16 @@
   chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = messageInput.value.trim();
-    const username = usernameInput.value.trim() || 'Anonymous';
+    const username = usernameInput.value.trim() || 'Anonymous'; // Default username is "Anonymous"
     if (!text) return;
 
+    // Disable the send button while sending message
     chatForm.querySelector('button').disabled = true;
+
     await sendMessage(text, username);
-    messageInput.value = '';
+    messageInput.value = ''; // Clear the message input
+
+    // Re-enable the send button
     chatForm.querySelector('button').disabled = false;
   });
 
