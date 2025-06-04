@@ -653,31 +653,7 @@
       max-width: 800px;
       margin: auto;
     }
-    #game-select input {
-      padding: 10px;
-      border-radius: 8px;
-      border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: white;
-      font-size: 1rem;
-      width: 70%;
-      margin-right: 10px;
-    }
-    #game-select button {
-      background: #ff4f9f;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-size: 1rem;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
-    #video-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 1rem;
-    }
+    #game-select input,
     #video-form input,
     #video-form textarea {
       padding: 10px;
@@ -686,33 +662,23 @@
       background-color: #2f1a39;
       color: white;
       font-size: 1rem;
+      width: 100%;
+      margin-bottom: 10px;
     }
-    #video-slot {
-      margin-top: 2rem;
-      margin-bottom: 2rem;
-    }
-    #video-slot h2 {
-      margin-bottom: 1rem;
-    }
-    #video-list h3 {
-      margin-bottom: 0.2rem;
-    }
-    #video-list p {
-      margin: 0.2rem 0 1rem 0;
-      color: #ccc;
-    }
+    #game-select button,
+    #video-form button,
     .play-slot-button {
-      margin: 0.5rem 0 1rem;
-      padding: 8px 14px;
-      background-color: #ff4f9f;
+      background: #ff4f9f;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       color: white;
+      font-size: 1rem;
+      padding: 10px 20px;
       cursor: pointer;
     }
     .responsive-frame {
       position: relative;
-      padding-bottom: 56.25%; /* 16:9 ratio */
+      padding-bottom: 56.25%;
       height: 0;
       overflow: hidden;
       border-radius: 12px;
@@ -743,13 +709,12 @@
   <div id="video-section" style="display:none;">
     <h2>🎥 Gameplay Videos</h2>
     <form id="video-form">
-      <input type="url" id="video-url" placeholder="Video URL (YouTube, Twitter, Vimeo, direct MP4 link...)" required />
+      <input type="url" id="video-url" placeholder="Video URL (YouTube, Twitter, Vimeo, MP4)" required />
       <input type="text" id="video-title" placeholder="Video Title" required />
       <textarea id="video-desc" placeholder="Short description..."></textarea>
       <button type="submit">📤 Submit Video</button>
     </form>
 
-    <!-- 🎯 Video Slot -->
     <div id="video-slot">
       <h2>🎯 Video Slot Player</h2>
       <div id="slot-container">
@@ -757,17 +722,16 @@
       </div>
     </div>
 
-    <!-- 📺 Video List -->
     <div id="video-list"></div>
   </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    )
 
     const gameNameInput = document.getElementById('game-name-input')
     const selectGameBtn = document.getElementById('select-game-btn')
@@ -781,16 +745,9 @@
 
     let selectedGameId = null
 
-    async function getUserGitHubUsername() {
-      return 'testUser'  // Replace with real auth if needed
-    }
-
     selectGameBtn.addEventListener('click', () => {
       const gameName = gameNameInput.value.trim()
-      if (!gameName) {
-        alert('Please enter a game name.')
-        return
-      }
+      if (!gameName) return alert('Please enter a game name.')
       selectedGameId = gameName
       videoSection.style.display = 'block'
       loadVideos()
@@ -802,12 +759,9 @@
       const title = videoTitle.value.trim()
       const desc = videoDesc.value.trim()
 
-      if (!url || !title || !selectedGameId) {
-        alert('Please select a game and fill out all required fields.')
-        return
-      }
+      if (!url || !title || !selectedGameId) return alert('Fill all fields.')
 
-      const username = await getUserGitHubUsername()
+      const username = 'testUser'
       const submitBtn = videoForm.querySelector('button[type="submit"]')
       submitBtn.disabled = true
       submitBtn.textContent = 'Uploading...'
@@ -825,7 +779,7 @@
       submitBtn.textContent = '📤 Submit Video'
 
       if (error) {
-        alert('❌ Failed to upload video: ' + error.message)
+        alert('❌ Upload failed: ' + error.message)
         return
       }
 
@@ -839,7 +793,6 @@
       if (!selectedGameId) return
 
       videoList.innerHTML = '<p>Loading videos...</p>'
-
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
@@ -847,17 +800,17 @@
         .order('created_at', { ascending: false })
 
       if (error) {
-        videoList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`
+        videoList.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`
         return
       }
 
       if (!data.length) {
-        videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>'
+        videoList.innerHTML = '<p>No videos yet.</p>'
         return
       }
 
       videoList.innerHTML = data.map(video => {
-        const embed = getEmbeddedVideoHTML(video.video_url, false)
+        const embed = getEmbeddedVideoHTML(video.video_url)
         return `
           <div>
             <h3>${video.title}</h3>
@@ -876,31 +829,28 @@
     videoList.addEventListener('click', (e) => {
       if (e.target.classList.contains('play-slot-button')) {
         const url = e.target.getAttribute('data-url')
-        videoSlot.innerHTML = getEmbeddedVideoHTML(url, true)
+        const html = getEmbeddedVideoHTML(url)
+        videoSlot.innerHTML = html
         loadTwitterWidgets()
       }
     })
 
-    function getEmbeddedVideoHTML(url, isSlot = false) {
-      const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&?\n]+)/)
-      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
-      const twitterMatch = url.match(/twitter\.com\/(?:\w+)\/status\/(\d+)/)
-      const mp4Match = url.match(/\.(mp4)(\?.*)?$/i)
+    function getEmbeddedVideoHTML(url) {
+      console.log('Embedding:', url)
 
-      if (ytMatch) {
-        return `<div class="responsive-frame"><iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" allowfullscreen></iframe></div>`
-      }
-      if (vimeoMatch) {
-        return `<div class="responsive-frame"><iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe></div>`
-      }
-      if (twitterMatch) {
-        const tweetId = twitterMatch[1]
-        return `<blockquote class="twitter-video" data-lang="en"><a href="https://twitter.com/i/status/${tweetId}"></a></blockquote>`
-      }
-      if (mp4Match) {
-        return `<div class="responsive-frame"><video controls src="${url}" preload="metadata"></video></div>`
-      }
-      return `<p><a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff4f9f;">Open video link</a></p>`
+      const yt = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([\w-]+)/)
+      if (yt) return `<div class="responsive-frame"><iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe></div>`
+
+      const vimeo = url.match(/vimeo\.com\/(\d+)/)
+      if (vimeo) return `<div class="responsive-frame"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" allowfullscreen></iframe></div>`
+
+      const tweet = url.match(/twitter\.com\/\w+\/status\/(\d+)/)
+      if (tweet) return `<blockquote class="twitter-video" data-lang="en"><a href="https://twitter.com/i/status/${tweet[1]}"></a></blockquote>`
+
+      const mp4 = url.match(/\.(mp4)(\?.*)?$/i)
+      if (mp4) return `<div class="responsive-frame"><video controls src="${url}" preload="metadata"></video></div>`
+
+      return `<p style="color: #ccc;">⚠️ Could not embed. <a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #ff4f9f;">Open video</a></p>`
     }
 
     function loadTwitterWidgets() {
