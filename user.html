@@ -692,11 +692,48 @@
       color: white;
       cursor: pointer;
     }
+    /* Submission form styles */
+    #video-form {
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 700px;
+    }
+    #video-form input,
+    #video-form textarea {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ff4f9f;
+      background: #2f1a39;
+      color: white;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #video-form button {
+      width: fit-content;
+      padding: 10px 20px;
+      background: #ff4f9f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      align-self: flex-start;
+    }
   </style>
 </head>
 <body>
 
   <h1>Gameplay Videos</h1>
+
+  <!-- Video Submission Form -->
+  <form id="video-form">
+    <input type="url" id="video-url" placeholder="Video URL (YouTube, Vimeo, Twitter, MP4...)" required />
+    <input type="text" id="video-title" placeholder="Video Title" required />
+    <textarea id="video-desc" placeholder="Short description..."></textarea>
+    <button type="submit">Submit Video</button>
+  </form>
 
   <div id="video-slot">
     <h2>🎯 Video Slot Player</h2>
@@ -718,6 +755,13 @@
     const videoList = document.getElementById('video-list')
     const videoSlot = document.getElementById('slot-container')
 
+    // Form elements
+    const videoForm = document.getElementById('video-form')
+    const videoUrlInput = document.getElementById('video-url')
+    const videoTitleInput = document.getElementById('video-title')
+    const videoDescInput = document.getElementById('video-desc')
+
+    // Load videos from Supabase and render
     async function loadVideos() {
       videoList.innerHTML = 'Loading videos...'
 
@@ -741,7 +785,7 @@
         return `
           <div>
             <h3>${video.title}</h3>
-            <p><em>by ${video.uploader_username}</em></p>
+            <p><em>by ${video.uploader_username || 'anonymous'}</em></p>
             ${embed}
             <button class="play-slot-button" onclick="playInSlot('${video.video_url.replace(/'/g, "\\'")}')">▶️ Play in Slot</button>
             <p>${video.description || ''}</p>
@@ -752,11 +796,13 @@
       loadTwitterWidgets()
     }
 
+    // Play video in the big slot player
     window.playInSlot = function(url) {
       videoSlot.innerHTML = getEmbeddedVideoHTML(url, true)
       loadTwitterWidgets()
     }
 
+    // Return embedded HTML for video URL
     function getEmbeddedVideoHTML(url, isSlot = false) {
       const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/)
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
@@ -781,6 +827,7 @@
       return `<p><a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff4f9f;">Open video link</a></p>`
     }
 
+    // Load Twitter widget script for embedded tweets
     function loadTwitterWidgets() {
       if (window.twttr) {
         window.twttr.widgets.load()
@@ -792,6 +839,42 @@
       }
     }
 
+    // Handle form submission to add new video
+    videoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const url = videoUrlInput.value.trim();
+      const title = videoTitleInput.value.trim();
+      const description = videoDescInput.value.trim();
+
+      if (!url || !title) {
+        alert('Please fill in the video URL and title.');
+        return;
+      }
+
+      // For now, we use anonymous uploader (replace with auth if needed)
+      const uploader_username = 'anonymous';
+
+      const { error } = await supabase.from('game_videos').insert([{
+        uploader_username,
+        video_url: url,
+        title,
+        description,
+        created_at: new Date().toISOString()
+      }]);
+
+      if (error) {
+        alert('Failed to submit video: ' + error.message);
+      } else {
+        alert('Video submitted successfully!');
+        videoUrlInput.value = '';
+        videoTitleInput.value = '';
+        videoDescInput.value = '';
+        loadVideos();
+      }
+    });
+
+    // Initial load of videos
     loadVideos()
   </script>
 </body>
