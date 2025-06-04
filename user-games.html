@@ -17,377 +17,87 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User-Submitted Games - BrownDogGames</title>
+  <title>All Users - BrownDogGames</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
+      background: #1a1020;
       font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #2c1b33, #191425);
-      color: #fefefe;
-      padding: 20px;
-      min-height: 100vh;
+      color: #fff;
+      padding: 2rem;
       text-align: center;
     }
     h1 {
-      font-size: 2.5rem;
       color: #ff69b4;
+      font-size: 2rem;
       margin-bottom: 2rem;
-      text-shadow: 2px 2px 0 #000;
+      text-shadow: 1px 1px 0 #000;
     }
-    .game-list {
+    .user-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.5rem;
       justify-content: center;
-      max-width: 1200px;
-      margin: 0 auto 3rem;
-      padding: 0;
-      list-style: none;
+      gap: 1rem;
     }
-    .game-card {
-      background: #2d1a3a;
-      border: 2px solid #ff69b4;
-      border-radius: 16px;
-      box-shadow: 0 0 12px #ff69b4aa;
-      padding: 1rem;
-      max-width: 360px;
-      flex: 1 1 300px;
-      color: #ffc0cb;
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      transition: transform 0.2s, background-color 0.2s;
-    }
-    .game-card:hover {
+    .user-btn {
       background: #ff69b4;
-      color: #1e1b2e;
-      transform: scale(1.05);
-    }
-    .game-title {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #ffccff;
-    }
-    .game-author {
-      font-style: italic;
-      color: #e0a0c0;
-    }
-    iframe, img.screenshot {
-      width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 0 8px #ff69b4cc;
-      aspect-ratio: 16 / 9;
-      background: #1e1b2e;
-      border: none;
-    }
-    .fallback-link {
-      display: inline-block;
-      padding: 0.5rem 1rem;
-      background: #ff69b4;
+      color: #1a1020;
+      padding: 0.75rem 1.25rem;
       border-radius: 12px;
-      color: #1e1b2e;
-      font-weight: bold;
       text-decoration: none;
-      transition: background-color 0.3s ease;
-    }
-    .fallback-link:hover {
-      background: #ff8edb;
-    }
-    #loadingMessage {
-      font-size: 1.2rem;
-      color: #ff69b4;
-    }
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      color: #ff69b4;
       font-weight: bold;
-      text-decoration: none;
-      border: 2px solid #ff69b4;
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      transition: background-color 0.3s, color 0.3s;
+      transition: background 0.2s;
+      box-shadow: 0 0 10px #ff69b4aa;
     }
-    .back-link:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
+    .user-btn:hover {
+      background: #ff8bd8;
     }
   </style>
 </head>
-  
-<!-- Age Gate Start -->
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+<body>
+  <h1>All User Game Pages</h1>
+  <div id="userList" class="user-list">Loading users...</div>
 
-  #age-gate {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.9);
-    display: none; /* Hide by default */
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    z-index: 9999;
-    color: #ff69b4;
-    font-family: 'Rubik Mono One', sans-serif;
-    text-align: center;
-    padding: 20px;
-  }
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  #age-gate.show {
-    display: flex; /* Show when verified needed */
-  }
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
-  #age-gate h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
+    const userListEl = document.getElementById('userList');
 
-  #age-gate p {
-    margin-bottom: 1.5rem;
-    font-size: 1.1rem;
-    color: #ffc0cb;
-  }
+    async function loadUsers() {
+      const { data, error } = await supabase
+        .from('game_submissions')
+        .select('github_user')
+        .order('github_user', { ascending: true });
 
-  #age-gate button {
-    background: #ff69b4;
-    color: #1e1b2e;
-    border: none;
-    padding: 0.7rem 1.4rem;
-    font-weight: bold;
-    font-size: 1rem;
-    border-radius: 8px;
-    margin: 0.5rem;
-    cursor: pointer;
-    transition: background 0.2s;
-    min-width: 120px;
-  }
-
-  #age-gate button:hover {
-    background: #ff8edb;
-  }
-</style>
-
-<div id="age-gate">
-  <h2>🔞 Adults Only</h2>
-  <p>You must be 18 or older to access BrownDogGames.</p>
-  <button id="yes-btn">Yes, I’m 18+</button>
-  <button id="no-btn">No, Take Me Back</button>
-</div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const ageGate = document.getElementById('age-gate');
-    const yesBtn = document.getElementById('yes-btn');
-    const noBtn = document.getElementById('no-btn');
-
-    if (localStorage.getItem('isAdult') === 'true') {
-      // User verified, do not show age gate at all
-      ageGate.classList.remove('show');
-    } else {
-      // Show age gate for verification
-      ageGate.classList.add('show');
-    }
-
-    yesBtn.addEventListener('click', () => {
-      localStorage.setItem('isAdult', 'true');
-      ageGate.classList.remove('show'); // Hide age gate
-    });
-
-    noBtn.addEventListener('click', () => {
-      alert('Sorry, you must be 18 or older to enter.');
-      window.location.href = 'https://google.com'; // Redirect as needed
-    });
-  });
-</script>
-<!-- Age Gate End -->
-
-
-<!-- Auth Bar -->
-<div id="auth-bar" style="max-width: 900px; margin: 0 auto 2rem; background-color: #2a243b; border-radius: 12px; box-shadow: 0 0 12px #00000055; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; font-family: 'Rubik Mono One', sans-serif; color: #fefefe;">
-  <!-- Content injected by JS -->
-</div>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
-  const redirectTo = 'https://browndoggames.com/callback.html';
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-  const container = document.getElementById('auth-bar');
-
-  function createButton(text, onClick) {
-    const btn = document.createElement('button');
-    btn.textContent = text;
-    btn.style.backgroundColor = '#ff69b4';
-    btn.style.color = '#1e1b2e';
-    btn.style.border = 'none';
-    btn.style.padding = '0.7rem 1.4rem';
-    btn.style.fontWeight = 'bold';
-    btn.style.fontSize = '1rem';
-    btn.style.borderRadius = '8px';
-    btn.style.cursor = 'pointer';
-    btn.style.transition = 'background-color 0.2s';
-    btn.style.minWidth = '120px';
-    btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
-    btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
-    btn.addEventListener('click', onClick);
-    return btn;
-  }
-
-  async function renderAuthBar() {
-    const { data: { session } } = await supabase.auth.getSession();
-    container.innerHTML = '';
-
-    if (session?.user) {
-      const { user_metadata } = session.user;
-      const name = user_metadata.full_name || 'GitHub User';
-      const avatar = user_metadata.avatar_url || '';
-
-      // User info container
-      const userDiv = document.createElement('div');
-      userDiv.style.display = 'flex';
-      userDiv.style.alignItems = 'center';
-      userDiv.style.gap = '15px';
-
-      if (avatar) {
-        const img = document.createElement('img');
-        img.src = avatar;
-        img.alt = name;
-        img.style.width = '50px';
-        img.style.height = '50px';
-        img.style.borderRadius = '50%';
-        img.style.border = '3px solid #ff69b4';
-        userDiv.appendChild(img);
+      if (error) {
+        userListEl.textContent = `Error loading users: ${error.message}`;
+        return;
       }
 
-      const userText = document.createElement('div');
-      userText.style.textAlign = 'left';
-      userText.innerHTML = `<strong style="font-size:1.1rem;">${name}</strong><br><small>${session.user.email}</small>`;
-      userDiv.appendChild(userText);
+      // Extract unique users
+      const uniqueUsers = [...new Set(data.map(entry => entry.github_user))];
 
-      container.appendChild(userDiv);
+      if (uniqueUsers.length === 0) {
+        userListEl.textContent = 'No users found.';
+        return;
+      }
 
-      // Logout button
-      const logoutBtn = createButton('Logout', async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
+      userListEl.innerHTML = ''; // Clear loading text
+
+      uniqueUsers.forEach(user => {
+        const a = document.createElement('a');
+        a.className = 'user-btn';
+        a.href = `user.html?user=${encodeURIComponent(user)}`;
+        a.textContent = user;
+        userListEl.appendChild(a);
       });
-      container.appendChild(logoutBtn);
-
-    } else {
-      // Login button
-      const loginBtn = createButton('Login with GitHub', async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo }
-        });
-        if (error) alert('Login error: ' + error.message);
-      });
-      container.appendChild(loginBtn);
-    }
-  }
-
-  renderAuthBar();
-</script>
-  
-<body>
-
-<a href="https://browndoggames.com/index.html" class="back-link">⬅️ Submit Your Own Game</a>
-
-<h1>Community Game Submissions</h1>
-<ul id="gameList" class="game-list"></ul>
-<p id="loadingMessage">Loading games...</p>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  const gameList = document.getElementById('gameList');
-  const loadingMessage = document.getElementById('loadingMessage');
-
-  const isValidUrl = url => {
-    try { new URL(url); return true; }
-    catch { return false; }
-  };
-
-  // Allowed hosts for embedding — itch.io REMOVED because it disallows iframe embedding
-  const allowedHosts = [
-    'github.io',
-    'netlify.app',
-    'vercel.app',
-    'brown-dog-games.github.io',
-    'browndoggames.com'
-  ];
-
-  const isEmbedAllowed = url => {
-    try {
-      const u = new URL(url);
-      return u.protocol === 'https:' && allowedHosts.some(host => u.hostname.endsWith(host));
-    } catch {
-      return false;
-    }
-  };
-
-  // Strip email to username if email format, otherwise return as-is or 'anon'
-  function getDisplayName(user) {
-    if (!user) return 'anon';
-    if (user.includes('@')) return user.split('@')[0];
-    return user;
-  }
-
-  async function loadGames() {
-    const { data, error } = await supabase
-      .from('game_submissions')
-      .select('title, description, embed_url, screenshot_url, github_user')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      loadingMessage.textContent = `Error loading games: ${error.message}`;
-      return;
     }
 
-    if (!data || data.length === 0) {
-      loadingMessage.textContent = 'No games submitted yet. Be the first!';
-      return;
-    }
-
-    loadingMessage.remove();
-
-    data.forEach(({ title, description, embed_url, screenshot_url, github_user }) => {
-      const li = document.createElement('li');
-      li.className = 'game-card';
-
-      li.innerHTML = `
-        <div class="game-title">${title}</div>
-        <div class="game-author">Submitted by: ${getDisplayName(github_user)}</div>
-        <p class="game-description">${description}</p>
-        ${screenshot_url && isValidUrl(screenshot_url) ? `<img class="screenshot" src="${screenshot_url}" alt="${title} screenshot" />` : ''}
-        ${
-          embed_url && isValidUrl(embed_url)
-            ? (isEmbedAllowed(embed_url)
-                ? `<iframe src="${embed_url}" allowfullscreen sandbox="allow-scripts allow-same-origin">Your browser does not support iframes.</iframe>`
-                : `<a href="${embed_url}" target="_blank" rel="noopener noreferrer" class="fallback-link">▶️ Play the game here (opens new tab)</a>`
-              )
-            : `<p style="font-style: italic; color: #d38eb8;">No playable link provided.</p>`
-        }
-      `;
-
-      gameList.appendChild(li);
-    });
-  }
-
-  loadGames();
-</script>
-
+    loadUsers();
+  </script>
 </body>
 </html>
