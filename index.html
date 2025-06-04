@@ -420,86 +420,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Submit Your Game - BrownDogGames</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game Submission</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #2c1b33, #191425);
-      color: #fefefe;
-      padding: 20px;
-      text-align: center;
-      min-height: 100vh;
-    }
-    h1 { font-size: 2.8rem; color: #ff69b4; margin-bottom: 1.5rem; text-shadow: 2px 2px 0 #000; }
-    form {
-      max-width: 480px;
-      margin: 0 auto;
-      background-color: #2d1a3a;
-      border-radius: 14px;
-      padding: 2rem 2.5rem;
-      box-shadow: 0 0 12px #ff69b4cc;
-      text-align: left;
-    }
-    label { display: block; margin-bottom: 0.4rem; color: #ffc0cb; font-weight: 600; }
-    input, textarea {
-      width: 100%; padding: 0.8rem; border-radius: 8px; border: 2px solid #ff69b4;
-      background-color: #1e1b2e; color: #fefefe; font-family: inherit; font-size: 1rem;
-      margin-bottom: 1.25rem;
-    }
-    button {
-      width: 100%; background: #ff69b4; color: #1e1b2e; border: none; padding: 1rem;
-      font-size: 1.3rem; font-weight: 700; border-radius: 12px; cursor: pointer;
-    }
-    button:hover:not(:disabled) { background: #ff8edb; transform: scale(1.05); }
-    button:disabled { background: #aa5a7f; cursor: not-allowed; }
-    .message { margin-top: 1rem; font-style: italic; min-height: 1.6em; color: #ffc0cb; text-align: center; }
-    .message.error { color: #ff6b6b; }
-    .message.success { color: #7df9b6; }
-    #auth { margin: 2rem auto; max-width: 420px; }
-    a.back-link {
-      display: inline-block; margin-top: 2rem; color: #ff69b4; font-weight: 700;
-      text-decoration: none; border: 2px solid #ff69b4; padding: 0.7rem 1.5rem;
-      border-radius: 14px;
-    }
-    a.back-link:hover { background-color: #ff69b4; color: #1e1b2e; }
+    body { font-family: sans-serif; background: #1e1b2e; color: #fff; padding: 2rem; max-width: 600px; margin: auto; }
+    form { display: flex; flex-direction: column; gap: 1rem; background: #2a243b; padding: 1.5rem; border-radius: 12px; box-shadow: 0 0 10px #00000050; }
+    label { font-weight: bold; }
+    input, textarea { padding: 0.6rem; border-radius: 8px; border: none; font-size: 1rem; }
+    button { background: #ff69b4; color: #1e1b2e; font-weight: bold; padding: 0.8rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #ff8edb; }
+    .message { margin-top: 1rem; font-weight: bold; }
+    .error { color: #ff8d8d; }
+    .success { color: #8dffa1; }
+    #auth-bar { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
   </style>
 </head>
 <body>
 
-  <h1>Submit Your Game</h1>
+  <div id="auth-bar"></div>
 
-  <div id="auth"></div>
-
-  <form id="submitForm" autocomplete="off" spellcheck="false" novalidate hidden>
-    <label for="githubUser">GitHub Username *</label>
-    <input type="text" id="githubUser" name="githubUser" required placeholder="e.g. yourGitHubName" />
-
-    <label for="title">Game Title *</label>
-    <input type="text" id="title" name="title" required />
-
-    <label for="description">Game Description</label>
-    <textarea id="description" name="description" placeholder="Tell us about your game"></textarea>
-
-    <label for="embedUrl">Embed URL (iframe src link)</label>
-    <input type="url" id="embedUrl" name="embedUrl" placeholder="https://..." />
-
-    <label for="screenshotUrl">Screenshot URL</label>
-    <input type="url" id="screenshotUrl" name="screenshotUrl" placeholder="https://..." />
-
+  <form id="submitForm" hidden>
+    <label>
+      GitHub Username:
+      <input type="text" id="githubUser" required />
+    </label>
+    <label>
+      Game Title:
+      <input type="text" id="title" required />
+    </label>
+    <label>
+      Description:
+      <textarea id="description" required></textarea>
+    </label>
+    <label>
+      Embed URL:
+      <input type="url" id="embedUrl" required />
+    </label>
+    <label>
+      Screenshot URL (optional):
+      <input type="url" id="screenshotUrl" />
+    </label>
     <button type="submit" id="submitBtn">Submit Game</button>
   </form>
 
-  <p class="message" id="formMessage" aria-live="polite" role="alert"></p>
-
-  <a href="user-games.html" class="back-link">View All User Pages</a>
+  <p class="message" id="formMessage" aria-live="polite"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-    import { Auth } from 'https://cdn.jsdelivr.net/npm/@supabase/auth-ui@0/+esm';
-    import { ThemeSupa } from 'https://cdn.jsdelivr.net/npm/@supabase/auth-ui-shared/+esm';
 
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
@@ -507,104 +474,81 @@
   );
 
     const form = document.getElementById('submitForm');
-    const messageEl = document.getElementById('formMessage');
+    const message = document.getElementById('formMessage');
     const submitBtn = document.getElementById('submitBtn');
-    const authContainer = document.getElementById('auth');
+    const authBar = document.getElementById('auth-bar');
 
-    // Show Auth UI if not logged in
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      Auth(authContainer, {
-        supabaseClient: supabase,
-        appearance: { theme: ThemeSupa },
-        theme: 'dark',
-        showLinks: true,
-        providers: ['github']
-      });
-    } else {
-      authContainer.style.display = 'none';
-      form.hidden = false;
+    function showMessage(text, type = '') {
+      message.textContent = text;
+      message.className = `message ${type}`;
     }
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        location.reload();
+    async function renderAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      authBar.innerHTML = '';
+
+      if (session?.user) {
+        const user = session.user;
+        const avatar = user.user_metadata.avatar_url || '';
+        const name = user.user_metadata.full_name || user.email;
+
+        const userInfo = document.createElement('div');
+        userInfo.innerHTML = `<img src="${avatar}" style="width:40px;height:40px;border-radius:50%;margin-right:10px;border:2px solid #ff69b4;"> <strong>${name}</strong>`;
+        userInfo.style.display = 'flex';
+        userInfo.style.alignItems = 'center';
+        authBar.appendChild(userInfo);
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = async () => {
+          await supabase.auth.signOut();
+          location.reload();
+        };
+        authBar.appendChild(logoutBtn);
+
+        form.hidden = false;
+
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          submitBtn.disabled = true;
+          showMessage('');
+
+          const data = {
+            user_id: user.id,
+            github_user: document.getElementById('githubUser').value.trim(),
+            title: document.getElementById('title').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            embed_url: document.getElementById('embedUrl').value.trim(),
+            screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
+            created_at: new Date().toISOString()
+          };
+
+          const { error } = await supabase.from('game_submissions').insert([data]);
+          if (error) {
+            showMessage('Submission failed: ' + error.message, 'error');
+            submitBtn.disabled = false;
+          } else {
+            showMessage('Game submitted successfully!', 'success');
+            form.reset();
+            submitBtn.disabled = false;
+          }
+        };
+
+      } else {
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with GitHub';
+        loginBtn.onclick = async () => {
+          await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: { redirectTo: location.href }
+          });
+        };
+        authBar.appendChild(loginBtn);
+        form.hidden = true;
       }
-    });
+    }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      messageEl.textContent = '';
-      messageEl.className = 'message';
-      submitBtn.disabled = true;
-
-      const {
-        data: { user },
-        error: authError
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        messageEl.textContent = 'You must be logged in to submit a game.';
-        messageEl.classList.add('error');
-        submitBtn.disabled = false;
-        return;
-      }
-
-      const user_id = user.id;
-      const github_user = form.githubUser.value.trim();
-      const title = form.title.value.trim();
-      const description = form.description.value.trim();
-      const embed_url = form.embedUrl.value.trim();
-      const screenshot_url = form.screenshotUrl.value.trim();
-
-      const urlPattern = /^https?:\/\/.+$/i;
-      if (!github_user || !title) {
-        messageEl.textContent = 'Please fill in the required fields.';
-        messageEl.classList.add('error');
-        submitBtn.disabled = false;
-        return;
-      }
-      if (embed_url && !urlPattern.test(embed_url)) {
-        messageEl.textContent = 'Embed URL must be valid.';
-        messageEl.classList.add('error');
-        submitBtn.disabled = false;
-        return;
-      }
-      if (screenshot_url && !urlPattern.test(screenshot_url)) {
-        messageEl.textContent = 'Screenshot URL must be valid.';
-        messageEl.classList.add('error');
-        submitBtn.disabled = false;
-        return;
-      }
-
-      const { error } = await supabase.from('game_submissions').insert([
-        {
-          user_id,
-          github_user,
-          title,
-          description,
-          embed_url,
-          screenshot_url,
-          created_at: new Date().toISOString()
-        }
-      ]);
-
-      if (error) {
-        messageEl.textContent = `Error: ${error.message}`;
-        messageEl.classList.add('error');
-        submitBtn.disabled = false;
-        return;
-      }
-
-      messageEl.textContent = 'Game submitted! Redirecting...';
-      messageEl.classList.add('success');
-      form.reset();
-
-      setTimeout(() => {
-        window.location.href = `user.html?user=${encodeURIComponent(github_user)}`;
-      }, 1600);
-    });
+    renderAuth();
   </script>
 </body>
 </html>
