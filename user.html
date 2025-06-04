@@ -592,6 +592,130 @@
 
     // ----------- Chat Section -----------
 
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game Chat - BrownDogGames</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      color: #fefefe;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+    }
+
+    #game-id-container {
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
+
+    #game-id-label {
+      font-size: 1.2rem;
+      color: #ff4f9f;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    #game-id {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ff4f9f;
+      border-radius: 8px;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    #messages {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 0 auto 20px;
+      max-width: 600px;
+    }
+
+    #messages div {
+      margin-bottom: 12px;
+    }
+
+    #messages strong {
+      color: #ff82ba;
+    }
+
+    #chat-form {
+      display: flex;
+      gap: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #msg-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    button {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #ff82ba;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Game Chat</h1>
+
+  <div id="game-id-container">
+    <label id="game-id-label" for="game-id">Game ID:</label>
+    <input type="text" id="game-id" value="naked-fang" readonly />
+  </div>
+
+  <div id="messages">
+    <p>Loading messages...</p>
+  </div>
+
+  <form id="chat-form">
+    <input type="text" id="msg-input" placeholder="Type a message..." required />
+    <button type="submit">Send</button>
+  </form>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
     const msgInput = document.getElementById('msg-input');
@@ -627,9 +751,11 @@
         return;
       }
 
-      messagesDiv.innerHTML = data.map(m =>
-        `<div><strong>${m.github_username || 'Guest'}:</strong> ${m.content}</div>`
-      ).join('');
+      messagesDiv.innerHTML = data.map(m => `
+        <div>
+          <strong>${m.github_username || 'Guest'}:</strong> ${m.content}
+        </div>
+      `).join('');
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
@@ -662,7 +788,7 @@
       })
       .subscribe();
 
-    // Initial chat load
+    // Initial load
     loadMessages();
   </script>
 </body>
