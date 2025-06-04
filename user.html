@@ -708,14 +708,12 @@
 
   <h1>Submit Your Gameplay Videos</h1>
 
-  <!-- Game Name Input -->
   <div id="game-select">
     <h2>Enter Game Name:</h2>
     <input type="text" id="game-name-input" placeholder="Type game name here..." />
     <button id="select-game-btn">Select Game</button>
   </div>
 
-  <!-- Video Section Hidden Initially -->
   <div id="video-section" style="display:none;">
     <h2>🎥 Gameplay Videos</h2>
     <form id="video-form">
@@ -736,7 +734,6 @@
 
     const gameNameInput = document.getElementById('game-name-input')
     const selectGameBtn = document.getElementById('select-game-btn')
-
     const videoSection = document.getElementById('video-section')
     const videoForm = document.getElementById('video-form')
     const videoList = document.getElementById('video-list')
@@ -747,7 +744,7 @@
     let selectedGameId = null
 
     async function getUserGitHubUsername() {
-      // Placeholder - replace with your auth logic
+      // Placeholder - replace with real auth later
       return 'testUser'
     }
 
@@ -764,7 +761,6 @@
 
     videoForm.addEventListener('submit', async e => {
       e.preventDefault()
-
       const url = videoUrl.value.trim()
       const title = videoTitle.value.trim()
       const desc = videoDesc.value.trim()
@@ -793,7 +789,6 @@
       videoUrl.value = ''
       videoTitle.value = ''
       videoDesc.value = ''
-
       loadVideos()
     })
 
@@ -829,22 +824,48 @@
           </div>
         `
       }).join('')
+
+      loadTwitterWidgets()
     }
 
     function getEmbeddedVideoHTML(url) {
       const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/)
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
+      const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)
+      const twitterMatch = url.match(/twitter\.com\/(?:\w+)\/status\/(\d+)/)
+
       if (ytMatch) {
-        return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`
       }
       if (vimeoMatch) {
-        return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>`
+        return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" frameborder="0" allowfullscreen></iframe>`
       }
+      if (driveMatch) {
+        const id = driveMatch[1]
+        return `<iframe src="https://drive.google.com/uc?export=preview&id=${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+      }
+      if (twitterMatch) {
+        const tweetId = twitterMatch[1]
+        return `<blockquote class="twitter-video" data-lang="en"><a href="https://twitter.com/i/status/${tweetId}"></a></blockquote>`
+      }
+
       return `<video src="${url}" controls></video>`
+    }
+
+    function loadTwitterWidgets() {
+      if (window.twttr) {
+        window.twttr.widgets.load()
+      } else {
+        const script = document.createElement('script')
+        script.src = "https://platform.twitter.com/widgets.js"
+        script.async = true
+        document.body.appendChild(script)
+      }
     }
   </script>
 
 </body>
 </html>
+
 
 
