@@ -279,6 +279,36 @@
       });
       container.appendChild(loginBtn);
     }
+    
+    <div id="auth-bar"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  const authBar = document.getElementById('auth-bar');
+
+  async function showAuthBar() {
+    const { data: { session } } = await supabase.auth.getSession();
+    authBar.innerHTML = '';
+
+    if (session?.user) {
+      const myGamesBtn = document.createElement('button');
+      myGamesBtn.textContent = 'My Games';
+      myGamesBtn.style = 'background:#ff69b4;color:#1e1b2e;padding:0.6rem 1.2rem;border-radius:8px;font-weight:bold;cursor:pointer;border:none;';
+      myGamesBtn.onclick = () => {
+        window.location.href = 'submit.html'; // or 'user-games.html' if you prefer
+      };
+      authBar.appendChild(myGamesBtn);
+    }
+  }
+
+  showAuthBar();
+</script>
 
   }
 
