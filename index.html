@@ -426,14 +426,13 @@
 
     body {
       background: linear-gradient(135deg, #2a2240, #3a2e57);
-      font-family: 'Rubik Mono One', sans-serif;
+      font-family: 'Rubik Mono One', monospace;
       color: #f0d6e8;
       padding: 3rem 1rem;
       max-width: 600px;
       margin: auto;
       text-align: center;
       user-select: none;
-      /* softer text shadow for subtle depth */
       text-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
 
@@ -443,7 +442,6 @@
       margin-bottom: 2rem;
       letter-spacing: 0.1em;
       font-weight: 700;
-      /* subtle shadow for glow */
       text-shadow:
         0 0 6px #d48abf88,
         0 0 12px #c275b280;
@@ -461,8 +459,7 @@
       background: #392d54;
       border-radius: 12px;
       padding: 2.5rem 2rem 3rem;
-      box-shadow:
-        0 4px 15px rgba(225, 161, 202, 0.4);
+      box-shadow: 0 4px 15px rgba(225, 161, 202, 0.4);
       display: flex;
       flex-direction: column;
       gap: 1.3rem;
@@ -470,8 +467,7 @@
     }
 
     form:hover {
-      box-shadow:
-        0 6px 22px rgba(240, 183, 214, 0.6);
+      box-shadow: 0 6px 22px rgba(240, 183, 214, 0.6);
     }
 
     label {
@@ -523,8 +519,7 @@
       color: #2f203f;
       font-size: 1.25rem;
       cursor: pointer;
-      box-shadow:
-        0 4px 12px rgba(194, 117, 178, 0.6);
+      box-shadow: 0 4px 12px rgba(194, 117, 178, 0.6);
       transition: background 0.35s ease, transform 0.15s ease;
       user-select: none;
       letter-spacing: 0.08em;
@@ -533,8 +528,7 @@
 
     button:hover {
       background: #e1a1ca;
-      box-shadow:
-        0 6px 20px rgba(225, 161, 202, 0.8);
+      box-shadow: 0 6px 20px rgba(225, 161, 202, 0.8);
       transform: scale(1.05);
     }
 
@@ -546,10 +540,17 @@
     .message {
       margin-top: 1rem;
       font-style: italic;
-      color: #d4b1cb;
       min-height: 1.5em;
       user-select: text;
       transition: color 0.3s ease;
+    }
+
+    .message.error {
+      color: #f66a6a;
+    }
+
+    .message.success {
+      color: #a8f0c6;
     }
 
     .back-link {
@@ -571,9 +572,7 @@
     .back-link:hover {
       background-color: #c47cb6;
       color: #2f203f;
-      box-shadow:
-        0 0 18px #dba1d1cc,
-        0 5px 15px #dba1d1cc;
+      box-shadow: 0 0 18px #dba1d1cc, 0 5px 15px #dba1d1cc;
     }
 
     @media (max-width: 480px) {
@@ -623,18 +622,18 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
     const form = document.getElementById('submitForm');
     const messageEl = document.getElementById('formMessage');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      messageEl.style.color = '#d4b1cb';
       messageEl.textContent = '';
+      messageEl.className = 'message';
 
       const githubUser = form.githubUser.value.trim();
       const title = form.title.value.trim();
@@ -645,14 +644,17 @@
       const urlPattern = /^https?:\/\/.+$/i;
       if (!githubUser || !title) {
         messageEl.textContent = 'Please fill in the required fields.';
+        messageEl.classList.add('error');
         return;
       }
       if (embed_url && !urlPattern.test(embed_url)) {
         messageEl.textContent = 'Embed URL must be a valid URL.';
+        messageEl.classList.add('error');
         return;
       }
       if (screenshot_url && !urlPattern.test(screenshot_url)) {
         messageEl.textContent = 'Screenshot URL must be a valid URL.';
+        messageEl.classList.add('error');
         return;
       }
 
@@ -662,11 +664,12 @@
 
       if (error) {
         messageEl.textContent = `Error submitting game: ${error.message}`;
+        messageEl.classList.add('error');
         return;
       }
 
-      messageEl.style.color = '#a8f0c6';
       messageEl.textContent = 'Game submitted successfully! Redirecting...';
+      messageEl.classList.add('success');
       form.reset();
 
       setTimeout(() => {
