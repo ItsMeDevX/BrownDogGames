@@ -845,6 +845,37 @@
 
     loadVideos();
   </script>
+// Show all videos from the game_videos table as clickable links
+async function showAllVideoLinks() {
+  const { data, error } = await supabase
+    .from('game_videos')
+    .select('*')
+    .order('created_at', { ascending: false });
 
+  if (error) {
+    console.error('Error loading videos:', error.message);
+    return;
+  }
+
+  if (!data.length) {
+    videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>';
+    return;
+  }
+
+  videoList.innerHTML = data.map(video => `
+    <div style="margin-bottom: 1.5rem; padding: 1rem; background: #2f1a39; border-radius: 12px;">
+      <h3 style="color: #ff4f9f;">${video.title}</h3>
+      <p><strong>by ${video.uploader_username}</strong></p>
+      <p><a href="${video.video_url}" target="_blank" style="color: #9fd4ff;">🔗 Watch Video</a></p>
+      <p>${video.description || ''}</p>
+    </div>
+  `).join('');
+}
+
+// Call it right away
+showAllVideoLinks();
+
+
+  
 </body>
 </html>
