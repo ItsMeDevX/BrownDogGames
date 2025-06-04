@@ -728,62 +728,53 @@
   </div>
 
   <script type="module">
-    // Supabase initialization
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    // TODO: Replace with your actual Supabase URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Elements
-    const gameSelectDiv = document.getElementById('game-select');
-    const gameNameInput = document.getElementById('game-name-input');
-    const selectGameBtn = document.getElementById('select-game-btn');
+    const gameNameInput = document.getElementById('game-name-input')
+    const selectGameBtn = document.getElementById('select-game-btn')
 
-    const videoSection = document.getElementById('video-section');
-    const videoForm = document.getElementById('video-form');
-    const videoList = document.getElementById('video-list');
-    const videoUrl = document.getElementById('video-url');
-    const videoTitle = document.getElementById('video-title');
-    const videoDesc = document.getElementById('video-desc');
+    const videoSection = document.getElementById('video-section')
+    const videoForm = document.getElementById('video-form')
+    const videoList = document.getElementById('video-list')
+    const videoUrl = document.getElementById('video-url')
+    const videoTitle = document.getElementById('video-title')
+    const videoDesc = document.getElementById('video-desc')
 
-    let selectedGameId = null;
+    let selectedGameId = null
 
-    // Mock function - replace with your auth logic to get GitHub username
     async function getUserGitHubUsername() {
-      // For now, return a test username:
-      return 'testUser';
+      // Placeholder - replace with your auth logic
+      return 'testUser'
     }
 
-    // Handle game selection via typed input
     selectGameBtn.addEventListener('click', () => {
-      const gameName = gameNameInput.value.trim();
+      const gameName = gameNameInput.value.trim()
       if (!gameName) {
-        alert('Please enter a game name.');
-        return;
+        alert('Please enter a game name.')
+        return
       }
-      selectedGameId = gameName;
+      selectedGameId = gameName
+      videoSection.style.display = 'block'
+      loadVideos()
+    })
 
-      // Show video section and load videos
-      videoSection.style.display = 'block';
-      loadVideos();
-    });
+    videoForm.addEventListener('submit', async e => {
+      e.preventDefault()
 
-    // Submit video form handler
-    videoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const url = videoUrl.value.trim();
-      const title = videoTitle.value.trim();
-      const desc = videoDesc.value.trim();
+      const url = videoUrl.value.trim()
+      const title = videoTitle.value.trim()
+      const desc = videoDesc.value.trim()
 
       if (!url || !title || !selectedGameId) {
-        alert('Please select a game and fill out all required fields.');
-        return;
+        alert('Please select a game and fill out all required fields.')
+        return
       }
 
-      const username = await getUserGitHubUsername();
+      const username = await getUserGitHubUsername()
 
       const { error } = await supabase.from('game_videos').insert([{
         game_id: selectedGameId,
@@ -792,44 +783,43 @@
         title,
         description: desc,
         created_at: new Date().toISOString()
-      }]);
+      }])
 
       if (error) {
-        alert('❌ Failed to upload video: ' + error.message);
-        return;
+        alert('❌ Failed to upload video: ' + error.message)
+        return
       }
 
-      videoUrl.value = '';
-      videoTitle.value = '';
-      videoDesc.value = '';
+      videoUrl.value = ''
+      videoTitle.value = ''
+      videoDesc.value = ''
 
-      loadVideos();
-    });
+      loadVideos()
+    })
 
-    // Load and display videos for selected game
     async function loadVideos() {
-      if (!selectedGameId) return;
+      if (!selectedGameId) return
 
-      videoList.innerHTML = '<p>Loading videos...</p>';
+      videoList.innerHTML = '<p>Loading videos...</p>'
 
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
         .eq('game_id', selectedGameId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
 
       if (error) {
-        videoList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
-        return;
+        videoList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`
+        return
       }
 
       if (!data.length) {
-        videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>';
-        return;
+        videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>'
+        return
       }
 
       videoList.innerHTML = data.map(video => {
-        const embed = getEmbeddedVideoHTML(video.video_url);
+        const embed = getEmbeddedVideoHTML(video.video_url)
         return `
           <div>
             <h3>${video.title}</h3>
@@ -837,22 +827,20 @@
             ${embed}
             <p>${video.description || ''}</p>
           </div>
-        `;
-      }).join('');
+        `
+      }).join('')
     }
 
-    // Helper to embed YouTube, Vimeo or direct MP4 videos
     function getEmbeddedVideoHTML(url) {
-      const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/);
-      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+      const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/)
+      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
       if (ytMatch) {
-        return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`;
+        return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`
       }
       if (vimeoMatch) {
-        return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>`;
+        return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>`
       }
-      // Default for direct mp4 links
-      return `<video src="${url}" controls></video>`;
+      return `<video src="${url}" controls></video>`
     }
   </script>
 
