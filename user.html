@@ -725,7 +725,7 @@
   <div id="video-section" style="display:none;">
     <h2>🎥 Gameplay Videos</h2>
     <form id="video-form">
-      <input type="url" id="video-url" placeholder="Video URL (YouTube, Drive MP4, direct MP4 link...)" required />
+      <input type="url" id="video-url" placeholder="Video URL (YouTube, Twitter, Vimeo, direct MP4 link...)" required />
       <input type="text" id="video-title" placeholder="Video Title" required />
       <textarea id="video-desc" placeholder="Short description..."></textarea>
       <button type="submit">📤 Submit Video</button>
@@ -840,7 +840,7 @@
     function getEmbeddedVideoHTML(url) {
       const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/)
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
-      const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)
+      // Removed Google Drive embed pattern to avoid download issues
       const twitterMatch = url.match(/twitter\.com\/(?:\w+)\/status\/(\d+)/)
       const mp4Match = url.match(/\.(mp4)(\?.*)?$/i)
 
@@ -849,10 +849,6 @@
       }
       if (vimeoMatch) {
         return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" frameborder="0" allowfullscreen></iframe>`
-      }
-      if (driveMatch) {
-        const id = driveMatch[1]
-        return `<iframe src="https://drive.google.com/uc?export=preview&id=${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
       }
       if (twitterMatch) {
         const tweetId = twitterMatch[1]
@@ -877,15 +873,11 @@
       }
     }
 
-    // Test embed for your Drive video — update the ID for your own files
-    const testDriveId = '1OYPOlpBzUAivKLbIFOqCZJCwrim1M3sd'
-    const embedHtml = `<iframe src="https://drive.google.com/uc?export=preview&id=${testDriveId}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
-    document.getElementById('test-drive-video').innerHTML = embedHtml
+    // Removed test Drive video embed
 
   </script>
 </body>
 </html>
-
 
 
 
