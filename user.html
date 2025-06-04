@@ -637,149 +637,221 @@
     }
   </script>
 
-<!-- ✂️ Head section remains the same ... -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Video Submission</title>
+  <style>
+    body {
+      background-color: #1e1e2f;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    #game-list button {
+      background: #ff4f9f;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      margin: 0.2rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+    #game-list button.selected {
+      background: #e02982;
+    }
+    #video-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+    #video-form input,
+    #video-form textarea {
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: white;
+      font-size: 1rem;
+    }
+    #video-list iframe,
+    #video-list video {
+      width: 100%;
+      max-width: 700px;
+      height: 400px;
+      margin-bottom: 1.5rem;
+      border: none;
+      border-radius: 12px;
+    }
+    #video-list h3 {
+      margin-bottom: 0.2rem;
+    }
+    #video-list p {
+      margin: 0.2rem 0 1rem 0;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
 
-<!-- Add after #chat-container -->
-<div id="video-section" style="display:none;">
-  <h2>🎥 Gameplay Videos</h2>
-  <form id="video-form">
-    <input type="url" id="video-url" placeholder="Video URL (e.g. YouTube, MP4)" required />
-    <input type="text" id="video-title" placeholder="Video Title" required />
-    <textarea id="video-desc" placeholder="Short description..."></textarea>
-    <button type="submit">📤 Submit Video</button>
-  </form>
-  <div id="video-list" style="margin-top: 2rem;"></div>
-</div>
+  <h1>Submit Your Gameplay Videos</h1>
 
-<!-- Add to <style> section -->
-<style>
-  #video-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 1rem;
-  }
+  <!-- Sample Game List -->
+  <div id="game-list">
+    <h2>Select a Game:</h2>
+    <button data-game-id="game123">Super Cool Game</button>
+    <button data-game-id="game456">Another Fun Game</button>
+    <button data-game-id="game789">Epic Adventure</button>
+  </div>
 
-  #video-form input,
-  #video-form textarea {
-    padding: 10px;
-    border-radius: 8px;
-    border: 2px solid #ff4f9f;
-    background-color: #2f1a39;
-    color: white;
-    font-size: 1rem;
-  }
+  <!-- Video Section Hidden Initially -->
+  <div id="video-section" style="display:none;">
+    <h2>🎥 Gameplay Videos</h2>
+    <form id="video-form">
+      <input type="url" id="video-url" placeholder="Video URL (e.g. YouTube, MP4)" required />
+      <input type="text" id="video-title" placeholder="Video Title" required />
+      <textarea id="video-desc" placeholder="Short description..."></textarea>
+      <button type="submit">📤 Submit Video</button>
+    </form>
+    <div id="video-list" style="margin-top: 2rem;"></div>
+  </div>
 
-  #video-list iframe,
-  #video-list video {
-    width: 100%;
-    max-width: 700px;
-    height: 400px;
-    margin-bottom: 1.5rem;
-    border: none;
-    border-radius: 12px;
-  }
+  <script type="module">
+    // Supabase initialization
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  #video-list h3 {
-    margin-bottom: 0.2rem;
-  }
+    // TODO: Replace with your actual Supabase URL and anon key
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-  #video-list p {
-    margin: 0.2rem 0 1rem 0;
-    color: #ccc;
-  }
-</style>
+    // Elements
+    const gameList = document.getElementById('game-list');
+    const videoSection = document.getElementById('video-section');
+    const videoForm = document.getElementById('video-form');
+    const videoList = document.getElementById('video-list');
+    const videoUrl = document.getElementById('video-url');
+    const videoTitle = document.getElementById('video-title');
+    const videoDesc = document.getElementById('video-desc');
 
-<!-- Add to <script type="module"> -->
-<script type="module">
-  // Inside existing <script> after chat logic
-  const videoSection = document.getElementById('video-section');
-  const videoForm = document.getElementById('video-form');
-  const videoList = document.getElementById('video-list');
-  const videoUrl = document.getElementById('video-url');
-  const videoTitle = document.getElementById('video-title');
-  const videoDesc = document.getElementById('video-desc');
+    let selectedGameId = null;
 
-  videoForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const url = videoUrl.value.trim();
-    const title = videoTitle.value.trim();
-    const desc = videoDesc.value.trim();
-
-    if (!url || !title || !selectedGameId) return;
-
-    const username = await getUserGitHubUsername();
-
-    const { error } = await supabase.from('game_videos').insert([{
-      game_id: selectedGameId,
-      uploader_username: username,
-      video_url: url,
-      title,
-      description: desc
-    }]);
-
-    if (error) {
-      alert('❌ Failed to upload video: ' + error.message);
-      return;
+    // Mock function - replace with your auth logic to get GitHub username
+    async function getUserGitHubUsername() {
+      // For now, return a test username:
+      return 'testUser';
     }
 
-    videoUrl.value = '';
-    videoTitle.value = '';
-    videoDesc.value = '';
+    // Handle game selection
+    gameList.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        // Remove "selected" from all buttons
+        gameList.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
 
-    loadVideos();
-  });
+        // Mark clicked button selected
+        e.target.classList.add('selected');
 
-  async function loadVideos() {
-    if (!selectedGameId) return;
+        // Set selected game ID
+        selectedGameId = e.target.dataset.gameId;
 
-    const { data, error } = await supabase
-      .from('game_videos')
-      .select('*')
-      .eq('game_id', selectedGameId)
-      .order('created_at', { ascending: false });
+        // Show video section and load videos
+        videoSection.style.display = 'block';
+        loadVideos();
+      }
+    });
 
-    if (error) {
-      videoList.innerHTML = `<p style="color:red;">Error loading videos</p>`;
-      return;
+    // Submit video form handler
+    videoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const url = videoUrl.value.trim();
+      const title = videoTitle.value.trim();
+      const desc = videoDesc.value.trim();
+
+      if (!url || !title || !selectedGameId) {
+        alert('Please select a game and fill out all required fields.');
+        return;
+      }
+
+      const username = await getUserGitHubUsername();
+
+      const { error } = await supabase.from('game_videos').insert([{
+        game_id: selectedGameId,
+        uploader_username: username,
+        video_url: url,
+        title,
+        description: desc,
+        created_at: new Date().toISOString()
+      }]);
+
+      if (error) {
+        alert('❌ Failed to upload video: ' + error.message);
+        return;
+      }
+
+      videoUrl.value = '';
+      videoTitle.value = '';
+      videoDesc.value = '';
+
+      loadVideos();
+    });
+
+    // Load and display videos for selected game
+    async function loadVideos() {
+      if (!selectedGameId) return;
+
+      videoList.innerHTML = '<p>Loading videos...</p>';
+
+      const { data, error } = await supabase
+        .from('game_videos')
+        .select('*')
+        .eq('game_id', selectedGameId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        videoList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
+        return;
+      }
+
+      if (!data.length) {
+        videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>';
+        return;
+      }
+
+      videoList.innerHTML = data.map(video => {
+        const embed = getEmbeddedVideoHTML(video.video_url);
+        return `
+          <div>
+            <h3>${video.title}</h3>
+            <p><em>by ${video.uploader_username}</em></p>
+            ${embed}
+            <p>${video.description || ''}</p>
+          </div>
+        `;
+      }).join('');
     }
 
-    if (!data.length) {
-      videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>';
-      return;
+    // Helper to embed YouTube, Vimeo or direct MP4 videos
+    function getEmbeddedVideoHTML(url) {
+      const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/);
+      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+      if (ytMatch) {
+        return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`;
+      }
+      if (vimeoMatch) {
+        return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>`;
+      }
+      // Default for direct mp4 links
+      return `<video src="${url}" controls></video>`;
     }
+  </script>
 
-    videoList.innerHTML = data.map(video => {
-      const embed = getEmbeddedVideoHTML(video.video_url);
-      return `
-        <div>
-          <h3>${video.title}</h3>
-          <p><em>by ${video.uploader_username}</em></p>
-          ${embed}
-          <p>${video.description || ''}</p>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function getEmbeddedVideoHTML(url) {
-    const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/);
-    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-    if (ytMatch) {
-      return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`;
-    }
-    if (vimeoMatch) {
-      return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>`;
-    }
-    // Default for direct mp4 links
-    return `<video src="${url}" controls></video>`;
-  }
-
-  // 🔄 Inside selectGame function, add at the end:
-  videoSection.style.display = 'block';
-  loadVideos();
-</script>
-
-  
 </body>
 </html>
+
