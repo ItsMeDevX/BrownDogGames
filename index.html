@@ -420,47 +420,172 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Game Submission</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submit Your Game - BrownDogGames</title>
   <style>
-    body { font-family: sans-serif; background: #1e1b2e; color: #fff; padding: 2rem; max-width: 600px; margin: auto; }
-    form { display: flex; flex-direction: column; gap: 1rem; background: #2a243b; padding: 1.5rem; border-radius: 12px; box-shadow: 0 0 10px #00000050; }
-    label { font-weight: bold; }
-    input, textarea { padding: 0.6rem; border-radius: 8px; border: none; font-size: 1rem; }
-    button { background: #ff69b4; color: #1e1b2e; font-weight: bold; padding: 0.8rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; }
-    button:hover { background: #ff8edb; }
-    .message { margin-top: 1rem; font-weight: bold; }
-    .error { color: #ff8d8d; }
-    .success { color: #8dffa1; }
-    #auth-bar { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-    #auth-bar > div { display: flex; align-items: center; gap: 10px; }
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    /* Reset & basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 1rem;
+    }
+
+    form {
+      background-color: #2d1a3a;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #ff69b4aa;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      text-align: left;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      color: #ffc0cb;
+      margin-bottom: 0.3rem;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1rem;
+      background-color: #3b2750;
+      color: #fefefe;
+      resize: vertical;
+    }
+
+    input[type="text"]::placeholder,
+    input[type="url"]::placeholder,
+    textarea::placeholder {
+      color: #d3a3cf;
+    }
+
+    button[type="submit"] {
+      background: #ff69b4;
+      color: #1e1b2e;
+      font-weight: bold;
+      padding: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.3s ease;
+      align-self: center;
+      width: 150px;
+      margin-top: 1rem;
+    }
+
+    button[type="submit"]:hover {
+      background: #ff8edb;
+    }
+
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    .error {
+      color: #ff8d8d;
+    }
+
+    .success {
+      color: #8dffa1;
+    }
+
+    #auth-bar {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: #ffc0cb;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    #auth-bar > div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #auth-bar button {
+      background: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #auth-bar button:hover {
+      background: #ff8edb;
+    }
+
+    #auth-bar img {
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      width: 40px;
+      height: 40px;
+    }
   </style>
 </head>
 <body>
 
+  <h1>Submit Your Game</h1>
   <div id="auth-bar"></div>
 
   <form id="submitForm" hidden>
-    <label>
-      GitHub Username:
-      <input type="text" id="githubUser" required />
-    </label>
-    <label>
-      Game Title:
-      <input type="text" id="title" required />
-    </label>
-    <label>
-      Description:
-      <textarea id="description" required></textarea>
-    </label>
-    <label>
-      Embed URL:
-      <input type="url" id="embedUrl" required />
-    </label>
-    <label>
-      Screenshot URL (optional):
-      <input type="url" id="screenshotUrl" />
-    </label>
+    <label for="githubUser">GitHub Username:</label>
+    <input type="text" id="githubUser" placeholder="Your GitHub username" required />
+
+    <label for="title">Game Title:</label>
+    <input type="text" id="title" placeholder="Enter your game title" required />
+
+    <label for="description">Description:</label>
+    <textarea id="description" rows="4" placeholder="Brief description of your game" required></textarea>
+
+    <label for="embedUrl">Embed URL:</label>
+    <input type="url" id="embedUrl" placeholder="URL to embed your game" required />
+
+    <label for="screenshotUrl">Screenshot URL (optional):</label>
+    <input type="url" id="screenshotUrl" placeholder="Link to a screenshot" />
+
     <button type="submit" id="submitBtn">Submit Game</button>
   </form>
 
@@ -469,10 +594,10 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ'
+    );
 
     const form = document.getElementById('submitForm');
     const message = document.getElementById('formMessage');
@@ -494,7 +619,7 @@
         const name = user.user_metadata.full_name || user.email;
 
         const userInfo = document.createElement('div');
-        userInfo.innerHTML = `<img src="${avatar}" alt="Avatar" style="width:40px;height:40px;border-radius:50%;border:2px solid #ff69b4;"> <strong>${name}</strong>`;
+        userInfo.innerHTML = `<img src="${avatar}" alt="Avatar" /> <strong>${name}</strong>`;
 
         const buttonsDiv = document.createElement('div');
 
@@ -542,7 +667,6 @@
             showMessage('Game submitted successfully!', 'success');
             form.reset();
             submitBtn.disabled = false;
-            // Redirect after short delay:
             setTimeout(() => {
               window.location.href = 'thank-you.html';
             }, 1500);
