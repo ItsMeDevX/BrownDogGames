@@ -643,7 +643,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gameplay Videos</title>
+  <title>Game Video Submission</title>
   <style>
     body {
       background-color: #1e1e2f;
@@ -652,6 +652,41 @@
       padding: 2rem;
       max-width: 800px;
       margin: auto;
+    }
+    #video-form input,
+    #video-form textarea {
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: white;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    #video-form button {
+      background: #ff4f9f;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      padding: 10px 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+    #video-slot {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+    #video-slot h2 {
+      margin-bottom: 1rem;
+    }
+    #video-slot .slot-player {
+      width: 100%;
+      max-width: 700px;
+      height: 400px;
+      border-radius: 12px;
+      border: none;
     }
     #video-list iframe,
     #video-list video {
@@ -669,20 +704,6 @@
       margin: 0.2rem 0 1rem 0;
       color: #ccc;
     }
-    #video-slot {
-      margin-top: 2rem;
-      margin-bottom: 2rem;
-    }
-    #video-slot h2 {
-      margin-bottom: 1rem;
-    }
-    #video-slot .slot-player {
-      width: 100%;
-      max-width: 700px;
-      height: 400px;
-      border-radius: 12px;
-      border: none;
-    }
     .play-slot-button {
       margin: 0.5rem 0 1rem;
       padding: 8px 14px;
@@ -692,49 +713,20 @@
       color: white;
       cursor: pointer;
     }
-    /* Submission form styles */
-    #video-form {
-      margin-bottom: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 700px;
-    }
-    #video-form input,
-    #video-form textarea {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ff4f9f;
-      background: #2f1a39;
-      color: white;
-      font-size: 1rem;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    #video-form button {
-      width: fit-content;
-      padding: 10px 20px;
-      background: #ff4f9f;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      align-self: flex-start;
-    }
   </style>
 </head>
 <body>
 
-  <h1>Gameplay Videos</h1>
+  <h1>Submit Your Gameplay Videos</h1>
 
-  <!-- Video Submission Form -->
   <form id="video-form">
-    <input type="url" id="video-url" placeholder="Video URL (YouTube, Vimeo, Twitter, MP4...)" required />
+    <input type="url" id="video-url" placeholder="Video URL (YouTube, Twitter, Vimeo, direct MP4 link...)" required />
     <input type="text" id="video-title" placeholder="Video Title" required />
     <textarea id="video-desc" placeholder="Short description..."></textarea>
-    <button type="submit">Submit Video</button>
+    <button type="submit">📤 Submit Video</button>
   </form>
 
+  <!-- 🎯 Video Slot -->
   <div id="video-slot">
     <h2>🎯 Video Slot Player</h2>
     <div id="slot-container">
@@ -742,6 +734,7 @@
     </div>
   </div>
 
+  <!-- 📺 Video List -->
   <div id="video-list">Loading videos...</div>
 
   <script type="module">
@@ -752,16 +745,50 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     )
 
+    const videoForm = document.getElementById('video-form')
     const videoList = document.getElementById('video-list')
     const videoSlot = document.getElementById('slot-container')
+    const videoUrl = document.getElementById('video-url')
+    const videoTitle = document.getElementById('video-title')
+    const videoDesc = document.getElementById('video-desc')
 
-    // Form elements
-    const videoForm = document.getElementById('video-form')
-    const videoUrlInput = document.getElementById('video-url')
-    const videoTitleInput = document.getElementById('video-title')
-    const videoDescInput = document.getElementById('video-desc')
+    async function getUserGitHubUsername() {
+      return 'testUser'  // Replace with real auth if needed
+    }
 
-    // Load videos from Supabase and render
+    videoForm.addEventListener('submit', async e => {
+      e.preventDefault()
+      const url = videoUrl.value.trim()
+      const title = videoTitle.value.trim()
+      const desc = videoDesc.value.trim()
+
+      if (!url || !title) {
+        alert('Please fill out all required fields.')
+        return
+      }
+
+      const username = await getUserGitHubUsername()
+
+      const { error } = await supabase.from('game_videos').insert([{
+        game_id: 'default-game',  // <-- Default game_id to avoid null constraint error
+        uploader_username: username,
+        video_url: url,
+        title,
+        description: desc,
+        created_at: new Date().toISOString()
+      }])
+
+      if (error) {
+        alert('❌ Failed to upload video: ' + error.message)
+        return
+      }
+
+      videoUrl.value = ''
+      videoTitle.value = ''
+      videoDesc.value = ''
+      loadVideos()
+    })
+
     async function loadVideos() {
       videoList.innerHTML = 'Loading videos...'
 
@@ -776,7 +803,7 @@
       }
 
       if (!data.length) {
-        videoList.innerHTML = '<p>No videos yet.</p>'
+        videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>'
         return
       }
 
@@ -785,7 +812,7 @@
         return `
           <div>
             <h3>${video.title}</h3>
-            <p><em>by ${video.uploader_username || 'anonymous'}</em></p>
+            <p><em>by ${video.uploader_username}</em></p>
             ${embed}
             <button class="play-slot-button" onclick="playInSlot('${video.video_url.replace(/'/g, "\\'")}')">▶️ Play in Slot</button>
             <p>${video.description || ''}</p>
@@ -796,13 +823,11 @@
       loadTwitterWidgets()
     }
 
-    // Play video in the big slot player
     window.playInSlot = function(url) {
       videoSlot.innerHTML = getEmbeddedVideoHTML(url, true)
       loadTwitterWidgets()
     }
 
-    // Return embedded HTML for video URL
     function getEmbeddedVideoHTML(url, isSlot = false) {
       const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/)
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
@@ -827,7 +852,6 @@
       return `<p><a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff4f9f;">Open video link</a></p>`
     }
 
-    // Load Twitter widget script for embedded tweets
     function loadTwitterWidgets() {
       if (window.twttr) {
         window.twttr.widgets.load()
@@ -839,42 +863,6 @@
       }
     }
 
-    // Handle form submission to add new video
-    videoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const url = videoUrlInput.value.trim();
-      const title = videoTitleInput.value.trim();
-      const description = videoDescInput.value.trim();
-
-      if (!url || !title) {
-        alert('Please fill in the video URL and title.');
-        return;
-      }
-
-      // For now, we use anonymous uploader (replace with auth if needed)
-      const uploader_username = 'anonymous';
-
-      const { error } = await supabase.from('game_videos').insert([{
-        uploader_username,
-        video_url: url,
-        title,
-        description,
-        created_at: new Date().toISOString()
-      }]);
-
-      if (error) {
-        alert('Failed to submit video: ' + error.message);
-      } else {
-        alert('Video submitted successfully!');
-        videoUrlInput.value = '';
-        videoTitleInput.value = '';
-        videoDescInput.value = '';
-        loadVideos();
-      }
-    });
-
-    // Initial load of videos
     loadVideos()
   </script>
 </body>
