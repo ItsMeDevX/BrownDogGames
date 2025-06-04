@@ -693,13 +693,16 @@
       border-radius: 12px;
       margin-bottom: 1.5rem;
     }
-    .responsive-frame iframe {
+    .responsive-frame iframe,
+    .responsive-frame video {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       border: none;
+      border-radius: 12px;
+      background-color: black;
     }
   </style>
 </head>
@@ -853,7 +856,7 @@
     function getEmbeddedVideoHTML(url, isSlot = false) {
       const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&?\n]+)/);
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-      const twitterMatch = url.match(/twitter\.com\/(?:\w+)\/status\/(\d+)/);
+      const twitterMatch = url.match(/(?:twitter\.com|x\.com)\/(?:\w+)\/status\/(\d+)/);
       const mp4Match = url.match(/\.(mp4)(\?.*)?$/i);
 
       if (ytMatch) {
@@ -870,7 +873,13 @@
       }
 
       if (mp4Match) {
-        return `<div class="responsive-frame"><iframe src="https://video-player-host.com/embed?video=${encodeURIComponent(url)}" allowfullscreen></iframe></div>`;
+        // Use video tag for mp4 instead of iframe
+        return `<div class="responsive-frame">
+          <video controls autoplay>
+            <source src="${url}" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>`;
       }
 
       return `<div class="responsive-frame"><iframe src="${url}" allowfullscreen></iframe></div>`;
@@ -889,3 +898,4 @@
   </script>
 </body>
 </html>
+
