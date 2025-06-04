@@ -2,32 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>User Games - BrownDogGames</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
     body {
-      background: linear-gradient(135deg, #1a0f28, #2f2046);
       font-family: 'Rubik Mono One', sans-serif;
-      color: #fff;
-      padding: 2.5rem 1rem 3rem;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 3rem 1rem;
       max-width: 900px;
       margin: auto;
+      text-align: center;
       user-select: none;
     }
 
     h1 {
       font-size: 2.8rem;
       color: #ff69b4;
-      text-align: center;
+      text-shadow: 2px 2px 0 #000;
       margin-bottom: 2rem;
-      text-shadow:
-        0 0 8px #ff69b4,
-        0 0 15px #ff69b4,
-        0 0 25px #ff69b4,
-        0 0 40px #ff4aad;
-      letter-spacing: 0.12em;
       user-select: text;
+      letter-spacing: 0.1em;
     }
 
     .back-link {
@@ -38,8 +36,8 @@
       font-size: 1.1rem;
       text-decoration: none;
       border: 2px solid #ff69b4;
-      padding: 0.6rem 1.4rem;
-      border-radius: 14px;
+      padding: 0.65rem 1.4rem;
+      border-radius: 16px;
       letter-spacing: 0.1em;
       box-shadow: 0 0 12px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
@@ -52,18 +50,20 @@
       box-shadow:
         0 0 25px #ff8bd8ff,
         0 5px 15px #ff8bd8cc;
+      text-decoration: none;
     }
 
     .games-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.8rem;
+      gap: 1.5rem;
+      font-size: 1.2rem;
     }
 
     .game-card {
-      background: #2f1a4b;
-      border-radius: 18px;
-      padding: 1rem 1.3rem 1.8rem;
+      background-color: #2d1a3a;
+      border-radius: 16px;
+      padding: 1rem 1.2rem 1.6rem;
       box-shadow:
         0 0 15px #ff69b4cc,
         inset 0 0 10px #ff69b4bb;
@@ -84,8 +84,8 @@
       font-size: 1.5rem;
       font-weight: 700;
       color: #ffc0cb;
-      margin-bottom: 0.7rem;
-      letter-spacing: 0.06em;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.05em;
     }
 
     .game-desc {
@@ -111,13 +111,11 @@
       height: 240px;
       border: none;
       border-radius: 14px;
-      box-shadow:
-        0 0 15px #ff69b4cc;
+      box-shadow: 0 0 15px #ff69b4cc;
       background: #1a1020;
     }
 
     .no-games {
-      text-align: center;
       font-size: 1.2rem;
       color: #ffb6c1aa;
       margin-top: 3rem;
@@ -126,10 +124,11 @@
 
     @media (max-width: 480px) {
       h1 {
-        font-size: 2rem;
+        font-size: 2.2rem;
       }
       .games-container {
         grid-template-columns: 1fr;
+        gap: 1rem;
       }
       iframe {
         height: 200px;
@@ -148,11 +147,11 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-    
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
+
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
