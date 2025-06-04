@@ -701,8 +701,6 @@
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 12px;
-      background-color: black;
     }
   </style>
 </head>
@@ -736,29 +734,29 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
 
-    const gameNameInput = document.getElementById('game-name-input')
-    const selectGameBtn = document.getElementById('select-game-btn')
-    const videoSection = document.getElementById('video-section')
-    const videoForm = document.getElementById('video-form')
-    const videoList = document.getElementById('video-list')
-    const videoSlot = document.getElementById('slot-container')
-    const videoUrl = document.getElementById('video-url')
-    const videoTitle = document.getElementById('video-title')
-    const videoDesc = document.getElementById('video-desc')
+    const gameNameInput = document.getElementById('game-name-input');
+    const selectGameBtn = document.getElementById('select-game-btn');
+    const videoSection = document.getElementById('video-section');
+    const videoForm = document.getElementById('video-form');
+    const videoList = document.getElementById('video-list');
+    const videoSlot = document.getElementById('slot-container');
+    const videoUrl = document.getElementById('video-url');
+    const videoTitle = document.getElementById('video-title');
+    const videoDesc = document.getElementById('video-desc');
 
-    let selectedGameId = null
+    let selectedGameId = null;
 
     async function getUserGitHubUsername() {
       return 'testUser';
     }
 
     selectGameBtn.addEventListener('click', () => {
-      const gameName = gameNameInput.value.trim();
+      const gameName = gameNameInput.value.trim().toLowerCase();
       if (!gameName) {
         alert('Please enter a game name.');
         return;
@@ -785,7 +783,7 @@
       submitBtn.textContent = 'Uploading...';
 
       const { error } = await supabase.from('game_videos').insert([{
-        game_id: selectedGameId,
+        game_id: selectedGameId, // lowercase
         uploader_username: username,
         video_url: url,
         title,
@@ -815,7 +813,7 @@
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('game_id', selectedGameId)
+        .ilike('game_id', selectedGameId) // case-insensitive match
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -873,13 +871,7 @@
       }
 
       if (mp4Match) {
-        // Use video tag for mp4 instead of iframe
-        return `<div class="responsive-frame">
-          <video controls autoplay>
-            <source src="${url}" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>`;
+        return `<div class="responsive-frame"><video controls src="${url}"></video></div>`;
       }
 
       return `<div class="responsive-frame"><iframe src="${url}" allowfullscreen></iframe></div>`;
@@ -898,4 +890,3 @@
   </script>
 </body>
 </html>
-
