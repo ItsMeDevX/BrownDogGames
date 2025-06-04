@@ -293,6 +293,10 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1b1b2e;
@@ -310,15 +314,24 @@
       text-align: center;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
-      margin: 2rem 0;
+      margin: 2rem 0 1.5rem;
     }
 
     .back-link {
-      color: #ff4f9f;
       align-self: flex-start;
-      margin-bottom: 1rem;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
       text-decoration: none;
-      font-size: 1rem;
+      font-size: 0.9rem;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+      margin-bottom: 1rem;
+    }
+
+    .back-link:hover {
+      background-color: #ff82ba;
     }
 
     .games-container {
@@ -326,6 +339,7 @@
       width: 100%;
       display: grid;
       gap: 20px;
+      justify-items: center;
     }
 
     .game-card {
@@ -333,7 +347,7 @@
       border: 2px solid #ff4f9f;
       border-radius: 12px;
       padding: 16px;
-      box-sizing: border-box;
+      width: 100%;
     }
 
     .game-title {
@@ -369,6 +383,17 @@
     .play-link:hover {
       background-color: #ff82ba;
     }
+
+    .no-user-message {
+      font-size: 1.1rem;
+      text-align: center;
+      color: #ddd;
+      margin-top: 2rem;
+      font-style: italic;
+      background-color: #2f1a39;
+      padding: 1rem;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -395,7 +420,12 @@
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
-      gamesContainer.textContent = 'No user provided in the URL.';
+      gamesContainer.innerHTML = `
+        <div class="no-user-message">
+          🚫 No user provided in the URL.<br>
+          Please go back and select a user.
+        </div>
+      `;
     } else {
       pageTitle.textContent = `${username}'s Games`;
 
@@ -412,7 +442,7 @@
         }
 
         if (!data.length) {
-          gamesContainer.innerHTML = `<p class="no-games">No games submitted by ${username} yet.</p>`;
+          gamesContainer.innerHTML = `<p class="no-user-message">No games submitted by ${username} yet.</p>`;
           return;
         }
 
@@ -422,13 +452,11 @@
           const card = document.createElement('article');
           card.className = 'game-card';
 
-          // Title
           const title = document.createElement('h2');
           title.className = 'game-title';
           title.textContent = game.title;
           card.appendChild(title);
 
-          // Description
           if (game.description) {
             const desc = document.createElement('p');
             desc.className = 'game-desc';
@@ -436,7 +464,6 @@
             card.appendChild(desc);
           }
 
-          // Screenshot if available
           if (game.screenshot_url) {
             const img = document.createElement('img');
             img.className = 'game-screenshot';
@@ -445,7 +472,6 @@
             card.appendChild(img);
           }
 
-          // Play link
           if (game.embed_url) {
             const link = document.createElement('a');
             link.href = game.embed_url;
