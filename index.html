@@ -422,89 +422,176 @@
   <meta charset="UTF-8" />
   <title>Submit Your Game - BrownDogGames</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    /* Base styling */
     body {
-      background: #191425;
+      background: linear-gradient(135deg, #1a0e26, #2b1939);
       font-family: 'Rubik Mono One', sans-serif;
       color: #fefefe;
-      padding: 2rem;
+      padding: 3rem 1rem;
       max-width: 600px;
       margin: auto;
       text-align: center;
+      user-select: none;
     }
+
+    /* Neon heading */
     h1 {
       color: #ff69b4;
-      margin-bottom: 1.5rem;
-      text-shadow: 2px 2px 0 #000;
+      font-size: 3rem;
+      margin-bottom: 2rem;
+      text-shadow:
+        0 0 8px #ff69b4,
+        0 0 15px #ff69b4,
+        0 0 25px #ff69b4,
+        0 0 40px #ff4aad;
+      letter-spacing: 0.1em;
+      transition: color 0.3s ease;
     }
+
+    h1:hover {
+      color: #ff8bd8;
+      text-shadow:
+        0 0 12px #ff8bd8,
+        0 0 25px #ff8bd8,
+        0 0 40px #ff8bd8,
+        0 0 55px #ff69b4;
+    }
+
+    /* Form container with subtle glow */
     form {
+      background: #2d1a3a;
+      border-radius: 16px;
+      padding: 2rem 2rem 3rem;
+      box-shadow:
+        0 0 20px #ff69b4aa,
+        inset 0 0 10px #ff69b4cc;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      background: #2d1a3a;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #ff69b4aa;
+      gap: 1.5rem;
+      transition: box-shadow 0.3s ease;
     }
+
+    form:hover {
+      box-shadow:
+        0 0 30px #ff8bd8ee,
+        inset 0 0 18px #ff8bd8ee;
+    }
+
     label {
-      font-weight: bold;
       text-align: left;
+      font-weight: 700;
+      font-size: 1.1rem;
       color: #ffccff;
+      user-select: text;
+      letter-spacing: 0.05em;
     }
+
     input, textarea {
-      border-radius: 8px;
+      border-radius: 12px;
       border: none;
-      padding: 0.5rem;
+      padding: 0.7rem 1rem;
       font-size: 1rem;
-      font-family: inherit;
-    }
-    input {
-      height: 2.5rem;
-    }
-    textarea {
+      font-family: 'Rubik Mono One', monospace;
+      background: #1e1533;
+      color: #ffc0cb;
+      box-shadow: inset 0 0 5px #ff69b4aa;
+      transition: box-shadow 0.3s ease, background 0.3s ease;
       resize: vertical;
-      min-height: 80px;
     }
+
+    input:focus, textarea:focus {
+      outline: none;
+      background: #2a1d4f;
+      box-shadow: 0 0 12px #ff69b4ee;
+      color: #fff;
+    }
+
+    textarea {
+      min-height: 100px;
+    }
+
     button {
       background: #ff69b4;
       border: none;
-      border-radius: 12px;
-      padding: 0.75rem;
-      font-weight: bold;
+      border-radius: 16px;
+      padding: 1rem;
+      font-weight: 900;
       color: #1e1b2e;
+      font-size: 1.25rem;
       cursor: pointer;
-      transition: background 0.3s ease;
+      box-shadow:
+        0 0 12px #ff69b4cc,
+        0 4px 10px #ff69b4bb;
+      transition: background 0.4s ease, transform 0.15s ease;
+      user-select: none;
+      letter-spacing: 0.1em;
     }
+
     button:hover {
-      background: #ff8edb;
+      background: #ff8bd8;
+      box-shadow:
+        0 0 20px #ff8bd8ff,
+        0 6px 15px #ff8bd8cc;
+      transform: scale(1.07);
     }
+
+    button:active {
+      transform: scale(0.95);
+      box-shadow: 0 0 10px #ff69b4aa;
+    }
+
     .message {
       margin-top: 1rem;
       font-style: italic;
       color: #ffc0cb;
+      min-height: 1.5em;
+      user-select: text;
     }
+
     .back-link {
-      margin-top: 1.5rem;
+      margin-top: 3rem;
       display: inline-block;
       color: #ff69b4;
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 1.1rem;
       text-decoration: none;
       border: 2px solid #ff69b4;
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      transition: background-color 0.3s, color 0.3s;
+      padding: 0.6rem 1.3rem;
+      border-radius: 14px;
+      letter-spacing: 0.1em;
+      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 8px #ff69b4aa;
+      user-select: none;
     }
+
     .back-link:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
+      box-shadow:
+        0 0 20px #ff8bd8ff,
+        0 5px 15px #ff8bd8cc;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 2rem 1rem;
+      }
+      h1 {
+        font-size: 2.5rem;
+      }
     }
   </style>
 </head>
 <body>
 
   <h1>Submit Your Game</h1>
-  <form id="submitForm">
+
+  <form id="submitForm" autocomplete="off" spellcheck="false" novalidate>
     <label for="githubUser">GitHub Username *</label>
-    <input type="text" id="githubUser" name="githubUser" placeholder="e.g. yourGitHubName" required />
+    <input type="text" id="githubUser" name="githubUser" placeholder="e.g. yourGitHubName" required autocomplete="username" />
 
     <label for="title">Game Title *</label>
     <input type="text" id="title" name="title" required />
@@ -528,17 +615,17 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
 
     const form = document.getElementById('submitForm');
     const messageEl = document.getElementById('formMessage');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
+      messageEl.style.color = '#ffc0cb';
       messageEl.textContent = '';
 
       const githubUser = form.githubUser.value.trim();
@@ -547,13 +634,11 @@
       const embed_url = form.embedUrl.value.trim();
       const screenshot_url = form.screenshotUrl.value.trim();
 
+      const urlPattern = /^https?:\/\/.+$/i;
       if (!githubUser || !title) {
         messageEl.textContent = 'Please fill in the required fields.';
         return;
       }
-
-      // Optional: validate URLs format (simple)
-      const urlPattern = /^https?:\/\/.+$/i;
       if (embed_url && !urlPattern.test(embed_url)) {
         messageEl.textContent = 'Embed URL must be a valid URL.';
         return;
@@ -563,31 +648,22 @@
         return;
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('game_submissions')
-        .insert([{
-          github_user: githubUser,
-          title,
-          description,
-          embed_url,
-          screenshot_url,
-          created_at: new Date().toISOString()
-        }]);
+        .insert([{ github_user: githubUser, title, description, embed_url, screenshot_url, created_at: new Date().toISOString() }]);
 
       if (error) {
         messageEl.textContent = `Error submitting game: ${error.message}`;
         return;
       }
 
-      messageEl.style.color = '#7fffd4'; // aquamarine success color
-      messageEl.textContent = 'Game submitted successfully! Redirecting to your page...';
-
-      // Clear form after success
+      messageEl.style.color = '#7fffd4';
+      messageEl.textContent = 'Game submitted successfully! Redirecting...';
       form.reset();
 
       setTimeout(() => {
         window.location.href = `user.html?user=${encodeURIComponent(githubUser)}`;
-      }, 1500);
+      }, 1600);
     });
   </script>
 
