@@ -637,5 +637,149 @@
     }
   </script>
 
+<!-- ✂️ Head section remains the same ... -->
+
+<!-- Add after #chat-container -->
+<div id="video-section" style="display:none;">
+  <h2>🎥 Gameplay Videos</h2>
+  <form id="video-form">
+    <input type="url" id="video-url" placeholder="Video URL (e.g. YouTube, MP4)" required />
+    <input type="text" id="video-title" placeholder="Video Title" required />
+    <textarea id="video-desc" placeholder="Short description..."></textarea>
+    <button type="submit">📤 Submit Video</button>
+  </form>
+  <div id="video-list" style="margin-top: 2rem;"></div>
+</div>
+
+<!-- Add to <style> section -->
+<style>
+  #video-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 1rem;
+  }
+
+  #video-form input,
+  #video-form textarea {
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #ff4f9f;
+    background-color: #2f1a39;
+    color: white;
+    font-size: 1rem;
+  }
+
+  #video-list iframe,
+  #video-list video {
+    width: 100%;
+    max-width: 700px;
+    height: 400px;
+    margin-bottom: 1.5rem;
+    border: none;
+    border-radius: 12px;
+  }
+
+  #video-list h3 {
+    margin-bottom: 0.2rem;
+  }
+
+  #video-list p {
+    margin: 0.2rem 0 1rem 0;
+    color: #ccc;
+  }
+</style>
+
+<!-- Add to <script type="module"> -->
+<script type="module">
+  // Inside existing <script> after chat logic
+  const videoSection = document.getElementById('video-section');
+  const videoForm = document.getElementById('video-form');
+  const videoList = document.getElementById('video-list');
+  const videoUrl = document.getElementById('video-url');
+  const videoTitle = document.getElementById('video-title');
+  const videoDesc = document.getElementById('video-desc');
+
+  videoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = videoUrl.value.trim();
+    const title = videoTitle.value.trim();
+    const desc = videoDesc.value.trim();
+
+    if (!url || !title || !selectedGameId) return;
+
+    const username = await getUserGitHubUsername();
+
+    const { error } = await supabase.from('game_videos').insert([{
+      game_id: selectedGameId,
+      uploader_username: username,
+      video_url: url,
+      title,
+      description: desc
+    }]);
+
+    if (error) {
+      alert('❌ Failed to upload video: ' + error.message);
+      return;
+    }
+
+    videoUrl.value = '';
+    videoTitle.value = '';
+    videoDesc.value = '';
+
+    loadVideos();
+  });
+
+  async function loadVideos() {
+    if (!selectedGameId) return;
+
+    const { data, error } = await supabase
+      .from('game_videos')
+      .select('*')
+      .eq('game_id', selectedGameId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      videoList.innerHTML = `<p style="color:red;">Error loading videos</p>`;
+      return;
+    }
+
+    if (!data.length) {
+      videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>';
+      return;
+    }
+
+    videoList.innerHTML = data.map(video => {
+      const embed = getEmbeddedVideoHTML(video.video_url);
+      return `
+        <div>
+          <h3>${video.title}</h3>
+          <p><em>by ${video.uploader_username}</em></p>
+          ${embed}
+          <p>${video.description || ''}</p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function getEmbeddedVideoHTML(url) {
+    const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/);
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (ytMatch) {
+      return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`;
+    }
+    if (vimeoMatch) {
+      return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>`;
+    }
+    // Default for direct mp4 links
+    return `<video src="${url}" controls></video>`;
+  }
+
+  // 🔄 Inside selectGame function, add at the end:
+  videoSection.style.display = 'block';
+  loadVideos();
+</script>
+
+  
 </body>
 </html>
