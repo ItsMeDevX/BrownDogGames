@@ -351,7 +351,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>User Games + Chat - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
@@ -362,28 +362,35 @@
       color: #fefefe;
       margin: 0;
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    a.back-link {
+      color: #ff4f9f;
+      margin-bottom: 1rem;
+      text-decoration: none;
+      font-weight: bold;
+      align-self: flex-start;
     }
 
     h1, h2 {
-      text-align: center;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
-      margin-top: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .back-link {
-      color: #ff4f9f;
-      display: inline-block;
-      margin-bottom: 1rem;
-      text-decoration: none;
+      margin: 2rem 0 1.5rem 0;
+      text-align: center;
+      width: 100%;
+      max-width: 800px;
     }
 
     .games-container {
       max-width: 800px;
-      margin: 0 auto 40px;
+      width: 100%;
       display: grid;
       gap: 20px;
+      margin-bottom: 3rem;
     }
 
     .game-card {
@@ -418,41 +425,29 @@
       border-radius: 6px;
       text-decoration: none;
       font-weight: bold;
-      transition: background-color 0.2s ease;
-    }
-
-    .play-link:hover {
-      background-color: #ff82ba;
     }
 
     #game-id-container {
       max-width: 600px;
-      margin: 0 auto 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
+      width: 100%;
+      margin-bottom: 1rem;
     }
 
     #game-id-label {
       font-size: 1.2rem;
       color: #ff4f9f;
-      margin: 0;
-      align-self: flex-start;
+      display: block;
+      margin-bottom: 5px;
     }
 
     #game-id {
       width: 100%;
-      max-width: 300px;
-      padding: 10px 14px;
-      font-size: 18px;
+      padding: 10px;
+      font-size: 16px;
       border: 2px solid #ff4f9f;
       border-radius: 8px;
       background-color: #2f1a39;
       color: #fff;
-      text-align: center;
-      user-select: all; /* so user can easily select/copy */
-      cursor: default;
     }
 
     #messages {
@@ -460,12 +455,11 @@
       border: 2px solid #ff4f9f;
       border-radius: 12px;
       padding: 20px;
-      max-height: 400px;
+      max-height: 300px;
       overflow-y: auto;
-      margin: 0 auto 20px;
       max-width: 600px;
-      font-size: 1rem;
-      line-height: 1.4;
+      width: 100%;
+      margin-bottom: 2rem;
     }
 
     #messages div {
@@ -481,7 +475,8 @@
       display: flex;
       gap: 10px;
       max-width: 600px;
-      margin: 0 auto 40px;
+      width: 100%;
+      margin-bottom: 40px;
     }
 
     #msg-input {
@@ -509,12 +504,10 @@
       background-color: #ff82ba;
     }
 
-    /* Responsive tweaks */
-    @media (max-width: 640px) {
-      #game-id-container, #messages, #chat-form {
-        max-width: 100%;
-        padding: 0 10px;
-      }
+    .no-games, #messages p {
+      text-align: center;
+      color: #ddd;
+      font-style: italic;
     }
   </style>
 </head>
@@ -538,7 +531,7 @@
   </div>
 
   <form id="chat-form">
-    <input type="text" id="msg-input" placeholder="Type a message..." required />
+    <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
     <button type="submit">Send</button>
   </form>
 
@@ -549,26 +542,31 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Get username from URL param:
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
+    // Elements:
     const pageTitle = document.getElementById('pageTitle');
     const gamesContainer = document.getElementById('games');
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
     const msgInput = document.getElementById('msg-input');
     const gameIdInput = document.getElementById('game-id');
+    const chatHeading = document.querySelector('h2');
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
       gamesContainer.textContent = 'No user provided in the URL.';
       messagesDiv.innerHTML = '<p>Please provide a user in the URL like ?user=username</p>';
       gameIdInput.value = '';
+      chatHeading.textContent = 'Chat';
     } else {
       pageTitle.textContent = `${username}'s Games`;
       gameIdInput.value = username;
-      document.querySelector('h2').textContent = `Chat for ${username}`;
+      chatHeading.textContent = `Chat for ${username}`;
 
+      // Load games function
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -626,6 +624,7 @@
         });
       }
 
+      // Load chat messages
       async function loadMessages() {
         if (!username) return;
 
@@ -654,6 +653,7 @@
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
+      // Get GitHub username from session or fallback
       async function getUserGitHubUsername() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
@@ -663,6 +663,7 @@
         return 'Guest';
       }
 
+      // Send message handler
       form.addEventListener('submit', async e => {
         e.preventDefault();
         const msg = msgInput.value.trim();
@@ -684,6 +685,7 @@
         loadMessages();
       });
 
+      // Subscribe to real-time message inserts for this game_id
       supabase.channel('messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${username}` }, () => {
           loadMessages();
@@ -694,5 +696,6 @@
       loadMessages();
     }
   </script>
+
 </body>
 </html>
