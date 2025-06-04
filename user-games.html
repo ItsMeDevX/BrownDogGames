@@ -26,16 +26,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All Users - BrownDogGames</title>
+  <title>User Games - BrownDogGames</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-    /* Reset & basics */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
 
     body {
       font-family: 'Rubik Mono One', sans-serif;
@@ -43,36 +36,10 @@
       color: #fefefe;
       min-height: 100vh;
       padding: 3rem 1rem;
+      max-width: 900px;
+      margin: auto;
       text-align: center;
       user-select: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    a.back-link {
-      align-self: flex-start;
-      margin-left: 3rem;
-      margin-bottom: 2rem;
-      color: #ff69b4;
-      font-weight: 700;
-      font-size: 1.2rem;
-      text-decoration: none;
-      border: 2px solid #ff69b4;
-      padding: 0.65rem 1.4rem;
-      border-radius: 16px;
-      letter-spacing: 0.1em;
-      box-shadow: 0 0 10px #ff69b4aa;
-      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
-    }
-
-    a.back-link:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      box-shadow:
-        0 0 25px #ff8bd8ff,
-        0 5px 15px #ff8bd8cc;
     }
 
     h1 {
@@ -81,64 +48,120 @@
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 2rem;
       user-select: text;
+      letter-spacing: 0.1em;
     }
 
-    /* User list grid container */
-    #userList {
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      color: #ff69b4;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      border: 2px solid #ff69b4;
+      padding: 0.65rem 1.4rem;
+      border-radius: 16px;
+      letter-spacing: 0.1em;
+      box-shadow: 0 0 12px #ff69b4aa;
+      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    .back-link:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      box-shadow:
+        0 0 25px #ff8bd8ff,
+        0 5px 15px #ff8bd8cc;
+      text-decoration: none;
+    }
+
+    .games-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 1.5rem;
-      max-width: 700px;
-      width: 100%;
       font-size: 1.2rem;
+    }
+
+    .game-card {
+      background-color: #2d1a3a;
+      border-radius: 16px;
+      padding: 1rem 1.2rem 1.6rem;
+      box-shadow:
+        0 0 15px #ff69b4cc,
+        inset 0 0 10px #ff69b4bb;
+      display: flex;
+      flex-direction: column;
+      user-select: text;
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-6px);
+      box-shadow:
+        0 0 25px #ff8bd8ff,
+        inset 0 0 20px #ff8bd8ee;
+    }
+
+    .game-title {
+      font-size: 1.5rem;
+      font-weight: 700;
       color: #ffc0cb;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.05em;
+    }
+
+    .game-desc {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #ffcee7cc;
+      margin-bottom: 1rem;
+      min-height: 60px;
+    }
+
+    .game-screenshot {
+      width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 0 10px #ff69b4aa;
+      margin-bottom: 1rem;
+      object-fit: cover;
+      aspect-ratio: 16 / 9;
+      background: #1a1020;
+    }
+
+    .play-link {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 12px;
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 0 12px #ff69b4cc;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    .play-link:hover {
+      background-color: #ff8bd8;
+      box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
+    }
+
+    .no-games {
+      font-size: 1.2rem;
+      color: #ffb6c1aa;
+      margin-top: 3rem;
       user-select: text;
     }
 
-    /* User button style matching main theme buttons */
-    .user-btn {
-      display: block;
-      padding: 1rem 1.2rem;
-      background-color: #2d1a3a;
-      color: #ffccff;
-      text-decoration: none;
-      border-radius: 12px;
-      border: 2px solid #ff69b4;
-      text-align: center;
-      font-weight: 700;
-      transition: transform 0.2s, background-color 0.2s;
-      user-select: none;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-
-    .user-btn:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      transform: scale(1.05);
-    }
-
-    .user-btn:active {
-      transform: scale(0.95);
-    }
-
-    /* Responsive tweaks */
     @media (max-width: 480px) {
       h1 {
         font-size: 2.2rem;
       }
-      a.back-link {
-        margin-left: 0;
-        align-self: center;
-        margin-bottom: 3rem;
-      }
-      #userList {
+      .games-container {
+        grid-template-columns: 1fr;
         gap: 1rem;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      }
-      .user-btn {
-        font-size: 1rem;
-        padding: 0.85rem 1rem;
       }
     }
   </style>
