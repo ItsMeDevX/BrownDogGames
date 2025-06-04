@@ -334,6 +334,7 @@
       display: grid;
       gap: 20px;
       justify-items: center;
+      margin-bottom: 40px; /* space above chat */
     }
     .game-card {
       background-color: #2f1a39;
@@ -381,6 +382,54 @@
       padding: 1rem;
       border-radius: 10px;
     }
+
+    /* CHAT STYLES - no internal scrolling */
+    #chat-container {
+      max-width: 800px;
+      width: 100%;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      background-color: #2f1a39;
+      padding: 20px;
+      box-sizing: border-box;
+      /* no height limit or scroll */
+    }
+    #messages {
+      /* just flow naturally, no fixed height or scroll */
+      margin-bottom: 20px;
+    }
+    #messages div {
+      margin-bottom: 12px;
+    }
+    #messages strong {
+      color: #ff82ba;
+    }
+    #chat-form {
+      display: flex;
+      gap: 10px;
+    }
+    #msg-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+    button {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #ff82ba;
+    }
   </style>
 </head>
 <body>
@@ -391,6 +440,16 @@
 
   <div id="games" class="games-container">Loading games...</div>
 
+  <!-- CHAT APPENDED HERE -->
+  <div id="chat-container">
+    <h2 style="color:#ff4f9f; text-shadow: 1px 1px 0 #000; margin-top:0;">Game Chat</h2>
+    <div id="messages"><p>Loading messages...</p></div>
+    <form id="chat-form">
+      <input type="text" id="msg-input" placeholder="Type a message..." required />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -398,12 +457,15 @@
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
+    
+    const pageTitle = document.getElementById('pageTitle');
+    const gamesContainer = document.getElementById('games');
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
 
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
-
-    const pageTitle = document.getElementById('pageTitle');
-    const gamesContainer = document.getElementById('games');
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
@@ -416,6 +478,7 @@
     } else {
       pageTitle.textContent = `${username}'s Games`;
 
+      // Load user games
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -474,6 +537,59 @@
       }
 
       loadGames();
+
+      // CHAT IMPLEMENTATION
+
+      // Load chat messages for this user
+      async function loadMessages() {
+        const { data, error } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('github_user', username)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          messagesDiv.innerHTML = `<p style="color:#f33;">Failed to load chat messages: ${error.message}</p>`;
+          return;
+        }
+
+        if (!data.length) {
+          messagesDiv.innerHTML = `<p style="font-style: italic; color: #bbb;">No messages yet. Start the conversation!</p>`;
+          return;
+        }
+
+        messagesDiv.innerHTML = '';
+
+        data.forEach(msg => {
+          const msgDiv = document.createElement('div');
+          msgDiv.innerHTML = `<strong>${msg.author}:</strong> ${msg.content}`;
+          messagesDiv.appendChild(msgDiv);
+        });
+      }
+
+      loadMessages();
+
+      // Submit new message
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const content = msgInput.value.trim();
+        if (!content) return;
+
+        // Insert into supabase
+        const { error } = await supabase
+          .from('chat_messages')
+          .insert([
+            { github_user: username, author: username, content }
+          ]);
+
+        if (error) {
+          alert('Failed to send message: ' + error.message);
+          return;
+        }
+
+        msgInput.value = '';
+        await loadMessages();
+      });
     }
   </script>
 </body>
