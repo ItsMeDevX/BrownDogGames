@@ -288,8 +288,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>User Games - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Games + Chat - BrownDogGames</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
@@ -302,30 +302,40 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
-      align-items: center;
       min-height: 100vh;
     }
 
-    h1 {
-      text-align: center;
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin: 2rem 0;
+    .container {
+      max-width: 800px;
+      margin: 0 auto; /* center horizontally */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
     }
 
-    .back-link {
+    a.back-link {
       color: #ff4f9f;
-      align-self: flex-start;
       margin-bottom: 1rem;
       text-decoration: none;
-      font-size: 1rem;
+      font-weight: bold;
+      align-self: flex-start; /* keep link left aligned */
+      font-size: 1.1rem;
+    }
+
+    h1, h2 {
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin: 2rem 0 1.5rem 0;
+      text-align: center;
+      width: 100%;
     }
 
     .games-container {
-      max-width: 800px;
       width: 100%;
       display: grid;
       gap: 20px;
+      margin-bottom: 3rem;
     }
 
     .game-card {
@@ -333,17 +343,14 @@
       border: 2px solid #ff4f9f;
       border-radius: 12px;
       padding: 16px;
-      box-sizing: border-box;
     }
 
     .game-title {
       margin-top: 0;
-      margin-bottom: 0.5rem;
     }
 
     .game-desc {
       color: #ddd;
-      margin: 0.5rem 0 1rem 0;
     }
 
     .game-screenshot {
@@ -351,23 +358,98 @@
       max-height: 200px;
       object-fit: cover;
       border-radius: 8px;
-      margin-bottom: 10px;
-      display: block;
+      margin: 10px 0;
     }
 
     .play-link {
       display: inline-block;
+      margin-top: 10px;
       background-color: #ff4f9f;
       color: #1b1b2e;
       padding: 8px 12px;
       border-radius: 6px;
       text-decoration: none;
       font-weight: bold;
+    }
+
+    #game-id-container {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    #game-id-label {
+      font-size: 1.2rem;
+      color: #ff4f9f;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    #game-id {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ff4f9f;
+      border-radius: 8px;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    #messages {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    #messages div {
+      margin-bottom: 12px;
+      word-wrap: break-word;
+    }
+
+    #messages strong {
+      color: #ff82ba;
+    }
+
+    #chat-form {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+
+    #msg-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    button {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
       transition: background-color 0.2s ease;
     }
 
-    .play-link:hover {
+    button:hover {
       background-color: #ff82ba;
+    }
+
+    .no-games, #messages p {
+      text-align: center;
+      color: #ddd;
+      font-style: italic;
     }
   </style>
 </head>
@@ -375,29 +457,56 @@
 
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
 
-  <h1 id="pageTitle">User's Games</h1>
+  <div class="container">
+    <h1 id="pageTitle">User's Games</h1>
 
-  <div id="games" class="games-container">Loading games...</div>
+    <div id="games" class="games-container">Loading games...</div>
+
+    <h2>Chat for User</h2>
+
+    <div id="game-id-container">
+      <label id="game-id-label" for="game-id">Game ID (Chat Room):</label>
+      <input type="text" id="game-id" readonly />
+    </div>
+
+    <div id="messages">
+      <p>Loading messages...</p>
+    </div>
+
+    <form id="chat-form">
+      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
     const pageTitle = document.getElementById('pageTitle');
     const gamesContainer = document.getElementById('games');
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
+    const gameIdInput = document.getElementById('game-id');
+    const chatHeading = document.querySelector('h2');
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
       gamesContainer.textContent = 'No user provided in the URL.';
+      messagesDiv.innerHTML = '<p>Please provide a user in the URL like ?user=username</p>';
+      gameIdInput.value = '';
+      chatHeading.textContent = 'Chat';
     } else {
-      pageTitle.textContent = ${username}'s Games;
+      pageTitle.textContent = `${username}'s Games`;
+      gameIdInput.value = username;
+      chatHeading.textContent = `Chat for ${username}`;
 
       async function loadGames() {
         const { data, error } = await supabase
@@ -407,12 +516,12 @@
           .order('created_at', { ascending: false });
 
         if (error) {
-          gamesContainer.textContent = Error loading games: ${error.message};
+          gamesContainer.textContent = `Error loading games: ${error.message}`;
           return;
         }
 
         if (!data.length) {
-          gamesContainer.innerHTML = <p class="no-games">No games submitted by ${username} yet.</p>;
+          gamesContainer.innerHTML = `<p class="no-games">No games submitted by ${username} yet.</p>`;
           return;
         }
 
@@ -422,13 +531,11 @@
           const card = document.createElement('article');
           card.className = 'game-card';
 
-          // Title
           const title = document.createElement('h2');
           title.className = 'game-title';
           title.textContent = game.title;
           card.appendChild(title);
 
-          // Description
           if (game.description) {
             const desc = document.createElement('p');
             desc.className = 'game-desc';
@@ -436,16 +543,14 @@
             card.appendChild(desc);
           }
 
-          // Screenshot if available
           if (game.screenshot_url) {
             const img = document.createElement('img');
             img.className = 'game-screenshot';
             img.src = game.screenshot_url;
-            img.alt = ${game.title} screenshot;
+            img.alt = `${game.title} screenshot`;
             card.appendChild(img);
           }
 
-          // Play link
           if (game.embed_url) {
             const link = document.createElement('a');
             link.href = game.embed_url;
@@ -460,9 +565,74 @@
         });
       }
 
+      async function loadMessages() {
+        if (!username) return;
+
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('game_id', username)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
+          console.error(error);
+          return;
+        }
+
+        if (!data.length) {
+          messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
+          return;
+        }
+
+        messagesDiv.innerHTML = data.map(m => `
+          <div>
+            <strong>${m.github_username || 'Guest'}:</strong> ${m.content}
+          </div>
+        `).join('');
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      async function getUserGitHubUsername() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { user_metadata } = session.user;
+          return user_metadata.full_name || 'GitHub User';
+        }
+        return 'Guest';
+      }
+
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const msg = msgInput.value.trim();
+        if (!msg || !username) return;
+
+        const githubUsername = await getUserGitHubUsername();
+
+        const { error } = await supabase
+          .from('messages')
+          .insert([{ content: msg, github_username: githubUsername, game_id: username }]);
+
+        if (error) {
+          alert('Failed to send message: ' + error.message);
+          console.error(error);
+          return;
+        }
+
+        msgInput.value = '';
+        loadMessages();
+      });
+
+      supabase.channel('messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${username}` }, () => {
+          loadMessages();
+        })
+        .subscribe();
+
       loadGames();
+      loadMessages();
     }
   </script>
 
 </body>
-</html> 
+</html>
