@@ -364,16 +364,8 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto; /* center horizontally */
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      width: 100%;
+      min-height: 100vh;
     }
 
     a.back-link {
@@ -381,8 +373,7 @@
       margin-bottom: 1rem;
       text-decoration: none;
       font-weight: bold;
-      align-self: flex-start; /* keep link left aligned */
-      font-size: 1.1rem;
+      align-self: flex-start;
     }
 
     h1, h2 {
@@ -391,9 +382,11 @@
       margin: 2rem 0 1.5rem 0;
       text-align: center;
       width: 100%;
+      max-width: 800px;
     }
 
     .games-container {
+      max-width: 800px;
       width: 100%;
       display: grid;
       gap: 20px;
@@ -435,6 +428,7 @@
     }
 
     #game-id-container {
+      max-width: 600px;
       width: 100%;
       margin-bottom: 1rem;
     }
@@ -463,6 +457,7 @@
       padding: 20px;
       max-height: 300px;
       overflow-y: auto;
+      max-width: 600px;
       width: 100%;
       margin-bottom: 2rem;
     }
@@ -479,6 +474,7 @@
     #chat-form {
       display: flex;
       gap: 10px;
+      max-width: 600px;
       width: 100%;
       margin-bottom: 40px;
     }
@@ -519,27 +515,25 @@
 
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
 
-  <div class="container">
-    <h1 id="pageTitle">User's Games</h1>
+  <h1 id="pageTitle">User's Games</h1>
 
-    <div id="games" class="games-container">Loading games...</div>
+  <div id="games" class="games-container">Loading games...</div>
 
-    <h2>Chat for User</h2>
+  <h2>Chat for User</h2>
 
-    <div id="game-id-container">
-      <label id="game-id-label" for="game-id">Game ID (Chat Room):</label>
-      <input type="text" id="game-id" readonly />
-    </div>
-
-    <div id="messages">
-      <p>Loading messages...</p>
-    </div>
-
-    <form id="chat-form">
-      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
-      <button type="submit">Send</button>
-    </form>
+  <div id="game-id-container">
+    <label id="game-id-label" for="game-id">Game ID (Chat Room):</label>
+    <input type="text" id="game-id" readonly />
   </div>
+
+  <div id="messages">
+    <p>Loading messages...</p>
+  </div>
+
+  <form id="chat-form">
+    <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
+    <button type="submit">Send</button>
+  </form>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -548,9 +542,11 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Get username from URL param:
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
+    // Elements:
     const pageTitle = document.getElementById('pageTitle');
     const gamesContainer = document.getElementById('games');
     const messagesDiv = document.getElementById('messages');
@@ -570,6 +566,7 @@
       gameIdInput.value = username;
       chatHeading.textContent = `Chat for ${username}`;
 
+      // Load games function
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -627,6 +624,7 @@
         });
       }
 
+      // Load chat messages
       async function loadMessages() {
         if (!username) return;
 
@@ -655,6 +653,7 @@
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
+      // Get GitHub username from session or fallback
       async function getUserGitHubUsername() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
@@ -664,6 +663,7 @@
         return 'Guest';
       }
 
+      // Send message handler
       form.addEventListener('submit', async e => {
         e.preventDefault();
         const msg = msgInput.value.trim();
@@ -685,6 +685,7 @@
         loadMessages();
       });
 
+      // Subscribe to real-time message inserts for this game_id
       supabase.channel('messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${username}` }, () => {
           loadMessages();
