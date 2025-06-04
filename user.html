@@ -652,18 +652,24 @@
       max-width: 800px;
       margin: auto;
     }
-    #game-list button {
+    #game-select input {
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: white;
+      font-size: 1rem;
+      width: 70%;
+      margin-right: 10px;
+    }
+    #game-select button {
       background: #ff4f9f;
       border: none;
       border-radius: 8px;
       color: white;
       font-size: 1rem;
-      margin: 0.2rem;
-      padding: 0.5rem 1rem;
+      padding: 10px 20px;
       cursor: pointer;
-    }
-    #game-list button.selected {
-      background: #e02982;
     }
     #video-form {
       display: flex;
@@ -702,12 +708,11 @@
 
   <h1>Submit Your Gameplay Videos</h1>
 
-  <!-- Sample Game List -->
-  <div id="game-list">
-    <h2>Select a Game:</h2>
-    <button data-game-id="game123">Super Cool Game</button>
-    <button data-game-id="game456">Another Fun Game</button>
-    <button data-game-id="game789">Epic Adventure</button>
+  <!-- Game Name Input -->
+  <div id="game-select">
+    <h2>Enter Game Name:</h2>
+    <input type="text" id="game-name-input" placeholder="Type game name here..." />
+    <button id="select-game-btn">Select Game</button>
   </div>
 
   <!-- Video Section Hidden Initially -->
@@ -727,12 +732,15 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
     // TODO: Replace with your actual Supabase URL and anon key
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co'
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     // Elements
-    const gameList = document.getElementById('game-list');
+    const gameSelectDiv = document.getElementById('game-select');
+    const gameNameInput = document.getElementById('game-name-input');
+    const selectGameBtn = document.getElementById('select-game-btn');
+
     const videoSection = document.getElementById('video-section');
     const videoForm = document.getElementById('video-form');
     const videoList = document.getElementById('video-list');
@@ -748,22 +756,18 @@
       return 'testUser';
     }
 
-    // Handle game selection
-    gameList.addEventListener('click', (e) => {
-      if (e.target.tagName === 'BUTTON') {
-        // Remove "selected" from all buttons
-        gameList.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
-
-        // Mark clicked button selected
-        e.target.classList.add('selected');
-
-        // Set selected game ID
-        selectedGameId = e.target.dataset.gameId;
-
-        // Show video section and load videos
-        videoSection.style.display = 'block';
-        loadVideos();
+    // Handle game selection via typed input
+    selectGameBtn.addEventListener('click', () => {
+      const gameName = gameNameInput.value.trim();
+      if (!gameName) {
+        alert('Please enter a game name.');
+        return;
       }
+      selectedGameId = gameName;
+
+      // Show video section and load videos
+      videoSection.style.display = 'block';
+      loadVideos();
     });
 
     // Submit video form handler
@@ -854,4 +858,5 @@
 
 </body>
 </html>
+
 
