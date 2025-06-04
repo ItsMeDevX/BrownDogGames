@@ -424,87 +424,89 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-    /* Base styling */
     body {
-      background: linear-gradient(135deg, #1a0e26, #2b1939);
+      background: linear-gradient(135deg, #2a2240, #3a2e57);
       font-family: 'Rubik Mono One', sans-serif;
-      color: #fefefe;
+      color: #f0d6e8;
       padding: 3rem 1rem;
       max-width: 600px;
       margin: auto;
       text-align: center;
       user-select: none;
+      /* softer text shadow for subtle depth */
+      text-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
 
-    /* Neon heading */
     h1 {
-      color: #ff69b4;
+      color: #e1a1ca;
       font-size: 3rem;
       margin-bottom: 2rem;
-      text-shadow:
-        0 0 8px #ff69b4,
-        0 0 15px #ff69b4,
-        0 0 25px #ff69b4,
-        0 0 40px #ff4aad;
       letter-spacing: 0.1em;
+      font-weight: 700;
+      /* subtle shadow for glow */
+      text-shadow:
+        0 0 6px #d48abf88,
+        0 0 12px #c275b280;
       transition: color 0.3s ease;
     }
 
     h1:hover {
-      color: #ff8bd8;
+      color: #f0b7d6;
       text-shadow:
-        0 0 12px #ff8bd8,
-        0 0 25px #ff8bd8,
-        0 0 40px #ff8bd8,
-        0 0 55px #ff69b4;
+        0 0 8px #f0b7d6bb,
+        0 0 18px #d57ec7cc;
     }
 
-    /* Form container with subtle glow */
     form {
-      background: #2d1a3a;
-      border-radius: 16px;
-      padding: 2rem 2rem 3rem;
+      background: #392d54;
+      border-radius: 12px;
+      padding: 2.5rem 2rem 3rem;
       box-shadow:
-        0 0 20px #ff69b4aa,
-        inset 0 0 10px #ff69b4cc;
+        0 4px 15px rgba(225, 161, 202, 0.4);
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.3rem;
       transition: box-shadow 0.3s ease;
     }
 
     form:hover {
       box-shadow:
-        0 0 30px #ff8bd8ee,
-        inset 0 0 18px #ff8bd8ee;
+        0 6px 22px rgba(240, 183, 214, 0.6);
     }
 
     label {
       text-align: left;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #ffccff;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #d6b3cf;
       user-select: text;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.3rem;
     }
 
     input, textarea {
-      border-radius: 12px;
+      border-radius: 8px;
       border: none;
-      padding: 0.7rem 1rem;
+      padding: 0.65rem 1rem;
       font-size: 1rem;
       font-family: 'Rubik Mono One', monospace;
-      background: #1e1533;
-      color: #ffc0cb;
-      box-shadow: inset 0 0 5px #ff69b4aa;
-      transition: box-shadow 0.3s ease, background 0.3s ease;
+      background: #4c3d6a;
+      color: #e4c9e7;
+      box-shadow: inset 0 0 4px #d48abf88;
+      transition: box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease;
       resize: vertical;
+      outline-offset: 3px;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #b89ec0;
+      font-style: italic;
     }
 
     input:focus, textarea:focus {
-      outline: none;
-      background: #2a1d4f;
-      box-shadow: 0 0 12px #ff69b4ee;
+      background: #5a4c80;
+      box-shadow: 0 0 10px #c47cb6cc;
       color: #fff;
     }
 
@@ -513,74 +515,80 @@
     }
 
     button {
-      background: #ff69b4;
+      background: #c275b2;
       border: none;
-      border-radius: 16px;
+      border-radius: 14px;
       padding: 1rem;
-      font-weight: 900;
-      color: #1e1b2e;
+      font-weight: 700;
+      color: #2f203f;
       font-size: 1.25rem;
       cursor: pointer;
       box-shadow:
-        0 0 12px #ff69b4cc,
-        0 4px 10px #ff69b4bb;
-      transition: background 0.4s ease, transform 0.15s ease;
+        0 4px 12px rgba(194, 117, 178, 0.6);
+      transition: background 0.35s ease, transform 0.15s ease;
       user-select: none;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
+      margin-top: 1rem;
     }
 
     button:hover {
-      background: #ff8bd8;
+      background: #e1a1ca;
       box-shadow:
-        0 0 20px #ff8bd8ff,
-        0 6px 15px #ff8bd8cc;
-      transform: scale(1.07);
+        0 6px 20px rgba(225, 161, 202, 0.8);
+      transform: scale(1.05);
     }
 
     button:active {
       transform: scale(0.95);
-      box-shadow: 0 0 10px #ff69b4aa;
+      box-shadow: 0 3px 10px rgba(194, 117, 178, 0.4);
     }
 
     .message {
       margin-top: 1rem;
       font-style: italic;
-      color: #ffc0cb;
+      color: #d4b1cb;
       min-height: 1.5em;
       user-select: text;
+      transition: color 0.3s ease;
     }
 
     .back-link {
       margin-top: 3rem;
       display: inline-block;
-      color: #ff69b4;
+      color: #c47cb6;
       font-weight: 700;
       font-size: 1.1rem;
       text-decoration: none;
-      border: 2px solid #ff69b4;
+      border: 2px solid #c47cb6;
       padding: 0.6rem 1.3rem;
       border-radius: 14px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 0 8px #ff69b4aa;
+      box-shadow: 0 0 6px #c47cb6aa;
       user-select: none;
     }
 
     .back-link:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
+      background-color: #c47cb6;
+      color: #2f203f;
       box-shadow:
-        0 0 20px #ff8bd8ff,
-        0 5px 15px #ff8bd8cc;
+        0 0 18px #dba1d1cc,
+        0 5px 15px #dba1d1cc;
     }
 
-    /* Responsive */
     @media (max-width: 480px) {
       body {
         padding: 2rem 1rem;
       }
       h1 {
         font-size: 2.5rem;
+      }
+      form {
+        padding: 2rem 1.5rem 2.5rem;
+      }
+      button {
+        font-size: 1.1rem;
+        padding: 0.85rem;
       }
     }
   </style>
@@ -625,7 +633,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      messageEl.style.color = '#ffc0cb';
+      messageEl.style.color = '#d4b1cb';
       messageEl.textContent = '';
 
       const githubUser = form.githubUser.value.trim();
@@ -657,7 +665,7 @@
         return;
       }
 
-      messageEl.style.color = '#7fffd4';
+      messageEl.style.color = '#a8f0c6';
       messageEl.textContent = 'Game submitted successfully! Redirecting...';
       form.reset();
 
