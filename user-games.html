@@ -17,78 +17,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>All Users - BrownDogGames</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
+    /* Reset & basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      background: linear-gradient(135deg, #1a1020, #2c193a);
       font-family: 'Rubik Mono One', sans-serif;
-      color: #fff;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      color: #fefefe;
+      min-height: 100vh;
       padding: 3rem 1rem;
       text-align: center;
       user-select: none;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    h1 {
-      color: #ff69b4;
-      font-size: 3rem;
-      margin-bottom: 2.5rem;
-      text-shadow:
-        0 0 8px #ff69b4,
-        0 0 15px #ff69b4,
-        0 0 25px #ff69b4,
-        0 0 40px #ff4aad;
-      letter-spacing: 0.1em;
-      user-select: text;
-    }
-
-    .user-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.2rem;
-      max-width: 700px;
-      width: 100%;
-    }
-
-    .user-btn {
-      background: #ff69b4;
-      color: #1a1020;
-      padding: 0.85rem 1.7rem;
-      border-radius: 20px;
-      text-decoration: none;
-      font-weight: 800;
-      font-size: 1.2rem;
-      box-shadow:
-        0 0 15px #ff69b4cc,
-        0 4px 12px #ff69b4bb;
-      transition: background 0.25s ease, box-shadow 0.3s ease, transform 0.15s ease;
-      user-select: none;
-      letter-spacing: 0.1em;
-      display: inline-block;
-      min-width: 140px;
-      text-align: center;
-    }
-
-    .user-btn:hover {
-      background: #ff8bd8;
-      box-shadow:
-        0 0 25px #ff8bd8ff,
-        0 6px 20px #ff8bd8cc;
-      transform: scale(1.08);
-    }
-
-    .user-btn:active {
-      transform: scale(0.94);
-      box-shadow: 0 0 10px #ff69b4aa;
-    }
-
-    .back-link {
+    a.back-link {
+      align-self: flex-start;
+      margin-left: 3rem;
       margin-bottom: 2rem;
       color: #ff69b4;
       font-weight: 700;
@@ -101,11 +57,9 @@
       box-shadow: 0 0 10px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       user-select: none;
-      align-self: flex-start;
-      margin-left: 3rem;
     }
 
-    .back-link:hover {
+    a.back-link:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
       box-shadow:
@@ -113,28 +67,70 @@
         0 5px 15px #ff8bd8cc;
     }
 
+    h1 {
+      font-size: 2.8rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+      user-select: text;
+    }
+
+    /* User list grid container */
     #userList {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      max-width: 700px;
+      width: 100%;
       font-size: 1.2rem;
       color: #ffc0cb;
       user-select: text;
     }
 
+    /* User button style matching main theme buttons */
+    .user-btn {
+      display: block;
+      padding: 1rem 1.2rem;
+      background-color: #2d1a3a;
+      color: #ffccff;
+      text-decoration: none;
+      border-radius: 12px;
+      border: 2px solid #ff69b4;
+      text-align: center;
+      font-weight: 700;
+      transition: transform 0.2s, background-color 0.2s;
+      user-select: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .user-btn:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      transform: scale(1.05);
+    }
+
+    .user-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Responsive tweaks */
     @media (max-width: 480px) {
       h1 {
         font-size: 2.2rem;
       }
-      .back-link {
+      a.back-link {
         margin-left: 0;
         align-self: center;
         margin-bottom: 3rem;
       }
-      .user-list {
-        gap: 0.9rem;
+      #userList {
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       }
       .user-btn {
         font-size: 1rem;
-        min-width: 100px;
-        padding: 0.7rem 1.2rem;
+        padding: 0.85rem 1rem;
       }
     }
   </style>
@@ -150,10 +146,10 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
     const userListEl = document.getElementById('userList');
 
