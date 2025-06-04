@@ -143,6 +143,186 @@
     }
   </style>
 </head>
+
+<!-- Age Gate Start -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+  #age-gate {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none; /* Hide by default */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 9999;
+    color: #ff69b4;
+    font-family: 'Rubik Mono One', sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #age-gate.show {
+    display: flex; /* Show when verified needed */
+  }
+
+  #age-gate h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  #age-gate p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: #ffc0cb;
+  }
+
+  #age-gate button {
+    background: #ff69b4;
+    color: #1e1b2e;
+    border: none;
+    padding: 0.7rem 1.4rem;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 8px;
+    margin: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    min-width: 120px;
+  }
+
+  #age-gate button:hover {
+    background: #ff8edb;
+  }
+</style>
+
+<div id="age-gate">
+  <h2>🔞 Adults Only</h2>
+  <p>You must be 18 or older to access BrownDogGames.</p>
+  <button id="yes-btn">Yes, I’m 18+</button>
+  <button id="no-btn">No, Take Me Back</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ageGate = document.getElementById('age-gate');
+    const yesBtn = document.getElementById('yes-btn');
+    const noBtn = document.getElementById('no-btn');
+
+    if (localStorage.getItem('isAdult') === 'true') {
+      // User verified, do not show age gate at all
+      ageGate.classList.remove('show');
+    } else {
+      // Show age gate for verification
+      ageGate.classList.add('show');
+    }
+
+    yesBtn.addEventListener('click', () => {
+      localStorage.setItem('isAdult', 'true');
+      ageGate.classList.remove('show'); // Hide age gate
+    });
+
+    noBtn.addEventListener('click', () => {
+      alert('Sorry, you must be 18 or older to enter.');
+      window.location.href = 'https://google.com'; // Redirect as needed
+    });
+  });
+</script>
+<!-- Age Gate End -->
+
+
+<!-- Auth Bar -->
+<div id="auth-bar" style="max-width: 900px; margin: 0 auto 2rem; background-color: #2a243b; border-radius: 12px; box-shadow: 0 0 12px #00000055; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; font-family: 'Rubik Mono One', sans-serif; color: #fefefe;">
+  <!-- Content injected by JS -->
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+  const redirectTo = 'https://browndoggames.com/callback.html';
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+  const container = document.getElementById('auth-bar');
+
+  function createButton(text, onClick) {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.style.backgroundColor = '#ff69b4';
+    btn.style.color = '#1e1b2e';
+    btn.style.border = 'none';
+    btn.style.padding = '0.7rem 1.4rem';
+    btn.style.fontWeight = 'bold';
+    btn.style.fontSize = '1rem';
+    btn.style.borderRadius = '8px';
+    btn.style.cursor = 'pointer';
+    btn.style.transition = 'background-color 0.2s';
+    btn.style.minWidth = '120px';
+    btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
+    btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
+  async function renderAuthBar() {
+    const { data: { session } } = await supabase.auth.getSession();
+    container.innerHTML = '';
+
+    if (session?.user) {
+      const { user_metadata } = session.user;
+      const name = user_metadata.full_name || 'GitHub User';
+      const avatar = user_metadata.avatar_url || '';
+
+      // User info container
+      const userDiv = document.createElement('div');
+      userDiv.style.display = 'flex';
+      userDiv.style.alignItems = 'center';
+      userDiv.style.gap = '15px';
+
+      if (avatar) {
+        const img = document.createElement('img');
+        img.src = avatar;
+        img.alt = name;
+        img.style.width = '50px';
+        img.style.height = '50px';
+        img.style.borderRadius = '50%';
+        img.style.border = '3px solid #ff69b4';
+        userDiv.appendChild(img);
+      }
+
+      const userText = document.createElement('div');
+      userText.style.textAlign = 'left';
+      userText.innerHTML = `<strong style="font-size:1.1rem;">${name}</strong><br><small>${session.user.email}</small>`;
+      userDiv.appendChild(userText);
+
+      container.appendChild(userDiv);
+
+      // Logout button
+      const logoutBtn = createButton('Logout', async () => {
+        await supabase.auth.signOut();
+        window.location.reload();
+      });
+      container.appendChild(logoutBtn);
+
+    } else {
+      // Login button
+      const loginBtn = createButton('Login with GitHub', async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: { redirectTo }
+        });
+        if (error) alert('Login error: ' + error.message);
+      });
+      container.appendChild(loginBtn);
+    }
+  }
+
+  renderAuthBar();
+</script>
+  
 <body>
 
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
