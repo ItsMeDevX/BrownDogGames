@@ -686,6 +686,20 @@
       color: white;
       font-size: 1rem;
     }
+    #video-slot {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+    #video-slot h2 {
+      margin-bottom: 1rem;
+    }
+    #video-slot .slot-player {
+      width: 100%;
+      max-width: 700px;
+      height: 400px;
+      border-radius: 12px;
+      border: none;
+    }
     #video-list iframe,
     #video-list video {
       width: 100%;
@@ -702,13 +716,14 @@
       margin: 0.2rem 0 1rem 0;
       color: #ccc;
     }
-    #test-drive-video iframe {
-      width: 100%;
-      max-width: 700px;
-      height: 400px;
-      border-radius: 12px;
+    .play-slot-button {
+      margin: 0.5rem 0 1rem;
+      padding: 8px 14px;
+      background-color: #ff4f9f;
       border: none;
-      margin-top: 2rem;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -730,23 +745,33 @@
       <textarea id="video-desc" placeholder="Short description..."></textarea>
       <button type="submit">📤 Submit Video</button>
     </form>
-    <div id="video-list" style="margin-top: 2rem;"></div>
-  </div>
 
-  <div id="test-drive-video"></div>
+    <!-- 🎯 Video Slot -->
+    <div id="video-slot">
+      <h2>🎯 Video Slot Player</h2>
+      <div id="slot-container">
+        <p>Select a video below to play it here.</p>
+      </div>
+    </div>
+
+    <!-- 📺 Video List -->
+    <div id="video-list"></div>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    )
 
     const gameNameInput = document.getElementById('game-name-input')
     const selectGameBtn = document.getElementById('select-game-btn')
     const videoSection = document.getElementById('video-section')
     const videoForm = document.getElementById('video-form')
     const videoList = document.getElementById('video-list')
+    const videoSlot = document.getElementById('slot-container')
     const videoUrl = document.getElementById('video-url')
     const videoTitle = document.getElementById('video-title')
     const videoDesc = document.getElementById('video-desc')
@@ -823,12 +848,13 @@
       }
 
       videoList.innerHTML = data.map(video => {
-        const embed = getEmbeddedVideoHTML(video.video_url)
+        const embed = getEmbeddedVideoHTML(video.video_url, false)
         return `
           <div>
             <h3>${video.title}</h3>
             <p><em>by ${video.uploader_username}</em></p>
             ${embed}
+            <button class="play-slot-button" onclick="window.playInSlot('${video.video_url.replace(/'/g, "\\'")}')">▶️ Play in Slot</button>
             <p>${video.description || ''}</p>
           </div>
         `
@@ -837,28 +863,32 @@
       loadTwitterWidgets()
     }
 
-    function getEmbeddedVideoHTML(url) {
+    window.playInSlot = function(url) {
+      videoSlot.innerHTML = getEmbeddedVideoHTML(url, true)
+      loadTwitterWidgets()
+    }
+
+    function getEmbeddedVideoHTML(url, isSlot = false) {
       const ytMatch = url.match(/(?:youtube\.com.*v=|youtu\.be\/)([^&\n?#]+)/)
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
-      // Removed Google Drive embed pattern to avoid download issues
-      const twitterMatch = url.match(/twitter\.com\/(?:\w+)\/status\/(\d+)/)
-      const mp4Match = url.match(/\.(mp4)(\?.*)?$/i)
+      const twitterMatch = url.match(/twitter\.com\/(?:\\w+)\/status\/(\\d+)/)
+      const mp4Match = url.match(/\\.(mp4)(\\?.*)?$/i)
+
+      const styleClass = isSlot ? 'slot-player' : ''
 
       if (ytMatch) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`
+        return `<iframe class="${styleClass}" src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`
       }
       if (vimeoMatch) {
-        return `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" frameborder="0" allowfullscreen></iframe>`
+        return `<iframe class="${styleClass}" src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>`
       }
       if (twitterMatch) {
         const tweetId = twitterMatch[1]
         return `<blockquote class="twitter-video" data-lang="en"><a href="https://twitter.com/i/status/${tweetId}"></a></blockquote>`
       }
       if (mp4Match) {
-        return `<video controls src="${url}" preload="metadata" style="border-radius: 12px; max-width: 700px; width: 100%; height: 400px;"></video>`
+        return `<video class="${styleClass}" controls src="${url}" preload="metadata"></video>`
       }
-
-      // Fallback: display link
       return `<p><a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff4f9f;">Open video link</a></p>`
     }
 
@@ -872,8 +902,6 @@
         document.body.appendChild(script)
       }
     }
-
-    // Removed test Drive video embed
 
   </script>
 </body>
