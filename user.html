@@ -346,6 +346,154 @@
   renderAuthBar();
 </script>
   
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Games + Chat - BrownDogGames</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      color: #fefefe;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .back-link {
+      color: #ff4f9f;
+      display: inline-block;
+      margin-bottom: 1rem;
+      text-decoration: none;
+    }
+
+    .games-container {
+      max-width: 800px;
+      margin: 0 auto 40px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .game-card {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .game-title {
+      margin-top: 0;
+    }
+
+    .game-desc {
+      color: #ddd;
+    }
+
+    .game-screenshot {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .play-link {
+      display: inline-block;
+      margin-top: 10px;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    #game-id-container {
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
+
+    #game-id-label {
+      font-size: 1.2rem;
+      color: #ff4f9f;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    #game-id {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ff4f9f;
+      border-radius: 8px;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    #messages {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 0 auto 20px;
+      max-width: 600px;
+    }
+
+    #messages div {
+      margin-bottom: 12px;
+    }
+
+    #messages strong {
+      color: #ff82ba;
+    }
+
+    #chat-form {
+      display: flex;
+      gap: 10px;
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    #msg-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    button {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #ff82ba;
+    }
+  </style>
+</head>
 <body>
 
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
@@ -354,26 +502,52 @@
 
   <div id="games" class="games-container">Loading games...</div>
 
+  <h2>Chat for User</h2>
+
+  <div id="game-id-container">
+    <label id="game-id-label" for="game-id">Game ID (Chat Room):</label>
+    <input type="text" id="game-id" readonly />
+  </div>
+
+  <div id="messages">
+    <p>Loading messages...</p>
+  </div>
+
+  <form id="chat-form">
+    <input type="text" id="msg-input" placeholder="Type a message..." required />
+    <button type="submit">Send</button>
+  </form>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Get username from URL param:
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
+    // Elements:
     const pageTitle = document.getElementById('pageTitle');
     const gamesContainer = document.getElementById('games');
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
+    const gameIdInput = document.getElementById('game-id');
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
       gamesContainer.textContent = 'No user provided in the URL.';
+      messagesDiv.innerHTML = '<p>Please provide a user in the URL like ?user=username</p>';
+      gameIdInput.value = '';
     } else {
       pageTitle.textContent = `${username}'s Games`;
+      gameIdInput.value = username;
+      document.querySelector('h2').textContent = `Chat for ${username}`;
 
+      // Load user games
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -420,7 +594,7 @@
             card.appendChild(img);
           }
 
-          // Replace iframe embed with a link to play the game
+          // Play link
           if (game.embed_url) {
             const link = document.createElement('a');
             link.href = game.embed_url;
@@ -435,9 +609,77 @@
         });
       }
 
+      // Load chat messages
+      async function loadMessages() {
+        if (!username) return;
+
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('game_id', username)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
+          console.error(error);
+          return;
+        }
+
+        if (!data.length) {
+          messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
+          return;
+        }
+
+        messagesDiv.innerHTML = data.map(m => `
+          <div>
+            <strong>${m.github_username || 'Guest'}:</strong> ${m.content}
+          </div>
+        `).join('');
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      // Get GitHub username from session or fallback
+      async function getUserGitHubUsername() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { user_metadata } = session.user;
+          return user_metadata.full_name || 'GitHub User';
+        }
+        return 'Guest';
+      }
+
+      // Send message handler
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const msg = msgInput.value.trim();
+        if (!msg || !username) return;
+
+        const githubUsername = await getUserGitHubUsername();
+
+        const { error } = await supabase
+          .from('messages')
+          .insert([{ content: msg, github_username: githubUsername, game_id: username }]);
+
+        if (error) {
+          alert('Failed to send message: ' + error.message);
+          console.error(error);
+          return;
+        }
+
+        msgInput.value = '';
+        loadMessages();
+      });
+
+      // Listen to real-time message inserts for this game_id
+      supabase.channel('messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${username}` }, () => {
+          loadMessages();
+        })
+        .subscribe();
+
       loadGames();
+      loadMessages();
     }
   </script>
-
 </body>
 </html>
