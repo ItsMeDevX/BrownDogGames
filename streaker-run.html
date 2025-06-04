@@ -193,20 +193,15 @@
 <!-- Age Gate End -->
 
 
-<!-- Auth Bar -->
-<div id="auth-bar" style="max-width: 900px; margin: 0 auto 2rem; background-color: #2a243b; border-radius: 12px; box-shadow: 0 0 12px #00000055; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; font-family: 'Rubik Mono One', sans-serif; color: #fefefe;">
-  <!-- Content injected by JS -->
-</div>
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
   const redirectTo = 'https://browndoggames.com/callback.html';
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
   const container = document.getElementById('auth-bar');
 
   function createButton(text, onClick) {
@@ -222,6 +217,7 @@
     btn.style.cursor = 'pointer';
     btn.style.transition = 'background-color 0.2s';
     btn.style.minWidth = '120px';
+    btn.style.marginLeft = '10px';
     btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
     btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
     btn.addEventListener('click', onClick);
@@ -237,7 +233,7 @@
       const name = user_metadata.full_name || 'GitHub User';
       const avatar = user_metadata.avatar_url || '';
 
-      // User info container
+      // User Info
       const userDiv = document.createElement('div');
       userDiv.style.display = 'flex';
       userDiv.style.alignItems = 'center';
@@ -259,17 +255,28 @@
       userText.innerHTML = `<strong style="font-size:1.1rem;">${name}</strong><br><small>${session.user.email}</small>`;
       userDiv.appendChild(userText);
 
-      container.appendChild(userDiv);
+      // Button container
+      const buttonDiv = document.createElement('div');
+      buttonDiv.style.display = 'flex';
 
-      // Logout button
+      // My Games Button
+      const myGamesBtn = createButton('My Games', () => {
+        window.location.href = 'user-games.html'; // or 'submit.html' if that's what you want
+      });
+
+      // Logout Button
       const logoutBtn = createButton('Logout', async () => {
         await supabase.auth.signOut();
         window.location.reload();
       });
-      container.appendChild(logoutBtn);
+
+      buttonDiv.appendChild(myGamesBtn);
+      buttonDiv.appendChild(logoutBtn);
+
+      container.appendChild(userDiv);
+      container.appendChild(buttonDiv);
 
     } else {
-      // Login button
       const loginBtn = createButton('Login with GitHub', async () => {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'github',
@@ -277,43 +284,14 @@
         });
         if (error) alert('Login error: ' + error.message);
       });
+
       container.appendChild(loginBtn);
     }
-    
-    <div id="auth-bar"></div>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  const authBar = document.getElementById('auth-bar');
-
-  async function showAuthBar() {
-    const { data: { session } } = await supabase.auth.getSession();
-    authBar.innerHTML = '';
-
-    if (session?.user) {
-      const myGamesBtn = document.createElement('button');
-      myGamesBtn.textContent = 'My Games';
-      myGamesBtn.style = 'background:#ff69b4;color:#1e1b2e;padding:0.6rem 1.2rem;border-radius:8px;font-weight:bold;cursor:pointer;border:none;';
-      myGamesBtn.onclick = () => {
-        window.location.href = 'submit.html'; // or 'user-games.html' if you prefer
-      };
-      authBar.appendChild(myGamesBtn);
-    }
-  }
-
-  showAuthBar();
-</script>
-
   }
 
   renderAuthBar();
 </script>
+
   
 <body>
   <header>
