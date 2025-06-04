@@ -106,13 +106,23 @@
       background: #1a1020;
     }
 
-    iframe {
-      width: 100%;
-      height: 240px;
-      border: none;
-      border-radius: 14px;
-      box-shadow: 0 0 15px #ff69b4cc;
-      background: #1a1020;
+    .play-link {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 12px;
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 0 12px #ff69b4cc;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    .play-link:hover {
+      background-color: #ff8bd8;
+      box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
     }
 
     .no-games {
@@ -129,9 +139,6 @@
       .games-container {
         grid-template-columns: 1fr;
         gap: 1rem;
-      }
-      iframe {
-        height: 200px;
       }
     }
   </style>
@@ -210,13 +217,15 @@
             card.appendChild(img);
           }
 
-          // Embed iframe if available
+          // Replace iframe embed with a link to play the game
           if (game.embed_url) {
-            const iframe = document.createElement('iframe');
-            iframe.src = game.embed_url;
-            iframe.loading = 'lazy';
-            iframe.allowFullscreen = true;
-            card.appendChild(iframe);
+            const link = document.createElement('a');
+            link.href = game.embed_url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = '▶️ Play Game';
+            link.className = 'play-link';
+            card.appendChild(link);
           }
 
           gamesContainer.appendChild(card);
