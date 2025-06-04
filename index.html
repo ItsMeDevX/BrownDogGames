@@ -420,83 +420,124 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Game Submission</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submit Your Game - BrownDogGames</title>
   <style>
-    body { font-family: sans-serif; background: #1e1b2e; color: #fff; padding: 2rem; max-width: 600px; margin: auto; }
-    form { display: flex; flex-direction: column; gap: 1rem; background: #2a243b; padding: 1.5rem; border-radius: 12px; box-shadow: 0 0 10px #00000050; }
-    label { font-weight: bold; }
-    input, textarea { padding: 0.6rem; border-radius: 8px; border: none; font-size: 1rem; }
-    button { background: #ff69b4; color: #1e1b2e; font-weight: bold; padding: 0.8rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; }
-    button:hover { background: #ff8edb; }
-    .message { margin-top: 1rem; font-weight: bold; }
-    .error { color: #ff8d8d; }
-    .success { color: #8dffa1; }
-    #auth-bar { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { color: #ff69b4; margin-bottom: 1.5rem; }
+    form {
+      max-width: 480px;
+      margin: 0 auto;
+      background-color: #2d1a3a;
+      border-radius: 14px;
+      padding: 2rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: #ffc0cb;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      border: 2px solid #ff69b4;
+      background-color: #1e1b2e;
+      color: white;
+    }
+    button {
+      padding: 1rem;
+      border: none;
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff8edb;
+    }
+    .message {
+      margin-top: 1rem;
+      min-height: 1.5em;
+    }
+    #auth-bar {
+      max-width: 900px;
+      margin: 0 auto 2rem;
+      background-color: #2a243b;
+      border-radius: 12px;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Rubik Mono One', sans-serif;
+    }
+    #auth-bar button {
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
 
+  <!-- Auth Bar -->
   <div id="auth-bar"></div>
 
-  <form id="submitForm" hidden>
-    <label>
-      GitHub Username:
-      <input type="text" id="githubUser" required />
-    </label>
-    <label>
-      Game Title:
-      <input type="text" id="title" required />
-    </label>
-    <label>
-      Description:
-      <textarea id="description" required></textarea>
-    </label>
-    <label>
-      Embed URL:
-      <input type="url" id="embedUrl" required />
-    </label>
-    <label>
-      Screenshot URL (optional):
-      <input type="url" id="screenshotUrl" />
-    </label>
+  <h1>Submit Your Game</h1>
+
+  <form id="submitForm">
+    <label for="githubUser">GitHub Username *</label>
+    <input type="text" id="githubUser" required />
+
+    <label for="title">Game Title *</label>
+    <input type="text" id="title" required />
+
+    <label for="description">Game Description</label>
+    <textarea id="description"></textarea>
+
+    <label for="embedUrl">Embed URL (iframe src)</label>
+    <input type="url" id="embedUrl" placeholder="https://..." />
+
+    <label for="screenshotUrl">Screenshot URL</label>
+    <input type="url" id="screenshotUrl" placeholder="https://..." />
+
     <button type="submit" id="submitBtn">Submit Game</button>
   </form>
 
-  <p class="message" id="formMessage" aria-live="polite"></p>
+  <p class="message" id="status"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MDM0OTIsImV4cCI6MjA2NDM3OTQ5Mn0.ooI4dS6drXFqa34KcSonFfcVRXi2-FjpGa4yLD06wLQ';
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const form = document.getElementById('submitForm');
-    const message = document.getElementById('formMessage');
+    const status = document.getElementById('status');
     const submitBtn = document.getElementById('submitBtn');
+
+    // AUTH BAR
     const authBar = document.getElementById('auth-bar');
-
-    function showMessage(text, type = '') {
-      message.textContent = text;
-      message.className = `message ${type}`;
-    }
-
     async function renderAuth() {
       const { data: { session } } = await supabase.auth.getSession();
       authBar.innerHTML = '';
 
       if (session?.user) {
-        const user = session.user;
-        const avatar = user.user_metadata.avatar_url || '';
-        const name = user.user_metadata.full_name || user.email;
+        const name = session.user.user_metadata.full_name || 'GitHub User';
+        const email = session.user.email;
 
-        const userInfo = document.createElement('div');
-        userInfo.innerHTML = `<img src="${avatar}" style="width:40px;height:40px;border-radius:50%;margin-right:10px;border:2px solid #ff69b4;"> <strong>${name}</strong>`;
-        userInfo.style.display = 'flex';
-        userInfo.style.alignItems = 'center';
-        authBar.appendChild(userInfo);
+        const left = document.createElement('div');
+        left.innerHTML = `<strong>${name}</strong><br><small>${email}</small>`;
 
         const logoutBtn = document.createElement('button');
         logoutBtn.textContent = 'Logout';
@@ -504,36 +545,19 @@
           await supabase.auth.signOut();
           location.reload();
         };
-        authBar.appendChild(logoutBtn);
 
-        form.hidden = false;
-
-        form.onsubmit = async (e) => {
-          e.preventDefault();
-          submitBtn.disabled = true;
-          showMessage('');
-
-          const data = {
-            user_id: user.id,
-            github_user: document.getElementById('githubUser').value.trim(),
-            title: document.getElementById('title').value.trim(),
-            description: document.getElementById('description').value.trim(),
-            embed_url: document.getElementById('embedUrl').value.trim(),
-            screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-            created_at: new Date().toISOString()
-          };
-
-          const { error } = await supabase.from('game_submissions').insert([data]);
-          if (error) {
-            showMessage('Submission failed: ' + error.message, 'error');
-            submitBtn.disabled = false;
-          } else {
-            showMessage('Game submitted successfully!', 'success');
-            form.reset();
-            submitBtn.disabled = false;
-          }
+        const gamesBtn = document.createElement('button');
+        gamesBtn.textContent = 'My Games';
+        gamesBtn.onclick = () => {
+          window.location.href = 'user-games.html';
         };
 
+        const btnGroup = document.createElement('div');
+        btnGroup.appendChild(gamesBtn);
+        btnGroup.appendChild(logoutBtn);
+
+        authBar.appendChild(left);
+        authBar.appendChild(btnGroup);
       } else {
         const loginBtn = document.createElement('button');
         loginBtn.textContent = 'Login with GitHub';
@@ -544,11 +568,53 @@
           });
         };
         authBar.appendChild(loginBtn);
-        form.hidden = true;
       }
     }
 
     renderAuth();
+
+    // FORM SUBMIT
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.textContent = '';
+      submitBtn.disabled = true;
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        status.textContent = '❌ You must be logged in to submit.';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      const user_id = session.user.id;
+      const github_user = document.getElementById('githubUser').value.trim();
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const embed_url = document.getElementById('embedUrl').value.trim();
+      const screenshot_url = document.getElementById('screenshotUrl').value.trim();
+
+      if (!github_user || !title || !embed_url) {
+        status.textContent = '❌ GitHub username, title, and embed URL are required.';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      const { error } = await supabase.from('game_submissions').insert([
+        { user_id, github_user, title, description, embed_url, screenshot_url }
+      ]);
+
+      if (error) {
+        status.textContent = `Error: ${error.message}`;
+        submitBtn.disabled = false;
+      } else {
+        status.textContent = '✅ Thanks! Your game has been submitted.';
+        form.reset();
+        setTimeout(() => {
+          window.location.href = 'thank-you.html';
+        }, 1500);
+      }
+    });
   </script>
+
 </body>
 </html>
