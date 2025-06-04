@@ -193,104 +193,102 @@
 <!-- Age Gate End -->
 
 
-  <!-- Auth Bar -->
-  <div id="auth-bar" style="
-    max-width: 300px;
-    margin: 20px 0 20px 20px; /* Aligns top-left */
-    background-color: #2a243b;
-    border-radius: 12px;
-    box-shadow: 0 0 12px #00000055;
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'Rubik Mono One', sans-serif;
-    color: #fefefe;
-    min-height: 60px;
-  ">
-    <!-- Content injected by JS -->
-  </div>
+ <!-- Auth Bar -->
+<div id="auth-bar" style="
+  max-width: 300px;
+  margin: 20px auto;  /* Center horizontally with auto left/right */
+  background-color: #2a243b;
+  border-radius: 12px;
+  box-shadow: 0 0 12px #00000055;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Rubik Mono One', sans-serif;
+  color: #fefefe;
+  min-height: 60px;
+">
+  <!-- Content injected by JS -->
+</div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
 
-    const authBar = document.getElementById('auth-bar');
+  const authBar = document.getElementById('auth-bar');
 
-    function createButton(text, onClick) {
-      const btn = document.createElement('button');
-      btn.textContent = text;
-      btn.style.backgroundColor = '#ff69b4';
-      btn.style.color = '#1e1b2e';
-      btn.style.border = 'none';
-      btn.style.padding = '0.5rem 1rem';
-      btn.style.fontWeight = 'bold';
-      btn.style.fontSize = '0.9rem';
-      btn.style.borderRadius = '8px';
-      btn.style.cursor = 'pointer';
-      btn.style.transition = 'background-color 0.2s';
-      btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
-      btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
-      btn.addEventListener('click', onClick);
-      return btn;
-    }
+  function createButton(text, onClick) {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.style.backgroundColor = '#ff69b4';
+    btn.style.color = '#1e1b2e';
+    btn.style.border = 'none';
+    btn.style.padding = '0.5rem 1rem';
+    btn.style.fontWeight = 'bold';
+    btn.style.fontSize = '0.9rem';
+    btn.style.borderRadius = '8px';
+    btn.style.cursor = 'pointer';
+    btn.style.transition = 'background-color 0.2s';
+    btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
+    btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
 
-    async function renderAuthBar() {
-      const { data: { session } } = await supabase.auth.getSession();
-      authBar.innerHTML = '';
+  async function renderAuthBar() {
+    const { data: { session } } = await supabase.auth.getSession();
+    authBar.innerHTML = '';
 
-      if (session?.user) {
-        const { user_metadata } = session.user;
-        const name = user_metadata.full_name || 'GitHub User';
-        const email = session.user.email || '';
-        const avatar = user_metadata.avatar_url || '';
+    if (session?.user) {
+      const { user_metadata } = session.user;
+      const name = user_metadata.full_name || 'GitHub User';
+      const email = session.user.email || '';
+      const avatar = user_metadata.avatar_url || '';
 
-        if (avatar) {
-          const img = document.createElement('img');
-          img.src = avatar;
-          img.alt = name;
-          img.style.width = '40px';
-          img.style.height = '40px';
-          img.style.borderRadius = '50%';
-          img.style.border = '2px solid #ff69b4';
-          img.style.objectFit = 'cover';
-          authBar.appendChild(img);
-        }
-
-        const nameDiv = document.createElement('div');
-        nameDiv.innerHTML = `<strong style="font-size: 0.9rem;">${name}</strong><br><small style="font-size: 0.7rem;">${email}</small>`;
-        authBar.appendChild(nameDiv);
-
-        const myGamesBtn = createButton('My Games', () => {
-          window.location.href = 'user-games.html'; // your user games page
-        });
-
-        const logoutBtn = createButton('Logout', async () => {
-          await supabase.auth.signOut();
-          window.location.reload();
-        });
-
-        authBar.appendChild(myGamesBtn);
-        authBar.appendChild(logoutBtn);
-      } else {
-        const loginBtn = createButton('Login with GitHub', async () => {
-          await supabase.auth.signInWithOAuth({
-            provider: 'github',
-            options: {
-              redirectTo: window.location.href
-            }
-          });
-        });
-        authBar.appendChild(loginBtn);
+      if (avatar) {
+        const img = document.createElement('img');
+        img.src = avatar;
+        img.alt = name;
+        img.style.width = '40px';
+        img.style.height = '40px';
+        img.style.borderRadius = '50%';
+        img.style.border = '2px solid #ff69b4';
+        img.style.objectFit = 'cover';
+        authBar.appendChild(img);
       }
-    }
 
-    renderAuthBar();
-  </script>
+      const nameDiv = document.createElement('div');
+      nameDiv.innerHTML = `<strong style="font-size: 0.9rem;">${name}</strong><br><small style="font-size: 0.7rem;">${email}</small>`;
+      authBar.appendChild(nameDiv);
+
+      const myGamesBtn = createButton('My Games', () => {
+        window.location.href = 'user-games.html';
+      });
+
+      const logoutBtn = createButton('Logout', async () => {
+        await supabase.auth.signOut();
+        window.location.reload();
+      });
+
+      authBar.appendChild(myGamesBtn);
+      authBar.appendChild(logoutBtn);
+    } else {
+      const loginBtn = createButton('Login with GitHub', async () => {
+        await supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: { redirectTo: window.location.href }
+        });
+      });
+      authBar.appendChild(loginBtn);
+    }
+  }
+
+  renderAuthBar();
+</script>
   
 <body>
   <header>
