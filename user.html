@@ -476,6 +476,97 @@
       loadGames();
     }
   </script>
+  
+<!-- Add this right *before* </body> -->
+<div class="chat-container">
+  <div class="chat-messages" id="chatMessages"></div>
+  <form id="chatForm" class="chat-form">
+    <input type="text" id="chatInput" placeholder="Type a message..." required />
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<style>
+  .chat-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 300px;
+    background: #2f1a39;
+    border-top-left-radius: 12px;
+    border: 2px solid #ff4f9f;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 50%;
+  }
+  .chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-family: sans-serif;
+    font-size: 0.9rem;
+  }
+  .chat-message {
+    margin-bottom: 10px;
+    color: #eee;
+  }
+  .chat-message.user {
+    text-align: right;
+    color: #ffb4dc;
+  }
+  .chat-form {
+    display: flex;
+    border-top: 1px solid #ff4f9f;
+  }
+  #chatInput {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    outline: none;
+    font-family: sans-serif;
+  }
+  .chat-form button {
+    padding: 8px 12px;
+    background-color: #ff4f9f;
+    border: none;
+    color: #1b1b2e;
+    font-weight: bold;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+
+  chatForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    const msgElem = document.createElement('div');
+    msgElem.className = 'chat-message user';
+    msgElem.textContent = message;
+    chatMessages.appendChild(msgElem);
+
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Simulate bot response
+    setTimeout(() => {
+      const botReply = document.createElement('div');
+      botReply.className = 'chat-message';
+      botReply.textContent = `You said: "${message}"`;
+      chatMessages.appendChild(botReply);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 500);
+
+    chatInput.value = '';
+  });
+</script>
 
 </body>
 </html>
