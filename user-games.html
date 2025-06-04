@@ -346,6 +346,99 @@
   renderAuthBar();
 </script>
   
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Game Pages - BrownDogGames</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 3rem 1rem;
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+      user-select: none;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+      user-select: text;
+      letter-spacing: 0.1em;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      color: #ff69b4;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      border: 2px solid #ff69b4;
+      padding: 0.65rem 1.4rem;
+      border-radius: 16px;
+      letter-spacing: 0.1em;
+      box-shadow: 0 0 12px #ff69b4aa;
+      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    .back-link:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      box-shadow:
+        0 0 25px #ff8bd8ff,
+        0 5px 15px #ff8bd8cc;
+    }
+
+    #userList {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .user-btn {
+      display: inline-block;
+      background-color: #2d1a3a;
+      color: #ffc0cb;
+      border: 2px solid #ff69b4;
+      padding: 0.8rem 1.5rem;
+      font-size: 1.1rem;
+      text-decoration: none;
+      border-radius: 14px;
+      box-shadow: 0 0 12px #ff69b4aa;
+      transition: background-color 0.3s ease, color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
+    }
+
+    .user-btn:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2.2rem;
+      }
+      .user-btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
 <body>
 
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
@@ -371,7 +464,7 @@
         .order('github_user', { ascending: true });
 
       if (error) {
-        userListEl.textContent = Error loading users: ${error.message};
+        userListEl.textContent = `Error loading users: ${error.message}`;
         return;
       }
 
@@ -388,7 +481,7 @@
       uniqueUsers.forEach(user => {
         const a = document.createElement('a');
         a.className = 'user-btn';
-        a.href = user.html?user=${encodeURIComponent(user)};
+        a.href = `user.html?user=${encodeURIComponent(user)}`;
         a.textContent = user;
         fragment.appendChild(a);
       });
@@ -400,4 +493,4 @@
   </script>
 
 </body>
-</html> 
+</html>
