@@ -305,8 +305,7 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      /* leave room for fixed chat bar */
-      padding-bottom: 220px; /* height of chat area + some space */
+      padding-bottom: 220px; /* leave room for fixed chat bar */
     }
     h1 {
       text-align: center;
@@ -325,6 +324,7 @@
       transition: background-color 0.2s ease;
       margin-bottom: 1rem;
       display: inline-block;
+      width: fit-content;
     }
     .back-link:hover {
       background-color: #ff82ba;
@@ -343,6 +343,11 @@
       border-radius: 12px;
       padding: 16px;
       width: 100%;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .game-card:hover {
+      background-color: #3d2252;
     }
     .game-title {
       margin-top: 0;
@@ -490,7 +495,7 @@
   <div id="chat-wrapper" aria-label="Game chat interface">
     <div id="game-id-container">
       <label id="game-id-label" for="game-id">Game ID:</label>
-      <input type="text" id="game-id" value="naked-fang" readonly />
+      <input type="text" id="game-id" value="" readonly />
     </div>
 
     <div id="messages" aria-live="polite" aria-atomic="false" role="log">
@@ -506,18 +511,20 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Supabase client (same for both)
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // ----------- User Games Section -----------
-
+    // Get username from URL param
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
     const pageTitle = document.getElementById('pageTitle');
     const gamesContainer = document.getElementById('games');
+    const gameIdInput = document.getElementById('game-id');
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
@@ -530,6 +537,7 @@
     } else {
       pageTitle.textContent = `${username}'s Games`;
 
+      // Load games for user
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -549,7 +557,7 @@
 
         gamesContainer.innerHTML = '';
 
-        data.forEach(game => {
+        data.forEach((game, i) => {
           const card = document.createElement('article');
           card.className = 'game-card';
 
@@ -580,216 +588,156 @@
             link.rel = 'noopener noreferrer';
             link.textContent = '▶️ Play Game';
             link.className = 'play-link';
+            // Prevent link click from bubbling (to keep chat sync)
+            link.addEventListener('click', e => e.stopPropagation());
             card.appendChild(link);
           }
 
+          // When clicking anywhere on the card, update chat to this game ID (use a unique id or slug)
+          // Assume game.id or game.slug or game.embed_url uniquely identifies game
+          // We'll use game.id or fallback to title slug or embed_url
+          let gameId = game.id?.toString() || game.title?.toLowerCase().replace(/\s+/g, '-') || game.embed_url || '';
+          card.dataset.gameId = gameId;
+
+          card.addEventListener('click', () => {
+            setCurrentGameId(gameId);
+          });
+
           gamesContainer.appendChild(card);
         });
+
+        // Auto-select first game for chat
+        const firstGameId = data[0]?.id?.toString() || data[0]?.title?.toLowerCase().replace(/\s+/g, '-') || data[0]?.embed_url || '';
+        if (firstGameId) {
+          setCurrentGameId(firstGameId);
+        } else {
+          messagesDiv.innerHTML = '<p>No game selected for chat.</p>';
+        }
       }
+
+      // Current selected game ID in chat
+      let currentGameId = '';
+
+      // Store supabase realtime subscription so we can unsubscribe when switching game
+      let subscription = null;
+
+      // Load chat messages for game
+      async function loadMessages() {
+        if (!currentGameId) {
+          messagesDiv.innerHTML = '<p>No game selected for chat.</p>';
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('game_id', currentGameId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
+          console.error(error);
+          return;
+        }
+
+        if (!data.length) {
+          messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
+          return;
+        }
+
+        messagesDiv.innerHTML = data.map(m => `
+          <div>
+            <strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}
+          </div>
+        `).join('');
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      // Escape HTML to prevent XSS
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Get logged-in GitHub username or "Guest"
+      async function getUserGitHubUsername() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.user_metadata?.github_username) {
+          return session.user.user_metadata.github_username;
+        }
+        // fallback to email username or 'Guest'
+        if (session?.user?.email) {
+          return session.user.email.split('@')[0];
+        }
+        return 'Guest';
+      }
+
+      // Handle switching current game ID for chat
+      async function setCurrentGameId(gameId) {
+        if (subscription) {
+          await supabase.removeSubscription(subscription);
+          subscription = null;
+        }
+
+        currentGameId = gameId;
+        gameIdInput.value = gameId;
+
+        messagesDiv.innerHTML = '<p>Loading messages...</p>';
+        await loadMessages();
+
+        // Subscribe to realtime messages for this game_id
+        subscription = supabase
+          .channel('public:messages')
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${currentGameId}` },
+            payload => {
+              // Append new message
+              const msg = payload.new;
+              const div = document.createElement('div');
+              div.innerHTML = `<strong>${escapeHtml(msg.github_username || 'Guest')}:</strong> ${escapeHtml(msg.content)}`;
+              messagesDiv.appendChild(div);
+              messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+          )
+          .subscribe();
+
+      }
+
+      // Submit new chat message
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!currentGameId) {
+          alert('Please select a game to chat.');
+          return;
+        }
+        const message = msgInput.value.trim();
+        if (!message) return;
+
+        const githubUser = await getUserGitHubUsername();
+
+        // Insert message into Supabase
+        const { error } = await supabase
+          .from('messages')
+          .insert({
+            game_id: currentGameId,
+            github_username: githubUser,
+            content: message,
+          });
+
+        if (error) {
+          alert('Error sending message: ' + error.message);
+          return;
+        }
+
+        msgInput.value = '';
+      });
 
       loadGames();
     }
-
-    // ----------- Chat Section -----------
-
-  <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Game Chat - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      color: #fefefe;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 2rem;
-    }
-
-    #game-id-container {
-      max-width: 600px;
-      margin: 0 auto 20px;
-    }
-
-    #game-id-label {
-      font-size: 1.2rem;
-      color: #ff4f9f;
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    #game-id {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: 2px solid #ff4f9f;
-      border-radius: 8px;
-      background-color: #2f1a39;
-      color: #fff;
-    }
-
-    #messages {
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 20px;
-      max-height: 400px;
-      overflow-y: auto;
-      margin: 0 auto 20px;
-      max-width: 600px;
-    }
-
-    #messages div {
-      margin-bottom: 12px;
-    }
-
-    #messages strong {
-      color: #ff82ba;
-    }
-
-    #chat-form {
-      display: flex;
-      gap: 10px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    #msg-input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: #fff;
-    }
-
-    button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #ff82ba;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>Game Chat</h1>
-
-  <div id="game-id-container">
-    <label id="game-id-label" for="game-id">Game ID:</label>
-    <input type="text" id="game-id" value="naked-fang" readonly />
-  </div>
-
-  <div id="messages">
-    <p>Loading messages...</p>
-  </div>
-
-  <form id="chat-form">
-    <input type="text" id="msg-input" placeholder="Type a message..." required />
-    <button type="submit">Send</button>
-  </form>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const messagesDiv = document.getElementById('messages');
-    const form = document.getElementById('chat-form');
-    const msgInput = document.getElementById('msg-input');
-    const gameIdInput = document.getElementById('game-id');
-
-    async function getUserGitHubUsername() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { user_metadata } = session.user;
-        return user_metadata.full_name || 'GitHub User';
-      }
-      return 'Guest';
-    }
-
-    async function loadMessages() {
-      const gameId = gameIdInput.value.trim();
-      if (!gameId) return;
-
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('game_id', gameId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-        console.error(error);
-        return;
-      }
-
-      if (!data.length) {
-        messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
-        return;
-      }
-
-      messagesDiv.innerHTML = data.map(m => `
-        <div>
-          <strong>${m.github_username || 'Guest'}:</strong> ${m.content}
-        </div>
-      `).join('');
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const msg = msgInput.value.trim();
-      const gameId = gameIdInput.value.trim();
-
-      if (!msg || !gameId) return;
-
-      const githubUsername = await getUserGitHubUsername();
-      const { error } = await supabase
-        .from('messages')
-        .insert([{ content: msg, github_username: githubUsername, game_id: gameId }]);
-
-      if (error) {
-        alert('Failed to send message: ' + error.message);
-        console.error(error);
-        return;
-      }
-
-      msgInput.value = '';
-      loadMessages();
-    });
-
-    // Real-time updates via Supabase Realtime
-    supabase.channel('messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        loadMessages();
-      })
-      .subscribe();
-
-    // Initial load
-    loadMessages();
   </script>
+
 </body>
 </html>
