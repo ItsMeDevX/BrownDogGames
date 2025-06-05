@@ -717,6 +717,7 @@
   </style>
 </head>
 <body>
+<body>
 
   <h1>🎮 Video Links</h1>
 
@@ -725,6 +726,7 @@
     <button type="submit">Post</button>
   </form>
 
+  <!-- ✅ Move this BELOW the form -->
   <div id="messages"><p>Loading...</p></div>
 
   <script type="module">
@@ -751,8 +753,7 @@
       const box = document.createElement('div');
       box.className = 'video-box';
       box.innerHTML = renderEmbed(video.video_url);
-      messagesDiv.appendChild(box);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      messagesDiv.appendChild(box); // ✅ appends *below*
     }
 
     async function load() {
@@ -761,6 +762,7 @@
         .select('*')
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
+
       messagesDiv.innerHTML = '';
       if (data) data.forEach(showVideo);
     }
@@ -783,4 +785,5 @@
   </script>
 
 </body>
+
 </html>
