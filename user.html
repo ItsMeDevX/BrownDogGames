@@ -662,26 +662,6 @@
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 2rem;
     }
-    #game-id-container {
-      max-width: 600px;
-      width: 100%;
-      margin-bottom: 20px;
-    }
-    #game-id-label {
-      font-size: 1.2rem;
-      color: #ff4f9f;
-      display: block;
-      margin-bottom: 5px;
-    }
-    #game-id {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: 2px solid #ff4f9f;
-      border-radius: 8px;
-      background-color: #2f1a39;
-      color: #fff;
-    }
     #messages {
       background-color: #2f1a39;
       border: 2px solid #ff4f9f;
@@ -756,13 +736,8 @@
 
   <h1>Video Links</h1>
 
-  <div id="game-id-container">
-    <label id="game-id-label" for="game-id">Game ID:</label>
-    <input type="text" id="game-id" placeholder="Enter game ID here..." />
-  </div>
-
   <div id="messages">
-    <p>Enter a Game ID above and load video links...</p>
+    <p>Loading video links...</p>
   </div>
 
   <form id="chat-form">
@@ -780,9 +755,6 @@
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
     const videoUrlInput = document.getElementById('video-url-input');
-    const gameIdInput = document.getElementById('game-id');
-
-    let currentSubscription = null;
 
     function createEmbed(url) {
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
@@ -796,15 +768,6 @@
       return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     }
 
-    async function getUserGitHubUsername() {
-      try {
-        const { data } = await supabase.auth.getSession();
-        return data.session?.user?.user_metadata?.full_name || 'Guest';
-      } catch {
-        return 'Guest';
-      }
-    }
-
     function appendMessage(msg) {
       const div = document.createElement('div');
       div.className = 'message';
@@ -814,16 +777,9 @@
     }
 
     async function loadMessages() {
-      const gameId = gameIdInput.value.trim();
-      if (!gameId) {
-        messagesDiv.innerHTML = '<p>Please enter a Game ID to load videos.</p>';
-        return;
-      }
-
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('game_id', gameId)
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
@@ -842,20 +798,11 @@
     }
 
     async function subscribeToNewVideos() {
-      const gameId = gameIdInput.value.trim();
-      if (!gameId) return;
-
-      if (currentSubscription) {
-        supabase.removeChannel(currentSubscription);
-        currentSubscription = null;
-      }
-
-      currentSubscription = supabase.channel('game_videos_' + gameId)
+      const channel = supabase.channel('all_game_videos')
         .on('postgres_changes', {
           event: 'INSERT',
           schema: 'public',
           table: 'game_videos',
-          filter: `game_id=eq.${gameId}`
         }, payload => {
           if (payload.new.video_url) {
             appendMessage(payload.new);
@@ -867,15 +814,14 @@
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const videoUrl = videoUrlInput.value.trim();
-      const gameId = gameIdInput.value.trim();
+      if (!videoUrl) return alert('Please enter a video URL.');
 
-      if (!videoUrl || !gameId) return alert('Please enter both a Game ID and video URL.');
-
-      const githubUsername = await getUserGitHubUsername();
+      // Just set username to 'Guest' since no auth in this example
+      const githubUsername = 'Guest';
 
       const { error } = await supabase
         .from('game_videos')
-        .insert([{ content: null, video_url: videoUrl, github_username: githubUsername, game_id: gameId }]);
+        .insert([{ content: null, video_url: videoUrl, github_username: githubUsername, game_id: null }]);
 
       if (error) {
         alert('Failed to post link: ' + error.message);
@@ -886,10 +832,9 @@
       // New video will be appended by subscription listener
     });
 
-    gameIdInput.addEventListener('change', async () => {
-      await loadMessages();
-      await subscribeToNewVideos();
-    });
+    // Load all messages on page load
+    loadMessages();
+    subscribeToNewVideos();
 
   </script>
 
