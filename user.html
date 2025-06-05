@@ -641,19 +641,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Upload & Display Game Videos</title>
+  <title>Video Chat - BrownDogGames</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-    #main-content {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 20px;
+    body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1b1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
+      margin: 0;
+      padding: 20px;
     }
 
     h1 {
@@ -663,226 +662,195 @@
       margin-bottom: 2rem;
     }
 
-    form {
-      background: #2f1a39;
-      padding: 1rem;
-      border-radius: 12px;
-      border: 2px solid #ff4f9f;
-      margin-bottom: 2rem;
-      text-align: center;
+    #game-id-container {
+      max-width: 600px;
+      margin: 0 auto 20px;
     }
 
-    input, button {
-      width: auto;
-      max-width: 300px;
-      font-size: 0.9rem;
-      padding: 6px 10px;
-      margin: 0.3rem 0;
-      border-radius: 6px;
+    #game-id-label {
+      font-size: 1.2rem;
+      color: #ff4f9f;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    #game-id {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
       border: 2px solid #ff4f9f;
+      border-radius: 8px;
       background-color: #2f1a39;
       color: #fff;
-      box-sizing: border-box;
-      display: inline-block;
-    }
-    button {
-      padding: 6px 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      display: inline-block;
-    }
-    button:hover {
-      background-color: #ff82ba;
     }
 
-    #status {
-      margin-top: 0.5rem;
-      color: #7fff7f;
-      font-weight: bold;
-      min-height: 1.2em;
-      text-align: center;
-    }
-
-    #videos {
+    #messages {
+      background-color: #2f1a39;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
       padding: 20px;
-      max-height: 500px;
+      max-height: 400px;
       overflow-y: auto;
-      background: #2f1a39;
+      margin: 0 auto 20px;
+      max-width: 600px;
     }
 
-    #videos h2 {
-      margin-top: 0;
-      color: #ff4f9f;
-      text-align: center;
-      margin-bottom: 1rem;
+    #messages div {
+      margin-bottom: 16px;
     }
 
-    .video-item {
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid #ff4f9f33;
-      padding-bottom: 1rem;
-    }
-
-    .video-title {
-      font-weight: bold;
+    #messages strong {
       color: #ff82ba;
-      margin-bottom: 0.25rem;
     }
 
-    .video-username {
-      color: #ff4f9f;
-      margin-bottom: 0.5rem;
-      font-style: italic;
-    }
-
-    .video-embed {
-      margin-top: 0.5rem;
-      max-width: 100%;
-    }
-
-    iframe, .twitter-tweet {
+    video {
+      margin-top: 8px;
       max-width: 100%;
       border-radius: 8px;
+      border: 1px solid #ff4f9f;
+      background-color: black;
+    }
+
+    #chat-form {
+      display: flex;
+      gap: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #video-url-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+
+    button {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #ff82ba;
     }
   </style>
 </head>
 <body>
 
-  <div id="main-content">
+  <h1>Video Chat</h1>
 
-    <h1>Upload Game Video</h1>
-
-    <form id="video-form">
-      <input type="text" id="game-id" placeholder="Game ID" required readonly />
-      <input type="text" id="video-url" placeholder="YouTube or video URL" required />
-      <input type="text" id="title" placeholder="Video Title" required />
-      <input type="text" id="username" placeholder="Your Username" required />
-      <br />
-      <button type="submit">Submit Video</button>
-    </form>
-
-    <p id="status"></p>
-
-    <div id="videos">
-      <h2>Submitted Videos</h2>
-      <div id="video-list"></div>
-    </div>
-
+  <div id="game-id-container">
+    <label id="game-id-label" for="game-id">Game ID:</label>
+    <input type="text" id="game-id" value="pet-penis-simulator" readonly />
   </div>
+
+  <div id="messages">
+    <p>Loading video messages...</p>
+  </div>
+
+  <form id="chat-form">
+    <input type="url" id="video-url-input" placeholder="Paste video URL here..." required />
+    <button type="submit">Send</button>
+  </form>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const form = document.getElementById('video-form');
-    const status = document.getElementById('status');
-    const videoList = document.getElementById('video-list');
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const videoUrlInput = document.getElementById('video-url-input');
     const gameIdInput = document.getElementById('game-id');
 
-    // Auto-fill and disable Game ID input
-    const DEFAULT_GAME_ID = 'default-game'; // Change this default if needed
-    gameIdInput.value = DEFAULT_GAME_ID;
-    gameIdInput.readOnly = true;
-
-    function createEmbedHTML(url) {
-      if (!url) return '';
-
-      const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-      if (ytMatch) {
-        const id = ytMatch[1];
-        return `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
+    async function getUserGitHubUsername() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { user_metadata } = session.user;
+        return user_metadata.full_name || 'GitHub User';
       }
-
-      if (/^https?:\/\/(www\.)?twitter\.com\/.*\/status\/\d+/.test(url)) {
-        return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
-      }
-
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff82ba;">${url}</a>`;
+      return 'Guest';
     }
 
-    // Load all videos on page load, or filtered by gameId if provided
-    async function loadVideos(gameId = '') {
-      let query = supabase
-        .from('game_videos')
+    async function loadMessages() {
+      const gameId = gameIdInput.value.trim();
+      if (!gameId) return;
+
+      const { data, error } = await supabase
+        .from('messages')
         .select('*')
-        .order('created_at', { ascending: false });
-
-      if (gameId) {
-        query = query.eq('game_id', gameId);
-      }
-
-      const { data, error } = await query;
+        .eq('game_id', gameId)
+        .not('video_url', 'is', null)
+        .order('created_at', { ascending: true });
 
       if (error) {
-        videoList.innerHTML = `<p style="color:#ff4f9f;">Error loading videos: ${error.message}</p>`;
+        messagesDiv.innerHTML = `<p style="color:red;">Error loading video messages: ${error.message}</p>`;
         console.error(error);
         return;
       }
 
       if (!data.length) {
-        videoList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">No videos submitted${gameId ? ` for "${gameId}"` : ''} yet.</p>`;
+        messagesDiv.innerHTML = '<p>No video messages yet. Be the first to share a video!</p>';
         return;
       }
 
-      videoList.innerHTML = data.map(v => `
-        <div class="video-item">
-          <div class="video-title">${v.title}</div>
-          <div class="video-username">Uploaded by: ${v.uploader_username}</div>
-          <div class="video-embed">${createEmbedHTML(v.video_url)}</div>
+      messagesDiv.innerHTML = data.map(m => `
+        <div>
+          <strong>${m.github_username || 'Guest'}:</strong><br />
+          <video controls>
+            <source src="${m.video_url}" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
       `).join('');
-
-      if (window.twttr) {
-        window.twttr.widgets.load();
-      }
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
 
-      const game_id = gameIdInput.value.trim();
-      const video_url = document.getElementById('video-url').value.trim();
-      const title = document.getElementById('title').value.trim();
-      const uploader_username = document.getElementById('username').value.trim();
+      const videoUrl = videoUrlInput.value.trim();
+      const gameId = gameIdInput.value.trim();
 
-      if (!game_id || !video_url || !title || !uploader_username) {
-        status.textContent = "All fields are required.";
+      if (!videoUrl) return;
+
+      const githubUsername = await getUserGitHubUsername();
+
+      const { error } = await supabase
+        .from('messages')
+        .insert([{ content: null, video_url: videoUrl, github_username: githubUsername, game_id: gameId }]);
+
+      if (error) {
+        alert('Failed to send video: ' + error.message);
+        console.error(error);
         return;
       }
 
-      status.textContent = 'Submitting...';
-
-      const { error } = await supabase
-        .from('game_videos')
-        .insert([{ game_id, video_url, title, uploader_username }]);
-
-      if (error) {
-        status.textContent = 'Error: ' + error.message;
-        console.error(error);
-      } else {
-        status.textContent = 'Video submitted successfully!';
-        form.reset();
-        // Reset game ID (since form.reset() clears inputs)
-        gameIdInput.value = DEFAULT_GAME_ID;
-        loadVideos();
-      }
+      videoUrlInput.value = '';
+      loadMessages();
     });
 
-    // Load all videos on initial page load
-    loadVideos();
+    supabase.channel('messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        if (payload.new.video_url) {
+          loadMessages();
+        }
+      })
+      .subscribe();
 
+    loadMessages();
   </script>
-
-  <!-- Twitter widgets script -->
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
 </body>
 </html>
 
