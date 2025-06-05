@@ -737,17 +737,6 @@
       border-radius: 6px;
     }
 
-    a.video-link {
-      color: #ff4f9f;
-      word-break: break-word;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-
-    a.video-link:hover {
-      text-decoration: underline;
-    }
-
     #messages {
       display: none;
       flex-direction: column;
@@ -816,7 +805,7 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    function renderEmbed(url) {
+    function renderEmbed(url, small = false) {
       // Normalize x.com → twitter.com for widget parsing
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
@@ -835,38 +824,33 @@
       // Twitter/X
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
+        if (small) {
+          // For small embeds (thumbnails), don't show anything if Twitter video, just skip
+          return '';
+        }
         return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
-      // Default fallback: clickable link
-      return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
+      // Unsupported URLs: return nothing (no link fallback)
+      return '';
     }
 
     function addLink(url) {
+      const embedHTML = renderEmbed(url, true);
+      if (!embedHTML) return; // skip unsupported or empty embeds
       const div = document.createElement('div');
       div.className = 'link-embed';
-      div.innerHTML = renderEmbed(url);
+      div.innerHTML = embedHTML;
       linksList.appendChild(div);
-
-      // Load Twitter widgets if it's a tweet
-      if (url.includes('twitter.com/status')) {
-        if (window.twttr && window.twttr.widgets) {
-          window.twttr.widgets.load(div);
-        } else {
-          const interval = setInterval(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-              clearInterval(interval);
-            }
-          }, 100);
-        }
-      }
     }
 
     function showVideo(video) {
+      const embedHTML = renderEmbed(video.video_url);
+      if (!embedHTML) return; // skip unsupported URLs
+
       const box = document.createElement('div');
       box.className = 'video-box';
-      box.innerHTML = renderEmbed(video.video_url);
+      box.innerHTML = embedHTML;
 
       messagesDiv.appendChild(box);
       addLink(video.video_url);
