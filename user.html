@@ -641,7 +641,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Game Videos - BrownDogGames</title>
+  <title>Upload & Display Game Videos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
@@ -653,6 +653,9 @@
       color: #fefefe;
       margin: 0;
       padding: 20px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     h1 {
@@ -662,191 +665,215 @@
       margin-bottom: 2rem;
     }
 
-    .form-group {
-      max-width: 600px;
-      margin: 10px auto;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 5px;
-      color: #ff4f9f;
-      font-size: 1rem;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
+    form {
+      background: #2f1a39;
+      padding: 1rem;
+      border-radius: 12px;
       border: 2px solid #ff4f9f;
+      margin-bottom: 2rem;
+    }
+
+    input, button {
+      width: 100%;
+      font-size: 1rem;
+      padding: 10px;
+      margin: 0.5rem 0;
       border-radius: 8px;
+      border: 2px solid #ff4f9f;
       background-color: #2f1a39;
       color: #fff;
+      box-sizing: border-box;
     }
 
     button {
       background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      margin-top: 10px;
+      font-weight: bold;
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
-
     button:hover {
       background-color: #ff82ba;
     }
 
-    #video-list {
-      max-width: 600px;
-      margin: 30px auto;
+    #status {
+      margin-top: 0.5rem;
+      color: #7fff7f;
+      font-weight: bold;
+      min-height: 1.2em;
+    }
+
+    #videos {
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+      background: #2f1a39;
+    }
+
+    #videos h2 {
+      margin-top: 0;
+      color: #ff4f9f;
+      text-align: center;
+      margin-bottom: 1rem;
     }
 
     .video-item {
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 20px;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #ff4f9f33;
+      padding-bottom: 1rem;
     }
 
-    .video-item iframe {
-      width: 100%;
-      height: 315px;
+    .video-title {
+      font-weight: bold;
+      color: #ff82ba;
+      margin-bottom: 0.25rem;
+    }
+
+    .video-username {
+      color: #ff4f9f;
+      margin-bottom: 0.5rem;
+      font-style: italic;
+    }
+
+    iframe, .twitter-tweet {
+      max-width: 100%;
       border-radius: 8px;
-      margin-top: 10px;
-    }
-
-    .success {
-      color: #90ee90;
-      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <h1>Submit Game Video</h1>
+  <h1>Upload Game Video</h1>
 
-  <div class="form-group">
-    <label for="game-id">Game ID</label>
-    <input type="text" id="game-id" placeholder="e.g. my-cool-game" />
+  <form id="video-form">
+    <input type="text" id="game-id" placeholder="Game ID" required />
+    <input type="text" id="video-url" placeholder="YouTube or video URL" required />
+    <input type="text" id="title" placeholder="Video Title" required />
+    <input type="text" id="username" placeholder="Your Username" required />
+    <button type="submit">Submit Video</button>
+  </form>
+
+  <p id="status"></p>
+
+  <div id="videos">
+    <h2>Submitted Videos</h2>
+    <div id="video-list"></div>
   </div>
-
-  <div class="form-group">
-    <label for="video-url">YouTube or video URL</label>
-    <input type="text" id="video-url" placeholder="https://..." />
-  </div>
-
-  <div class="form-group">
-    <label for="title">Video Title</label>
-    <input type="text" id="title" placeholder="Awesome gameplay..." />
-  </div>
-
-  <div class="form-group">
-    <label for="username">Your Username</label>
-    <input type="text" id="username" placeholder="e.g. Player123" />
-  </div>
-
-  <div class="form-group">
-    <button onclick="submitVideo()">Submit Video</button>
-    <p id="success-msg" class="success"></p>
-  </div>
-
-  <div id="video-list"></div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
-    const gameIdInput = document.getElementById('game-id');
-    const videoUrlInput = document.getElementById('video-url');
-    const titleInput = document.getElementById('title');
-    const usernameInput = document.getElementById('username');
-    const successMsg = document.getElementById('success-msg');
+    const form = document.getElementById('video-form');
+    const status = document.getElementById('status');
     const videoList = document.getElementById('video-list');
 
-    async function submitVideo() {
-      const game_id = gameIdInput.value.trim();
-      const video_url = videoUrlInput.value.trim();
-      const title = titleInput.value.trim();
-      const uploader_username = usernameInput.value.trim();
+    // Helper to create embed HTML for YouTube and Twitter links
+    function createEmbedHTML(url) {
+      if (!url) return '';
 
-      if (!game_id || !video_url || !title || !uploader_username) {
-        alert('Please fill out all fields.');
+      // YouTube: match video id and embed iframe
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+      if (ytMatch) {
+        const id = ytMatch[1];
+        return `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
+      }
+
+      // Twitter: embed blockquote, Twitter widget script will handle
+      if (url.match(/^https?:\/\/(www\.)?twitter\.com\/.*\/status\/\d+/)) {
+        return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
+      }
+
+      // Default: clickable link
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff82ba;">${url}</a>`;
+    }
+
+    // Load videos by game_id
+    async function loadVideos() {
+      const gameId = document.getElementById('game-id').value.trim();
+      if (!gameId) {
+        videoList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">Enter a Game ID above to load videos.</p>`;
         return;
       }
+
+      const { data, error } = await supabase
+        .from('game_videos')
+        .select('*')
+        .eq('game_id', gameId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        videoList.innerHTML = `<p style="color:#ff4f9f;">Error loading videos: ${error.message}</p>`;
+        console.error(error);
+        return;
+      }
+
+      if (!data.length) {
+        videoList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">No videos submitted for "${gameId}" yet.</p>`;
+        return;
+      }
+
+      videoList.innerHTML = data.map(v => `
+        <div class="video-item">
+          <div class="video-title">${v.title}</div>
+          <div class="video-username">Uploaded by: ${v.uploader_username}</div>
+          <div class="video-embed">${createEmbedHTML(v.video_url)}</div>
+        </div>
+      `).join('');
+
+      // Load Twitter widgets if any twitter embed
+      if (window.twttr) {
+        window.twttr.widgets.load();
+      }
+    }
+
+    // Submit video
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const game_id = document.getElementById('game-id').value.trim();
+      const video_url = document.getElementById('video-url').value.trim();
+      const title = document.getElementById('title').value.trim();
+      const uploader_username = document.getElementById('username').value.trim();
+
+      if (!game_id || !video_url || !title || !uploader_username) {
+        status.textContent = "All fields are required.";
+        return;
+      }
+
+      status.textContent = 'Submitting...';
 
       const { error } = await supabase
         .from('game_videos')
         .insert([{ game_id, video_url, title, uploader_username }]);
 
       if (error) {
-        alert('Failed to submit video: ' + error.message);
-        return;
+        status.textContent = 'Error: ' + error.message;
+        console.error(error);
+      } else {
+        status.textContent = 'Video submitted successfully!';
+        form.reset();
+        loadVideos();
       }
+    });
 
-      successMsg.textContent = '✅ Video submitted successfully!';
+    // Load videos whenever Game ID input changes
+    document.getElementById('game-id').addEventListener('change', loadVideos);
+
+    // Optionally load videos if Game ID is already filled on page load
+    if (document.getElementById('game-id').value.trim()) {
       loadVideos();
     }
-
-    async function loadVideos() {
-      const game_id = gameIdInput.value.trim();
-      if (!game_id) return;
-
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('*')
-        .eq('game_id', game_id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        videoList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
-        return;
-      }
-
-      videoList.innerHTML = data.map(video => {
-        let embed = '';
-        const url = video.video_url;
-
-        if (url.includes("youtube.com") || url.includes("youtu.be")) {
-          let videoId = '';
-          if (url.includes("v=")) {
-            videoId = new URL(url).searchParams.get("v");
-          } else {
-            videoId = url.split('/').pop();
-          }
-          embed = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
-        } else if (url.includes("twitter.com")) {
-          embed = `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
-        } else {
-          embed = `<a href="${url}" target="_blank" style="color:#64b5f6;">Watch video</a>`;
-        }
-
-        return `
-          <div class="video-item">
-            <strong>${video.title}</strong><br />
-            <em>by ${video.uploader_username}</em>
-            ${embed}
-          </div>
-        `;
-      }).join('');
-
-      // re-render Twitter embeds
-      if (window.twttr && window.twttr.widgets) {
-        window.twttr.widgets.load();
-      }
-    }
-
-    // Load videos when Game ID is filled
-    gameIdInput.addEventListener('change', loadVideos);
   </script>
 
+  <!-- Twitter widgets script -->
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 </body>
 </html>
