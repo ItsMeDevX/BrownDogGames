@@ -637,85 +637,187 @@
     }
   </script>
   
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Submit Video</title>
+  <title>Submit Game Video</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: sans-serif;
-      background-color: #1b1b2e;
-      color: white;
-      padding: 2rem;
+      background: #121212;
+      color: #fff;
+      padding: 20px;
     }
-    input, button {
-      padding: 0.5rem;
-      font-size: 1rem;
-      margin: 0.5rem 0;
+
+    h1 {
+      color: #f06292;
+      text-align: center;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 20px auto;
+      background: #1e1e2f;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    input {
       width: 100%;
-    }
-    button {
-      background: #ff4f9f;
-      color: white;
+      padding: 10px;
+      border-radius: 5px;
       border: none;
+      margin-bottom: 15px;
+      background: #2b2b3d;
+      color: white;
+    }
+
+    button {
+      background: #f06292;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      color: white;
       cursor: pointer;
     }
-    button:hover {
-      background: #ff82ba;
+
+    .message {
+      text-align: center;
+      margin: 10px;
+      color: #81c784;
+    }
+
+    .video-list {
+      max-width: 700px;
+      margin: 20px auto;
+    }
+
+    .video {
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #222;
+      border-radius: 8px;
+    }
+
+    .video a {
+      color: #64b5f6;
+      text-decoration: none;
+    }
+
+    .video iframe {
+      width: 100%;
+      height: 300px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Upload Game Video</h1>
+  <h1>Submit a Game Video</h1>
 
   <form id="video-form">
-    <input type="text" id="game-id" placeholder="Game ID" required />
-    <input type="text" id="video-url" placeholder="YouTube or video URL" required />
-    <input type="text" id="title" placeholder="Video Title" required />
-    <input type="text" id="username" placeholder="Your Username" required />
+    <label for="game-id">Game ID</label>
+    <input type="text" id="game-id" required />
+
+    <label for="video-url">YouTube or video URL</label>
+    <input type="url" id="video-url" required />
+
+    <label for="title">Video Title</label>
+    <input type="text" id="title" required />
+
+    <label for="username">Your Username</label>
+    <input type="text" id="username" required />
+
     <button type="submit">Submit Video</button>
+    <div class="message" id="status-message"></div>
   </form>
 
-  <p id="status"></p>
+  <div class="video-list" id="video-list"></div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // keep private in production
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const form = document.getElementById('video-form');
-    const status = document.getElementById('status');
+    const status = document.getElementById('status-message');
+    const videoList = document.getElementById('video-list');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const game_id = document.getElementById('game-id').value.trim();
-      const video_url = document.getElementById('video-url').value.trim();
+      const gameId = document.getElementById('game-id').value.trim();
+      const videoUrl = document.getElementById('video-url').value.trim();
       const title = document.getElementById('title').value.trim();
-      const uploader_username = document.getElementById('username').value.trim();
+      const username = document.getElementById('username').value.trim();
 
-      if (!game_id || !video_url || !title || !uploader_username) {
-        status.textContent = "All fields are required.";
+      const { error } = await supabase.from('game_videos').insert([
+        { game_id: gameId, video_url: videoUrl, title, uploader_username: username }
+      ]);
+
+      if (error) {
+        status.textContent = "❌ Error submitting video: " + error.message;
+        status.style.color = 'red';
+      } else {
+        status.textContent = "✅ Video submitted successfully!";
+        status.style.color = '#81c784';
+        form.reset();
+        loadVideos(gameId);
+      }
+    });
+
+    async function loadVideos(gameId) {
+      const { data, error } = await supabase
+        .from('game_videos')
+        .select('*')
+        .eq('game_id', gameId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        videoList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
         return;
       }
 
-      const { error } = await supabase
-        .from('game_videos')
-        .insert([{ game_id, video_url, title, uploader_username }]);
+      if (!data.length) {
+        videoList.innerHTML = "<p>No videos yet for this Game ID.</p>";
+        return;
+      }
 
-      if (error) {
-        status.textContent = 'Error: ' + error.message;
-        console.error(error);
-      } else {
-        status.textContent = 'Video submitted successfully!';
-        form.reset();
+      videoList.innerHTML = data.map(video => {
+        const isYouTube = video.video_url.includes("youtube.com") || video.video_url.includes("youtu.be");
+        let embed = "";
+        if (isYouTube) {
+          const videoId = video.video_url.split("v=")[1]?.split("&")[0] || video.video_url.split("/").pop();
+          embed = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+        } else {
+          embed = `<a href="${video.video_url}" target="_blank">${video.video_url}</a>`;
+        }
+
+        return `
+          <div class="video">
+            <h3>${video.title}</h3>
+            <p><strong>Uploaded by:</strong> ${video.uploader_username}</p>
+            ${embed}
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Auto-load videos if user starts typing a game ID
+    document.getElementById('game-id').addEventListener('change', (e) => {
+      const gameId = e.target.value.trim();
+      if (gameId) {
+        loadVideos(gameId);
       }
     });
   </script>
