@@ -725,26 +725,6 @@
       border: none;
       border-radius: 6px;
     }
-    #messages {
-      display: none;
-      flex-direction: column;
-      gap: 20px;
-    }
-    #messages.loaded {
-      display: flex;
-    }
-    .video-box {
-      background: #2f1a39;
-      padding: 10px;
-      border-radius: 12px;
-      border: 2px solid #ff4f9f;
-      box-shadow: 0 0 10px #000;
-    }
-    iframe {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border: none;
-    }
     .twitter-tweet {
       margin: auto;
       border-radius: 12px;
@@ -752,7 +732,7 @@
       box-shadow: 0 0 10px #000;
       background: #2f1a39 !important;
       color: #ff4f9f !important;
-      max-width: 600px;
+      max-width: 180px;
     }
   </style>
 </head>
@@ -770,8 +750,6 @@
       <h2>Links</h2>
       <div id="links-list"></div>
     </div>
-
-    <div id="messages"><p>Loading...</p></div>
   </div>
 
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -784,12 +762,11 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
-    const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('form');
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    function renderEmbed(url, small = false) {
+    function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
       // YouTube
@@ -807,14 +784,9 @@
       // Twitter/X
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
-        if (small) {
-          // For small embeds, just show the URL as a link
-          return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
-        }
         return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
-      // Unsupported URLs: return empty string to skip
       return '';
     }
 
@@ -822,63 +794,30 @@
       const div = document.createElement('div');
       div.className = 'link-embed';
 
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) {
-        div.innerHTML = `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+      const embedHTML = renderEmbed(url);
+      if (embedHTML) {
+        div.innerHTML = embedHTML;
         linksList.appendChild(div);
 
-        // Wait a little and then load widgets for Twitter embed
-        setTimeout(() => {
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load(div);
-          }
-        }, 100);
-        return;
-      }
-
-      // Other URLs fallback:
-      div.innerHTML = renderEmbed(url, true);
-      linksList.appendChild(div);
-    }
-
-    function showVideo(video) {
-      const embedHTML = renderEmbed(video.video_url);
-      const box = document.createElement('div');
-      box.className = 'video-box';
-
-      if (embedHTML) {
-        box.innerHTML = embedHTML;
-        messagesDiv.appendChild(box);
-        addLink(video.video_url);
-
-        // For twitter embeds inside messagesDiv, load widgets too after slight delay
-        if (video.video_url.includes('twitter.com/status')) {
+        if (url.includes('twitter.com/status')) {
           setTimeout(() => {
             if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(box);
+              window.twttr.widgets.load(div);
             }
           }, 100);
         }
-      } else {
-        // Show fallback message
-        box.textContent = 'Unsupported video URL: ' + video.video_url;
-        messagesDiv.appendChild(box);
       }
     }
 
     async function load() {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('game_videos')
         .select('*')
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
       linksList.innerHTML = '';
-      messagesDiv.innerHTML = '';
-
-      if (data) data.forEach(showVideo);
-
-      messagesDiv.classList.add('loaded');
+      if (data) data.forEach(video => addLink(video.video_url));
     }
 
     form.addEventListener('submit', async e => {
@@ -891,7 +830,7 @@
 
     supabase.channel('realtime:game_videos')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) showVideo(payload.new);
+        if (payload.new.video_url) addLink(payload.new.video_url);
       })
       .subscribe();
 
