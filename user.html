@@ -645,7 +645,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1b1b2e;
@@ -653,27 +652,27 @@
       color: #fefefe;
       margin: 0;
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-
     h1 {
-      text-align: center;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 2rem;
     }
-
     #game-id-container {
       max-width: 600px;
-      margin: 0 auto 20px;
+      width: 100%;
+      margin-bottom: 20px;
     }
-
     #game-id-label {
       font-size: 1.2rem;
       color: #ff4f9f;
       display: block;
       margin-bottom: 5px;
     }
-
     #game-id {
       width: 100%;
       padding: 10px;
@@ -683,7 +682,6 @@
       background-color: #2f1a39;
       color: #fff;
     }
-
     #messages {
       background-color: #2f1a39;
       border: 2px solid #ff4f9f;
@@ -693,16 +691,14 @@
       overflow-y: auto;
       margin: 0 auto 20px;
       max-width: 600px;
+      width: 100%;
     }
-
     #messages div {
       margin-bottom: 16px;
     }
-
     #messages strong {
       color: #ff82ba;
     }
-
     iframe {
       margin-top: 8px;
       max-width: 100%;
@@ -711,14 +707,13 @@
       border: 1px solid #ff4f9f;
       background-color: black;
     }
-
     #chat-form {
       display: flex;
       gap: 10px;
       max-width: 600px;
+      width: 100%;
       margin: 0 auto;
     }
-
     #video-url-input {
       flex: 1;
       padding: 10px;
@@ -728,7 +723,6 @@
       background-color: #2f1a39;
       color: #fff;
     }
-
     button {
       background-color: #ff4f9f;
       color: #1b1b2e;
@@ -739,11 +733,9 @@
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
-
     button:hover {
       background-color: #ff82ba;
     }
-
     a {
       color: #ff82ba;
       text-decoration: none;
@@ -783,19 +775,17 @@
     const videoUrlInput = document.getElementById('video-url-input');
     const gameIdInput = document.getElementById('game-id');
 
-    // Helper to embed YouTube or Twitch videos or fallback to link
+    let currentSubscription = null;
+
     function createEmbed(url) {
-      // YouTube embed
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
       if (ytMatch) {
         return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
       }
-      // Twitch embed
       const twitchMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (twitchMatch) {
         return `<iframe src="https://player.twitch.tv/?video=${twitchMatch[1]}&parent=${location.hostname}" frameborder="0" allowfullscreen></iframe>`;
       }
-      // fallback link
       return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     }
 
@@ -806,7 +796,10 @@
 
     async function loadMessages() {
       const gameId = gameIdInput.value.trim();
-      if (!gameId) return;
+      if (!gameId) {
+        messagesDiv.innerHTML = '<p>No game ID specified.</p>';
+        return;
+      }
 
       const { data, error } = await supabase
         .from('game_videos')
@@ -834,13 +827,35 @@
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
+    async function subscribeToNewVideos() {
+      const gameId = gameIdInput.value.trim();
+      if (!gameId) return;
+
+      if (currentSubscription) {
+        supabase.removeChannel(currentSubscription);
+        currentSubscription = null;
+      }
+
+      currentSubscription = supabase.channel('game_videos_' + gameId)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'game_videos',
+          filter: `game_id=eq.${gameId}`
+        }, payload => {
+          if (payload.new.video_url) {
+            loadMessages();
+          }
+        })
+        .subscribe();
+    }
+
     form.addEventListener('submit', async e => {
       e.preventDefault();
-
       const videoUrl = videoUrlInput.value.trim();
       const gameId = gameIdInput.value.trim();
 
-      if (!videoUrl) return;
+      if (!videoUrl || !gameId) return;
 
       const githubUsername = await getUserGitHubUsername();
 
@@ -854,18 +869,20 @@
       }
 
       videoUrlInput.value = '';
-      loadMessages();
+      // Messages will auto-update from subscription
     });
 
-    supabase.channel('game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) {
-          loadMessages();
-        }
-      })
-      .subscribe();
-
+    // Initial load and subscribe
     loadMessages();
+    subscribeToNewVideos();
+
+    // (Optional) if you want to react to game ID changes dynamically:
+    // gameIdInput.addEventListener('change', async () => {
+    //   await loadMessages();
+    //   await subscribeToNewVideos();
+    // });
+
   </script>
+
 </body>
 </html>
