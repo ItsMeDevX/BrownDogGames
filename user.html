@@ -643,7 +643,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Video Submission</title>
+  <title>BrownDogGames - Submit Gameplay Videos</title>
   <style>
     body {
       background-color: #1e1e2f;
@@ -653,9 +653,7 @@
       max-width: 800px;
       margin: auto;
     }
-    #game-select input,
-    #video-form input,
-    #video-form textarea {
+    input, textarea {
       padding: 10px;
       border-radius: 8px;
       border: 2px solid #ff4f9f;
@@ -663,14 +661,14 @@
       color: white;
       font-size: 1rem;
       width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 10px;
     }
-    #game-select input {
+    input[type="text"] {
       width: 70%;
       margin-right: 10px;
     }
-    #game-select button,
-    #video-form button,
-    .play-slot-button {
+    button {
       background: #ff4f9f;
       border: none;
       border-radius: 8px;
@@ -701,6 +699,24 @@
       width: 100%;
       height: 100%;
       border: none;
+      border-radius: 12px;
+    }
+    .play-slot-button {
+      margin-top: 10px;
+    }
+    a {
+      color: #ff4f9f;
+      word-break: break-all;
+    }
+    h1, h2 {
+      margin-bottom: 0.5rem;
+    }
+    #game-select {
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
   </style>
 </head>
@@ -709,7 +725,6 @@
   <h1>Submit Your Gameplay Videos</h1>
 
   <div id="game-select">
-    <h2>Enter Game Name:</h2>
     <input type="text" id="game-name-input" placeholder="Type game name here..." />
     <button id="select-game-btn">Select Game</button>
   </div>
@@ -723,21 +738,21 @@
       <button type="submit">📤 Submit Video</button>
     </form>
 
-    <div id="video-slot">
+    <div id="video-slot" style="margin-top: 1.5rem;">
       <h2>🎯 Video Slot Player</h2>
       <div id="slot-container"><p>Select a video below to play it here.</p></div>
     </div>
 
-    <div id="video-list"></div>
+    <div id="video-list" style="margin-top: 1.5rem;"></div>
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
     const gameNameInput = document.getElementById('game-name-input');
     const selectGameBtn = document.getElementById('select-game-btn');
@@ -752,7 +767,8 @@
     let selectedGameId = null;
 
     async function getUserGitHubUsername() {
-      return 'testUser'; // Replace with real auth integration if needed
+      // Replace with your auth system or leave testUser for now
+      return 'testUser';
     }
 
     selectGameBtn.addEventListener('click', () => {
@@ -766,18 +782,20 @@
       loadVideos();
     });
 
-    videoForm.addEventListener('submit', async e => {
+    videoForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const url = videoUrl.value.trim();
       const title = videoTitle.value.trim();
       const desc = videoDesc.value.trim();
 
       if (!url || !title || !selectedGameId) {
-        alert('Please select a game and fill out all required fields.');
+        alert('Please fill all required fields and select a game.');
         return;
       }
 
       const username = await getUserGitHubUsername();
+
       const submitBtn = videoForm.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
       submitBtn.textContent = 'Uploading...';
@@ -807,7 +825,6 @@
 
     async function loadVideos() {
       if (!selectedGameId) return;
-
       videoList.innerHTML = '<p>Loading videos...</p>';
 
       const { data, error } = await supabase
@@ -821,7 +838,7 @@
         return;
       }
 
-      if (!data.length) {
+      if (!data || data.length === 0) {
         videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>';
         return;
       }
@@ -829,11 +846,11 @@
       videoList.innerHTML = data.map(video => {
         const embed = getEmbeddedVideoHTML(video.video_url);
         return `
-          <div>
+          <div style="margin-bottom: 2rem;">
             <h3>${video.title}</h3>
             <p><em>by ${video.uploader_username}</em></p>
             ${embed}
-            <p><a href="${video.video_url}" target="_blank" rel="noopener noreferrer" style="color:#ff4f9f;">${video.video_url}</a></p>
+            <p><a href="${video.video_url}" target="_blank" rel="noopener noreferrer">${video.video_url}</a></p>
             <button class="play-slot-button" data-url="${video.video_url}">▶️ Play in Slot</button>
             <p>${video.description || ''}</p>
           </div>
@@ -846,39 +863,44 @@
     videoList.addEventListener('click', e => {
       if (e.target.classList.contains('play-slot-button')) {
         const url = e.target.getAttribute('data-url');
-        videoSlot.innerHTML = getEmbeddedVideoHTML(url, true);
+        videoSlot.innerHTML = getEmbeddedVideoHTML(url);
         loadTwitterWidgets();
       }
     });
 
-    function getEmbeddedVideoHTML(url, isSlot = false) {
+    function getEmbeddedVideoHTML(url) {
       const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&?\n]+)/);
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
       const twitterMatch = url.match(/(?:twitter\.com|x\.com)\/(?:\w+)\/status\/(\d+)/);
       const mp4Match = url.match(/\.(mp4)(\?.*)?$/i);
 
       if (ytMatch) {
-        return `<div class="responsive-frame"><iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" allowfullscreen></iframe></div>`;
+        return `
+          <div class="responsive-frame">
+            <iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" allowfullscreen></iframe>
+          </div>`;
+      } else if (vimeoMatch) {
+        return `
+          <div class="responsive-frame">
+            <iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe>
+          </div>`;
+      } else if (twitterMatch) {
+        return `<blockquote class="twitter-tweet"><a href="https://twitter.com/i/status/${twitterMatch[1]}"></a></blockquote>`;
+      } else if (mp4Match) {
+        return `
+          <div class="responsive-frame">
+            <video controls src="${url}"></video>
+          </div>`;
+      } else {
+        return `
+          <div class="responsive-frame">
+            <iframe src="${url}" allowfullscreen></iframe>
+          </div>`;
       }
-
-      if (vimeoMatch) {
-        return `<div class="responsive-frame"><iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" allowfullscreen></iframe></div>`;
-      }
-
-      if (twitterMatch) {
-        const tweetId = twitterMatch[1];
-        return `<blockquote class="twitter-tweet"><a href="https://twitter.com/i/status/${tweetId}"></a></blockquote>`;
-      }
-
-      if (mp4Match) {
-        return `<div class="responsive-frame"><video controls src="${url}"></video></div>`;
-      }
-
-      return `<div class="responsive-frame"><iframe src="${url}" allowfullscreen></iframe></div>`;
     }
 
     function loadTwitterWidgets() {
-      if (window.twttr) {
+      if (window.twttr && window.twttr.widgets) {
         window.twttr.widgets.load();
       } else {
         const script = document.createElement('script');
@@ -888,7 +910,9 @@
       }
     }
   </script>
+
 </body>
 </html>
+
 
   
