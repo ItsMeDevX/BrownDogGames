@@ -663,7 +663,7 @@
     }
 
     form {
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
 
     input, button {
@@ -687,9 +687,51 @@
       cursor: pointer;
     }
 
-    #messages {
+    #container {
       max-width: 800px;
       margin: auto;
+      text-align: left;
+    }
+
+    /* Links block styling */
+    #links {
+      margin: 20px 0;
+      padding: 15px;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      background-color: #2f1a39;
+      color: #ff4f9f;
+      font-family: monospace;
+    }
+
+    #links h2 {
+      margin-top: 0;
+      text-align: center;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    #links-list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #links-list li {
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    #links-list a {
+      color: #ff4f9f;
+      text-decoration: none;
+    }
+    #links-list a:hover {
+      text-decoration: underline;
+    }
+
+    #messages {
       display: flex;
       flex-direction: column;
       gap: 20px;
@@ -705,31 +747,33 @@
 
     iframe {
       width: 100%;
-      max-width: 100%;
       aspect-ratio: 16 / 9;
       border: none;
     }
 
-    a {
+    a.video-link {
       color: #ff4f9f;
-      word-break: break-all;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
-<body>
-
-<body>
 
   <h1>🎮 Video Links</h1>
 
-  <!-- container wraps form + messages and reverses visual order -->
   <div id="container">
     <form id="form">
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
     </form>
 
+    <!-- Links block with clickable URLs -->
+    <div id="links">
+      <h2>Links</h2>
+      <ul id="links-list"></ul>
+    </div>
+
+    <!-- Embedded videos -->
     <div id="messages"><p>Loading...</p></div>
   </div>
 
@@ -744,20 +788,36 @@
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('form');
     const input = document.getElementById('video-url');
+    const linksList = document.getElementById('links-list');
 
     function renderEmbed(url) {
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      return `<a href="${url}" target="_blank">${url}</a>`;
+      return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
+    }
+
+    function addLink(url) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.textContent = url;
+      a.className = 'video-link';
+      li.appendChild(a);
+      linksList.appendChild(li);
     }
 
     function showVideo(video) {
+      // Append embedded video
       const box = document.createElement('div');
       box.className = 'video-box';
       box.innerHTML = renderEmbed(video.video_url);
-      messagesDiv.appendChild(box); // goes to bottom
+      messagesDiv.appendChild(box);
+
+      // Append link below the form
+      addLink(video.video_url);
     }
 
     async function load() {
@@ -768,6 +828,8 @@
         .order('created_at', { ascending: true });
 
       messagesDiv.innerHTML = '';
+      linksList.innerHTML = '';
+
       if (data) data.forEach(showVideo);
     }
 
@@ -788,66 +850,5 @@
     load();
   </script>
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      color: #fefefe;
-      margin: 0;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      text-align: center;
-    }
-
-    h1 {
-      color: #ff4f9f;
-      margin-bottom: 30px;
-      text-shadow: 2px 2px 0 #000;
-    }
-
-    #container {
-      display: flex;
-      flex-direction: column-reverse;
-      max-width: 600px;
-      margin: auto;
-      gap: 20px;
-    }
-
-    #form input, #form button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      margin-top: 10px;
-    }
-
-    #form button {
-      background: #ff4f9f;
-      color: #1a1328;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #messages {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .video-box {
-      background: #2b1e3d;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ff4f9f;
-    }
-
-    iframe {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-    }
-  </style>
-
 </body>
-
+</html>
