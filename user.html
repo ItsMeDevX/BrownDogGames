@@ -693,7 +693,6 @@
       text-align: left;
     }
 
-    /* Links block styling */
     #links {
       margin: 20px 0;
       padding: 15px;
@@ -711,7 +710,7 @@
     }
 
     #links-list {
-      min-height: 300px; /* Reserve space to avoid layout jump */
+      min-height: 300px;
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -750,13 +749,13 @@
     }
 
     #messages {
-      display: none; /* Hide until loaded */
+      display: none;
       flex-direction: column;
       gap: 20px;
     }
 
     #messages.loaded {
-      display: flex; /* Show after loaded */
+      display: flex;
     }
 
     .video-box {
@@ -773,7 +772,6 @@
       border: none;
     }
 
-    /* Twitter embed styling */
     .twitter-tweet {
       margin: auto;
       border-radius: 12px;
@@ -795,17 +793,14 @@
       <button type="submit">Post</button>
     </form>
 
-    <!-- Links block with embedded previews -->
     <div id="links">
       <h2>Links</h2>
       <div id="links-list"></div>
     </div>
 
-    <!-- Embedded videos -->
     <div id="messages"><p>Loading...</p></div>
   </div>
 
-  <!-- Twitter widgets script -->
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
   <script type="module">
@@ -821,8 +816,10 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    // Parse video URLs and return embed HTML (YouTube, Twitch, Twitter/X)
     function renderEmbed(url, small = false) {
+      // Normalize x.com → twitter.com for widget parsing
+      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+
       // YouTube
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) {
@@ -835,26 +832,18 @@
         return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
       }
 
-      // Twitter/X (status URL)
-      const twt = url.match(/https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+      // Twitter/X
+      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
         if (small) {
-          // Small preview: just a clickable link
           return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
         }
-        // Convert x.com URLs to twitter.com for widget parsing
-        let embedUrl = url;
-        if (twt[2] === 'x.com') {
-          embedUrl = url.replace('x.com', 'twitter.com');
-        }
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${embedUrl}"></a></blockquote>`;
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
-      // Default fallback - clickable link
       return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
     }
 
-    // Add embedded preview to links list (small mode)
     function addLink(url) {
       const div = document.createElement('div');
       div.className = 'link-embed';
@@ -862,7 +851,6 @@
       linksList.appendChild(div);
     }
 
-    // Show video embed in main messages area and add to links list
     function showVideo(video) {
       const box = document.createElement('div');
       box.className = 'video-box';
@@ -871,8 +859,7 @@
       messagesDiv.appendChild(box);
       addLink(video.video_url);
 
-      // If Twitter embed, reload widgets.js to parse new blockquotes
-      if (video.video_url.match(/(twitter\.com|x\.com)\/.*\/status/)) {
+      if (video.video_url.includes('twitter.com/status')) {
         if (window.twttr && window.twttr.widgets) {
           window.twttr.widgets.load(box);
         }
@@ -891,7 +878,6 @@
 
       if (data) data.forEach(showVideo);
 
-      // Show messages div after content is loaded
       messagesDiv.classList.add('loaded');
     }
 
