@@ -643,53 +643,31 @@
   <meta charset="UTF-8" />
   <title>Video Wall</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet">
   <style>
     body {
-      background: linear-gradient(135deg, #1a1328, #2b1e3d);
+      background: #1a1328;
       color: white;
-      font-family: 'Rubik Mono One', sans-serif;
+      font-family: sans-serif;
       text-align: center;
       padding: 20px;
-      margin: 0;
-      min-height: 100vh;
-    }
-    h1 {
-      color: #ff4f9f;
-      text-shadow: 2px 2px #000;
-      margin-bottom: 20px;
     }
     #messages {
-      max-width: 800px;
+      max-width: 600px;
       margin: auto;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
     .video-box {
-      background: #2f1a39;
-      padding: 16px;
-      border-radius: 12px;
-      border: 2px solid #ff4f9f;
-      box-shadow: 0 0 15px #ff4f9f44;
-    }
-    .video-box a {
-      display: block;
-      margin-top: 12px;
-      color: #ff82ba;
-      font-size: 14px;
-      word-break: break-word;
-      text-decoration: underline;
+      background: #2b1e3d;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ff4f9f;
     }
     iframe {
       width: 100%;
       max-width: 100%;
       aspect-ratio: 16 / 9;
-      border-radius: 10px;
-      border: none;
-    }
-    form {
-      margin-top: 30px;
     }
     input, button {
       padding: 10px;
@@ -697,23 +675,12 @@
       font-size: 16px;
       border-radius: 6px;
       border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-    input {
-      width: 300px;
-      background: #2f1a39;
-      color: white;
-      border: 2px solid #ff4f9f;
     }
     button {
       background: #ff4f9f;
       color: #1a1328;
       font-weight: bold;
       cursor: pointer;
-      margin-left: 10px;
-    }
-    button:hover {
-      background: #ff82ba;
     }
   </style>
 </head>
@@ -751,10 +718,7 @@
     function showVideo(video) {
       const box = document.createElement('div');
       box.className = 'video-box';
-      box.innerHTML = `
-        ${renderEmbed(video.video_url)}
-        <a href="${video.video_url}" target="_blank">${video.video_url}</a>
-      `;
+      box.innerHTML = renderEmbed(video.video_url);
       messagesDiv.appendChild(box);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
