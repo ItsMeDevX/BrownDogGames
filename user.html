@@ -821,7 +821,7 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    // Parse video URLs and return embed HTML (YouTube, Twitch, Twitter)
+    // Parse video URLs and return embed HTML (YouTube, Twitch, Twitter/X)
     function renderEmbed(url, small = false) {
       // YouTube
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
@@ -835,15 +835,19 @@
         return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
       }
 
-      // Twitter (status URL)
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+      // Twitter/X (status URL)
+      const twt = url.match(/https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
         if (small) {
-          // For small link preview, just show clickable link
+          // Small preview: just a clickable link
           return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
         }
-        // For full embed, return a container for Twitter widget
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+        // Convert x.com URLs to twitter.com for widget parsing
+        let embedUrl = url;
+        if (twt[2] === 'x.com') {
+          embedUrl = url.replace('x.com', 'twitter.com');
+        }
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${embedUrl}"></a></blockquote>`;
       }
 
       // Default fallback - clickable link
@@ -868,7 +872,7 @@
       addLink(video.video_url);
 
       // If Twitter embed, reload widgets.js to parse new blockquotes
-      if (video.video_url.match(/twitter\.com\/.*\/status/)) {
+      if (video.video_url.match(/(twitter\.com|x\.com)\/.*\/status/)) {
         if (window.twttr && window.twttr.widgets) {
           window.twttr.widgets.load(box);
         }
