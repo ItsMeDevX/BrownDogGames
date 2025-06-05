@@ -736,7 +736,7 @@
 
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+      'your-public-anon-key-here'
     );
 
     const gameNameInput = document.getElementById('game-name-input');
@@ -752,7 +752,7 @@
     let selectedGameId = null;
 
     async function getUserGitHubUsername() {
-      return 'testUser';
+      return 'testUser'; // Replace with real auth integration if needed
     }
 
     selectGameBtn.addEventListener('click', () => {
@@ -783,7 +783,7 @@
       submitBtn.textContent = 'Uploading...';
 
       const { error } = await supabase.from('game_videos').insert([{
-        game_id: selectedGameId, // lowercase
+        game_id: selectedGameId,
         uploader_username: username,
         video_url: url,
         title,
@@ -813,7 +813,7 @@
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .ilike('game_id', selectedGameId) // case-insensitive match
+        .ilike('game_id', selectedGameId)
         .order('created_at', { ascending: false });
 
       if (error) {
