@@ -647,8 +647,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      background: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
       margin: 0;
       padding: 20px;
@@ -669,7 +668,7 @@
       padding: 20px;
       max-height: 400px;
       overflow-y: auto;
-      margin: 0 auto 20px;
+      margin-bottom: 20px;
       max-width: 600px;
       width: 100%;
       display: flex;
@@ -699,7 +698,6 @@
       gap: 10px;
       max-width: 600px;
       width: 100%;
-      margin: 0 auto;
     }
     #video-url-input {
       flex: 1;
@@ -748,6 +746,7 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // Your Supabase URL and anon/public key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -756,18 +755,23 @@
     const form = document.getElementById('chat-form');
     const videoUrlInput = document.getElementById('video-url-input');
 
+    // Create embedded player or link based on URL
     function createEmbed(url) {
+      // YouTube video ID extraction
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
       if (ytMatch) {
         return `<iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
       }
+      // Twitch video ID extraction
       const twitchMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (twitchMatch) {
         return `<iframe src="https://player.twitch.tv/?video=${twitchMatch[1]}&parent=${location.hostname}" frameborder="0" allowfullscreen></iframe>`;
       }
+      // Fallback: clickable link
       return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     }
 
+    // Append a video message to the list
     function appendMessage(msg) {
       const div = document.createElement('div');
       div.className = 'message';
@@ -776,6 +780,7 @@
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
+    // Load existing videos from Supabase
     async function loadMessages() {
       const { data, error } = await supabase
         .from('game_videos')
@@ -788,15 +793,14 @@
         messagesDiv.innerHTML = `<p style="color:red;">Error loading video links: ${error.message}</p>`;
         return;
       }
-
       if (!data.length) {
         messagesDiv.innerHTML = '<p>No video links yet. Be the first to post one!</p>';
         return;
       }
-
       data.forEach(appendMessage);
     }
 
+    // Subscribe to new inserts via Realtime
     async function subscribeToNewVideos() {
       const channel = supabase.channel('all_game_videos')
         .on('postgres_changes', {
@@ -811,12 +815,13 @@
         .subscribe();
     }
 
+    // Handle form submission to add new video link
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const videoUrl = videoUrlInput.value.trim();
       if (!videoUrl) return alert('Please enter a video URL.');
 
-      const githubUsername = 'Guest'; // Replace with real auth user if needed
+      const githubUsername = 'Guest'; // Replace with real auth username if you add auth
 
       const { error } = await supabase
         .from('game_videos')
@@ -824,7 +829,7 @@
           content: null,
           video_url: videoUrl,
           github_username: githubUsername,
-          game_id: 'default'
+          game_id: 'default' // Change to your actual game_id logic if needed
         }]);
 
       if (error) {
@@ -835,6 +840,7 @@
       videoUrlInput.value = '';
     });
 
+    // Initial load + start listening for new messages
     loadMessages();
     subscribeToNewVideos();
   </script>
