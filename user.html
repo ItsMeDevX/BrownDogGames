@@ -642,257 +642,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Game Videos - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submit Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
     body {
-      font-family: 'Rubik Mono One', sans-serif;
+      font-family: sans-serif;
       background-color: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      color: #fefefe;
-      margin: 0;
-      padding: 20px;
+      color: white;
+      padding: 2rem;
     }
-
-    h1 {
-      text-align: center;
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 2rem;
-    }
-
-    #game-id-container {
-      max-width: 600px;
-      margin: 0 auto 20px;
-    }
-
-    label {
-      font-size: 1.2rem;
-      color: #ff4f9f;
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    input[type="text"], input[type="url"] {
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin: 0.5rem 0;
       width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: 2px solid #ff4f9f;
-      border-radius: 8px;
-      background-color: #2f1a39;
-      color: #fff;
-      margin-bottom: 10px;
-      box-sizing: border-box;
     }
-
-    #videos {
-      max-width: 600px;
-      margin: 0 auto 20px;
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 20px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    #videos div {
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #ff4f9f;
-    }
-
-    #videos div:last-child {
-      border-bottom: none;
-    }
-
-    #videos strong {
-      color: #ff82ba;
-    }
-
-    #submit-form {
-      max-width: 600px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-    }
-
     button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
+      background: #ff4f9f;
+      color: white;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
-      margin-top: 10px;
     }
-
     button:hover {
-      background-color: #ff82ba;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 8px;
-      margin-top: 8px;
+      background: #ff82ba;
     }
   </style>
 </head>
 <body>
 
-  <h1>Submit Gameplay Videos</h1>
+  <h1>Upload Game Video</h1>
 
-  <div id="game-id-container">
-    <label for="game-id">Game ID:</label>
-    <input type="text" id="game-id" placeholder="Enter the Game ID to view/add videos..." required />
-  </div>
-
-  <div id="videos"><p>Enter a Game ID to load videos.</p></div>
-
-  <form id="submit-form">
-    <label for="video-url">Video URL (YouTube, MP4, etc):</label>
-    <input type="url" id="video-url" placeholder="https://example.com/video.mp4" required />
-    <label for="video-title">Video Title:</label>
-    <input type="text" id="video-title" placeholder="Title of the video" required />
+  <form id="video-form">
+    <input type="text" id="game-id" placeholder="Game ID" required />
+    <input type="text" id="video-url" placeholder="YouTube or video URL" required />
+    <input type="text" id="title" placeholder="Video Title" required />
+    <input type="text" id="username" placeholder="Your Username" required />
     <button type="submit">Submit Video</button>
   </form>
+
+  <p id="status"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
-    const gameIdInput = document.getElementById('game-id');
-    const videosDiv = document.getElementById('videos');
-    const form = document.getElementById('submit-form');
-    const videoUrlInput = document.getElementById('video-url');
-    const videoTitleInput = document.getElementById('video-title');
+    const form = document.getElementById('video-form');
+    const status = document.getElementById('status');
 
-    let currentGameId = '';
-
-    // Load videos for the game ID
-    async function loadVideos(gameId) {
-      if (!gameId) {
-        videosDiv.innerHTML = '<p>Enter a Game ID to load videos.</p>';
-        return;
-      }
-
-      videosDiv.innerHTML = '<p>Loading videos...</p>';
-
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('*')
-        .eq('game_id', gameId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        videosDiv.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
-        return;
-      }
-
-      if (!data.length) {
-        videosDiv.innerHTML = '<p>No videos yet for this game. Be the first to submit one!</p>';
-        return;
-      }
-
-      videosDiv.innerHTML = data.map(video => `
-        <div>
-          <strong>${video.title}</strong><br />
-          <small>Submitted by: ${video.uploader_username || 'Guest'}</small><br />
-          ${renderVideoEmbed(video.video_url)}
-        </div>
-      `).join('');
-    }
-
-    // Simple embed for YouTube or HTML5 video
-    function renderVideoEmbed(url) {
-      const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&?\n]+)/);
-      const mp4Match = url.match(/\.(mp4)(\?.*)?$/i);
-
-      if (ytMatch) {
-        return `<iframe width="100%" height="200" src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
-      } else if (mp4Match) {
-        return `<video controls src="${url}"></video>`;
-      } else {
-        // Fallback: show a link
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff82ba;">Watch Video</a>`;
-      }
-    }
-
-    // On game ID input change, reload videos
-    gameIdInput.addEventListener('change', () => {
-      const gameId = gameIdInput.value.trim().toLowerCase();
-      currentGameId = gameId;
-      loadVideos(gameId);
-    });
-
-    // Submit new video
-    form.addEventListener('submit', async e => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const gameId = currentGameId;
-      const url = videoUrlInput.value.trim();
-      const title = videoTitleInput.value.trim();
 
-      if (!gameId) {
-        alert('Please enter a valid Game ID first.');
+      const game_id = document.getElementById('game-id').value.trim();
+      const video_url = document.getElementById('video-url').value.trim();
+      const title = document.getElementById('title').value.trim();
+      const uploader_username = document.getElementById('username').value.trim();
+
+      if (!game_id || !video_url || !title || !uploader_username) {
+        status.textContent = "All fields are required.";
         return;
       }
 
-      if (!url || !title) {
-        alert('Please enter both video URL and title.');
-        return;
-      }
-
-      // Here you can implement your user fetching logic
-      const uploader = 'Guest';
-
-      const { error } = await supabase.from('game_videos').insert([{
-        game_id: gameId,
-        video_url: url,
-        title: title,
-        uploader_username: uploader,
-        created_at: new Date().toISOString()
-      }]);
+      const { error } = await supabase
+        .from('game_videos')
+        .insert([{ game_id, video_url, title, uploader_username }]);
 
       if (error) {
-        alert('Failed to submit video: ' + error.message);
-        return;
+        status.textContent = 'Error: ' + error.message;
+        console.error(error);
+      } else {
+        status.textContent = 'Video submitted successfully!';
+        form.reset();
       }
-
-      videoUrlInput.value = '';
-      videoTitleInput.value = '';
-      loadVideos(gameId);
     });
-
-    // Optional: subscribe to realtime updates for current game ID
-    function subscribeRealtime(gameId) {
-      if (!gameId) return;
-
-      supabase.channel('videos-' + gameId)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'game_videos', filter: `game_id=eq.${gameId}` }, () => {
-          loadVideos(gameId);
-        })
-        .subscribe();
-    }
-
-    // Initialize with empty or URL-based game ID
-    (() => {
-      const urlParts = window.location.pathname.split('/');
-      const slug = urlParts[urlParts.length - 1].replace('.html', '');
-      if (slug) {
-        gameIdInput.value = slug.toLowerCase();
-        currentGameId = slug.toLowerCase();
-        loadVideos(currentGameId);
-        subscribeRealtime(currentGameId);
-      }
-    })();
-
   </script>
+
 </body>
 </html>
