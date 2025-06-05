@@ -729,7 +729,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
     }
 
     .link-embed iframe {
@@ -770,9 +769,6 @@
       border: none;
     }
   </style>
-
-  <!-- Twitter widgets.js for embed support -->
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </head>
 <body>
 
@@ -810,44 +806,24 @@
     function renderEmbed(url, small = false) {
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
-
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-
       if (small) {
-        // For links block, show clickable link if no embed available
-        return `<a class="video-link" href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        // For links block, show smaller clickable link if no embed available
+        return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
       }
-
-      return `<a class="video-link" href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-    }
-
-    function waitForTwttrAndLoad(element, retries = 5) {
-      if (window.twttr && window.twttr.widgets) {
-        window.twttr.widgets.load(element);
-      } else if (retries > 0) {
-        setTimeout(() => waitForTwttrAndLoad(element, retries - 1), 500);
-      }
+      return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
     }
 
     function addLink(url) {
       const div = document.createElement('div');
       div.className = 'link-embed';
-
-      const twitterMatch = url.match(/https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[^\/]+\/status\/\d+/i);
-      if (twitterMatch) {
-        // Create Twitter embed blockquote
-        div.innerHTML = `<blockquote class="twitter-tweet" data-theme="dark"><a href="${url}"></a></blockquote>`;
-        waitForTwttrAndLoad(div);
-      } else {
-        div.innerHTML = renderEmbed(url, true);
-      }
-
+      div.innerHTML = renderEmbed(url, true);
       linksList.appendChild(div);
     }
 
     function showVideo(video) {
-      // Append embedded video large view
+      // Append embedded video
       const box = document.createElement('div');
       box.className = 'video-box';
       box.innerHTML = renderEmbed(video.video_url);
@@ -868,7 +844,6 @@
       linksList.innerHTML = '';
 
       if (data) data.forEach(showVideo);
-      else messagesDiv.innerHTML = '<p>No videos found.</p>';
     }
 
     form.addEventListener('submit', async e => {
