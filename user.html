@@ -751,11 +751,11 @@
 
   <div id="game-id-container">
     <label id="game-id-label" for="game-id">Game ID:</label>
-    <input type="text" id="game-id" value="pet-penis-simulator" readonly />
+    <input type="text" id="game-id" placeholder="Enter game ID here..." />
   </div>
 
   <div id="messages">
-    <p>Loading video links...</p>
+    <p>Enter a Game ID above and load video links...</p>
   </div>
 
   <form id="chat-form">
@@ -790,14 +790,18 @@
     }
 
     async function getUserGitHubUsername() {
-      const { data: { session } } = await supabase.auth.getSession();
-      return session?.user?.user_metadata?.full_name || 'Guest';
+      try {
+        const { data } = await supabase.auth.getSession();
+        return data.session?.user?.user_metadata?.full_name || 'Guest';
+      } catch {
+        return 'Guest';
+      }
     }
 
     async function loadMessages() {
       const gameId = gameIdInput.value.trim();
       if (!gameId) {
-        messagesDiv.innerHTML = '<p>No game ID specified.</p>';
+        messagesDiv.innerHTML = '<p>Please enter a Game ID to load videos.</p>';
         return;
       }
 
@@ -855,7 +859,7 @@
       const videoUrl = videoUrlInput.value.trim();
       const gameId = gameIdInput.value.trim();
 
-      if (!videoUrl || !gameId) return;
+      if (!videoUrl || !gameId) return alert('Please enter both a Game ID and video URL.');
 
       const githubUsername = await getUserGitHubUsername();
 
@@ -869,18 +873,14 @@
       }
 
       videoUrlInput.value = '';
-      // Messages will auto-update from subscription
+      // The new video will show from subscription listener
     });
 
-    // Initial load and subscribe
-    loadMessages();
-    subscribeToNewVideos();
-
-    // (Optional) if you want to react to game ID changes dynamically:
-    // gameIdInput.addEventListener('change', async () => {
-    //   await loadMessages();
-    //   await subscribeToNewVideos();
-    // });
+    // Reload and subscribe when Game ID changes
+    gameIdInput.addEventListener('change', async () => {
+      await loadMessages();
+      await subscribeToNewVideos();
+    });
 
   </script>
 
