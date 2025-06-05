@@ -654,15 +654,18 @@
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       text-align: center;
     }
+
     h1 {
       font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1.5rem;
     }
+
     form {
       margin-bottom: 1rem;
     }
+
     input, button {
       padding: 10px;
       font-size: 16px;
@@ -670,10 +673,12 @@
       border: none;
       font-family: 'Rubik Mono One', sans-serif;
     }
+
     input {
       width: 60%;
       max-width: 400px;
     }
+
     button {
       background: #ff4f9f;
       color: #1a1328;
@@ -681,11 +686,13 @@
       margin-left: 10px;
       cursor: pointer;
     }
+
     #container {
-      max-width: 800px;
+      max-width: 1000px;
       margin: auto;
       text-align: left;
     }
+
     #links {
       margin: 20px 0;
       padding: 15px;
@@ -695,44 +702,64 @@
       color: #ff4f9f;
       font-family: monospace;
     }
+
     #links h2 {
       margin-top: 0;
       text-align: center;
       text-shadow: 1px 1px 0 #000;
     }
+
     #links-list {
       min-height: 300px;
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 20px;
       justify-content: center;
       overflow-y: auto;
     }
+
     .link-embed {
-      width: 180px;
+      width: 100%;
+      max-width: 480px;
       background: #3a2254;
-      padding: 8px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid #ff4f9f;
       box-shadow: 0 0 6px #000;
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 0;
     }
+
     .link-embed iframe {
       width: 100%;
-      aspect-ratio: 16 / 9;
+      height: 270px; /* 16:9 aspect for 480px width */
       border: none;
-      border-radius: 6px;
+      display: block;
     }
+
     .twitter-tweet {
-      margin: auto;
+      width: 100% !important;
+      max-width: 480px !important;
+      margin: 0 auto !important;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 0 10px #000;
       background: #2f1a39 !important;
       color: #ff4f9f !important;
-      max-width: 180px;
+    }
+
+    @media (max-width: 600px) {
+      .link-embed,
+      .twitter-tweet {
+        max-width: 100%;
+      }
+
+      .link-embed iframe {
+        height: auto;
+        aspect-ratio: 16 / 9;
+      }
     }
   </style>
 </head>
@@ -769,19 +796,16 @@
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
-      // YouTube
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) {
         return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
       }
 
-      // Twitch
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (tw) {
         return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
       }
 
-      // Twitter/X
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
         return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
