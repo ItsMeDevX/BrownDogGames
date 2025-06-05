@@ -780,27 +780,27 @@
     const form = document.getElementById('video-form');
     const status = document.getElementById('status');
     const videoList = document.getElementById('video-list');
+    const gameIdInput = document.getElementById('game-id');
 
-    // Improved YouTube regex to support more formats
     function createEmbedHTML(url) {
       if (!url) return '';
 
-      // YouTube patterns (watch?v=, youtu.be/, embed/)
-      const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+      // More robust YouTube matching (watch?v=, youtu.be/, embed/)
+      const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
       if (ytMatch) {
         const id = ytMatch[1];
         return `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
       }
 
-      if (url.match(/^https?:\/\/(www\.)?twitter\.com\/.*\/status\/\d+/)) {
+      if (/^https?:\/\/(www\.)?twitter\.com\/.*\/status\/\d+/.test(url)) {
         return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
       }
 
+      // Fallback: clickable link styled in pink
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff82ba;">${url}</a>`;
     }
 
-    async function loadVideos() {
-      const gameId = document.getElementById('game-id').value.trim();
+    async function loadVideos(gameId) {
       if (!gameId) {
         videoList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">Enter a Game ID above to load videos.</p>`;
         return;
@@ -823,8 +823,6 @@
         return;
       }
 
-      console.log('Loaded video URLs:', data.map(v => v.video_url));
-
       videoList.innerHTML = data.map(v => `
         <div class="video-item">
           <div class="video-title">${v.title}</div>
@@ -841,7 +839,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const game_id = document.getElementById('game-id').value.trim();
+      const game_id = gameIdInput.value.trim();
       const video_url = document.getElementById('video-url').value.trim();
       const title = document.getElementById('title').value.trim();
       const uploader_username = document.getElementById('username').value.trim();
@@ -863,14 +861,23 @@
       } else {
         status.textContent = 'Video submitted successfully!';
         form.reset();
-        loadVideos();
+        // Reload videos for the current game_id after submission
+        loadVideos(game_id);
       }
     });
 
-    document.getElementById('game-id').addEventListener('change', loadVideos);
+    // Load videos whenever the Game ID input changes (debounced for better UX)
+    let loadTimeout;
+    gameIdInput.addEventListener('input', () => {
+      clearTimeout(loadTimeout);
+      loadTimeout = setTimeout(() => {
+        loadVideos(gameIdInput.value.trim());
+      }, 500);
+    });
 
-    if (document.getElementById('game-id').value.trim()) {
-      loadVideos();
+    // On page load, if game id already set, load videos
+    if (gameIdInput.value.trim()) {
+      loadVideos(gameIdInput.value.trim());
     }
   </script>
 
@@ -879,3 +886,4 @@
 
 </body>
 </html>
+
