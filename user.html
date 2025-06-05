@@ -719,15 +719,19 @@
 <body>
 <body>
 
+<body>
+
   <h1>🎮 Video Links</h1>
 
-  <form id="form">
-    <input id="video-url" type="url" placeholder="Paste video URL..." required />
-    <button type="submit">Post</button>
-  </form>
+  <!-- container wraps form + messages and reverses visual order -->
+  <div id="container">
+    <form id="form">
+      <input id="video-url" type="url" placeholder="Paste video URL..." required />
+      <button type="submit">Post</button>
+    </form>
 
-  <!-- ✅ Move this BELOW the form -->
-  <div id="messages"><p>Loading...</p></div>
+    <div id="messages"><p>Loading...</p></div>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -753,7 +757,7 @@
       const box = document.createElement('div');
       box.className = 'video-box';
       box.innerHTML = renderEmbed(video.video_url);
-      messagesDiv.appendChild(box); // ✅ appends *below*
+      messagesDiv.appendChild(box); // goes to bottom
     }
 
     async function load() {
@@ -784,6 +788,66 @@
     load();
   </script>
 
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      color: #fefefe;
+      margin: 0;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      text-align: center;
+    }
+
+    h1 {
+      color: #ff4f9f;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column-reverse;
+      max-width: 600px;
+      margin: auto;
+      gap: 20px;
+    }
+
+    #form input, #form button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      margin-top: 10px;
+    }
+
+    #form button {
+      background: #ff4f9f;
+      color: #1a1328;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #messages {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .video-box {
+      background: #2b1e3d;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ff4f9f;
+    }
+
+    iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+  </style>
+
 </body>
 
-</html>
