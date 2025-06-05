@@ -711,23 +711,41 @@
     }
 
     #links-list {
-      list-style: none;
-      padding-left: 0;
-      margin-top: 10px;
-      max-height: 200px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      max-height: 300px;
       overflow-y: auto;
     }
 
-    #links-list li {
-      margin-bottom: 8px;
-      word-break: break-all;
+    .link-embed {
+      width: 180px;
+      background: #3a2254;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #ff4f9f;
+      box-shadow: 0 0 6px #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    #links-list a {
-      color: #ff4f9f;
-      text-decoration: none;
+    .link-embed iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: none;
+      border-radius: 6px;
     }
-    #links-list a:hover {
+
+    a.video-link {
+      color: #ff4f9f;
+      word-break: break-word;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    a.video-link:hover {
       text-decoration: underline;
     }
 
@@ -750,11 +768,6 @@
       aspect-ratio: 16 / 9;
       border: none;
     }
-
-    a.video-link {
-      color: #ff4f9f;
-      word-break: break-word;
-    }
   </style>
 </head>
 <body>
@@ -767,10 +780,10 @@
       <button type="submit">Post</button>
     </form>
 
-    <!-- Links block with clickable URLs -->
+    <!-- Links block with embedded previews -->
     <div id="links">
       <h2>Links</h2>
-      <ul id="links-list"></ul>
+      <div id="links-list"></div>
     </div>
 
     <!-- Embedded videos -->
@@ -790,23 +803,23 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    function renderEmbed(url) {
+    function renderEmbed(url, small = false) {
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+      if (small) {
+        // For links block, show smaller clickable link if no embed available
+        return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
+      }
       return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
     }
 
     function addLink(url) {
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = url;
-      a.target = '_blank';
-      a.textContent = url;
-      a.className = 'video-link';
-      li.appendChild(a);
-      linksList.appendChild(li);
+      const div = document.createElement('div');
+      div.className = 'link-embed';
+      div.innerHTML = renderEmbed(url, true);
+      linksList.appendChild(div);
     }
 
     function showVideo(video) {
@@ -816,7 +829,7 @@
       box.innerHTML = renderEmbed(video.video_url);
       messagesDiv.appendChild(box);
 
-      // Append link below the form
+      // Append embedded preview in the links block
       addLink(video.video_url);
     }
 
