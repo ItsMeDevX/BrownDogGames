@@ -805,62 +805,68 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    function renderEmbed(url, small = false) {
-      // Normalize x.com → twitter.com for widget parsing
-      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+function renderEmbed(url, small = false) {
+  url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
-      // YouTube
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
-      }
+  // YouTube
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  if (yt) {
+    return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+  }
 
-      // Twitch
-      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) {
-        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      }
+  // Twitch
+  const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+  if (tw) {
+    return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+  }
 
-      // Twitter/X
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) {
-        if (small) {
-          // For small embeds (thumbnails), don't show anything if Twitter video, just skip
-          return '';
-        }
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-      }
-
-      // Unsupported URLs: return nothing (no link fallback)
-      return '';
+  // Twitter/X
+  const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+  if (twt) {
+    if (small) {
+      // For small embeds, just show the URL as text (or skip)
+      return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
     }
+    return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+  }
 
-    function addLink(url) {
-      const embedHTML = renderEmbed(url, true);
-      if (!embedHTML) return; // skip unsupported or empty embeds
-      const div = document.createElement('div');
-      div.className = 'link-embed';
-      div.innerHTML = embedHTML;
-      linksList.appendChild(div);
+  // Unsupported URLs: return empty string
+  return '';
+}
+
+function addLink(url) {
+  const embedHTML = renderEmbed(url, true);
+  if (!embedHTML) return; // skip if empty
+  const div = document.createElement('div');
+  div.className = 'link-embed';
+  div.innerHTML = embedHTML;
+  linksList.appendChild(div);
+
+  // If it's a twitter link, load widgets for the small embed as well
+  if (url.includes('twitter.com/status') && window.twttr && window.twttr.widgets) {
+    window.twttr.widgets.load(div);
+  }
+}
+
+function showVideo(video) {
+  const embedHTML = renderEmbed(video.video_url);
+  const box = document.createElement('div');
+  box.className = 'video-box';
+
+  if (embedHTML) {
+    box.innerHTML = embedHTML;
+    messagesDiv.appendChild(box);
+    addLink(video.video_url);
+
+    if (video.video_url.includes('twitter.com/status') && window.twttr && window.twttr.widgets) {
+      window.twttr.widgets.load(box);
     }
-
-    function showVideo(video) {
-      const embedHTML = renderEmbed(video.video_url);
-      if (!embedHTML) return; // skip unsupported URLs
-
-      const box = document.createElement('div');
-      box.className = 'video-box';
-      box.innerHTML = embedHTML;
-
-      messagesDiv.appendChild(box);
-      addLink(video.video_url);
-
-      if (video.video_url.includes('twitter.com/status')) {
-        if (window.twttr && window.twttr.widgets) {
-          window.twttr.widgets.load(box);
-        }
-      }
-    }
+  } else {
+    // Show a fallback message for unsupported URLs
+    box.textContent = 'Unsupported video URL: ' + video.video_url;
+    messagesDiv.appendChild(box);
+  }
+ }
 
     async function load() {
       const { data, error } = await supabase
