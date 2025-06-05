@@ -818,7 +818,7 @@
     let currentSubscription = null;
 
     async function getUserGitHubUsername() {
-      // This matches your chat code - replace with your auth logic if needed
+      // Dummy username, replace with your auth logic
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const { user_metadata } = session.user;
@@ -842,7 +842,7 @@
       loadVideos();
       subscribeToVideoUpdates();
     });
-  
+
     videoForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -881,7 +881,7 @@
       videoUrl.value = '';
       videoTitle.value = '';
       videoDesc.value = '';
-      // After insert, videos update automatically via realtime subscription
+      // Videos update automatically via realtime subscription
     });
 
     async function loadVideos() {
@@ -1002,29 +1002,7 @@
         )
         .subscribe();
     }
-    
-function loadVideos() {
-  // Temporary dummy data to test rendering
-  const dummyVideos = [
-    {
-      video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      title: 'Test Video 1',
-      uploader_username: 'TestUser',
-      description: 'This is a sample description.'
-    },
-    {
-      video_url: 'https://vimeo.com/76979871',
-      title: 'Test Video 2',
-      uploader_username: 'AnotherUser',
-      description: 'Another description here.'
-    }
-  ];
-  renderVideoList(dummyVideos);
-}
-    
   </script>
-  
 </body>
 </html>
 
-  
