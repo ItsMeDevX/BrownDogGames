@@ -711,11 +711,11 @@
     }
 
     #links-list {
+      min-height: 300px; /* Reserve space to avoid layout jump */
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       justify-content: center;
-      max-height: 300px;
       overflow-y: auto;
     }
 
@@ -750,9 +750,13 @@
     }
 
     #messages {
-      display: flex;
+      display: none; /* Hide until loaded */
       flex-direction: column;
       gap: 20px;
+    }
+
+    #messages.loaded {
+      display: flex; /* Show after loaded */
     }
 
     .video-box {
@@ -767,6 +771,17 @@
       width: 100%;
       aspect-ratio: 16 / 9;
       border: none;
+    }
+
+    /* Twitter embed styling */
+    .twitter-tweet {
+      margin: auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #000;
+      background: #2f1a39 !important;
+      color: #ff4f9f !important;
+      max-width: 600px;
     }
   </style>
 </head>
@@ -790,6 +805,9 @@
     <div id="messages"><p>Loading...</p></div>
   </div>
 
+  <!-- Twitter widgets script -->
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -803,18 +821,36 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
+    // Parse video URLs and return embed HTML (YouTube, Twitch, Twitter)
     function renderEmbed(url, small = false) {
+      // YouTube
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
-      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      if (small) {
-        // For links block, show smaller clickable link if no embed available
-        return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
+      if (yt) {
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
       }
+
+      // Twitch
+      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+      if (tw) {
+        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+      }
+
+      // Twitter (status URL)
+      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+      if (twt) {
+        if (small) {
+          // For small link preview, just show clickable link
+          return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
+        }
+        // For full embed, return a container for Twitter widget
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+      }
+
+      // Default fallback - clickable link
       return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
     }
 
+    // Add embedded preview to links list (small mode)
     function addLink(url) {
       const div = document.createElement('div');
       div.className = 'link-embed';
@@ -822,15 +858,21 @@
       linksList.appendChild(div);
     }
 
+    // Show video embed in main messages area and add to links list
     function showVideo(video) {
-      // Append embedded video
       const box = document.createElement('div');
       box.className = 'video-box';
       box.innerHTML = renderEmbed(video.video_url);
-      messagesDiv.appendChild(box);
 
-      // Append embedded preview in the links block
+      messagesDiv.appendChild(box);
       addLink(video.video_url);
+
+      // If Twitter embed, reload widgets.js to parse new blockquotes
+      if (video.video_url.match(/twitter\.com\/.*\/status/)) {
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load(box);
+        }
+      }
     }
 
     async function load() {
@@ -840,10 +882,13 @@
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
-      messagesDiv.innerHTML = '';
       linksList.innerHTML = '';
+      messagesDiv.innerHTML = '';
 
       if (data) data.forEach(showVideo);
+
+      // Show messages div after content is loaded
+      messagesDiv.classList.add('loaded');
     }
 
     form.addEventListener('submit', async e => {
