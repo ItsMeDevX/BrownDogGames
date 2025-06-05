@@ -654,15 +654,18 @@
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       text-align: center;
     }
+
     h1 {
       font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1.5rem;
     }
+
     form {
       margin-bottom: 1rem;
     }
+
     input, button {
       padding: 10px;
       font-size: 16px;
@@ -670,10 +673,12 @@
       border: none;
       font-family: 'Rubik Mono One', sans-serif;
     }
+
     input {
       width: 60%;
       max-width: 400px;
     }
+
     button {
       background: #ff4f9f;
       color: #1a1328;
@@ -681,11 +686,13 @@
       margin-left: 10px;
       cursor: pointer;
     }
+
     #container {
       max-width: 800px;
       margin: auto;
       text-align: left;
     }
+
     #links {
       margin: 20px 0;
       padding: 15px;
@@ -695,11 +702,13 @@
       color: #ff4f9f;
       font-family: monospace;
     }
+
     #links h2 {
       margin-top: 0;
       text-align: center;
       text-shadow: 1px 1px 0 #000;
     }
+
     #links-list {
       min-height: 300px;
       display: flex;
@@ -708,6 +717,7 @@
       justify-content: center;
       overflow-y: auto;
     }
+
     .link-embed {
       width: 180px;
       background: #3a2254;
@@ -719,29 +729,35 @@
       justify-content: center;
       align-items: center;
     }
+
     .link-embed iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
       border: none;
       border-radius: 6px;
     }
+
     a.video-link {
       color: #ff4f9f;
       word-break: break-word;
       text-decoration: none;
       font-size: 0.9rem;
     }
+
     a.video-link:hover {
       text-decoration: underline;
     }
+
     #messages {
       display: none;
       flex-direction: column;
       gap: 20px;
     }
+
     #messages.loaded {
       display: flex;
     }
+
     .video-box {
       background: #2f1a39;
       padding: 10px;
@@ -749,11 +765,13 @@
       border: 2px solid #ff4f9f;
       box-shadow: 0 0 10px #000;
     }
+
     iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
       border: none;
     }
+
     .twitter-tweet {
       margin: auto;
       border-radius: 12px;
@@ -798,7 +816,7 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    function renderEmbed(url, small = false) {
+    function renderEmbed(url) {
       // Normalize x.com → twitter.com for widget parsing
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
@@ -817,20 +835,32 @@
       // Twitter/X
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
-        if (small) {
-          return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
-        }
         return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
+      // Default fallback: clickable link
       return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
     }
 
     function addLink(url) {
       const div = document.createElement('div');
       div.className = 'link-embed';
-      div.innerHTML = renderEmbed(url, true);
+      div.innerHTML = renderEmbed(url);
       linksList.appendChild(div);
+
+      // Load Twitter widgets if it's a tweet
+      if (url.includes('twitter.com/status')) {
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load(div);
+        } else {
+          const interval = setInterval(() => {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load(div);
+              clearInterval(interval);
+            }
+          }, 100);
+        }
+      }
     }
 
     function showVideo(video) {
@@ -844,14 +874,6 @@
       if (video.video_url.includes('twitter.com/status')) {
         if (window.twttr && window.twttr.widgets) {
           window.twttr.widgets.load(box);
-        } else {
-          // Poll every 100ms until widgets.js is ready, then load
-          const interval = setInterval(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(box);
-              clearInterval(interval);
-            }
-          }, 100);
         }
       }
     }
