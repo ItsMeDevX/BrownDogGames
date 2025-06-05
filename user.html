@@ -654,18 +654,15 @@
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       text-align: center;
     }
-
     h1 {
       font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1.5rem;
     }
-
     form {
       margin-bottom: 1rem;
     }
-
     input, button {
       padding: 10px;
       font-size: 16px;
@@ -673,12 +670,10 @@
       border: none;
       font-family: 'Rubik Mono One', sans-serif;
     }
-
     input {
       width: 60%;
       max-width: 400px;
     }
-
     button {
       background: #ff4f9f;
       color: #1a1328;
@@ -686,13 +681,11 @@
       margin-left: 10px;
       cursor: pointer;
     }
-
     #container {
       max-width: 800px;
       margin: auto;
       text-align: left;
     }
-
     #links {
       margin: 20px 0;
       padding: 15px;
@@ -702,13 +695,11 @@
       color: #ff4f9f;
       font-family: monospace;
     }
-
     #links h2 {
       margin-top: 0;
       text-align: center;
       text-shadow: 1px 1px 0 #000;
     }
-
     #links-list {
       min-height: 300px;
       display: flex;
@@ -717,7 +708,6 @@
       justify-content: center;
       overflow-y: auto;
     }
-
     .link-embed {
       width: 180px;
       background: #3a2254;
@@ -729,24 +719,20 @@
       justify-content: center;
       align-items: center;
     }
-
     .link-embed iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
       border: none;
       border-radius: 6px;
     }
-
     #messages {
       display: none;
       flex-direction: column;
       gap: 20px;
     }
-
     #messages.loaded {
       display: flex;
     }
-
     .video-box {
       background: #2f1a39;
       padding: 10px;
@@ -754,13 +740,11 @@
       border: 2px solid #ff4f9f;
       box-shadow: 0 0 10px #000;
     }
-
     iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
       border: none;
     }
-
     .twitter-tweet {
       margin: auto;
       border-radius: 12px;
@@ -805,82 +789,82 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-function renderEmbed(url, small = false) {
-  url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+    function renderEmbed(url, small = false) {
+      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
-  // YouTube
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-  if (yt) {
-    return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
-  }
+      // YouTube
+      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+      if (yt) {
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+      }
 
-  // Twitch
-  const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-  if (tw) {
-    return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-  }
+      // Twitch
+      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+      if (tw) {
+        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+      }
 
-  // Twitter/X
-  const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-  if (twt) {
-    if (small) {
-      // For small embeds, just show the URL as text (or skip)
-      return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
-    }
-    return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-  }
-
-  // Unsupported URLs: return empty string
-  return '';
-}
-
-function addLink(url) {
-  const div = document.createElement('div');
-  div.className = 'link-embed';
-
-  const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-  if (twt) {
-    div.innerHTML = `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-    linksList.appendChild(div);
-
-    // Make sure the Twitter widgets script has loaded
-    if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load(div);
-    } else {
-      // If twttr not ready, load after script is loaded
-      window.addEventListener('load', () => {
-        if (window.twttr && window.twttr.widgets) {
-          window.twttr.widgets.load(div);
+      // Twitter/X
+      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+      if (twt) {
+        if (small) {
+          // For small embeds, just show the URL as a link
+          return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
         }
-      });
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+      }
+
+      // Unsupported URLs: return empty string to skip
+      return '';
     }
-    return;
-  }
 
-  // Other URLs fallback:
-  div.innerHTML = renderEmbed(url, true);
-  linksList.appendChild(div);
-}
+    function addLink(url) {
+      const div = document.createElement('div');
+      div.className = 'link-embed';
 
-function showVideo(video) {
-  const embedHTML = renderEmbed(video.video_url);
-  const box = document.createElement('div');
-  box.className = 'video-box';
+      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+      if (twt) {
+        div.innerHTML = `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+        linksList.appendChild(div);
 
-  if (embedHTML) {
-    box.innerHTML = embedHTML;
-    messagesDiv.appendChild(box);
-    addLink(video.video_url);
+        // Wait a little and then load widgets for Twitter embed
+        setTimeout(() => {
+          if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load(div);
+          }
+        }, 100);
+        return;
+      }
 
-    if (video.video_url.includes('twitter.com/status') && window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load(box);
+      // Other URLs fallback:
+      div.innerHTML = renderEmbed(url, true);
+      linksList.appendChild(div);
     }
-  } else {
-    // Show a fallback message for unsupported URLs
-    box.textContent = 'Unsupported video URL: ' + video.video_url;
-    messagesDiv.appendChild(box);
-  }
- }
+
+    function showVideo(video) {
+      const embedHTML = renderEmbed(video.video_url);
+      const box = document.createElement('div');
+      box.className = 'video-box';
+
+      if (embedHTML) {
+        box.innerHTML = embedHTML;
+        messagesDiv.appendChild(box);
+        addLink(video.video_url);
+
+        // For twitter embeds inside messagesDiv, load widgets too after slight delay
+        if (video.video_url.includes('twitter.com/status')) {
+          setTimeout(() => {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load(box);
+            }
+          }, 100);
+        }
+      } else {
+        // Show fallback message
+        box.textContent = 'Unsupported video URL: ' + video.video_url;
+        messagesDiv.appendChild(box);
+      }
+    }
 
     async function load() {
       const { data, error } = await supabase
