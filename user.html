@@ -641,208 +641,113 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video Links - BrownDogGames</title>
+  <title>Video Wall</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #361c3e, #1a1328);
-      color: #fefefe;
-      margin: 0;
+      background: #1a1328;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-    h1 {
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 2rem;
     }
     #messages {
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 20px;
-      max-height: 400px;
-      overflow-y: auto;
-      margin-bottom: 20px;
       max-width: 600px;
-      width: 100%;
+      margin: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
     }
-    .message {
-      background-color: #361c3e;
+    .video-box {
+      background: #2b1e3d;
       padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 6px #ff4f9f;
-    }
-    .message strong {
-      color: #ff82ba;
-      display: block;
-      margin-bottom: 8px;
+      border-radius: 10px;
+      border: 1px solid #ff4f9f;
     }
     iframe {
-      max-width: 100%;
-      height: 315px;
-      border-radius: 8px;
-      border: 1px solid #ff4f9f;
-      background-color: black;
-    }
-    #chat-form {
-      display: flex;
-      gap: 10px;
-      max-width: 600px;
       width: 100%;
+      max-width: 100%;
+      aspect-ratio: 16 / 9;
     }
-    #video-url-input {
-      flex: 1;
+    input, button {
       padding: 10px;
+      margin-top: 10px;
       font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: #fff;
+      border-radius: 6px;
+      border: none;
     }
     button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
+      background: #ff4f9f;
+      color: #1a1328;
       font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    button:hover {
-      background-color: #ff82ba;
-    }
-    a {
-      color: #ff82ba;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <h1>Video Links</h1>
+  <h1>🎮 Video Links</h1>
 
-  <div id="messages">
-    <p>Loading video links...</p>
-  </div>
+  <div id="messages"><p>Loading...</p></div>
 
-  <form id="chat-form">
-    <input type="url" id="video-url-input" placeholder="Paste video URL here..." required />
-    <button type="submit">Send</button>
+  <form id="form">
+    <input id="video-url" type="url" placeholder="Paste video URL..." required />
+    <button type="submit">Post</button>
   </form>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Your Supabase URL and anon/public key
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
     const messagesDiv = document.getElementById('messages');
-    const form = document.getElementById('chat-form');
-    const videoUrlInput = document.getElementById('video-url-input');
+    const form = document.getElementById('form');
+    const input = document.getElementById('video-url');
 
-    // Create embedded player or link based on URL
-    function createEmbed(url) {
-      // YouTube video ID extraction
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
-      if (ytMatch) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
-      }
-      // Twitch video ID extraction
-      const twitchMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (twitchMatch) {
-        return `<iframe src="https://player.twitch.tv/?video=${twitchMatch[1]}&parent=${location.hostname}" frameborder="0" allowfullscreen></iframe>`;
-      }
-      // Fallback: clickable link
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+    function renderEmbed(url) {
+      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+      if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" frameborder="0" allowfullscreen></iframe>`;
+      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+      if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" frameborder="0" allowfullscreen></iframe>`;
+      return `<a href="${url}" target="_blank">${url}</a>`;
     }
 
-    // Append a video message to the list
-    function appendMessage(msg) {
-      const div = document.createElement('div');
-      div.className = 'message';
-      div.innerHTML = `<strong>${msg.github_username || 'Guest'}:</strong>${createEmbed(msg.video_url)}`;
-      messagesDiv.appendChild(div);
+    function showVideo(video) {
+      const box = document.createElement('div');
+      box.className = 'video-box';
+      box.innerHTML = renderEmbed(video.video_url);
+      messagesDiv.appendChild(box);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    // Load existing videos from Supabase
-    async function loadMessages() {
+    async function load() {
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
-
       messagesDiv.innerHTML = '';
-      if (error) {
-        messagesDiv.innerHTML = `<p style="color:red;">Error loading video links: ${error.message}</p>`;
-        return;
-      }
-      if (!data.length) {
-        messagesDiv.innerHTML = '<p>No video links yet. Be the first to post one!</p>';
-        return;
-      }
-      data.forEach(appendMessage);
+      if (data) data.forEach(showVideo);
     }
 
-    // Subscribe to new inserts via Realtime
-    async function subscribeToNewVideos() {
-      const channel = supabase.channel('all_game_videos')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'game_videos',
-        }, payload => {
-          if (payload.new.video_url) {
-            appendMessage(payload.new);
-          }
-        })
-        .subscribe();
-    }
-
-    // Handle form submission to add new video link
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const videoUrl = videoUrlInput.value.trim();
-      if (!videoUrl) return alert('Please enter a video URL.');
-
-      const githubUsername = 'Guest'; // Replace with real auth username if you add auth
-
-      const { error } = await supabase
-        .from('game_videos')
-        .insert([{
-          content: null,
-          video_url: videoUrl,
-          github_username: githubUsername,
-          game_id: 'default' // Change to your actual game_id logic if needed
-        }]);
-
-      if (error) {
-        alert('Failed to post link: ' + error.message);
-        return;
-      }
-
-      videoUrlInput.value = '';
+      const url = input.value.trim();
+      if (!url) return;
+      await supabase.from('game_videos').insert([{ video_url: url }]);
+      input.value = '';
     });
 
-    // Initial load + start listening for new messages
-    loadMessages();
-    subscribeToNewVideos();
+    supabase.channel('realtime:game_videos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+        if (payload.new.video_url) showVideo(payload.new);
+      })
+      .subscribe();
+
+    load();
   </script>
 
 </body>
