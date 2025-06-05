@@ -643,44 +643,76 @@
   <meta charset="UTF-8" />
   <title>Video Wall</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
     body {
-      background: #1a1328;
-      color: white;
-      font-family: sans-serif;
-      text-align: center;
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      color: #fefefe;
+      margin: 0;
       padding: 20px;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      text-align: center;
     }
+
+    h1 {
+      font-size: 2rem;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 1.5rem;
+    }
+
+    form {
+      margin-bottom: 2rem;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
+    }
+
+    input {
+      width: 60%;
+      max-width: 400px;
+    }
+
+    button {
+      background: #ff4f9f;
+      color: #1a1328;
+      font-weight: bold;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
     #messages {
-      max-width: 600px;
+      max-width: 800px;
       margin: auto;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
+
     .video-box {
-      background: #2b1e3d;
+      background: #2f1a39;
       padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ff4f9f;
+      border-radius: 12px;
+      border: 2px solid #ff4f9f;
+      box-shadow: 0 0 10px #000;
     }
+
     iframe {
       width: 100%;
       max-width: 100%;
       aspect-ratio: 16 / 9;
-    }
-    input, button {
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 16px;
-      border-radius: 6px;
       border: none;
     }
-    button {
-      background: #ff4f9f;
-      color: #1a1328;
-      font-weight: bold;
-      cursor: pointer;
+
+    a {
+      color: #ff4f9f;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -688,12 +720,12 @@
 
   <h1>🎮 Video Links</h1>
 
-  <div id="messages"><p>Loading...</p></div>
-
   <form id="form">
     <input id="video-url" type="url" placeholder="Paste video URL..." required />
     <button type="submit">Post</button>
   </form>
+
+  <div id="messages"><p>Loading...</p></div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -709,9 +741,9 @@
 
     function renderEmbed(url) {
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" frameborder="0" allowfullscreen></iframe>`;
+      if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" frameborder="0" allowfullscreen></iframe>`;
+      if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
       return `<a href="${url}" target="_blank">${url}</a>`;
     }
 
