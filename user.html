@@ -759,7 +759,7 @@
     function createEmbed(url) {
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
       if (ytMatch) {
-        return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
       }
       const twitchMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (twitchMatch) {
@@ -783,13 +783,13 @@
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
+      messagesDiv.innerHTML = '';
       if (error) {
         messagesDiv.innerHTML = `<p style="color:red;">Error loading video links: ${error.message}</p>`;
         return;
       }
 
-      messagesDiv.innerHTML = '';
-      if (data.length === 0) {
+      if (!data.length) {
         messagesDiv.innerHTML = '<p>No video links yet. Be the first to post one!</p>';
         return;
       }
@@ -816,12 +816,16 @@
       const videoUrl = videoUrlInput.value.trim();
       if (!videoUrl) return alert('Please enter a video URL.');
 
-      // Just set username to 'Guest' since no auth in this example
-      const githubUsername = 'Guest';
+      const githubUsername = 'Guest'; // replace with actual auth user if needed
 
       const { error } = await supabase
         .from('game_videos')
-        .insert([{ content: null, video_url: videoUrl, github_username: githubUsername, game_id: null }]);
+        .insert([{
+          content: null,
+          video_url: videoUrl,
+          github_username: githubUsername,
+          game_id: 'default' // change to actual ID if needed
+        }]);
 
       if (error) {
         alert('Failed to post link: ' + error.message);
@@ -829,13 +833,10 @@
       }
 
       videoUrlInput.value = '';
-      // New video will be appended by subscription listener
     });
 
-    // Load all messages on page load
     loadMessages();
     subscribeToNewVideos();
-
   </script>
 
 </body>
