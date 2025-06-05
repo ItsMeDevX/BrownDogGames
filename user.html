@@ -669,26 +669,28 @@
       border-radius: 12px;
       border: 2px solid #ff4f9f;
       margin-bottom: 2rem;
+      text-align: center;
     }
 
     input, button {
-      width: 100%;
-      font-size: 1rem;
-      padding: 10px;
-      margin: 0.5rem 0;
-      border-radius: 8px;
+      width: auto;
+      max-width: 300px;
+      font-size: 0.9rem;
+      padding: 6px 10px;
+      margin: 0.3rem 0;
+      border-radius: 6px;
       border: 2px solid #ff4f9f;
       background-color: #2f1a39;
       color: #fff;
       box-sizing: border-box;
+      display: inline-block;
     }
-
     button {
-      background-color: #ff4f9f;
-      border: none;
+      padding: 6px 16px;
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.2s ease;
+      display: inline-block;
     }
     button:hover {
       background-color: #ff82ba;
@@ -699,6 +701,7 @@
       color: #7fff7f;
       font-weight: bold;
       min-height: 1.2em;
+      text-align: center;
     }
 
     #videos {
@@ -753,10 +756,11 @@
     <h1>Upload Game Video</h1>
 
     <form id="video-form">
-      <input type="text" id="game-id" placeholder="Game ID" required />
+      <input type="text" id="game-id" placeholder="Game ID" required readonly />
       <input type="text" id="video-url" placeholder="YouTube or video URL" required />
       <input type="text" id="title" placeholder="Video Title" required />
       <input type="text" id="username" placeholder="Your Username" required />
+      <br />
       <button type="submit">Submit Video</button>
     </form>
 
@@ -782,10 +786,14 @@
     const videoList = document.getElementById('video-list');
     const gameIdInput = document.getElementById('game-id');
 
+    // Auto-fill and disable Game ID input
+    const DEFAULT_GAME_ID = 'default-game'; // Change this default if needed
+    gameIdInput.value = DEFAULT_GAME_ID;
+    gameIdInput.readOnly = true;
+
     function createEmbedHTML(url) {
       if (!url) return '';
 
-      // More robust YouTube matching (watch?v=, youtu.be/, embed/)
       const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
       if (ytMatch) {
         const id = ytMatch[1];
@@ -796,21 +804,21 @@
         return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
       }
 
-      // Fallback: clickable link styled in pink
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff82ba;">${url}</a>`;
     }
 
-    async function loadVideos(gameId) {
-      if (!gameId) {
-        videoList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">Enter a Game ID above to load videos.</p>`;
-        return;
-      }
-
-      const { data, error } = await supabase
+    // Load all videos on page load, or filtered by gameId if provided
+    async function loadVideos(gameId = '') {
+      let query = supabase
         .from('game_videos')
         .select('*')
-        .eq('game_id', gameId)
         .order('created_at', { ascending: false });
+
+      if (gameId) {
+        query = query.eq('game_id', gameId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         videoList.innerHTML = `<p style="color:#ff4f9f;">Error loading videos: ${error.message}</p>`;
@@ -819,7 +827,7 @@
       }
 
       if (!data.length) {
-        videoList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">No videos submitted for "${gameId}" yet.</p>`;
+        videoList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">No videos submitted${gameId ? ` for "${gameId}"` : ''} yet.</p>`;
         return;
       }
 
@@ -861,24 +869,15 @@
       } else {
         status.textContent = 'Video submitted successfully!';
         form.reset();
-        // Reload videos for the current game_id after submission
-        loadVideos(game_id);
+        // Reset game ID (since form.reset() clears inputs)
+        gameIdInput.value = DEFAULT_GAME_ID;
+        loadVideos();
       }
     });
 
-    // Load videos whenever the Game ID input changes (debounced for better UX)
-    let loadTimeout;
-    gameIdInput.addEventListener('input', () => {
-      clearTimeout(loadTimeout);
-      loadTimeout = setTimeout(() => {
-        loadVideos(gameIdInput.value.trim());
-      }, 500);
-    });
+    // Load all videos on initial page load
+    loadVideos();
 
-    // On page load, if game id already set, load videos
-    if (gameIdInput.value.trim()) {
-      loadVideos(gameIdInput.value.trim());
-    }
   </script>
 
   <!-- Twitter widgets script -->
