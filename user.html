@@ -637,266 +637,110 @@
     }
   </script>
   
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Video Wall</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      color: #fefefe;
-      margin: 0;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      text-align: center;
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  const messagesDiv = document.getElementById('messages');
+  const form = document.getElementById('form');
+  const input = document.getElementById('video-url');
+  const linksList = document.getElementById('links-list');
+
+  function renderEmbed(url, small = false) {
+    // Normalize x.com → twitter.com for widget parsing
+    url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+
+    // YouTube
+    const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+    if (yt) {
+      return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
     }
 
-    h1 {
-      font-size: 2rem;
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1.5rem;
+    // Twitch
+    const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+    if (tw) {
+      return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
     }
 
-    form {
-      margin-bottom: 1rem;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    input {
-      width: 60%;
-      max-width: 400px;
-    }
-
-    button {
-      background: #ff4f9f;
-      color: #1a1328;
-      font-weight: bold;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    #container {
-      max-width: 800px;
-      margin: auto;
-      text-align: left;
-    }
-
-    #links {
-      margin: 20px 0;
-      padding: 15px;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      color: #ff4f9f;
-      font-family: monospace;
-    }
-
-    #links h2 {
-      margin-top: 0;
-      text-align: center;
-      text-shadow: 1px 1px 0 #000;
-    }
-
-    #links-list {
-      min-height: 300px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      overflow-y: auto;
-    }
-
-    .link-embed {
-      width: 180px;
-      background: #3a2254;
-      padding: 8px;
-      border-radius: 10px;
-      border: 1px solid #ff4f9f;
-      box-shadow: 0 0 6px #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .link-embed iframe {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border: none;
-      border-radius: 6px;
-    }
-
-    a.video-link {
-      color: #ff4f9f;
-      word-break: break-word;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-
-    a.video-link:hover {
-      text-decoration: underline;
-    }
-
-    #messages {
-      display: none;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    #messages.loaded {
-      display: flex;
-    }
-
-    .video-box {
-      background: #2f1a39;
-      padding: 10px;
-      border-radius: 12px;
-      border: 2px solid #ff4f9f;
-      box-shadow: 0 0 10px #000;
-    }
-
-    iframe {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border: none;
-    }
-
-    .twitter-tweet {
-      margin: auto;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #000;
-      background: #2f1a39 !important;
-      color: #ff4f9f !important;
-      max-width: 600px;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>🎮 Video Links</h1>
-
-  <div id="container">
-    <form id="form">
-      <input id="video-url" type="url" placeholder="Paste video URL..." required />
-      <button type="submit">Post</button>
-    </form>
-
-    <div id="links">
-      <h2>Links</h2>
-      <div id="links-list"></div>
-    </div>
-
-    <div id="messages"><p>Loading...</p></div>
-  </div>
-
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
-
-    const messagesDiv = document.getElementById('messages');
-    const form = document.getElementById('form');
-    const input = document.getElementById('video-url');
-    const linksList = document.getElementById('links-list');
-
-    function renderEmbed(url, small = false) {
-      // Normalize x.com → twitter.com for widget parsing
-      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
-
-      // YouTube
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+    // Twitter/X
+    const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+    if (twt) {
+      if (small) {
+        return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
       }
-
-      // Twitch
-      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) {
-        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      }
-
-      // Twitter/X
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) {
-        if (small) {
-          return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
-        }
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-      }
-
-      return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
+      return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
     }
 
-    function addLink(url) {
-      const div = document.createElement('div');
-      div.className = 'link-embed';
-      div.innerHTML = renderEmbed(url, true);
-      linksList.appendChild(div);
-    }
+    // Default fallback: clickable link
+    return `<a class="video-link" href="${url}" target="_blank">${url}</a>`;
+  }
 
-    function showVideo(video) {
-      const box = document.createElement('div');
-      box.className = 'video-box';
-      box.innerHTML = renderEmbed(video.video_url);
+  function addLink(url) {
+    const div = document.createElement('div');
+    div.className = 'link-embed';
+    div.innerHTML = renderEmbed(url, true);
+    linksList.appendChild(div);
+  }
 
-      messagesDiv.appendChild(box);
-      addLink(video.video_url);
-
-      if (video.video_url.includes('twitter.com/status')) {
+  function loadTwitterWidgets(element) {
+    if (window.twttr && window.twttr.widgets) {
+      window.twttr.widgets.load(element);
+    } else {
+      // Poll until twitter widgets.js is loaded, then run load()
+      let checkInterval = setInterval(() => {
         if (window.twttr && window.twttr.widgets) {
-          window.twttr.widgets.load(box);
+          window.twttr.widgets.load(element);
+          clearInterval(checkInterval);
         }
-      }
+      }, 100);
     }
+  }
 
-    async function load() {
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('*')
-        .not('video_url', 'is', null)
-        .order('created_at', { ascending: true });
+  function showVideo(video) {
+    const box = document.createElement('div');
+    box.className = 'video-box';
+    box.innerHTML = renderEmbed(video.video_url);
 
-      linksList.innerHTML = '';
-      messagesDiv.innerHTML = '';
+    messagesDiv.appendChild(box);
+    addLink(video.video_url);
 
-      if (data) data.forEach(showVideo);
-
-      messagesDiv.classList.add('loaded');
+    if (video.video_url.includes('twitter.com/status')) {
+      loadTwitterWidgets(box);
     }
+  }
 
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const url = input.value.trim();
-      if (!url) return;
-      await supabase.from('game_videos').insert([{ video_url: url }]);
-      input.value = '';
-    });
+  async function load() {
+    const { data, error } = await supabase
+      .from('game_videos')
+      .select('*')
+      .not('video_url', 'is', null)
+      .order('created_at', { ascending: true });
 
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) showVideo(payload.new);
-      })
-      .subscribe();
+    linksList.innerHTML = '';
+    messagesDiv.innerHTML = '';
 
-    load();
-  </script>
+    if (data) data.forEach(showVideo);
 
-</body>
-</html>
+    messagesDiv.classList.add('loaded');
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const url = input.value.trim();
+    if (!url) return;
+    await supabase.from('game_videos').insert([{ video_url: url }]);
+    input.value = '';
+  });
+
+  supabase.channel('realtime:game_videos')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+      if (payload.new.video_url) showVideo(payload.new);
+    })
+    .subscribe();
+
+  load();
+</script>
