@@ -646,42 +646,99 @@
   <title>BrownDogGames - Submit Gameplay Videos</title>
   <style>
     body {
-      background-color: #1e1e2f;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 2rem;
+      background-color: #1b1b2e;
+      color: #fefefe;
+      font-family: 'Rubik Mono One', sans-serif, Arial, sans-serif;
+      padding: 20px;
       max-width: 800px;
       margin: auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    input, textarea {
+    h1, h2 {
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin: 1rem 0 0.5rem;
+      width: 100%;
+      text-align: center;
+    }
+    #game-select {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+    #game-name-input {
+      flex: 1;
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 12px;
       border: 2px solid #ff4f9f;
       background-color: #2f1a39;
       color: white;
       font-size: 1rem;
-      width: 100%;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-    }
-    input[type="text"] {
-      width: 70%;
-      margin-right: 10px;
     }
     button {
-      background: #ff4f9f;
+      background-color: #ff4f9f;
       border: none;
-      border-radius: 8px;
-      color: white;
-      font-size: 1rem;
+      border-radius: 12px;
+      color: #1b1b2e;
+      font-weight: bold;
       padding: 10px 20px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
     }
-    #video-form {
+    button:hover {
+      background-color: #ff82ba;
+    }
+    #video-section {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    form#video-form {
+      width: 100%;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-top: 1rem;
+      margin-bottom: 2rem;
+    }
+    form#video-form input, form#video-form textarea {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      color: white;
+      padding: 10px;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    textarea#video-desc {
+      resize: vertical;
+      min-height: 60px;
+    }
+    #video-list > div {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    #video-list > div.selected {
+      border-color: #ff82ba;
+      box-shadow: 0 0 12px #ff82ba;
+    }
+    #video-list h3 {
+      margin: 0 0 0.3rem;
+      color: #ff4f9f;
+    }
+    #video-list p {
+      margin: 0.2rem 0;
+      color: #ddd;
     }
     .responsive-frame {
       position: relative;
@@ -689,34 +746,30 @@
       height: 0;
       overflow: hidden;
       border-radius: 12px;
-      margin-bottom: 1.5rem;
+      margin-top: 10px;
     }
     .responsive-frame iframe,
     .responsive-frame video {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
       border: none;
       border-radius: 12px;
     }
-    .play-slot-button {
-      margin-top: 10px;
-    }
-    a {
-      color: #ff4f9f;
-      word-break: break-all;
-    }
-    h1, h2 {
-      margin-bottom: 0.5rem;
-    }
-    #game-select {
-      margin-bottom: 1rem;
+    #video-slot {
+      width: 100%;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      box-sizing: border-box;
+      background-color: #2f1a39;
+      min-height: 300px;
+      margin-bottom: 2rem;
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      color: #888;
     }
   </style>
 </head>
@@ -729,7 +782,7 @@
     <button id="select-game-btn">Select Game</button>
   </div>
 
-  <div id="video-section" style="display:none;">
+  <div id="video-section">
     <h2>🎥 Gameplay Videos</h2>
     <form id="video-form">
       <input type="url" id="video-url" placeholder="Video URL (YouTube, Twitter, Vimeo, MP4...)" required />
@@ -738,12 +791,9 @@
       <button type="submit">📤 Submit Video</button>
     </form>
 
-    <div id="video-slot" style="margin-top: 1.5rem;">
-      <h2>🎯 Video Slot Player</h2>
-      <div id="slot-container"><p>Select a video below to play it here.</p></div>
-    </div>
+    <div id="video-slot">Select a video below to play it here.</div>
 
-    <div id="video-list" style="margin-top: 1.5rem;"></div>
+    <div id="video-list"></div>
   </div>
 
   <script type="module">
@@ -759,16 +809,22 @@
     const videoSection = document.getElementById('video-section');
     const videoForm = document.getElementById('video-form');
     const videoList = document.getElementById('video-list');
-    const videoSlot = document.getElementById('slot-container');
+    const videoSlot = document.getElementById('video-slot');
     const videoUrl = document.getElementById('video-url');
     const videoTitle = document.getElementById('video-title');
     const videoDesc = document.getElementById('video-desc');
 
     let selectedGameId = null;
+    let currentSubscription = null;
 
     async function getUserGitHubUsername() {
-      // Replace with your auth system or leave testUser for now
-      return 'testUser';
+      // This matches your chat code - replace with your auth logic if needed
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { user_metadata } = session.user;
+        return user_metadata.full_name || session.user.email || 'GitHub User';
+      }
+      return 'Guest';
     }
 
     selectGameBtn.addEventListener('click', () => {
@@ -777,9 +833,14 @@
         alert('Please enter a game name.');
         return;
       }
+      if (currentSubscription) {
+        supabase.removeChannel(currentSubscription);
+        currentSubscription = null;
+      }
       selectedGameId = gameName;
-      videoSection.style.display = 'block';
+      videoSection.style.display = 'flex';
       loadVideos();
+      subscribeToVideoUpdates();
     });
 
     videoForm.addEventListener('submit', async (e) => {
@@ -820,7 +881,7 @@
       videoUrl.value = '';
       videoTitle.value = '';
       videoDesc.value = '';
-      loadVideos();
+      // After insert, videos update automatically via realtime subscription
     });
 
     async function loadVideos() {
@@ -830,7 +891,7 @@
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .ilike('game_id', selectedGameId)
+        .eq('game_id', selectedGameId)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -840,33 +901,50 @@
 
       if (!data || data.length === 0) {
         videoList.innerHTML = '<p>No videos yet. Be the first to share one!</p>';
+        videoSlot.innerHTML = 'Select a video below to play it here.';
         return;
       }
 
-      videoList.innerHTML = data.map(video => {
-        const embed = getEmbeddedVideoHTML(video.video_url);
-        return `
-          <div style="margin-bottom: 2rem;">
-            <h3>${video.title}</h3>
-            <p><em>by ${video.uploader_username}</em></p>
-            ${embed}
-            <p><a href="${video.video_url}" target="_blank" rel="noopener noreferrer">${video.video_url}</a></p>
-            <button class="play-slot-button" data-url="${video.video_url}">▶️ Play in Slot</button>
-            <p>${video.description || ''}</p>
-          </div>
-        `;
-      }).join('');
-
-      loadTwitterWidgets();
+      renderVideoList(data);
     }
 
-    videoList.addEventListener('click', e => {
-      if (e.target.classList.contains('play-slot-button')) {
-        const url = e.target.getAttribute('data-url');
-        videoSlot.innerHTML = getEmbeddedVideoHTML(url);
-        loadTwitterWidgets();
+    function renderVideoList(videos) {
+      videoList.innerHTML = '';
+      videos.forEach((video, i) => {
+        const div = document.createElement('div');
+        div.classList.add('video-item');
+        div.dataset.url = video.video_url;
+        div.dataset.index = i;
+
+        div.innerHTML = `
+          <h3>${video.title}</h3>
+          <p><em>by ${video.uploader_username}</em></p>
+          <p>${video.description || ''}</p>
+        `;
+
+        div.addEventListener('click', () => {
+          setSelectedVideo(div, video.video_url);
+        });
+
+        videoList.appendChild(div);
+      });
+
+      // Auto select first video
+      if (videos.length) {
+        const first = videoList.children[0];
+        setSelectedVideo(first, videos[0].video_url);
       }
-    });
+    }
+
+    function setSelectedVideo(div, url) {
+      // Remove selection from others
+      [...videoList.children].forEach(child => child.classList.remove('selected'));
+      div.classList.add('selected');
+
+      // Embed video in slot
+      videoSlot.innerHTML = getEmbeddedVideoHTML(url);
+      loadTwitterWidgets();
+    }
 
     function getEmbeddedVideoHTML(url) {
       const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&?\n]+)/);
@@ -909,10 +987,23 @@
         document.body.appendChild(script);
       }
     }
+
+    function subscribeToVideoUpdates() {
+      if (!selectedGameId) return;
+
+      currentSubscription = supabase.channel('video-updates')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'game_videos', filter: `game_id=eq.${selectedGameId}` },
+          payload => {
+            loadVideos();
+          }
+        )
+        .subscribe();
+    }
   </script>
 
 </body>
 </html>
-
 
   
