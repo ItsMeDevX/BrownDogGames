@@ -692,15 +692,22 @@
       margin: 0 auto 20px;
       max-width: 600px;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    #messages div {
-      margin-bottom: 16px;
+    .message {
+      background-color: #361c3e;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px #ff4f9f;
     }
-    #messages strong {
+    .message strong {
       color: #ff82ba;
+      display: block;
+      margin-bottom: 8px;
     }
     iframe {
-      margin-top: 8px;
       max-width: 100%;
       height: 315px;
       border-radius: 8px;
@@ -798,6 +805,14 @@
       }
     }
 
+    function appendMessage(msg) {
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<strong>${msg.github_username || 'Guest'}:</strong>${createEmbed(msg.video_url)}`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
     async function loadMessages() {
       const gameId = gameIdInput.value.trim();
       if (!gameId) {
@@ -817,18 +832,13 @@
         return;
       }
 
-      if (!data.length) {
+      messagesDiv.innerHTML = '';
+      if (data.length === 0) {
         messagesDiv.innerHTML = '<p>No video links yet. Be the first to post one!</p>';
         return;
       }
 
-      messagesDiv.innerHTML = data.map(m => `
-        <div>
-          <strong>${m.github_username || 'Guest'}:</strong><br />
-          ${createEmbed(m.video_url)}
-        </div>
-      `).join('');
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      data.forEach(appendMessage);
     }
 
     async function subscribeToNewVideos() {
@@ -848,7 +858,7 @@
           filter: `game_id=eq.${gameId}`
         }, payload => {
           if (payload.new.video_url) {
-            loadMessages();
+            appendMessage(payload.new);
           }
         })
         .subscribe();
@@ -873,10 +883,9 @@
       }
 
       videoUrlInput.value = '';
-      // The new video will show from subscription listener
+      // New video will be appended by subscription listener
     });
 
-    // Reload and subscribe when Game ID changes
     gameIdInput.addEventListener('change', async () => {
       await loadMessages();
       await subscribeToNewVideos();
