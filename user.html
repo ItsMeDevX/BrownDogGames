@@ -720,7 +720,7 @@
     }
 
     .link-embed {
-      width: 220px;
+      width: 180px;
       background: #3a2254;
       padding: 8px;
       border-radius: 10px;
@@ -729,6 +729,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
     .link-embed iframe {
@@ -769,6 +770,9 @@
       border: none;
     }
   </style>
+
+  <!-- Twitter widgets.js for embed support -->
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </head>
 <body>
 
@@ -790,8 +794,6 @@
     <div id="messages"><p>Loading...</p></div>
   </div>
 
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -805,39 +807,39 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    // Render embed for big video player or small link preview
     function renderEmbed(url, small = false) {
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
 
-      const twVid = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (twVid) return `<iframe src="https://player.twitch.tv/?video=${twVid[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+      if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
 
-      // For non-embed supported URLs, show link
       if (small) {
+        // For links block, show clickable link if no embed available
         return `<a class="video-link" href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
       }
 
       return `<a class="video-link" href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     }
 
-    // Add a link embed to the links block, with Twitter support
+    function waitForTwttrAndLoad(element, retries = 5) {
+      if (window.twttr && window.twttr.widgets) {
+        window.twttr.widgets.load(element);
+      } else if (retries > 0) {
+        setTimeout(() => waitForTwttrAndLoad(element, retries - 1), 500);
+      }
+    }
+
     function addLink(url) {
       const div = document.createElement('div');
       div.className = 'link-embed';
 
-      // Twitter/X status embed check
       const twitterMatch = url.match(/https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[^\/]+\/status\/\d+/i);
       if (twitterMatch) {
-        // Use Twitter blockquote embed for tweets
+        // Create Twitter embed blockquote
         div.innerHTML = `<blockquote class="twitter-tweet" data-theme="dark"><a href="${url}"></a></blockquote>`;
-
-        // Load Twitter widgets inside this div (refresh embed)
-        if (window.twttr && window.twttr.widgets) {
-          window.twttr.widgets.load(div);
-        }
+        waitForTwttrAndLoad(div);
       } else {
-        // Other links: embed YouTube, Twitch or fallback to link
         div.innerHTML = renderEmbed(url, true);
       }
 
@@ -845,13 +847,13 @@
     }
 
     function showVideo(video) {
-      // Add big embedded video to messages area
+      // Append embedded video large view
       const box = document.createElement('div');
       box.className = 'video-box';
       box.innerHTML = renderEmbed(video.video_url);
       messagesDiv.appendChild(box);
 
-      // Add embedded preview to links block
+      // Append embedded preview in the links block
       addLink(video.video_url);
     }
 
@@ -866,6 +868,7 @@
       linksList.innerHTML = '';
 
       if (data) data.forEach(showVideo);
+      else messagesDiv.innerHTML = '<p>No videos found.</p>';
     }
 
     form.addEventListener('submit', async e => {
