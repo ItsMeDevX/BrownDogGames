@@ -646,16 +646,14 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-    body {
+    #main-content {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1b1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
-      margin: 0;
-      padding: 20px;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
     }
 
     h1 {
@@ -737,6 +735,11 @@
       font-style: italic;
     }
 
+    .video-embed {
+      margin-top: 0.5rem;
+      max-width: 100%;
+    }
+
     iframe, .twitter-tweet {
       max-width: 100%;
       border-radius: 8px;
@@ -745,21 +748,25 @@
 </head>
 <body>
 
-  <h1>Upload Game Video</h1>
+  <div id="main-content">
 
-  <form id="video-form">
-    <input type="text" id="game-id" placeholder="Game ID" required />
-    <input type="text" id="video-url" placeholder="YouTube or video URL" required />
-    <input type="text" id="title" placeholder="Video Title" required />
-    <input type="text" id="username" placeholder="Your Username" required />
-    <button type="submit">Submit Video</button>
-  </form>
+    <h1>Upload Game Video</h1>
 
-  <p id="status"></p>
+    <form id="video-form">
+      <input type="text" id="game-id" placeholder="Game ID" required />
+      <input type="text" id="video-url" placeholder="YouTube or video URL" required />
+      <input type="text" id="title" placeholder="Video Title" required />
+      <input type="text" id="username" placeholder="Your Username" required />
+      <button type="submit">Submit Video</button>
+    </form>
 
-  <div id="videos">
-    <h2>Submitted Videos</h2>
-    <div id="video-list"></div>
+    <p id="status"></p>
+
+    <div id="videos">
+      <h2>Submitted Videos</h2>
+      <div id="video-list"></div>
+    </div>
+
   </div>
 
   <script type="module">
@@ -774,27 +781,24 @@
     const status = document.getElementById('status');
     const videoList = document.getElementById('video-list');
 
-    // Helper to create embed HTML for YouTube and Twitter links
+    // Improved YouTube regex to support more formats
     function createEmbedHTML(url) {
       if (!url) return '';
 
-      // YouTube: match video id and embed iframe
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+      // YouTube patterns (watch?v=, youtu.be/, embed/)
+      const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
       if (ytMatch) {
         const id = ytMatch[1];
         return `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
       }
 
-      // Twitter: embed blockquote, Twitter widget script will handle
       if (url.match(/^https?:\/\/(www\.)?twitter\.com\/.*\/status\/\d+/)) {
         return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
       }
 
-      // Default: clickable link
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff82ba;">${url}</a>`;
     }
 
-    // Load videos by game_id
     async function loadVideos() {
       const gameId = document.getElementById('game-id').value.trim();
       if (!gameId) {
@@ -819,6 +823,8 @@
         return;
       }
 
+      console.log('Loaded video URLs:', data.map(v => v.video_url));
+
       videoList.innerHTML = data.map(v => `
         <div class="video-item">
           <div class="video-title">${v.title}</div>
@@ -827,13 +833,11 @@
         </div>
       `).join('');
 
-      // Load Twitter widgets if any twitter embed
       if (window.twttr) {
         window.twttr.widgets.load();
       }
     }
 
-    // Submit video
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -863,10 +867,8 @@
       }
     });
 
-    // Load videos whenever Game ID input changes
     document.getElementById('game-id').addEventListener('change', loadVideos);
 
-    // Optionally load videos if Game ID is already filled on page load
     if (document.getElementById('game-id').value.trim()) {
       loadVideos();
     }
