@@ -734,7 +734,7 @@
 
     .link-embed iframe {
       width: 100%;
-      height: 270px;
+      height: 270px; /* 16:9 aspect for 480px width */
       border: none;
       display: block;
     }
@@ -793,11 +793,14 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameId = urlParams.get('id');
+    // Get game ID from URL params
+    const params = new URLSearchParams(window.location.search);
+    const gameId = params.get('id');
+
     if (!gameId) {
-      alert("Missing ?id=CHAT_ID in URL");
-      throw new Error("Missing game ID in URL");
+      linksList.innerHTML = '<p style="color:#ff4f9f; text-align:center; font-weight:bold;">Missing ?id=GAME_ID in URL</p>';
+      form.style.display = 'none'; // Hide form if no game id
+      throw new Error('Missing ?id=GAME_ID in URL');
     }
 
     function renderEmbed(url) {
@@ -841,15 +844,25 @@
     }
 
     async function load() {
-      const { data } = await supabase
+      // Filter videos by game_id from URL param
+      const { data, error } = await supabase
         .from('game_videos')
         .select('*')
         .eq('game_id', gameId)
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
+      if (error) {
+        linksList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">Error loading videos: ${error.message}</p>`;
+        return;
+      }
+
       linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url));
+      if (data && data.length > 0) {
+        data.forEach(video => addLink(video.video_url));
+      } else {
+        linksList.innerHTML = '<p style="color:#ff4f9f; text-align:center;">No videos found for this game ID.</p>';
+      }
     }
 
     form.addEventListener('submit', async e => {
@@ -857,26 +870,23 @@
       const url = input.value.trim();
       if (!url) return;
 
-      await supabase.from('game_videos').insert([
-        { video_url: url, game_id: gameId }
-      ]);
+      // Insert video with game_id from URL param
+      const { error } = await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
+
+      if (error) {
+        alert('Error saving video: ' + error.message);
+        return;
+      }
+
       input.value = '';
     });
 
     supabase.channel('realtime:game_videos')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'game_videos'
-        },
-        payload => {
-          if (payload.new.game_id === gameId && payload.new.video_url) {
-            addLink(payload.new.video_url);
-          }
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+        if (payload.new.game_id === gameId && payload.new.video_url) {
+          addLink(payload.new.video_url);
         }
-      )
+      })
       .subscribe();
 
     load();
