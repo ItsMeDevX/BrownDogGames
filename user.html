@@ -660,38 +660,37 @@
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1rem;
     }
-    #linksList {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      max-width: 960px;
+    #videos {
+      max-width: 900px;
       width: 100%;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+      gap: 20px;
     }
-    .link-embed {
+    .video-card {
       background: #2f1a39;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
-      padding: 12px;
-      width: 300px;
+      padding: 10px;
       box-sizing: border-box;
       cursor: pointer;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
-    .link-embed:hover {
+    .video-card:hover {
       border-color: #ff82ba;
       box-shadow: 0 0 10px #ff82ba;
     }
     iframe {
-      border-radius: 8px;
       width: 100%;
       height: 170px;
+      border-radius: 8px;
+      border: none;
     }
   </style>
 </head>
 <body>
   <h1>Video Wall - BrownDogGames</h1>
-  <div id="linksList">Loading videos...</div>
+  <div id="videos">Loading videos...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -701,55 +700,37 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
-    const linksList = document.getElementById('linksList');
+    const videosDiv = document.getElementById('videos');
 
-    function renderEmbed(url) {
+    // Function to create embed iframe or twitter blockquote
+    function createEmbed(url) {
       if (!url) return '';
-      // Twitter status embed
+
+      // Twitter embed
       if (url.includes('twitter.com/status')) {
         return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
       }
-      // YouTube embed (support youtube.com/watch?v= or youtu.be)
+
+      // YouTube embed
       if (url.includes('youtube.com/watch?v=') || url.includes('youtu.be/')) {
-        const videoIdMatch = url.match(/(?:v=|youtu\.be\/)([\w\-]+)/);
-        const videoId = videoIdMatch ? videoIdMatch[1] : null;
-        if (videoId) {
-          return `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+        const match = url.match(/(?:v=|youtu\.be\/)([\w-]+)/);
+        const id = match ? match[1] : null;
+        if (id) {
+          return `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
         }
       }
+
       // Vimeo embed
       if (url.includes('vimeo.com/')) {
-        const videoIdMatch = url.match(/vimeo.com\/(\d+)/);
-        const videoId = videoIdMatch ? videoIdMatch[1] : null;
-        if (videoId) {
-          return `<iframe src="https://player.vimeo.com/video/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+        const match = url.match(/vimeo.com\/(\d+)/);
+        const id = match ? match[1] : null;
+        if (id) {
+          return `<iframe src="https://player.vimeo.com/video/${id}" allowfullscreen></iframe>`;
         }
       }
-      // Fallback: clickable link
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#ff4f9f; font-weight:bold;">Open Video</a>`;
-    }
 
-    function addLink(url, id) {
-      const div = document.createElement('div');
-      div.className = 'link-embed';
-
-      // Assign an ID or fallback string if not provided
-      div.dataset.linkId = id || url || `link-${Date.now()}`;
-
-      const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
-        linksList.appendChild(div);
-
-        // For Twitter embeds, re-run widget loader after append
-        if (url.includes('twitter.com/status')) {
-          setTimeout(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-            }
-          }, 100);
-        }
-      }
+      // Default: just a clickable link
+      return `<a href="${url}" target="_blank" style="color:#ff4f9f; font-weight:bold;">Open Video</a>`;
     }
 
     async function loadVideos() {
@@ -759,28 +740,42 @@
         .order('created_at', { ascending: false });
 
       if (error) {
-        linksList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
-        console.error(error);
+        videosDiv.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
         return;
       }
 
-      if (!data || data.length === 0) {
-        linksList.innerHTML = '<p>No videos found.</p>';
+      if (!data.length) {
+        videosDiv.innerHTML = '<p>No videos found.</p>';
         return;
       }
 
-      linksList.innerHTML = '';
+      videosDiv.innerHTML = '';
       data.forEach((video, idx) => {
-        // Use id or fallback (url or index-based)
-        const uniqueId = video.id || video.video_url || `video-${idx}-${Date.now()}`;
-        addLink(video.video_url, uniqueId);
+        // Fallback ID logic: use id if present else unique fallback string
+        const videoId = video.id || `video-${idx}-${Date.now()}`;
+
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.dataset.videoId = videoId;
+
+        card.innerHTML = createEmbed(video.video_url);
+
+        videosDiv.appendChild(card);
+
+        // If Twitter embed, reload widgets
+        if (video.video_url.includes('twitter.com/status')) {
+          setTimeout(() => {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load(card);
+            }
+          }, 200);
+        }
       });
     }
 
     loadVideos();
   </script>
 
-  <!-- Twitter widgets.js needed for embedded tweets -->
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
