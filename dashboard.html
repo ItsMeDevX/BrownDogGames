@@ -371,18 +371,19 @@
           return;
         }
 
-        const { data: submission, error } = await supabase
+        // Check if user has at least one submission
+        const { data, error } = await supabase
           .from('game_submissions')
           .select('id')
           .eq('user_id', user.id)
-          .maybeSingle();
+          .limit(1);
 
         if (error) {
           console.error('Error checking submission:', error);
           return;
         }
 
-        if (submission) {
+        if (data && data.length > 0) {
           window.location.href = `user.html?id=${user.id}`;
         } else {
           window.location.href = 'dashboard.html';
