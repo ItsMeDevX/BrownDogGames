@@ -641,56 +641,167 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video Wall - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Wall</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
-      margin: 0; padding: 20px;
       font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #361c3e, #1a1328);
+      background-color: #1b1b2e;
       color: #fefefe;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      text-align: center;
     }
+
     h1 {
+      font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
+      margin-bottom: 1.5rem;
+    }
+
+    form {
       margin-bottom: 1rem;
     }
-    #videos {
-      max-width: 900px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
-      gap: 20px;
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
     }
-    .video-card {
-      background: #2f1a39;
+
+    #chat-id {
+      width: 30%;
+      max-width: 200px;
+      margin-right: 10px;
+    }
+
+    #video-url {
+      width: 60%;
+      max-width: 400px;
+    }
+
+    button {
+      background: #ff4f9f;
+      color: #1a1328;
+      font-weight: bold;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    #container {
+      max-width: 1000px;
+      margin: auto;
+      text-align: left;
+    }
+
+    #links {
+      margin: 20px 0;
+      padding: 15px;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
-      padding: 10px;
-      box-sizing: border-box;
-      cursor: pointer;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      background-color: #2f1a39;
+      color: #ff4f9f;
+      font-family: monospace;
     }
-    .video-card:hover {
-      border-color: #ff82ba;
-      box-shadow: 0 0 10px #ff82ba;
+
+    #links h2 {
+      margin-top: 0;
+      text-align: center;
+      text-shadow: 1px 1px 0 #000;
     }
-    iframe {
+
+    #links-list {
+      min-height: 300px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .link-embed {
       width: 100%;
-      height: 170px;
-      border-radius: 8px;
+      max-width: 480px;
+      background: #3a2254;
+      border-radius: 12px;
+      border: 1px solid #ff4f9f;
+      box-shadow: 0 0 6px #000;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+    }
+
+    .link-embed iframe {
+      width: 100%;
+      height: 270px; /* 16:9 aspect for 480px width */
       border: none;
+      display: block;
+    }
+
+    .twitter-tweet {
+      width: 100% !important;
+      max-width: 480px !important;
+      margin: 0 auto !important;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #000;
+      background: #2f1a39 !important;
+      color: #ff4f9f !important;
+    }
+
+    @media (max-width: 600px) {
+      #chat-id, #video-url {
+        width: 100%;
+        margin: 0 0 10px 0;
+      }
+
+      .link-embed,
+      .twitter-tweet {
+        max-width: 100%;
+      }
+
+      .link-embed iframe {
+        height: auto;
+        aspect-ratio: 16 / 9;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      button {
+        margin-left: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Video Wall - BrownDogGames</h1>
-  <div id="videos">Loading videos...</div>
+
+  <h1>🎮 Video Links</h1>
+
+  <div id="container">
+    <form id="form">
+      <input id="chat-id" type="text" placeholder="Enter Chat ID..." required />
+      <input id="video-url" type="url" placeholder="Paste video URL..." required />
+      <button type="submit">Post</button>
+    </form>
+
+    <div id="links">
+      <h2>Links</h2>
+      <div id="links-list"></div>
+    </div>
+  </div>
+
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -700,82 +811,95 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
-    const videosDiv = document.getElementById('videos');
+    const form = document.getElementById('form');
+    const chatIdInput = document.getElementById('chat-id');
+    const input = document.getElementById('video-url');
+    const linksList = document.getElementById('links-list');
 
-    // Function to create embed iframe or twitter blockquote
-    function createEmbed(url) {
-      if (!url) return '';
+    // Example allowed chat IDs — customize this list as needed
+    const allowedChatIds = ['chat123', 'chat456', 'user789'];
 
-      // Twitter embed
-      if (url.includes('twitter.com/status')) {
-        return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
+    function renderEmbed(url) {
+      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+
+      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+      if (yt) {
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
       }
 
-      // YouTube embed
-      if (url.includes('youtube.com/watch?v=') || url.includes('youtu.be/')) {
-        const match = url.match(/(?:v=|youtu\.be\/)([\w-]+)/);
-        const id = match ? match[1] : null;
-        if (id) {
-          return `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
-        }
+      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+      if (tw) {
+        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
       }
 
-      // Vimeo embed
-      if (url.includes('vimeo.com/')) {
-        const match = url.match(/vimeo.com\/(\d+)/);
-        const id = match ? match[1] : null;
-        if (id) {
-          return `<iframe src="https://player.vimeo.com/video/${id}" allowfullscreen></iframe>`;
-        }
+      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+      if (twt) {
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
-      // Default: just a clickable link
-      return `<a href="${url}" target="_blank" style="color:#ff4f9f; font-weight:bold;">Open Video</a>`;
+      return '';
     }
 
-    async function loadVideos() {
-      const { data, error } = await supabase
-        .from('videos')
-        .select('*')
-        .order('created_at', { ascending: false });
+    function addLink(url) {
+      const div = document.createElement('div');
+      div.className = 'link-embed';
 
-      if (error) {
-        videosDiv.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
-        return;
-      }
+      const embedHTML = renderEmbed(url);
+      if (embedHTML) {
+        div.innerHTML = embedHTML;
+        linksList.appendChild(div);
 
-      if (!data.length) {
-        videosDiv.innerHTML = '<p>No videos found.</p>';
-        return;
-      }
-
-      videosDiv.innerHTML = '';
-      data.forEach((video, idx) => {
-        // Fallback ID logic: use id if present else unique fallback string
-        const videoId = video.id || `video-${idx}-${Date.now()}`;
-
-        const card = document.createElement('div');
-        card.className = 'video-card';
-        card.dataset.videoId = videoId;
-
-        card.innerHTML = createEmbed(video.video_url);
-
-        videosDiv.appendChild(card);
-
-        // If Twitter embed, reload widgets
-        if (video.video_url.includes('twitter.com/status')) {
+        if (url.includes('twitter.com/status')) {
           setTimeout(() => {
             if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(card);
+              window.twttr.widgets.load(div);
             }
-          }, 200);
+          }, 100);
         }
-      });
+      }
     }
 
-    loadVideos();
+    async function load() {
+      const { data } = await supabase
+        .from('game_videos')
+        .select('*')
+        .not('video_url', 'is', null)
+        .order('created_at', { ascending: true });
+
+      linksList.innerHTML = '';
+      if (data) data.forEach(video => addLink(video.video_url));
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const chatId = chatIdInput.value.trim();
+      const url = input.value.trim();
+
+      if (!chatId || !url) {
+        alert('Please enter both Chat ID and video URL.');
+        return;
+      }
+
+      if (!allowedChatIds.includes(chatId)) {
+        alert('Invalid Chat ID. Access denied.');
+        return;
+      }
+
+      await supabase.from('game_videos').insert([{ video_url: url }]);
+      input.value = '';
+      chatIdInput.value = '';
+    });
+
+    supabase.channel('realtime:game_videos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+        if (payload.new.video_url) addLink(payload.new.video_url);
+      })
+      .subscribe();
+
+    load();
   </script>
 
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
+
