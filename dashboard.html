@@ -556,11 +556,7 @@
       width: 150px;
       align-self: center;
     }
-    form#addGameForm button:disabled {
-      background: #b67ba4;
-      cursor: not-allowed;
-    }
-    form#addGameForm button:hover:not(:disabled) {
+    form#addGameForm button:hover {
       background: #ff8edb;
     }
     .message {
@@ -568,7 +564,6 @@
       font-weight: bold;
       text-align: center;
       font-size: 1.2rem;
-      min-height: 1.4em;
     }
     .error {
       color: #ff8d8d;
@@ -581,12 +576,10 @@
 <body>
   <h1>Your Submitted Games</h1>
 
-  <ul id="games-list" aria-live="polite" aria-relevant="additions removals"></ul>
+  <ul id="games-list"></ul>
 
-  <form id="addGameForm" novalidate>
-    <label for="githubUser">GitHub Username:</label>
-    <input type="text" id="githubUser" placeholder="Your GitHub username" required autocomplete="username" />
-
+  <form id="addGameForm">
+    <!-- GitHub username removed, auto from auth -->
     <label for="title">Game Title:</label>
     <input type="text" id="title" placeholder="Enter your game title" required />
 
@@ -617,15 +610,32 @@
     const message = document.getElementById('formMessage');
     const submitBtn = document.getElementById('submitBtn');
 
+    let currentUser;
+
     function showMessage(text, type = '') {
       message.textContent = text;
       message.className = `message ${type}`;
     }
 
+    async function checkAuth() {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error || !session?.user) {
+        // Not logged in: redirect to login page or show login button
+        window.location.href = 'login.html'; // or your login page
+        return false;
+      }
+
+      currentUser = session.user;
+      return true;
+    }
+
     async function fetchGames() {
+      // Only fetch games owned by current user
       const { data, error } = await supabase
         .from('game_submissions')
         .select('*')
+        .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -635,82 +645,73 @@
       return data;
     }
 
-    function createGameListItem(game) {
-      const li = document.createElement('li');
-
-      const infoDiv = document.createElement('div');
-      infoDiv.className = 'game-info';
-
-      const title = document.createElement('div');
-      title.className = 'game-title';
-      title.textContent = game.title;
-
-      const desc = document.createElement('div');
-      desc.className = 'game-desc';
-      desc.textContent = game.description;
-
-      const urlsDiv = document.createElement('div');
-      urlsDiv.className = 'game-urls';
-
-      const embedLink = document.createElement('a');
-      embedLink.href = game.embed_url;
-      embedLink.target = '_blank';
-      embedLink.rel = 'noopener noreferrer';
-      embedLink.textContent = 'Play';
-
-      urlsDiv.appendChild(embedLink);
-
-      if (game.screenshot_url) {
-        const screenshotLink = document.createElement('a');
-        screenshotLink.href = game.screenshot_url;
-        screenshotLink.target = '_blank';
-        screenshotLink.rel = 'noopener noreferrer';
-        screenshotLink.textContent = 'Screenshot';
-        urlsDiv.appendChild(screenshotLink);
-      }
-
-      infoDiv.appendChild(title);
-      infoDiv.appendChild(desc);
-      infoDiv.appendChild(urlsDiv);
-
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove-btn';
-      removeBtn.textContent = 'Remove';
-      removeBtn.setAttribute('aria-label', `Remove ${game.title}`);
-      removeBtn.onclick = async () => {
-        if (!confirm(`Remove "${game.title}"?`)) return;
-        removeBtn.disabled = true;
-        const { error } = await supabase
-          .from('game_submissions')
-          .delete()
-          .eq('id', game.id);
-        if (error) {
-          showMessage('Error removing game: ' + error.message, 'error');
-          removeBtn.disabled = false;
-        } else {
-          showMessage('Game removed.', 'success');
-          loadGames();
-        }
-      };
-
-      li.appendChild(infoDiv);
-      li.appendChild(removeBtn);
-      return li;
-    }
-
     async function loadGames() {
       const games = await fetchGames();
       gamesList.innerHTML = '';
       if (games.length === 0) {
-        const emptyMsg = document.createElement('li');
-        emptyMsg.textContent = 'No games submitted yet.';
-        emptyMsg.style.textAlign = 'center';
-        gamesList.appendChild(emptyMsg);
+        gamesList.innerHTML = '<li>No games submitted yet.</li>';
         return;
       }
       games.forEach(game => {
-        const listItem = createGameListItem(game);
-        gamesList.appendChild(listItem);
+        const li = document.createElement('li');
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'game-info';
+
+        const title = document.createElement('div');
+        title.className = 'game-title';
+        title.textContent = game.title;
+
+        const desc = document.createElement('div');
+        desc.className = 'game-desc';
+        desc.textContent = game.description;
+
+        const urlsDiv = document.createElement('div');
+        urlsDiv.className = 'game-urls';
+
+        const embedLink = document.createElement('a');
+        embedLink.href = game.embed_url;
+        embedLink.target = '_blank';
+        embedLink.rel = 'noopener noreferrer';
+        embedLink.textContent = 'Play';
+
+        urlsDiv.appendChild(embedLink);
+
+        if (game.screenshot_url) {
+          const screenshotLink = document.createElement('a');
+          screenshotLink.href = game.screenshot_url;
+          screenshotLink.target = '_blank';
+          screenshotLink.rel = 'noopener noreferrer';
+          screenshotLink.textContent = 'Screenshot';
+          urlsDiv.appendChild(screenshotLink);
+        }
+
+        infoDiv.appendChild(title);
+        infoDiv.appendChild(desc);
+        infoDiv.appendChild(urlsDiv);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.onclick = async () => {
+          if (!confirm(`Remove "${game.title}"?`)) return;
+          const { error } = await supabase
+            .from('game_submissions')
+            .delete()
+            .eq('id', game.id)
+            .eq('user_id', currentUser.id); // Double check ownership
+
+          if (error) {
+            showMessage('Error removing game: ' + error.message, 'error');
+          } else {
+            showMessage('Game removed.', 'success');
+            loadGames();
+          }
+        };
+
+        li.appendChild(infoDiv);
+        li.appendChild(removeBtn);
+        gamesList.appendChild(li);
       });
     }
 
@@ -719,34 +720,13 @@
       submitBtn.disabled = true;
       showMessage('');
 
-      // Simple validation
-      if (!addGameForm.githubUser.value.trim()) {
-        showMessage('GitHub username is required.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-      if (!addGameForm.title.value.trim()) {
-        showMessage('Game title is required.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-      if (!addGameForm.description.value.trim()) {
-        showMessage('Description is required.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-      if (!addGameForm.embedUrl.value.trim()) {
-        showMessage('Embed URL is required.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-
       const data = {
-        github_user: addGameForm.githubUser.value.trim(),
-        title: addGameForm.title.value.trim(),
-        description: addGameForm.description.value.trim(),
-        embed_url: addGameForm.embedUrl.value.trim(),
-        screenshot_url: addGameForm.screenshotUrl.value.trim() || null,
+        user_id: currentUser.id,
+        github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+        title: document.getElementById('title').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        embed_url: document.getElementById('embedUrl').value.trim(),
+        screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
         created_at: new Date().toISOString()
       };
 
@@ -761,7 +741,13 @@
       submitBtn.disabled = false;
     };
 
-    loadGames();
+    (async () => {
+      const loggedIn = await checkAuth();
+      if (loggedIn) {
+        loadGames();
+      }
+    })();
   </script>
 </body>
 </html>
+
