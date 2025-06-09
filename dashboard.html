@@ -340,6 +340,7 @@
       const { user_metadata } = session.user;
       const name = user_metadata.full_name || 'GitHub User';
       const avatar = user_metadata.avatar_url || '';
+      const githubUsername = user_metadata.user_name;
 
       const userInfo = document.createElement('div');
       userInfo.id = 'user-info';
@@ -371,7 +372,6 @@
           return;
         }
 
-        // Check if user has at least one submission
         const { data, error } = await supabase
           .from('game_submissions')
           .select('id')
@@ -383,8 +383,8 @@
           return;
         }
 
-        if (data && data.length > 0) {
-          window.location.href = `user.html?id=${user.id}`;
+        if (data && data.length > 0 && githubUsername) {
+          window.location.href = `user.html?user=${githubUsername}`;
         } else {
           window.location.href = 'dashboard.html';
         }
