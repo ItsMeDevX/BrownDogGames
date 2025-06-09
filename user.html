@@ -662,37 +662,6 @@
       margin-bottom: 1.5rem;
     }
 
-    form {
-      margin-bottom: 1rem;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    #chat-id {
-      width: 30%;
-      max-width: 200px;
-      margin-right: 10px;
-    }
-
-    #video-url {
-      width: 60%;
-      max-width: 400px;
-    }
-
-    button {
-      background: #ff4f9f;
-      color: #1a1328;
-      font-weight: bold;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
     #container {
       max-width: 1000px;
       margin: auto;
@@ -757,11 +726,6 @@
     }
 
     @media (max-width: 600px) {
-      #chat-id, #video-url {
-        width: 100%;
-        margin: 0 0 10px 0;
-      }
-
       .link-embed,
       .twitter-tweet {
         max-width: 100%;
@@ -771,16 +735,6 @@
         height: auto;
         aspect-ratio: 16 / 9;
       }
-
-      form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      button {
-        margin-left: 0;
-      }
     }
   </style>
 </head>
@@ -789,15 +743,10 @@
   <h1>🎮 Video Links</h1>
 
   <div id="container">
-    <form id="form">
-      <input id="chat-id" type="text" placeholder="Enter Chat ID..." required />
-      <input id="video-url" type="url" placeholder="Paste video URL..." required />
-      <button type="submit">Post</button>
-    </form>
-
+    <!-- Form removed as per request -->
     <div id="links">
       <h2>Links</h2>
-      <div id="links-list"></div>
+      <div id="links-list">Loading videos...</div>
     </div>
   </div>
 
@@ -811,93 +760,88 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
-    const form = document.getElementById('form');
-    const chatIdInput = document.getElementById('chat-id');
-    const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    // Example allowed chat IDs — customize this list as needed
-    const allowedChatIds = ['chat123', 'chat456', 'user789'];
+    // Get chat ID from URL params (change 'chat' to whatever your param is)
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatId = urlParams.get('chat');
 
-    function renderEmbed(url) {
-      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+    if (!chatId) {
+      linksList.innerHTML = `<p style="color:#f66;">❌ No chat ID provided in URL. Please specify ?chat=yourChatId</p>`;
+    } else {
 
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+      function renderEmbed(url) {
+        url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+
+        const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+        if (yt) {
+          return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+        }
+
+        const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+        if (tw) {
+          return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+        }
+
+        const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
+        if (twt) {
+          return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+        }
+
+        return '';
       }
 
-      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) {
-        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      }
+      function addLink(url) {
+        const div = document.createElement('div');
+        div.className = 'link-embed';
 
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) {
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-      }
+        const embedHTML = renderEmbed(url);
+        if (embedHTML) {
+          div.innerHTML = embedHTML;
+          linksList.appendChild(div);
 
-      return '';
-    }
-
-    function addLink(url) {
-      const div = document.createElement('div');
-      div.className = 'link-embed';
-
-      const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
-        linksList.appendChild(div);
-
-        if (url.includes('twitter.com/status')) {
-          setTimeout(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-            }
-          }, 100);
+          if (url.includes('twitter.com/status')) {
+            setTimeout(() => {
+              if (window.twttr && window.twttr.widgets) {
+                window.twttr.widgets.load(div);
+              }
+            }, 100);
+          }
         }
       }
-    }
 
-    async function load() {
-      const { data } = await supabase
-        .from('game_videos')
-        .select('*')
-        .not('video_url', 'is', null)
-        .order('created_at', { ascending: true });
+      async function loadVideos() {
+        const { data, error } = await supabase
+          .from('game_videos')
+          .select('*')
+          .eq('chat_id', chatId) // Filter by chat ID column
+          .not('video_url', 'is', null)
+          .order('created_at', { ascending: true });
 
-      linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url));
-    }
+        if (error) {
+          linksList.innerHTML = `<p style="color:#f66;">❌ Error loading videos: ${error.message}</p>`;
+          console.error(error);
+          return;
+        }
 
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
+        if (!data.length) {
+          linksList.innerHTML = `<p>No videos found for chat ID <strong>${chatId}</strong>.</p>`;
+          return;
+        }
 
-      const chatId = chatIdInput.value.trim();
-      const url = input.value.trim();
-
-      if (!chatId || !url) {
-        alert('Please enter both Chat ID and video URL.');
-        return;
+        linksList.innerHTML = '';
+        data.forEach(video => addLink(video.video_url));
       }
 
-      if (!allowedChatIds.includes(chatId)) {
-        alert('Invalid Chat ID. Access denied.');
-        return;
-      }
+      // Real-time subscription for new videos on this chat_id
+      supabase.channel('realtime:game_videos')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos', filter: `chat_id=eq.${chatId}` }, payload => {
+          if (payload.new.video_url) addLink(payload.new.video_url);
+        })
+        .subscribe();
 
-      await supabase.from('game_videos').insert([{ video_url: url }]);
-      input.value = '';
-      chatIdInput.value = '';
-    });
-
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url);
-      })
-      .subscribe();
-
-    load();
+      loadVideos();
+    }
   </script>
 
 </body>
