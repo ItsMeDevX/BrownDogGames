@@ -210,12 +210,6 @@
   <!-- Content injected by JS -->
 </div>
 
-<!-- Hidden dashboard section only -->
-<div id="dashboard-section" style="display: none; max-width: 320px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
-  <h2>Dashboard</h2>
-  <p>Here is your dashboard content.</p>
-</div>
-
 <style>
   /* Dropdown container */
   #user-dropdown {
@@ -274,26 +268,14 @@
   );
 
   const authBar = document.getElementById('auth-bar');
-  const dashboardSection = document.getElementById('dashboard-section');
 
   function toggleDropdown(dropdown) {
-    if (dropdown.style.display === 'flex') {
-      dropdown.style.display = 'none';
-    } else {
-      dropdown.style.display = 'flex';
-    }
+    dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
   }
 
   async function renderAuthBar() {
     const { data: { session } } = await supabase.auth.getSession();
     authBar.innerHTML = '';
-
-    // Show/hide dashboard section only
-    if (session?.user) {
-      dashboardSection.style.display = 'block';
-    } else {
-      dashboardSection.style.display = 'none';
-    }
 
     // User Games button always visible
     const userGamesBtn = document.createElement('button');
@@ -343,12 +325,19 @@
       dropdown.style.display = 'none';
       dropdown.style.flexDirection = 'column';
 
-      // Dropdown buttons: Dashboard and Logout only
+      // Dropdown buttons: My Page, Dashboard, Logout
+      const myPageBtn = document.createElement('button');
+      myPageBtn.textContent = 'My Page';
+      myPageBtn.onclick = () => {
+        dropdown.style.display = 'none';
+        window.location.href = 'my-page.html'; // Change to your actual page
+      };
+
       const dashboardBtn = document.createElement('button');
       dashboardBtn.textContent = 'Dashboard';
       dashboardBtn.onclick = () => {
         dropdown.style.display = 'none';
-        dashboardSection.scrollIntoView({ behavior: 'smooth' });
+        window.location.href = 'dashboard.html'; // Change to your actual dashboard
       };
 
       const logoutBtn = document.createElement('button');
@@ -358,6 +347,7 @@
         window.location.reload();
       };
 
+      dropdown.appendChild(myPageBtn);
       dropdown.appendChild(dashboardBtn);
       dropdown.appendChild(logoutBtn);
 
