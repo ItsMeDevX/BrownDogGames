@@ -775,7 +775,7 @@
 
     <div id="links">
       <h2>Links</h2>
-      <div id="links-list"></div>
+      <div id="links-list">Loading videos...</div>
     </div>
   </div>
 
@@ -793,7 +793,27 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
+    let currentGameId = null;
+
+    // Fetch user's latest game submission ID
+    async function getLatestGameId() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('game_submissions')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) return null;
+      return data.id;
+    }
+
     function renderEmbed(url) {
+      // Normalize x.com links to twitter.com for embedding
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
@@ -823,7 +843,7 @@
         div.innerHTML = embedHTML;
         linksList.appendChild(div);
 
-        if (url.includes('twitter.com/status')) {
+        if (url.includes('twitter.com/status') || url.includes('x.com/status')) {
           setTimeout(() => {
             if (window.twttr && window.twttr.widgets) {
               window.twttr.widgets.load(div);
@@ -833,32 +853,75 @@
       }
     }
 
-    async function load() {
-      const { data } = await supabase
+    async function loadVideos() {
+      if (!currentGameId) {
+        linksList.innerHTML = '<p>No recent game found for your account.</p>';
+        return;
+      }
+
+      const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .not('video_url', 'is', null)
+        .eq('game_id', currentGameId)
         .order('created_at', { ascending: true });
 
       linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url));
+      if (error) {
+        linksList.innerHTML = `<p>Error loading videos: ${error.message}</p>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        linksList.innerHTML = '<p>No videos posted yet for this game.</p>';
+        return;
+      }
+
+      data.forEach(video => addLink(video.video_url));
     }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const url = input.value.trim();
-      if (!url) return;
-      await supabase.from('game_videos').insert([{ video_url: url }]);
+      if (!url || !currentGameId) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Please log in to post videos.');
+        return;
+      }
+
+      const { error } = await supabase.from('game_videos').insert([{
+        video_url: url,
+        game_id: currentGameId,
+        user_id: user.id,
+      }]);
+
+      if (error) {
+        alert('Error posting video: ' + error.message);
+        return;
+      }
+
       input.value = '';
+      loadVideos();
     });
 
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url);
-      })
-      .subscribe();
+    // Listen for realtime new videos for this game_id
+    function setupRealtime() {
+      supabase.channel('realtime:game_videos')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+          if (payload.new.game_id === currentGameId && payload.new.video_url) {
+            addLink(payload.new.video_url);
+          }
+        })
+        .subscribe();
+    }
 
-    load();
+    // On page load
+    (async () => {
+      currentGameId = await getLatestGameId();
+      await loadVideos();
+      setupRealtime();
+    })();
   </script>
 
 </body>
