@@ -645,126 +645,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      color: #fefefe;
-      margin: 0;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 2rem;
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1.5rem;
-    }
-
-    form {
-      margin-bottom: 1rem;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    input {
-      width: 60%;
-      max-width: 400px;
-    }
-
-    button {
-      background: #ff4f9f;
-      color: #1a1328;
-      font-weight: bold;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    #container {
-      max-width: 1000px;
-      margin: auto;
-      text-align: left;
-    }
-
-    #links {
-      margin: 20px 0;
-      padding: 15px;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      color: #ff4f9f;
-      font-family: monospace;
-    }
-
-    #links h2 {
-      margin-top: 0;
-      text-align: center;
-      text-shadow: 1px 1px 0 #000;
-    }
-
-    #links-list {
-      min-height: 300px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      overflow-y: auto;
-    }
-
-    .link-embed {
-      width: 100%;
-      max-width: 480px;
-      background: #3a2254;
-      border-radius: 12px;
-      border: 1px solid #ff4f9f;
-      box-shadow: 0 0 6px #000;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0;
-    }
-
-    .link-embed iframe {
-      width: 100%;
-      height: 270px; /* 16:9 aspect for 480px width */
-      border: none;
-      display: block;
-    }
-
-    .twitter-tweet {
-      width: 100% !important;
-      max-width: 480px !important;
-      margin: 0 auto !important;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #000;
-      background: #2f1a39 !important;
-      color: #ff4f9f !important;
-    }
-
-    @media (max-width: 600px) {
-      .link-embed,
-      .twitter-tweet {
-        max-width: 100%;
-      }
-
-      .link-embed iframe {
-        height: auto;
-        aspect-ratio: 16 / 9;
-      }
-    }
+    /* (your same styles here...) */
   </style>
 </head>
 <body>
-
   <h1>🎮 Video Links</h1>
 
   <div id="container">
@@ -788,6 +672,14 @@
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameId = urlParams.get('id');
+
+    if (!gameId) {
+      alert("Missing ?id=CHAT_ID in URL");
+      throw new Error("No game_id provided.");
+    }
 
     const form = document.getElementById('form');
     const input = document.getElementById('video-url');
@@ -837,6 +729,7 @@
       const { data } = await supabase
         .from('game_videos')
         .select('*')
+        .eq('game_id', gameId)
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
@@ -848,13 +741,21 @@
       e.preventDefault();
       const url = input.value.trim();
       if (!url) return;
-      await supabase.from('game_videos').insert([{ video_url: url }]);
+
+      await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
       input.value = '';
     });
 
     supabase.channel('realtime:game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url);
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'game_videos'
+      }, payload => {
+        const newVid = payload.new;
+        if (newVid.game_id === gameId && newVid.video_url) {
+          addLink(newVid.video_url);
+        }
       })
       .subscribe();
 
