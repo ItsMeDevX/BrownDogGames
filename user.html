@@ -664,6 +664,10 @@
 
     form {
       margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
     }
 
     input, button {
@@ -674,8 +678,14 @@
       font-family: 'Rubik Mono One', sans-serif;
     }
 
-    input {
-      width: 60%;
+    #game-id {
+      width: 20%;
+      min-width: 100px;
+      max-width: 150px;
+    }
+
+    #video-url {
+      width: 50%;
       max-width: 400px;
     }
 
@@ -683,13 +693,8 @@
       background: #ff4f9f;
       color: #1a1328;
       font-weight: bold;
-      margin-left: 10px;
       cursor: pointer;
-    }
-
-    button:disabled {
-      background: #8b8b8b;
-      cursor: not-allowed;
+      min-width: 100px;
     }
 
     #container {
@@ -756,6 +761,11 @@
     }
 
     @media (max-width: 600px) {
+      #game-id, #video-url {
+        width: 100%;
+        max-width: none;
+      }
+
       .link-embed,
       .twitter-tweet {
         max-width: 100%;
@@ -774,8 +784,9 @@
 
   <div id="container">
     <form id="form">
+      <input id="game-id" type="text" placeholder="Game ID" required />
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
-      <button type="submit" disabled>Post</button>
+      <button type="submit">Post</button>
     </form>
 
     <div id="links">
@@ -795,22 +806,9 @@
     );
 
     const form = document.getElementById('form');
-    const input = document.getElementById('video-url');
-    const button = form.querySelector('button');
+    const inputUrl = document.getElementById('video-url');
+    const inputGameId = document.getElementById('game-id');
     const linksList = document.getElementById('links-list');
-
-    // Get game_id from URL query params
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameId = urlParams.get('game_id');
-
-    if (!gameId) {
-      alert('No game_id specified in URL. Posting is disabled.');
-      button.disabled = true;
-    } else {
-      button.disabled = false;
-      load();
-      subscribeRealtime();
-    }
 
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
@@ -852,54 +850,49 @@
       }
     }
 
-    async function load() {
-      const { data, error } = await supabase
+    // Helper to get game_id from URL ?game_id=123 or from input default
+    function getGameIdFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('game_id');
+    }
+
+    async function load(gameId) {
+      if (!gameId) return;
+      inputGameId.value = gameId;
+
+      const { data } = await supabase
         .from('game_videos')
         .select('*')
         .eq('game_id', gameId)
+        .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
       linksList.innerHTML = '';
-      if (error) {
-        linksList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
-        console.error(error);
-        return;
-      }
-
       if (data) data.forEach(video => addLink(video.video_url));
     }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (!gameId) return;
-
-      const url = input.value.trim();
-      if (!url) return;
-
-      const { error } = await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
-      if (error) {
-        alert('Failed to post video: ' + error.message);
-        console.error(error);
-        return;
-      }
-      input.value = '';
+      const url = inputUrl.value.trim();
+      const gameId = inputGameId.value.trim();
+      if (!url || !gameId) return;
+      await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
+      inputUrl.value = '';
     });
 
-    function subscribeRealtime() {
-      supabase.channel('realtime:game_videos_' + gameId)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'game_videos',
-          filter: `game_id=eq.${gameId}`
-        }, payload => {
-          if (payload.new.video_url) addLink(payload.new.video_url);
-        })
-        .subscribe();
-    }
+    // Real-time listener, only add if game_id matches current
+    supabase.channel('realtime:game_videos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+        if (payload.new.video_url && payload.new.game_id === inputGameId.value.trim()) {
+          addLink(payload.new.video_url);
+        }
+      })
+      .subscribe();
+
+    // On page load, try loading game_id from URL param
+    const initialGameId = getGameIdFromURL();
+    load(initialGameId);
   </script>
 
 </body>
 </html>
-
-
