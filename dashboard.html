@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Games Dashboard - BrownDogGames</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2.8rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    #auth-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: #ffc0cb;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    #auth-bar > div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #auth-bar button {
+      background: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #auth-bar button:hover {
+      background: #ff8edb;
+    }
+    #auth-bar img {
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      width: 40px;
+      height: 40px;
+    }
+    #games-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 2rem;
+    }
+    #games-list li {
+      background-color: #2d1a3a;
+      margin-bottom: 12px;
+      padding: 1rem;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .game-info {
+      flex-grow: 1;
+      overflow-wrap: anywhere;
+    }
+    .game-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      color: #ff69b4;
+    }
+    .game-desc {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    .game-urls a {
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      margin-right: 12px;
+      text-decoration: underline;
+    }
+    .remove-btn {
+      background-color: #ff4c4c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
+    }
+    .remove-btn:hover {
+      background-color: #ff1a1a;
+    }
+    form#addGameForm {
+      background-color: #2d1a3a;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #ff69b4aa;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    form#addGameForm label {
+      font-weight: bold;
+      color: #ffc0cb;
+    }
+    form#addGameForm input[type="text"],
+    form#addGameForm input[type="url"],
+    form#addGameForm textarea {
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1rem;
+      background-color: #3b2750;
+      color: #fefefe;
+      resize: vertical;
+    }
+    form#addGameForm button {
+      background: #ff69b4;
+      color: #1e1b2e;
+      font-weight: bold;
+      padding: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.3s ease;
+      width: 150px;
+      align-self: center;
+    }
+    form#addGameForm button:hover {
+      background: #ff8edb;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .error {
+      color: #ff8d8d;
+    }
+    .success {
+      color: #8dffa1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Submitted Games</h1>
+  <div id="auth-bar"></div>
+
+  <ul id="games-list"></ul>
+
+  <form id="addGameForm" hidden>
+    <label for="githubUser">GitHub Username:</label>
+    <input type="text" id="githubUser" placeholder="Your GitHub username" required />
+
+    <label for="title">Game Title:</label>
+    <input type="text" id="title" placeholder="Enter your game title" required />
+
+    <label for="description">Description:</label>
+    <textarea id="description" rows="4" placeholder="Brief description of your game" required></textarea>
+
+    <label for="embedUrl">Embed URL:</label>
+    <input type="url" id="embedUrl" placeholder="URL to embed your game" required />
+
+    <label for="screenshotUrl">Screenshot URL (optional):</label>
+    <input type="url" id="screenshotUrl" placeholder="Link to a screenshot" />
+
+    <button type="submit" id="submitBtn">Add New Game</button>
+  </form>
+
+  <p class="message" id="formMessage" aria-live="polite"></p>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
+
+    const authBar = document.getElementById('auth-bar');
+    const gamesList = document.getElementById('games-list');
+    const addGameForm = document.getElementById('addGameForm');
+    const message = document.getElementById('formMessage');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function showMessage(text, type = '') {
+      message.textContent = text;
+      message.className = `message ${type}`;
+    }
+
+    async function fetchGames(userId) {
+      const { data, error } = await supabase
+        .from('game_submissions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        showMessage('Failed to load games: ' + error.message, 'error');
+        return [];
+      }
+      return data;
+    }
+
+    async function loadGames(userId) {
+      const games = await fetchGames(userId);
+      gamesList.innerHTML = '';
+      if (games.length === 0) {
+        gamesList.innerHTML = '<li>No games submitted yet.</li>';
+        return;
+      }
+      games.forEach(game => {
+        const li = document.createElement('li');
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'game-info';
+
+        const title = document.createElement('div');
+        title.className = 'game-title';
+        title.textContent = game.title;
+
+        const desc = document.createElement('div');
+        desc.className = 'game-desc';
+        desc.textContent = game.description;
+
+        const urlsDiv = document.createElement('div');
+        urlsDiv.className = 'game-urls';
+
+        const embedLink = document.createElement('a');
+        embedLink.href = game.embed_url;
+        embedLink.target = '_blank';
+        embedLink.rel = 'noopener noreferrer';
+        embedLink.textContent = 'Play';
+
+        urlsDiv.appendChild(embedLink);
+
+        if (game.screenshot_url) {
+          const screenshotLink = document.createElement('a');
+          screenshotLink.href = game.screenshot_url;
+          screenshotLink.target = '_blank';
+          screenshotLink.rel = 'noopener noreferrer';
+          screenshotLink.textContent = 'Screenshot';
+          urlsDiv.appendChild(screenshotLink);
+        }
+
+        infoDiv.appendChild(title);
+        infoDiv.appendChild(desc);
+        infoDiv.appendChild(urlsDiv);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.onclick = async () => {
+          if (!confirm(`Remove "${game.title}"?`)) return;
+          const { error } = await supabase
+            .from('game_submissions')
+            .delete()
+            .eq('id', game.id);
+          if (error) {
+            showMessage('Error removing game: ' + error.message, 'error');
+          } else {
+            showMessage('Game removed.', 'success');
+            loadGames(userId);
+          }
+        };
+
+        li.appendChild(infoDiv);
+        li.appendChild(removeBtn);
+        gamesList.appendChild(li);
+      });
+    }
+
+    async function renderAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      authBar.innerHTML = '';
+
+      if (session?.user) {
+        const user = session.user;
+        const avatar = user.user_metadata.avatar_url || '';
+        const name = user.user_metadata.full_name || user.email;
+
+        const userInfo = document.createElement('div');
+        userInfo.innerHTML = `<img src="${avatar}" alt="Avatar" /> <strong>${name}</strong>`;
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = async () => {
+          await supabase.auth.signOut();
+          location.reload();
+        };
+
+        authBar.appendChild(userInfo);
+        authBar.appendChild(logoutBtn);
+
+        addGameForm.hidden = false;
+
+        loadGames(user.id);
+
+        addGameForm.onsubmit = async (e) => {
+          e.preventDefault();
+          submitBtn.disabled = true;
+          showMessage('');
+
+          const data = {
+            user_id: user.id,
+            github_user: document.getElementById('githubUser').value.trim(),
+            title: document.getElementById('title').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            embed_url: document.getElementById('embedUrl').value.trim(),
+            screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
+            created_at: new Date().toISOString()
+          };
+
+          const { error } = await supabase.from('game_submissions').insert([data]);
+          if (error) {
+            showMessage('Adding game failed: ' + error.message, 'error');
+            submitBtn.disabled = false;
+          } else {
+            showMessage('Game added successfully!', 'success');
+            addGameForm.reset();
+            submitBtn.disabled = false;
+            loadGames(user.id);
+          }
+        };
+
+      } else {
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with GitHub';
+        loginBtn.onclick = async () => {
+          await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: { redirectTo: location.href }
+          });
+        };
+        authBar.appendChild(loginBtn);
+
+        addGameForm.hidden = true;
+        gamesList.innerHTML = '<li>Please log in to see your games.</li>';
+      }
+    }
+
+    renderAuth();
+  </script>
+</body>
+</html>
