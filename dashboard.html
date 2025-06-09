@@ -441,7 +441,6 @@
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      max-width: 700px;
     }
     h1 {
       text-align: center;
@@ -456,7 +455,7 @@
       align-items: center;
     }
     .game-info {
-      max-width: 80%;
+      max-width: 75%;
     }
     .game-title {
       font-weight: bold;
@@ -467,8 +466,8 @@
     }
     .game-urls a {
       margin-right: 1em;
-      text-decoration: none;
       color: blue;
+      text-decoration: none;
     }
     button.remove-btn {
       background: #e74c3c;
@@ -558,25 +557,9 @@
     const submitBtn = document.getElementById('submitBtn');
     const githubUserInput = document.getElementById('githubUser');
 
-    let loggedInGithubUser = null; // store current logged in user's github username
-
     function showMessage(text, type = '') {
       message.textContent = text;
       message.className = `message ${type}`;
-    }
-
-    async function getLoggedInGithubUser() {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session?.user) {
-        // Adjust depending on your Supabase user_metadata structure
-        loggedInGithubUser = session.user.user_metadata?.user_name || session.user.user_metadata?.full_name || null;
-
-        if (loggedInGithubUser) {
-          githubUserInput.value = loggedInGithubUser;
-          githubUserInput.disabled = true;
-        }
-      }
     }
 
     async function fetchGames() {
@@ -599,6 +582,8 @@
         gamesList.innerHTML = '<li>No games submitted yet.</li>';
         return;
       }
+      const currentUser = githubUserInput.value.trim().toLowerCase();
+
       games.forEach(game => {
         const li = document.createElement('li');
 
@@ -639,8 +624,8 @@
 
         li.appendChild(infoDiv);
 
-        // Only show Remove button if current user owns this game
-        if (loggedInGithubUser && game.github_user === loggedInGithubUser) {
+        // Show remove button only if github_user matches the current githubUser input (case-insensitive)
+        if (game.github_user && currentUser && game.github_user.toLowerCase() === currentUser) {
           const removeBtn = document.createElement('button');
           removeBtn.className = 'remove-btn';
           removeBtn.textContent = 'Remove';
@@ -669,9 +654,7 @@
       submitBtn.disabled = true;
       showMessage('');
 
-      // Use logged-in username if available, otherwise use input value
-      const githubUser = loggedInGithubUser || githubUserInput.value.trim();
-
+      const githubUser = githubUserInput.value.trim();
       if (!githubUser) {
         showMessage('GitHub username is required.', 'error');
         submitBtn.disabled = false;
@@ -693,21 +676,18 @@
       } else {
         showMessage('Game added successfully!', 'success');
         addGameForm.reset();
-
-        // If logged in, reset username input with disabled state
-        if (loggedInGithubUser) {
-          githubUserInput.value = loggedInGithubUser;
-          githubUserInput.disabled = true;
-        }
         loadGames();
       }
       submitBtn.disabled = false;
     };
 
-    (async () => {
-      await getLoggedInGithubUser();
-      await loadGames();
-    })();
+    // Reload games when github username input changes so remove buttons update accordingly
+    githubUserInput.addEventListener('input', () => {
+      loadGames();
+    });
+
+    // Initial load
+    loadGames();
   </script>
 </body>
 </html>
