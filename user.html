@@ -730,6 +730,7 @@
       justify-content: center;
       align-items: center;
       padding: 0;
+      position: relative;
     }
 
     .link-embed iframe {
@@ -737,6 +738,22 @@
       height: 270px; /* 16:9 aspect for 480px width */
       border: none;
       display: block;
+      border-radius: 12px;
+    }
+
+    .game-label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: #ff4f9f;
+      color: #1a1328;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Rubik Mono One', monospace;
+      user-select: none;
+      pointer-events: none;
     }
 
     .twitter-tweet {
@@ -775,7 +792,7 @@
 
     <div id="links">
       <h2>Links</h2>
-      <div id="links-list">Loading videos...</div>
+      <div id="links-list"></div>
     </div>
   </div>
 
@@ -784,6 +801,7 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // Initialize Supabase client
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -793,27 +811,28 @@
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    let currentGameId = null;
+    // Map game IDs to human-readable game names (customize as needed)
+    const gameNames = {
+      0: 'Unknown',
+      1: 'Minecraft',
+      2: 'Fortnite',
+      3: 'Valorant',
+      // Add your own games here
+    };
 
-    // Fetch user's latest game submission ID
-    async function getLatestGameId() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+    // Detect game ID from URL using simple rules
+    function detectGameId(url) {
+      url = url.toLowerCase();
+      if (url.includes('minecraft')) return 1;
+      if (url.includes('fortnite')) return 2;
+      if (url.includes('valorant')) return 3;
+      // Add more detection rules here
 
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error || !data) return null;
-      return data.id;
+      return 0; // unknown game
     }
 
+    // Generate embed HTML from video URL
     function renderEmbed(url) {
-      // Normalize x.com links to twitter.com for embedding
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
@@ -834,94 +853,81 @@
       return '';
     }
 
-    function addLink(url) {
+    // Add a video link to the page with embed + game label
+    function addLink(url, gameId = 0) {
       const div = document.createElement('div');
       div.className = 'link-embed';
 
       const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
-        linksList.appendChild(div);
+      if (!embedHTML) return;
 
-        if (url.includes('twitter.com/status') || url.includes('x.com/status')) {
-          setTimeout(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-            }
-          }, 100);
-        }
+      div.innerHTML = embedHTML;
+
+      // Add game label badge
+      const label = document.createElement('div');
+      label.className = 'game-label';
+      label.textContent = gameNames[gameId] || 'Unknown';
+      div.appendChild(label);
+
+      linksList.appendChild(div);
+
+      // Load Twitter widgets if needed
+      if (url.includes('twitter.com/status')) {
+        setTimeout(() => {
+          if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load(div);
+          }
+        }, 100);
       }
     }
 
-    async function loadVideos() {
-      if (!currentGameId) {
-        linksList.innerHTML = '<p>No recent game found for your account.</p>';
-        return;
-      }
-
+    // Load existing videos from Supabase
+    async function load() {
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('game_id', currentGameId)
+        .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
-      linksList.innerHTML = '';
       if (error) {
-        linksList.innerHTML = `<p>Error loading videos: ${error.message}</p>`;
+        console.error('Error loading videos:', error);
         return;
       }
 
-      if (!data || data.length === 0) {
-        linksList.innerHTML = '<p>No videos posted yet for this game.</p>';
-        return;
+      linksList.innerHTML = '';
+      if (data) {
+        data.forEach(video => {
+          addLink(video.video_url, video.game_id || 0);
+        });
       }
-
-      data.forEach(video => addLink(video.video_url));
     }
 
+    // Submit handler: insert video URL with detected game ID
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const url = input.value.trim();
-      if (!url || !currentGameId) return;
+      if (!url) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        alert('Please log in to post videos.');
-        return;
-      }
+      const gameId = detectGameId(url);
 
-      const { error } = await supabase.from('game_videos').insert([{
-        video_url: url,
-        game_id: currentGameId,
-        user_id: user.id,
-      }]);
-
+      const { error } = await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
       if (error) {
-        alert('Error posting video: ' + error.message);
+        console.error('Insert error:', error);
         return;
       }
 
       input.value = '';
-      loadVideos();
     });
 
-    // Listen for realtime new videos for this game_id
-    function setupRealtime() {
-      supabase.channel('realtime:game_videos')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-          if (payload.new.game_id === currentGameId && payload.new.video_url) {
-            addLink(payload.new.video_url);
-          }
-        })
-        .subscribe();
-    }
+    // Realtime listener for new videos inserted remotely
+    supabase.channel('realtime:game_videos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || 0);
+      })
+      .subscribe();
 
-    // On page load
-    (async () => {
-      currentGameId = await getLatestGameId();
-      await loadVideos();
-      setupRealtime();
-    })();
+    // Initial load
+    load();
   </script>
 
 </body>
