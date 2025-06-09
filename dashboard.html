@@ -440,7 +440,6 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-    /* Reset & basics */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -464,7 +463,6 @@
       margin-bottom: 0.5rem;
     }
 
-    /* Games list as grid */
     #games-list {
       list-style: none;
       display: grid;
@@ -536,6 +534,7 @@
       transition: background 0.2s;
       font-size: 0.9rem;
     }
+
     button.remove-btn:hover {
       background: #c0392b;
     }
@@ -572,6 +571,7 @@
       resize: vertical;
       transition: border-color 0.2s;
     }
+
     form input:focus,
     form textarea:focus {
       outline: none;
@@ -592,10 +592,12 @@
       transition: background-color 0.2s;
       width: 100%;
     }
+
     button#submitBtn:disabled {
       background-color: #6d4c6e;
       cursor: not-allowed;
     }
+
     button#submitBtn:hover:not(:disabled) {
       background-color: #ff8edb;
     }
@@ -610,14 +612,15 @@
       margin-right: auto;
       text-align: center;
     }
+
     p.message.error {
       color: #e74c3c;
     }
+
     p.message.success {
       color: #a6ffb8;
     }
 
-    /* Responsive tweaks */
     @media (max-width: 520px) {
       #games-list {
         grid-template-columns: 1fr;
@@ -630,7 +633,7 @@
 </head>
 <body>
 
-  <h1>BrownDogGames - Your Submitted Games</h1>
+  <h1>Your Submitted Games</h1>
 
   <ul id="games-list"></ul>
 
@@ -690,13 +693,18 @@
     async function loadGames() {
       const games = await fetchGames();
       gamesList.innerHTML = '';
-      if (games.length === 0) {
-        gamesList.innerHTML = '<li>No games submitted yet.</li>';
-        return;
-      }
       const currentUser = githubUserInput.value.trim().toLowerCase();
 
-      games.forEach(game => {
+      const userGames = games.filter(
+        game => game.github_user && currentUser && game.github_user.toLowerCase() === currentUser
+      );
+
+      if (userGames.length === 0) {
+        gamesList.innerHTML = '<li>You have not submitted any games yet.</li>';
+        return;
+      }
+
+      userGames.forEach(game => {
         const li = document.createElement('li');
 
         const infoDiv = document.createElement('div');
@@ -736,26 +744,23 @@
 
         li.appendChild(infoDiv);
 
-        // Show remove button only if github_user matches the current githubUser input (case-insensitive)
-        if (game.github_user && currentUser && game.github_user.toLowerCase() === currentUser) {
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'remove-btn';
-          removeBtn.textContent = 'Remove';
-          removeBtn.onclick = async () => {
-            if (!confirm(`Remove "${game.title}"?`)) return;
-            const { error } = await supabase
-              .from('game_submissions')
-              .delete()
-              .eq('id', game.id);
-            if (error) {
-              showMessage('Error removing game: ' + error.message, 'error');
-            } else {
-              showMessage('Game removed.', 'success');
-              loadGames();
-            }
-          };
-          li.appendChild(removeBtn);
-        }
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.onclick = async () => {
+          if (!confirm(`Remove "${game.title}"?`)) return;
+          const { error } = await supabase
+            .from('game_submissions')
+            .delete()
+            .eq('id', game.id);
+          if (error) {
+            showMessage('Error removing game: ' + error.message, 'error');
+          } else {
+            showMessage('Game removed.', 'success');
+            loadGames();
+          }
+        };
+        li.appendChild(removeBtn);
 
         gamesList.appendChild(li);
       });
@@ -793,13 +798,12 @@
       submitBtn.disabled = false;
     };
 
-    // Reload games when github username input changes so remove buttons update accordingly
     githubUserInput.addEventListener('input', () => {
       loadGames();
     });
 
-    // Initial load
     loadGames();
   </script>
 </body>
 </html>
+
