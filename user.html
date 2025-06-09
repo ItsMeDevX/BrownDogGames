@@ -761,13 +761,6 @@
         aspect-ratio: 16 / 9;
       }
     }
-
-    #error-msg {
-      color: #ff4f9f;
-      font-weight: bold;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -779,8 +772,6 @@
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
     </form>
-
-    <div id="error-msg"></div>
 
     <div id="links">
       <h2>Links</h2>
@@ -801,18 +792,6 @@
     const form = document.getElementById('form');
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
-    const errorMsg = document.getElementById('error-msg');
-
-    // Get game_id from URL query string
-    const params = new URLSearchParams(window.location.search);
-    const gameId = params.get('game_id');
-
-    if (!gameId) {
-      errorMsg.textContent = "⚠️ No game_id specified in URL. Please add ?game_id=yourgameid";
-      form.style.display = 'none';
-    } else {
-      errorMsg.textContent = '';
-    }
 
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
@@ -855,49 +834,29 @@
     }
 
     async function load() {
-      if (!gameId) return;
-
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('game_id', gameId)
+        .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
       linksList.innerHTML = '';
-      if (error) {
-        errorMsg.textContent = `Error loading videos: ${error.message}`;
-        return;
-      }
-      if (!data.length) {
-        linksList.innerHTML = `<p>No videos found for game ID "${gameId}".</p>`;
-        return;
-      }
-      data.forEach(video => addLink(video.video_url));
+      if (data) data.forEach(video => addLink(video.video_url));
     }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (!gameId) return;
-
       const url = input.value.trim();
       if (!url) return;
-
-      const { error } = await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
-      if (error) {
-        errorMsg.textContent = `Failed to post video: ${error.message}`;
-        return;
-      }
+      await supabase.from('game_videos').insert([{ video_url: url }]);
       input.value = '';
-      errorMsg.textContent = '';
     });
 
-    if (gameId) {
-      supabase.channel('realtime:game_videos')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos', filter: `game_id=eq.${gameId}` }, payload => {
-          addLink(payload.new.video_url);
-        })
-        .subscribe();
-    }
+    supabase.channel('realtime:game_videos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
+        if (payload.new.video_url) addLink(payload.new.video_url);
+      })
+      .subscribe();
 
     load();
   </script>
