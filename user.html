@@ -664,10 +664,6 @@
 
     form {
       margin-bottom: 1rem;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
     }
 
     input, button {
@@ -678,11 +674,7 @@
       font-family: 'Rubik Mono One', sans-serif;
     }
 
-    #chat-id {
-      display: none; /* hidden since it’s fixed from URL */
-    }
-
-    #video-url {
+    input {
       width: 60%;
       max-width: 400px;
     }
@@ -691,7 +683,13 @@
       background: #ff4f9f;
       color: #1a1328;
       font-weight: bold;
+      margin-left: 10px;
       cursor: pointer;
+    }
+
+    button:disabled {
+      background: #8b8b8b;
+      cursor: not-allowed;
     }
 
     #container {
@@ -758,11 +756,6 @@
     }
 
     @media (max-width: 600px) {
-      #video-url {
-        width: 100%;
-        margin: 0 0 10px 0;
-      }
-
       .link-embed,
       .twitter-tweet {
         max-width: 100%;
@@ -771,15 +764,6 @@
       .link-embed iframe {
         height: auto;
         aspect-ratio: 16 / 9;
-      }
-
-      form {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      button {
-        margin-left: 0;
       }
     }
   </style>
@@ -790,9 +774,8 @@
 
   <div id="container">
     <form id="form">
-      <input id="chat-id" type="text" readonly />
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
-      <button type="submit">Post</button>
+      <button type="submit" disabled>Post</button>
     </form>
 
     <div id="links">
@@ -812,19 +795,21 @@
     );
 
     const form = document.getElementById('form');
-    const chatIdInput = document.getElementById('chat-id');
     const input = document.getElementById('video-url');
+    const button = form.querySelector('button');
     const linksList = document.getElementById('links-list');
 
-    // Read chat_id from URL
+    // Get game_id from URL query params
     const urlParams = new URLSearchParams(window.location.search);
-    const chatId = urlParams.get('chat_id');
+    const gameId = urlParams.get('game_id');
 
-    if (!chatId) {
-      alert('No chat_id specified in URL.');
-      chatIdInput.value = '';
+    if (!gameId) {
+      alert('No game_id specified in URL. Posting is disabled.');
+      button.disabled = true;
     } else {
-      chatIdInput.value = chatId;
+      button.disabled = false;
+      load();
+      subscribeRealtime();
     }
 
     function renderEmbed(url) {
@@ -868,12 +853,10 @@
     }
 
     async function load() {
-      if (!chatId) return;
-
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('chat_id', chatId)
+        .eq('game_id', gameId)
         .order('created_at', { ascending: true });
 
       linksList.innerHTML = '';
@@ -888,41 +871,32 @@
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-
-      if (!chatId) {
-        alert('Invalid chat_id, cannot post.');
-        return;
-      }
+      if (!gameId) return;
 
       const url = input.value.trim();
+      if (!url) return;
 
-      if (!url) {
-        alert('Please enter a video URL.');
-        return;
-      }
-
-      // Insert with chat_id from URL
-      const { error } = await supabase.from('game_videos').insert([{ video_url: url, chat_id: chatId }]);
-
+      const { error } = await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
       if (error) {
         alert('Failed to post video: ' + error.message);
         console.error(error);
         return;
       }
-
       input.value = '';
     });
 
-    // Realtime subscription for new videos in this chat
-    if (chatId) {
-      supabase.channel('realtime:game_videos_' + chatId)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos', filter: `chat_id=eq.${chatId}` }, payload => {
+    function subscribeRealtime() {
+      supabase.channel('realtime:game_videos_' + gameId)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'game_videos',
+          filter: `game_id=eq.${gameId}`
+        }, payload => {
           if (payload.new.video_url) addLink(payload.new.video_url);
         })
         .subscribe();
     }
-
-    load();
   </script>
 
 </body>
