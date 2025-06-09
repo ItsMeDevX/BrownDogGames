@@ -201,16 +201,11 @@
   border-radius: 12px;
   box-shadow: 0 0 12px #00000055;
   padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;             /* Slightly tighter gap */
   font-family: 'Rubik Mono One', sans-serif;
   color: #fefefe;
   min-height: 60px;
-  flex-wrap: nowrap;    /* Prevent wrapping */
-  overflow-x: auto;     /* Scroll horizontally if overflow */
-  scrollbar-width: thin;
-  scrollbar-color: #ff69b4 transparent;
+  position: relative;  /* For dropdown positioning */
+  user-select: none;
 ">
   <!-- Content injected by JS -->
 </div>
@@ -219,14 +214,61 @@
 <div id="my-page-section" style="display: none; max-width: 320px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
   <h2>My Page</h2>
   <p>Welcome to your personal page!</p>
-  <!-- Add more content here -->
 </div>
 
 <div id="dashboard-section" style="display: none; max-width: 320px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
   <h2>Dashboard</h2>
   <p>Here is your dashboard content.</p>
-  <!-- Add more content here -->
 </div>
+
+<style>
+  /* Dropdown container */
+  #user-dropdown {
+    position: absolute;
+    top: 70px; /* below the auth bar */
+    right: 16px;
+    background-color: #3b3750;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px #00000077;
+    min-width: 150px;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+  }
+  /* Dropdown buttons */
+  #user-dropdown button {
+    background: none;
+    border: none;
+    color: #fefefe;
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: bold;
+    font-family: 'Rubik Mono One', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  #user-dropdown button:hover {
+    background-color: #ff69b4;
+    color: #1e1b2e;
+  }
+  /* User info container (avatar + name) */
+  #user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  #user-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #ff69b4;
+    object-fit: cover;
+  }
+  #user-info div {
+    font-size: 0.9rem;
+  }
+</style>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -243,27 +285,23 @@
   function createButton(text, onClick) {
     const btn = document.createElement('button');
     btn.textContent = text;
-    btn.style.backgroundColor = '#ff69b4';
-    btn.style.color = '#1e1b2e';
-    btn.style.border = 'none';
-    btn.style.padding = '0.4rem 0.9rem';
-    btn.style.fontWeight = 'bold';
-    btn.style.fontSize = '0.85rem';
-    btn.style.borderRadius = '8px';
-    btn.style.cursor = 'pointer';
-    btn.style.flexShrink = '0'; // Prevent shrinking
-    btn.style.transition = 'background-color 0.2s';
-    btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
-    btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
     btn.addEventListener('click', onClick);
     return btn;
+  }
+
+  function toggleDropdown(dropdown) {
+    if (dropdown.style.display === 'flex') {
+      dropdown.style.display = 'none';
+    } else {
+      dropdown.style.display = 'flex';
+    }
   }
 
   async function renderAuthBar() {
     const { data: { session } } = await supabase.auth.getSession();
     authBar.innerHTML = '';
 
-    // Show or hide hidden sections based on auth status
+    // Show/hide hidden sections
     if (session?.user) {
       myPageSection.style.display = 'block';
       dashboardSection.style.display = 'block';
@@ -272,8 +310,21 @@
       dashboardSection.style.display = 'none';
     }
 
-    // Always show User Games button
-    const userGamesBtn = createButton('User Games', () => {
+    // User Games button always visible
+    const userGamesBtn = document.createElement('button');
+    userGamesBtn.textContent = 'User Games';
+    userGamesBtn.style.backgroundColor = '#ff69b4';
+    userGamesBtn.style.color = '#1e1b2e';
+    userGamesBtn.style.border = 'none';
+    userGamesBtn.style.padding = '0.5rem 1rem';
+    userGamesBtn.style.fontWeight = 'bold';
+    userGamesBtn.style.fontSize = '0.9rem';
+    userGamesBtn.style.borderRadius = '8px';
+    userGamesBtn.style.cursor = 'pointer';
+    userGamesBtn.style.transition = 'background-color 0.2s';
+    userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
+    userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
+    userGamesBtn.addEventListener('click', () => {
       window.location.href = 'user-games.html';
     });
     authBar.appendChild(userGamesBtn);
@@ -284,41 +335,83 @@
       const email = session.user.email || '';
       const avatar = user_metadata.avatar_url || '';
 
+      // User info container (avatar + name)
+      const userInfo = document.createElement('div');
+      userInfo.id = 'user-info';
+
       if (avatar) {
         const img = document.createElement('img');
         img.src = avatar;
         img.alt = name;
-        img.style.width = '40px';
-        img.style.height = '40px';
-        img.style.borderRadius = '50%';
-        img.style.border = '2px solid #ff69b4';
-        img.style.objectFit = 'cover';
-        img.style.flexShrink = '0'; // prevent shrinking
-        authBar.appendChild(img);
+        userInfo.appendChild(img);
       }
 
       const nameDiv = document.createElement('div');
-      nameDiv.innerHTML = `<strong style="font-size: 0.9rem;">${name}</strong><br><small style="font-size: 0.7rem;">${email}</small>`;
-      authBar.appendChild(nameDiv);
+      nameDiv.innerHTML = `<strong>${name}</strong><br><small style="font-size: 0.7rem;">${email}</small>`;
+      userInfo.appendChild(nameDiv);
 
-      const myPageBtn = createButton('My Page', () => {
+      authBar.appendChild(userInfo);
+
+      // Create dropdown container
+      const dropdown = document.createElement('div');
+      dropdown.id = 'user-dropdown';
+      dropdown.style.display = 'none';
+      dropdown.style.flexDirection = 'column';
+
+      // Dropdown buttons
+      const myPageBtn = document.createElement('button');
+      myPageBtn.textContent = 'My Page';
+      myPageBtn.onclick = () => {
+        dropdown.style.display = 'none';
         myPageSection.scrollIntoView({ behavior: 'smooth' });
-      });
-      authBar.appendChild(myPageBtn);
+      };
 
-      const dashboardBtn = createButton('Dashboard', () => {
+      const dashboardBtn = document.createElement('button');
+      dashboardBtn.textContent = 'Dashboard';
+      dashboardBtn.onclick = () => {
+        dropdown.style.display = 'none';
         dashboardSection.scrollIntoView({ behavior: 'smooth' });
-      });
-      authBar.appendChild(dashboardBtn);
+      };
 
-      const logoutBtn = createButton('Logout', async () => {
+      const logoutBtn = document.createElement('button');
+      logoutBtn.textContent = 'Logout';
+      logoutBtn.onclick = async () => {
         await supabase.auth.signOut();
         window.location.reload();
+      };
+
+      dropdown.appendChild(myPageBtn);
+      dropdown.appendChild(dashboardBtn);
+      dropdown.appendChild(logoutBtn);
+
+      authBar.appendChild(dropdown);
+
+      // Toggle dropdown on userInfo click
+      userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!authBar.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
       });
-      authBar.appendChild(logoutBtn);
 
     } else {
-      const loginBtn = createButton('Login with GitHub', async () => {
+      // Not logged in: show login button
+      const loginBtn = document.createElement('button');
+      loginBtn.textContent = 'Login with GitHub';
+      loginBtn.style.backgroundColor = '#ff69b4';
+      loginBtn.style.color = '#1e1b2e';
+      loginBtn.style.border = 'none';
+      loginBtn.style.padding = '0.5rem 1rem';
+      loginBtn.style.fontWeight = 'bold';
+      loginBtn.style.fontSize = '0.9rem';
+      loginBtn.style.borderRadius = '8px';
+      loginBtn.style.cursor = 'pointer';
+      loginBtn.style.transition = 'background-color 0.2s';
+      loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
+      loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
+      loginBtn.addEventListener('click', async () => {
         await supabase.auth.signInWithOAuth({
           provider: 'github',
           options: { redirectTo: window.location.href }
@@ -330,6 +423,7 @@
 
   renderAuthBar();
 </script>
+
   
 <body>
   <header>
