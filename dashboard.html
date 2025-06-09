@@ -436,95 +436,207 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Submitted Games</title>
+  <title>BrownDogGames - Adult Cartoon Games</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    /* Reset & basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    h1 {
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
     }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Games list as grid */
+    #games-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 900px;
+      margin: 0 auto 2rem;
+      padding: 0;
+    }
+
     #games-list li {
-      margin-bottom: 1em;
-      padding: 1em;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      background-color: #2d1a3a;
+      border-radius: 12px;
+      border: 2px solid #ff69b4;
+      padding: 1.2rem;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      color: #ffccff;
     }
+
     .game-info {
-      max-width: 75%;
+      width: 100%;
     }
+
     .game-title {
       font-weight: bold;
-      font-size: 1.2em;
+      font-size: 1.3rem;
+      margin-bottom: 0.4rem;
     }
+
     .game-desc {
-      margin: 0.3em 0;
+      margin-bottom: 0.7rem;
+      font-size: 1rem;
+      color: #ffc0cb;
     }
+
     .game-urls a {
-      margin-right: 1em;
-      color: blue;
+      margin-right: 1rem;
+      color: #ffccff;
       text-decoration: none;
+      font-weight: bold;
+      border: 2px solid #ff69b4;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      transition: background-color 0.2s, color 0.2s;
+      display: inline-block;
+      font-size: 0.95rem;
     }
+
+    .game-urls a:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+    }
+
     button.remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
       background: #e74c3c;
       border: none;
       color: white;
-      padding: 0.5em 1em;
-      border-radius: 4px;
+      padding: 0.4em 0.9em;
+      border-radius: 8px;
       cursor: pointer;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-weight: bold;
+      transition: background 0.2s;
+      font-size: 0.9rem;
     }
     button.remove-btn:hover {
       background: #c0392b;
     }
+
+    form {
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: left;
+      background-color: #2d1a3a;
+      border: 2px solid #ff69b4;
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      color: #ffc0cb;
+    }
+
     form label {
       display: block;
-      margin-top: 1em;
+      margin-top: 1rem;
       font-weight: bold;
+      font-size: 1.05rem;
     }
-    form input, form textarea, form button {
+
+    form input,
+    form textarea {
       width: 100%;
       padding: 0.5em;
       margin-top: 0.3em;
-      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1.5px solid #ff69b4;
+      background-color: #1e1b2e;
+      color: #ffccff;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1rem;
+      resize: vertical;
+      transition: border-color 0.2s;
     }
+    form input:focus,
+    form textarea:focus {
+      outline: none;
+      border-color: #ff8edb;
+      background-color: #291d44;
+    }
+
     button#submitBtn {
-      margin-top: 1em;
-      background-color: #3498db;
-      color: white;
+      margin-top: 1.5rem;
+      background-color: #ff69b4;
+      color: #1e1b2e;
       border: none;
       cursor: pointer;
-      font-size: 1em;
-      border-radius: 4px;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      font-weight: bold;
+      padding: 0.8rem;
+      transition: background-color 0.2s;
+      width: 100%;
     }
     button#submitBtn:disabled {
-      background-color: #95a5a6;
+      background-color: #6d4c6e;
       cursor: not-allowed;
     }
+    button#submitBtn:hover:not(:disabled) {
+      background-color: #ff8edb;
+    }
+
     p.message {
-      margin-top: 1em;
+      margin-top: 1rem;
       font-weight: bold;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1.1rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
     }
     p.message.error {
-      color: red;
+      color: #e74c3c;
     }
     p.message.success {
-      color: green;
+      color: #a6ffb8;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 520px) {
+      #games-list {
+        grid-template-columns: 1fr;
+      }
+      form {
+        padding: 1rem 1.2rem;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>Your Submitted Games</h1>
+  <h1>BrownDogGames - Your Submitted Games</h1>
 
   <ul id="games-list"></ul>
 
-  <form id="addGameForm">
+  <form id="addGameForm" novalidate>
     <label for="githubUser">GitHub Username:</label>
-    <input type="text" id="githubUser" placeholder="Your GitHub username" required />
+    <input type="text" id="githubUser" placeholder="Your GitHub username" required autocomplete="username" />
 
     <label for="title">Game Title:</label>
     <input type="text" id="title" placeholder="Enter your game title" required />
