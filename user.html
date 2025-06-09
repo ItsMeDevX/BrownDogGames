@@ -641,31 +641,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video Wall</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Wall by Game ID</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1b1b2e;
       color: #fefefe;
-      margin: 0;
-      padding: 20px;
+      margin: 0; padding: 20px;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       text-align: center;
     }
     h1 {
-      font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1.5rem;
     }
     form {
       margin-bottom: 1rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
     }
     input, button {
       padding: 10px;
@@ -674,21 +668,16 @@
       border: none;
       font-family: 'Rubik Mono One', sans-serif;
     }
-    #game-id {
-      width: 20%;
-      min-width: 100px;
-      max-width: 150px;
-    }
-    #video-url {
-      width: 50%;
+    input {
+      width: 60%;
       max-width: 400px;
     }
     button {
       background: #ff4f9f;
       color: #1a1328;
       font-weight: bold;
+      margin-left: 10px;
       cursor: pointer;
-      min-width: 100px;
     }
     #container {
       max-width: 1000px;
@@ -703,8 +692,6 @@
       background-color: #2f1a39;
       color: #ff4f9f;
       font-family: monospace;
-      max-height: 600px;
-      overflow-y: auto;
     }
     #links h2 {
       margin-top: 0;
@@ -712,10 +699,12 @@
       text-shadow: 1px 1px 0 #000;
     }
     #links-list {
+      min-height: 300px;
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
       justify-content: center;
+      overflow-y: auto;
     }
     .link-embed {
       width: 100%;
@@ -732,7 +721,7 @@
     }
     .link-embed iframe {
       width: 100%;
-      height: 270px; /* 16:9 aspect for 480px width */
+      height: 270px; /* 16:9 aspect */
       border: none;
       display: block;
     }
@@ -747,10 +736,6 @@
       color: #ff4f9f !important;
     }
     @media (max-width: 600px) {
-      #game-id, #video-url {
-        width: 100%;
-        max-width: none;
-      }
       .link-embed,
       .twitter-tweet {
         max-width: 100%;
@@ -760,21 +745,27 @@
         aspect-ratio: 16 / 9;
       }
     }
+    #error-msg {
+      color: #ff4f9f;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
 
-  <h1>🎮 Video Links</h1>
+  <h1>🎮 Video Links by Game ID</h1>
 
   <div id="container">
     <form id="form">
-      <input id="game-id" type="text" placeholder="Game ID" required />
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
     </form>
 
+    <div id="error-msg"></div>
+
     <div id="links">
-      <h2>Links</h2>
+      <h2>Videos</h2>
       <div id="links-list"></div>
     </div>
   </div>
@@ -790,12 +781,23 @@
     );
 
     const form = document.getElementById('form');
-    const inputUrl = document.getElementById('video-url');
-    const inputGameId = document.getElementById('game-id');
+    const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
-    const linksContainer = document.getElementById('links');
+    const errorMsg = document.getElementById('error-msg');
+
+    // Get game_id from URL query string
+    const params = new URLSearchParams(window.location.search);
+    const gameId = params.get('game_id');
+
+    if (!gameId) {
+      errorMsg.textContent = "⚠️ No game_id specified in URL. Use ?game_id=your_game_id";
+      form.style.display = 'none';
+    } else {
+      errorMsg.textContent = "";
+    }
 
     function renderEmbed(url) {
+      // Twitter x.com fix
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
@@ -832,61 +834,62 @@
             }
           }, 100);
         }
-
-        // Scroll down to new embed (auto-scroll chat style)
-        linksContainer.scrollTop = linksContainer.scrollHeight;
       }
     }
 
-    // Get game_id from URL params
-    function getGameIdFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('game_id');
-    }
-
-    async function load(gameId) {
+    async function loadVideos() {
       if (!gameId) return;
-      inputGameId.value = gameId;
-      inputGameId.disabled = true;  // Disable input for fixed game_id
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('game_videos')
         .select('*')
         .eq('game_id', gameId)
-        .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
       linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url));
-
-      // Scroll to bottom on load
-      linksContainer.scrollTop = linksContainer.scrollHeight;
+      if (error) {
+        errorMsg.textContent = `Error loading videos: ${error.message}`;
+        return;
+      }
+      if (!data.length) {
+        linksList.innerHTML = `<p>No videos found for game ID "${gameId}".</p>`;
+        return;
+      }
+      data.forEach(video => addLink(video.video_url));
     }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const url = inputUrl.value.trim();
-      const gameId = inputGameId.value.trim();
-      if (!url || !gameId) return;
-      await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
-      inputUrl.value = '';
+      if (!gameId) return;
+
+      const url = input.value.trim();
+      if (!url) return;
+
+      // Insert video tied to this gameId
+      const { error } = await supabase
+        .from('game_videos')
+        .insert([{ video_url: url, game_id: gameId }]);
+
+      if (error) {
+        errorMsg.textContent = `Failed to post video: ${error.message}`;
+        return;
+      }
+
+      input.value = '';
+      errorMsg.textContent = '';
+      // New video will appear automatically via realtime subscription
     });
 
-    // Real-time updates filtered by game_id
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url && payload.new.game_id === inputGameId.value.trim()) {
+    // Realtime subscription for new videos added for this game
+    if (gameId) {
+      supabase.channel('realtime:game_videos')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos', filter: `game_id=eq.${gameId}` }, payload => {
           addLink(payload.new.video_url);
-        }
-      })
-      .subscribe();
-
-    // Auto load on page load using URL param
-    const initialGameId = getGameIdFromURL();
-    if (initialGameId) {
-      load(initialGameId);
+        })
+        .subscribe();
     }
-  </script>
 
+    loadVideos();
+  </script>
 </body>
 </html>
