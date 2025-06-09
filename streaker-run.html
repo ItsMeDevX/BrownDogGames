@@ -210,12 +210,7 @@
   <!-- Content injected by JS -->
 </div>
 
-<!-- Hidden sections, initially hidden -->
-<div id="my-page-section" style="display: none; max-width: 320px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
-  <h2>My Page</h2>
-  <p>Welcome to your personal page!</p>
-</div>
-
+<!-- Hidden dashboard section only -->
 <div id="dashboard-section" style="display: none; max-width: 320px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
   <h2>Dashboard</h2>
   <p>Here is your dashboard content.</p>
@@ -279,15 +274,7 @@
   );
 
   const authBar = document.getElementById('auth-bar');
-  const myPageSection = document.getElementById('my-page-section');
   const dashboardSection = document.getElementById('dashboard-section');
-
-  function createButton(text, onClick) {
-    const btn = document.createElement('button');
-    btn.textContent = text;
-    btn.addEventListener('click', onClick);
-    return btn;
-  }
 
   function toggleDropdown(dropdown) {
     if (dropdown.style.display === 'flex') {
@@ -301,12 +288,10 @@
     const { data: { session } } = await supabase.auth.getSession();
     authBar.innerHTML = '';
 
-    // Show/hide hidden sections
+    // Show/hide dashboard section only
     if (session?.user) {
-      myPageSection.style.display = 'block';
       dashboardSection.style.display = 'block';
     } else {
-      myPageSection.style.display = 'none';
       dashboardSection.style.display = 'none';
     }
 
@@ -358,14 +343,7 @@
       dropdown.style.display = 'none';
       dropdown.style.flexDirection = 'column';
 
-      // Dropdown buttons
-      const myPageBtn = document.createElement('button');
-      myPageBtn.textContent = 'My Page';
-      myPageBtn.onclick = () => {
-        dropdown.style.display = 'none';
-        myPageSection.scrollIntoView({ behavior: 'smooth' });
-      };
-
+      // Dropdown buttons: Dashboard and Logout only
       const dashboardBtn = document.createElement('button');
       dashboardBtn.textContent = 'Dashboard';
       dashboardBtn.onclick = () => {
@@ -380,7 +358,6 @@
         window.location.reload();
       };
 
-      dropdown.appendChild(myPageBtn);
       dropdown.appendChild(dashboardBtn);
       dropdown.appendChild(logoutBtn);
 
@@ -424,7 +401,6 @@
   renderAuthBar();
 </script>
 
-  
 <body>
   <header>
     <h1>Streaker Run 👀💨💥</h1>
