@@ -195,21 +195,69 @@
 
 <!-- Auth Bar -->
 <div id="auth-bar" style="
-  max-width: 300px;
-  margin: 20px auto;  /* Center horizontally with auto left/right */
+  max-width: 320px;
+  margin: 20px auto;
   background-color: #2a243b;
   border-radius: 12px;
   box-shadow: 0 0 12px #00000055;
   padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   font-family: 'Rubik Mono One', sans-serif;
   color: #fefefe;
   min-height: 60px;
+  position: relative;  /* For dropdown positioning */
+  user-select: none;
 ">
   <!-- Content injected by JS -->
 </div>
+
+<style>
+  /* Dropdown container */
+  #user-dropdown {
+    position: absolute;
+    top: 70px; /* below the auth bar */
+    right: 16px;
+    background-color: #3b3750;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px #00000077;
+    min-width: 150px;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+  }
+  /* Dropdown buttons */
+  #user-dropdown button {
+    background: none;
+    border: none;
+    color: #fefefe;
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: bold;
+    font-family: 'Rubik Mono One', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  #user-dropdown button:hover {
+    background-color: #ff69b4;
+    color: #1e1b2e;
+  }
+  /* User info container (avatar + name) */
+  #user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  #user-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #ff69b4;
+    object-fit: cover;
+  }
+  #user-info div {
+    font-size: 0.9rem;
+  }
+</style>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -221,63 +269,115 @@
 
   const authBar = document.getElementById('auth-bar');
 
-  function createButton(text, onClick) {
-    const btn = document.createElement('button');
-    btn.textContent = text;
-    btn.style.backgroundColor = '#ff69b4';
-    btn.style.color = '#1e1b2e';
-    btn.style.border = 'none';
-    btn.style.padding = '0.5rem 1rem';
-    btn.style.fontWeight = 'bold';
-    btn.style.fontSize = '0.9rem';
-    btn.style.borderRadius = '8px';
-    btn.style.cursor = 'pointer';
-    btn.style.transition = 'background-color 0.2s';
-    btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
-    btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
-    btn.addEventListener('click', onClick);
-    return btn;
+  function toggleDropdown(dropdown) {
+    dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
   }
 
   async function renderAuthBar() {
     const { data: { session } } = await supabase.auth.getSession();
     authBar.innerHTML = '';
 
+    // User Games button always visible
+    const userGamesBtn = document.createElement('button');
+    userGamesBtn.textContent = 'User Games';
+    userGamesBtn.style.backgroundColor = '#ff69b4';
+    userGamesBtn.style.color = '#1e1b2e';
+    userGamesBtn.style.border = 'none';
+    userGamesBtn.style.padding = '0.5rem 1rem';
+    userGamesBtn.style.fontWeight = 'bold';
+    userGamesBtn.style.fontSize = '0.9rem';
+    userGamesBtn.style.borderRadius = '8px';
+    userGamesBtn.style.cursor = 'pointer';
+    userGamesBtn.style.transition = 'background-color 0.2s';
+    userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
+    userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
+    userGamesBtn.addEventListener('click', () => {
+      window.location.href = 'user-games.html';
+    });
+    authBar.appendChild(userGamesBtn);
+
     if (session?.user) {
       const { user_metadata } = session.user;
       const name = user_metadata.full_name || 'GitHub User';
-      const email = session.user.email || '';
       const avatar = user_metadata.avatar_url || '';
+
+      // User info container (avatar + name)
+      const userInfo = document.createElement('div');
+      userInfo.id = 'user-info';
 
       if (avatar) {
         const img = document.createElement('img');
         img.src = avatar;
         img.alt = name;
-        img.style.width = '40px';
-        img.style.height = '40px';
-        img.style.borderRadius = '50%';
-        img.style.border = '2px solid #ff69b4';
-        img.style.objectFit = 'cover';
-        authBar.appendChild(img);
+        userInfo.appendChild(img);
       }
 
       const nameDiv = document.createElement('div');
-      nameDiv.innerHTML = `<strong style="font-size: 0.9rem;">${name}</strong><br><small style="font-size: 0.7rem;">${email}</small>`;
-      authBar.appendChild(nameDiv);
+      nameDiv.innerHTML = `<strong>${name}</strong>`; // No email here
+      userInfo.appendChild(nameDiv);
 
-      const myGamesBtn = createButton('My Games', () => {
-        window.location.href = 'user-games.html';
-      });
+      authBar.appendChild(userInfo);
 
-      const logoutBtn = createButton('Logout', async () => {
+      // Create dropdown container
+      const dropdown = document.createElement('div');
+      dropdown.id = 'user-dropdown';
+      dropdown.style.display = 'none';
+      dropdown.style.flexDirection = 'column';
+
+      // Dropdown buttons: My Page, Dashboard, Logout
+      const myPageBtn = document.createElement('button');
+      myPageBtn.textContent = 'My Page';
+      myPageBtn.onclick = () => {
+        dropdown.style.display = 'none';
+        window.location.href = 'user.html';  // <-- Changed here!
+      };
+
+      const dashboardBtn = document.createElement('button');
+      dashboardBtn.textContent = 'Dashboard';
+      dashboardBtn.onclick = () => {
+        dropdown.style.display = 'none';
+        window.location.href = 'dashboard.html';
+      };
+
+      const logoutBtn = document.createElement('button');
+      logoutBtn.textContent = 'Logout';
+      logoutBtn.onclick = async () => {
         await supabase.auth.signOut();
         window.location.reload();
+      };
+
+      dropdown.appendChild(myPageBtn);
+      dropdown.appendChild(dashboardBtn);
+      dropdown.appendChild(logoutBtn);
+
+      authBar.appendChild(dropdown);
+
+      // Toggle dropdown on userInfo click
+      userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!authBar.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
       });
 
-      authBar.appendChild(myGamesBtn);
-      authBar.appendChild(logoutBtn);
     } else {
-      const loginBtn = createButton('Login with GitHub', async () => {
+      // Not logged in: show login button
+      const loginBtn = document.createElement('button');
+      loginBtn.textContent = 'Login with GitHub';
+      loginBtn.style.backgroundColor = '#ff69b4';
+      loginBtn.style.color = '#1e1b2e';
+      loginBtn.style.border = 'none';
+      loginBtn.style.padding = '0.5rem 1rem';
+      loginBtn.style.fontWeight = 'bold';
+      loginBtn.style.fontSize = '0.9rem';
+      loginBtn.style.borderRadius = '8px';
+      loginBtn.style.cursor = 'pointer';
+      loginBtn.style.transition = 'background-color 0.2s';
+      loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
+      loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
+      loginBtn.addEventListener('click', async () => {
         await supabase.auth.signInWithOAuth({
           provider: 'github',
           options: { redirectTo: window.location.href }
