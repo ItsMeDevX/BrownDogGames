@@ -734,7 +734,7 @@
 
     .link-embed iframe {
       width: 100%;
-      height: 270px; /* 16:9 aspect for 480px width */
+      height: 270px;
       border: none;
       display: block;
     }
@@ -748,6 +748,18 @@
       box-shadow: 0 0 10px #000;
       background: #2f1a39 !important;
       color: #ff4f9f !important;
+    }
+
+    #warning {
+      background: #ff4f9f;
+      color: #1a1328;
+      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+      box-shadow: 0 0 8px #ff4f9f;
     }
 
     @media (max-width: 600px) {
@@ -768,6 +780,10 @@
   <h1>🎮 Video Links</h1>
 
   <div id="container">
+    <div id="warning" style="display:none;">
+      ⚠️ Warning: Missing <code>?id=GAME_ID</code> in URL. Videos won't be filtered properly.
+    </div>
+
     <form id="form">
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
@@ -792,15 +808,13 @@
     const form = document.getElementById('form');
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
+    const warning = document.getElementById('warning');
 
-    // Get game ID from URL params
     const params = new URLSearchParams(window.location.search);
     const gameId = params.get('id');
 
     if (!gameId) {
-      linksList.innerHTML = '<p style="color:#ff4f9f; text-align:center; font-weight:bold;">Missing ?id=GAME_ID in URL</p>';
-      form.style.display = 'none'; // Hide form if no game id
-      throw new Error('Missing ?id=GAME_ID in URL');
+      warning.style.display = 'block';
     }
 
     function renderEmbed(url) {
@@ -844,13 +858,13 @@
     }
 
     async function load() {
-      // Filter videos by game_id from URL param
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('*')
-        .eq('game_id', gameId)
-        .not('video_url', 'is', null)
-        .order('created_at', { ascending: true });
+      let query = supabase.from('game_videos').select('*').not('video_url', 'is', null).order('created_at', { ascending: true });
+
+      if (gameId) {
+        query = query.eq('game_id', gameId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         linksList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">Error loading videos: ${error.message}</p>`;
@@ -861,7 +875,7 @@
       if (data && data.length > 0) {
         data.forEach(video => addLink(video.video_url));
       } else {
-        linksList.innerHTML = '<p style="color:#ff4f9f; text-align:center;">No videos found for this game ID.</p>';
+        linksList.innerHTML = `<p style="color:#ff4f9f; text-align:center;">${gameId ? 'No videos found for this game ID.' : 'No videos found.'}</p>`;
       }
     }
 
@@ -870,7 +884,11 @@
       const url = input.value.trim();
       if (!url) return;
 
-      // Insert video with game_id from URL param
+      if (!gameId) {
+        alert('⚠️ Cannot post video: missing ?id=GAME_ID in URL.');
+        return;
+      }
+
       const { error } = await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
 
       if (error) {
@@ -883,7 +901,7 @@
 
     supabase.channel('realtime:game_videos')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.game_id === gameId && payload.new.video_url) {
+        if ((!gameId || payload.new.game_id === gameId) && payload.new.video_url) {
           addLink(payload.new.video_url);
         }
       })
@@ -894,4 +912,3 @@
 
 </body>
 </html>
-
