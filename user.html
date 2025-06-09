@@ -294,7 +294,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>User Games & Chat - BrownDogGames</title>
+  <title>User Games & Chat & Videos - BrownDogGames</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
@@ -384,6 +384,7 @@
       background-color: #2f1a39;
       padding: 20px;
       box-sizing: border-box;
+      margin-bottom: 40px;
     }
     #messages {
       max-height: 400px;
@@ -428,6 +429,84 @@
       padding: 1rem;
       border-radius: 10px;
     }
+
+    /* Video section */
+    #video-section {
+      max-width: 800px;
+      width: 100%;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      background-color: #2f1a39;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #video-section h2 {
+      margin-top: 0;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      text-align: center;
+    }
+    #video-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    #video-url {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff4f9f;
+      background-color: #2f1a39;
+      color: #fff;
+    }
+    #video-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .video-embed {
+      width: 100%;
+      max-width: 480px;
+      background: #3a2254;
+      border-radius: 12px;
+      border: 1px solid #ff4f9f;
+      box-shadow: 0 0 6px #000;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+    }
+    .video-embed iframe {
+      width: 100%;
+      height: 270px; /* 16:9 aspect for 480px width */
+      border: none;
+      display: block;
+    }
+    .twitter-tweet {
+      width: 100% !important;
+      max-width: 480px !important;
+      margin: 0 auto !important;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #000;
+      background: #2f1a39 !important;
+      color: #ff4f9f !important;
+    }
+    @media (max-width: 600px) {
+      .video-embed,
+      .twitter-tweet {
+        max-width: 100%;
+      }
+      .video-embed iframe {
+        height: auto;
+        aspect-ratio: 16 / 9;
+      }
+    }
   </style>
 </head>
 <body>
@@ -446,338 +525,14 @@
     </form>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
-
-    const pageTitle = document.getElementById('pageTitle');
-    const gamesContainer = document.getElementById('games');
-    const chatContainer = document.getElementById('chat-container');
-    const messagesDiv = document.getElementById('messages');
-    const form = document.getElementById('chat-form');
-    const msgInput = document.getElementById('msg-input');
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('user') || '';
-
-    let selectedGameId = null;
-    let currentChatSubscription = null;
-
-    if (!username) {
-      pageTitle.textContent = 'User not specified';
-      gamesContainer.innerHTML = `
-        <div class="no-user-message">
-          🚫 No user provided in the URL.<br>
-          Please go back and select a user.
-        </div>
-      `;
-    } else {
-      pageTitle.textContent = `${username}'s Games`;
-
-      async function loadGames() {
-        const { data, error } = await supabase
-          .from('game_submissions')
-          .select('*')
-          .eq('github_user', username)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          gamesContainer.innerHTML = `<div class="no-user-message">❌ Error loading games: ${error.message}</div>`;
-          return;
-        }
-
-        if (!data.length) {
-          gamesContainer.innerHTML = `<p class="no-games">No games submitted by ${username} yet.</p>`;
-          return;
-        }
-
-        gamesContainer.innerHTML = '';
-        data.forEach((game, index) => {
-          const card = document.createElement('article');
-          card.className = 'game-card';
-          card.dataset.gameId = game.id || game.title || `game-${index}`;
-
-          const title = document.createElement('h2');
-          title.className = 'game-title';
-          title.textContent = game.title || 'Untitled Game';
-          card.appendChild(title);
-
-          if (game.description) {
-            const desc = document.createElement('p');
-            desc.className = 'game-desc';
-            desc.textContent = game.description;
-            card.appendChild(desc);
-          }
-
-          if (game.screenshot_url) {
-            const img = document.createElement('img');
-            img.className = 'game-screenshot';
-            img.src = game.screenshot_url;
-            img.alt = `${game.title || 'Game'} screenshot`;
-            card.appendChild(img);
-          }
-
-          if (game.embed_url) {
-            const link = document.createElement('a');
-            link.href = game.embed_url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.textContent = '▶️ Play Game';
-            link.className = 'play-link';
-            card.appendChild(link);
-          }
-
-          card.addEventListener('click', () => {
-            selectGame(card.dataset.gameId);
-          });
-
-          gamesContainer.appendChild(card);
-        });
-
-        // Automatically select first game
-        selectGame(data[0].id || data[0].title || 'default-game');
-      }
-
-      async function selectGame(gameId) {
-        if (selectedGameId === gameId) return; // Already selected
-
-        selectedGameId = gameId;
-        chatContainer.style.display = 'block';
-
-        // Highlight selected card
-        document.querySelectorAll('.game-card').forEach(card => {
-          card.classList.toggle('selected', card.dataset.gameId === gameId);
-        });
-
-        await loadMessages();
-
-        // Unsubscribe previous subscription if exists
-        if (currentChatSubscription) {
-          supabase.removeChannel(currentChatSubscription);
-          currentChatSubscription = null;
-        }
-
-        // Subscribe to new realtime messages for selected gameId
-        currentChatSubscription = supabase.channel('messages-' + gameId)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${gameId}` }, payload => {
-            appendMessage(payload.new);
-          })
-          .subscribe();
-      }
-
-      async function loadMessages() {
-        if (!selectedGameId) return;
-
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('game_id', selectedGameId)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-          console.error(error);
-          return;
-        }
-
-        if (!data.length) {
-          messagesDiv.innerHTML = '<p>No messages yet. Be the first to start the conversation!</p>';
-          return;
-        }
-
-        messagesDiv.innerHTML = data.map(m => `
-          <div><strong>${m.github_username || 'Guest'}:</strong> ${m.content}</div>
-        `).join('');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      }
-
-      function appendMessage(message) {
-        if (!message || message.game_id !== selectedGameId) return;
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>${message.github_username || 'Guest'}:</strong> ${message.content}`;
-        messagesDiv.appendChild(div);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      }
-
-      async function getUserGitHubUsername() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const { user_metadata } = session.user;
-          return user_metadata.full_name || 'GitHub User';
-        }
-        return 'Guest';
-      }
-
-      form.addEventListener('submit', async e => {
-        e.preventDefault();
-        const msg = msgInput.value.trim();
-        if (!msg || !selectedGameId) return;
-
-        const githubUsername = await getUserGitHubUsername();
-
-        const { error } = await supabase
-          .from('messages')
-          .insert([{ content: msg, github_username: githubUsername, game_id: selectedGameId }]);
-
-        if (error) {
-          alert('Failed to send message: ' + error.message);
-          console.error(error);
-          return;
-        }
-
-        msgInput.value = '';
-        // Messages will update automatically from realtime subscription
-      });
-
-      loadGames();
-    }
-  </script>
-  
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Video Wall</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      color: #fefefe;
-      margin: 0;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 2rem;
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1.5rem;
-    }
-
-    form {
-      margin-bottom: 1rem;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    input {
-      width: 60%;
-      max-width: 400px;
-    }
-
-    button {
-      background: #ff4f9f;
-      color: #1a1328;
-      font-weight: bold;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    #container {
-      max-width: 1000px;
-      margin: auto;
-      text-align: left;
-    }
-
-    #links {
-      margin: 20px 0;
-      padding: 15px;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      color: #ff4f9f;
-      font-family: monospace;
-    }
-
-    #links h2 {
-      margin-top: 0;
-      text-align: center;
-      text-shadow: 1px 1px 0 #000;
-    }
-
-    #links-list {
-      min-height: 300px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      overflow-y: auto;
-    }
-
-    .link-embed {
-      width: 100%;
-      max-width: 480px;
-      background: #3a2254;
-      border-radius: 12px;
-      border: 1px solid #ff4f9f;
-      box-shadow: 0 0 6px #000;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0;
-    }
-
-    .link-embed iframe {
-      width: 100%;
-      height: 270px; /* 16:9 aspect for 480px width */
-      border: none;
-      display: block;
-    }
-
-    .twitter-tweet {
-      width: 100% !important;
-      max-width: 480px !important;
-      margin: 0 auto !important;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #000;
-      background: #2f1a39 !important;
-      color: #ff4f9f !important;
-    }
-
-    @media (max-width: 600px) {
-      .link-embed,
-      .twitter-tweet {
-        max-width: 100%;
-      }
-
-      .link-embed iframe {
-        height: auto;
-        aspect-ratio: 16 / 9;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <h1>🎮 Video Links</h1>
-
-  <div id="container">
-    <form id="form">
+  <section id="video-section" style="display:none;">
+    <h2>🎮 Video Links</h2>
+    <form id="video-form">
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
     </form>
-
-    <div id="links">
-      <h2>Links</h2>
-      <div id="links-list"></div>
-    </div>
-  </div>
+    <div id="video-links"></div>
+  </section>
 
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -786,80 +541,265 @@
 
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY4NTY4NjcyMCwiZXhwIjoxOTAxMjQxMzIwfQ.LPo8LDqfDPHqklRmTf5-ZbIC8eaqP7DQwzx87C-uZCc'
     );
 
-    const form = document.getElementById('form');
-    const input = document.getElementById('video-url');
-    const linksList = document.getElementById('links-list');
+    // Get username from URL query param
+    const urlParams = new URLSearchParams(window.location.search);
+    const userName = urlParams.get('user')?.toLowerCase();
 
-    function renderEmbed(url) {
-      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+    // Elements
+    const gamesContainer = document.getElementById('games');
+    const chatContainer = document.getElementById('chat-container');
+    const messagesDiv = document.getElementById('messages');
+    const chatForm = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
+    const pageTitle = document.getElementById('pageTitle');
 
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
-      }
+    const videoSection = document.getElementById('video-section');
+    const videoForm = document.getElementById('video-form');
+    const videoUrlInput = document.getElementById('video-url');
+    const videoLinksDiv = document.getElementById('video-links');
 
-      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) {
-        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      }
-
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) {
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-      }
-
-      return '';
+    if (!userName) {
+      gamesContainer.innerHTML = '<p class="no-user-message">No user specified. Please go back and select a user.</p>';
+      chatContainer.style.display = 'none';
+      videoSection.style.display = 'none';
+      pageTitle.textContent = 'No User Selected';
+      throw new Error('No user specified in URL');
     }
 
-    function addLink(url) {
-      const div = document.createElement('div');
-      div.className = 'link-embed';
+    pageTitle.textContent = `${userName.toUpperCase()}'s Games`;
 
-      const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
-        linksList.appendChild(div);
+    // State to track selected game
+    let selectedGameId = null;
+    let selectedGameName = null;
 
-        if (url.includes('twitter.com/status')) {
-          setTimeout(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-            }
-          }, 100);
-        }
-      }
-    }
-
-    async function load() {
-      const { data } = await supabase
-        .from('game_videos')
+    // Fetch user games
+    async function loadUserGames() {
+      gamesContainer.innerHTML = 'Loading games...';
+      const { data: games, error } = await supabase
+        .from('games')
         .select('*')
-        .not('video_url', 'is', null)
+        .eq('user', userName);
+
+      if (error) {
+        gamesContainer.innerHTML = `<p class="no-user-message">Error loading games: ${error.message}</p>`;
+        return;
+      }
+      if (!games || games.length === 0) {
+        gamesContainer.innerHTML = `<p class="no-games">No games found for user "${userName}".</p>`;
+        return;
+      }
+
+      // Render games list
+      gamesContainer.innerHTML = '';
+      games.forEach(game => {
+        const gameCard = document.createElement('div');
+        gameCard.classList.add('game-card');
+        gameCard.dataset.gameId = game.id;
+        gameCard.dataset.gameName = game.title;
+
+        gameCard.innerHTML = `
+          <h3 class="game-title">${game.title}</h3>
+          <img class="game-screenshot" src="${game.screenshot}" alt="Screenshot of ${game.title}" />
+          <p class="game-desc">${game.desc}</p>
+          <a href="${game.url}" target="_blank" class="play-link" rel="noopener noreferrer">Play Now</a>
+        `;
+
+        gameCard.addEventListener('click', () => {
+          selectGame(game.id, game.title, gameCard);
+        });
+
+        gamesContainer.appendChild(gameCard);
+      });
+
+      // Select first game by default
+      if (games.length > 0) {
+        selectGame(games[0].id, games[0].title, gamesContainer.firstChild);
+      }
+    }
+
+    // Select game & load related chat + videos
+    async function selectGame(gameId, gameTitle, gameCardElement) {
+      if (selectedGameId === gameId) return; // Already selected
+
+      selectedGameId = gameId;
+      selectedGameName = gameTitle;
+
+      // Mark selected visually
+      document.querySelectorAll('.game-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      if (gameCardElement) gameCardElement.classList.add('selected');
+
+      // Show chat and video sections
+      chatContainer.style.display = 'block';
+      videoSection.style.display = 'block';
+
+      // Load chat messages and videos for this game
+      await loadChatMessages();
+      await loadVideos();
+    }
+
+    // Load chat messages for current user + selected game
+    async function loadChatMessages() {
+      if (!selectedGameId) {
+        messagesDiv.innerHTML = '<p>No game selected.</p>';
+        return;
+      }
+      messagesDiv.innerHTML = 'Loading messages...';
+
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('user', userName)
+        .eq('game', selectedGameName)
         .order('created_at', { ascending: true });
 
-      linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url));
+      if (error) {
+        messagesDiv.innerHTML = `<p class="no-user-message">Error loading messages: ${error.message}</p>`;
+        return;
+      }
+
+      if (!messages || messages.length === 0) {
+        messagesDiv.innerHTML = '<p>No messages yet for this game.</p>';
+        return;
+      }
+
+      messagesDiv.innerHTML = '';
+      messages.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.innerHTML = `<strong>${msg.user}:</strong> ${msg.message}`;
+        messagesDiv.appendChild(msgDiv);
+      });
+
+      // Scroll to bottom
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    form.addEventListener('submit', async e => {
+    // Submit chat message
+    chatForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const url = input.value.trim();
-      if (!url) return;
-      await supabase.from('game_videos').insert([{ video_url: url }]);
-      input.value = '';
+      const message = msgInput.value.trim();
+      if (!message) return;
+      if (!selectedGameId) return alert('Please select a game.');
+
+      // Insert message to supabase
+      const { error } = await supabase.from('messages').insert([
+        { user: userName, game: selectedGameName, message: message }
+      ]);
+
+      if (error) {
+        alert('Error posting message: ' + error.message);
+        return;
+      }
+
+      msgInput.value = '';
+      loadChatMessages();
     });
 
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url);
-      })
-      .subscribe();
+    // Load videos for current user + selected game
+    async function loadVideos() {
+      if (!selectedGameId) {
+        videoLinksDiv.innerHTML = '<p>No game selected.</p>';
+        return;
+      }
+      videoLinksDiv.innerHTML = 'Loading videos...';
 
-    load();
+      const { data: videos, error } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('user', userName)
+        .eq('game', selectedGameName)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        videoLinksDiv.innerHTML = `<p class="no-user-message">Error loading videos: ${error.message}</p>`;
+        return;
+      }
+
+      if (!videos || videos.length === 0) {
+        videoLinksDiv.innerHTML = '<p>No videos posted yet for this game.</p>';
+        return;
+      }
+
+      videoLinksDiv.innerHTML = '';
+      videos.forEach(v => {
+        const videoDiv = document.createElement('div');
+
+        // Twitter tweet link embed
+        if (v.url.includes('twitter.com')) {
+          videoDiv.classList.add('twitter-tweet');
+          videoDiv.innerHTML = `<blockquote class="twitter-tweet"><a href="${v.url}"></a></blockquote>`;
+          videoLinksDiv.appendChild(videoDiv);
+          // Twitter widget will parse after append automatically (script is async)
+          return;
+        }
+
+        // YouTube embed for youtube URLs
+        let iframeSrc = '';
+        const ytMatch = v.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+        if (ytMatch) {
+          iframeSrc = `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?rel=0`;
+          videoDiv.classList.add('video-embed');
+          videoDiv.innerHTML = `<iframe src="${iframeSrc}" allowfullscreen></iframe>`;
+          videoLinksDiv.appendChild(videoDiv);
+          return;
+        }
+
+        // Twitch embed for twitch URLs
+        if (v.url.includes('twitch.tv')) {
+          // Twitch embed requires channel name or video id parsing (simple example: channel page)
+          // If URL has /videos/{id} or /{channel}, embed accordingly
+          const twitchMatch = v.url.match(/twitch\.tv\/(?:videos\/(\d+)|([\w-]+))/);
+          let twitchEmbedSrc = '';
+          if (twitchMatch) {
+            if (twitchMatch[1]) {
+              // It's a video id
+              twitchEmbedSrc = `https://player.twitch.tv/?video=v${twitchMatch[1]}&parent=${location.hostname}&autoplay=false`;
+            } else if (twitchMatch[2]) {
+              // It's a channel
+              twitchEmbedSrc = `https://player.twitch.tv/?channel=${twitchMatch[2]}&parent=${location.hostname}&autoplay=false`;
+            }
+          }
+          if (twitchEmbedSrc) {
+            videoDiv.classList.add('video-embed');
+            videoDiv.innerHTML = `<iframe src="${twitchEmbedSrc}" allowfullscreen></iframe>`;
+            videoLinksDiv.appendChild(videoDiv);
+            return;
+          }
+        }
+
+        // Default: simple link
+        videoDiv.innerHTML = `<a href="${v.url}" target="_blank" rel="noopener noreferrer">${v.url}</a>`;
+        videoLinksDiv.appendChild(videoDiv);
+      });
+    }
+
+    // Submit new video link
+    videoForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const videoUrl = videoUrlInput.value.trim();
+      if (!videoUrl) return alert('Please enter a video URL.');
+      if (!selectedGameId) return alert('Please select a game.');
+
+      // Insert video link with user and game
+      const { error } = await supabase.from('videos').insert([
+        { user: userName, game: selectedGameName, url: videoUrl }
+      ]);
+
+      if (error) {
+        alert('Error posting video link: ' + error.message);
+        return;
+      }
+
+      videoUrlInput.value = '';
+      loadVideos();
+    });
+
+    // Initial load
+    loadUserGames();
   </script>
-
 </body>
 </html>
