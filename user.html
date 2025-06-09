@@ -641,26 +641,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video Wall by Game ID</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Wall</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1b1b2e;
       color: #fefefe;
-      margin: 0; padding: 20px;
+      margin: 0;
+      padding: 20px;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       text-align: center;
     }
+
     h1 {
+      font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1.5rem;
     }
+
     form {
       margin-bottom: 1rem;
     }
+
     input, button {
       padding: 10px;
       font-size: 16px;
@@ -668,10 +673,12 @@
       border: none;
       font-family: 'Rubik Mono One', sans-serif;
     }
+
     input {
       width: 60%;
       max-width: 400px;
     }
+
     button {
       background: #ff4f9f;
       color: #1a1328;
@@ -679,11 +686,13 @@
       margin-left: 10px;
       cursor: pointer;
     }
+
     #container {
       max-width: 1000px;
       margin: auto;
       text-align: left;
     }
+
     #links {
       margin: 20px 0;
       padding: 15px;
@@ -693,11 +702,13 @@
       color: #ff4f9f;
       font-family: monospace;
     }
+
     #links h2 {
       margin-top: 0;
       text-align: center;
       text-shadow: 1px 1px 0 #000;
     }
+
     #links-list {
       min-height: 300px;
       display: flex;
@@ -706,6 +717,7 @@
       justify-content: center;
       overflow-y: auto;
     }
+
     .link-embed {
       width: 100%;
       max-width: 480px;
@@ -719,12 +731,14 @@
       align-items: center;
       padding: 0;
     }
+
     .link-embed iframe {
       width: 100%;
-      height: 270px; /* 16:9 aspect */
+      height: 270px; /* 16:9 aspect for 480px width */
       border: none;
       display: block;
     }
+
     .twitter-tweet {
       width: 100% !important;
       max-width: 480px !important;
@@ -735,26 +749,30 @@
       background: #2f1a39 !important;
       color: #ff4f9f !important;
     }
+
     @media (max-width: 600px) {
       .link-embed,
       .twitter-tweet {
         max-width: 100%;
       }
+
       .link-embed iframe {
         height: auto;
         aspect-ratio: 16 / 9;
       }
     }
+
     #error-msg {
       color: #ff4f9f;
       font-weight: bold;
       margin-bottom: 1rem;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <h1>🎮 Video Links by Game ID</h1>
+  <h1>🎮 Video Links</h1>
 
   <div id="container">
     <form id="form">
@@ -765,7 +783,7 @@
     <div id="error-msg"></div>
 
     <div id="links">
-      <h2>Videos</h2>
+      <h2>Links</h2>
       <div id="links-list"></div>
     </div>
   </div>
@@ -790,14 +808,13 @@
     const gameId = params.get('game_id');
 
     if (!gameId) {
-      errorMsg.textContent = "⚠️ No game_id specified in URL. Use ?game_id=your_game_id";
+      errorMsg.textContent = "⚠️ No game_id specified in URL. Please add ?game_id=yourgameid";
       form.style.display = 'none';
     } else {
-      errorMsg.textContent = "";
+      errorMsg.textContent = '';
     }
 
     function renderEmbed(url) {
-      // Twitter x.com fix
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
@@ -837,7 +854,7 @@
       }
     }
 
-    async function loadVideos() {
+    async function load() {
       if (!gameId) return;
 
       const { data, error } = await supabase
@@ -865,22 +882,15 @@
       const url = input.value.trim();
       if (!url) return;
 
-      // Insert video tied to this gameId
-      const { error } = await supabase
-        .from('game_videos')
-        .insert([{ video_url: url, game_id: gameId }]);
-
+      const { error } = await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
       if (error) {
         errorMsg.textContent = `Failed to post video: ${error.message}`;
         return;
       }
-
       input.value = '';
       errorMsg.textContent = '';
-      // New video will appear automatically via realtime subscription
     });
 
-    // Realtime subscription for new videos added for this game
     if (gameId) {
       supabase.channel('realtime:game_videos')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos', filter: `game_id=eq.${gameId}` }, payload => {
@@ -889,7 +899,8 @@
         .subscribe();
     }
 
-    loadVideos();
+    load();
   </script>
+
 </body>
 </html>
