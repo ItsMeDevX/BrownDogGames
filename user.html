@@ -809,16 +809,15 @@
       1: 'Minecraft',
       2: 'Fortnite',
       3: 'Valorant',
-      // Add more games as needed
     };
 
     // Detect game ID by URL contents
     function detectGameId(url) {
       url = url.toLowerCase();
-      if (url.includes('minecraft')) return 1;
-      if (url.includes('fortnite')) return 2;
-      if (url.includes('valorant')) return 3;
-      return 0;
+      if (url.includes('minecraft')) return '1';
+      if (url.includes('fortnite')) return '2';
+      if (url.includes('valorant')) return '3';
+      return '0';
     }
 
     function renderEmbed(url) {
@@ -842,7 +841,7 @@
       return '';
     }
 
-    function addLink(url, gameId = 0) {
+    function addLink(url, gameId = '0') {
       const div = document.createElement('div');
       div.className = 'link-embed';
 
@@ -868,15 +867,29 @@
       }
     }
 
+    // Get github_username from URL param (?user=someUser)
+    function getUserIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('user') || 'guest';
+    }
+
+    const currentUser = getUserIdFromUrl();
+
     async function load() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('game_videos')
         .select('*')
+        .eq('github_username', currentUser)
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
+      if (error) {
+        console.error('Error loading videos:', error);
+        return;
+      }
+
       linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url, video.game_id || 0));
+      if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
     }
 
     form.addEventListener('submit', async e => {
@@ -886,13 +899,25 @@
 
       const gameId = detectGameId(url);
 
-      await supabase.from('game_videos').insert([{ video_url: url, game_id: gameId }]);
-      input.value = '';
+      const { error } = await supabase
+        .from('game_videos')
+        .insert([{ video_url: url, game_id: gameId, github_username: currentUser }]);
+
+      if (error) {
+        console.error('Error inserting video:', error);
+      } else {
+        input.value = '';
+      }
     });
 
     supabase.channel('realtime:game_videos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || 0);
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'game_videos',
+        filter: `github_username=eq.${currentUser}`
+      }, payload => {
+        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || '0');
       })
       .subscribe();
 
