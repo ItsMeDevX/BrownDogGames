@@ -195,30 +195,34 @@
 
 <!-- Auth Bar -->
 <div id="auth-bar" style="
-  max-width: 300px;
-  margin: 20px auto;  /* Center horizontally with auto left/right */
+  max-width: 320px;
+  margin: 20px auto;
   background-color: #2a243b;
   border-radius: 12px;
   box-shadow: 0 0 12px #00000055;
   padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;             /* Slightly tighter gap */
   font-family: 'Rubik Mono One', sans-serif;
   color: #fefefe;
   min-height: 60px;
+  flex-wrap: nowrap;    /* Prevent wrapping */
+  overflow-x: auto;     /* Scroll horizontally if overflow */
+  scrollbar-width: thin;
+  scrollbar-color: #ff69b4 transparent;
 ">
   <!-- Content injected by JS -->
 </div>
 
 <!-- Hidden sections, initially hidden -->
-<div id="my-page-section" style="display: none; max-width: 300px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
+<div id="my-page-section" style="display: none; max-width: 320px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
   <h2>My Page</h2>
   <p>Welcome to your personal page!</p>
   <!-- Add more content here -->
 </div>
 
-<div id="dashboard-section" style="display: none; max-width: 300px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
+<div id="dashboard-section" style="display: none; max-width: 320px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
   <h2>Dashboard</h2>
   <p>Here is your dashboard content.</p>
   <!-- Add more content here -->
@@ -242,11 +246,12 @@
     btn.style.backgroundColor = '#ff69b4';
     btn.style.color = '#1e1b2e';
     btn.style.border = 'none';
-    btn.style.padding = '0.5rem 1rem';
+    btn.style.padding = '0.4rem 0.9rem';
     btn.style.fontWeight = 'bold';
-    btn.style.fontSize = '0.9rem';
+    btn.style.fontSize = '0.85rem';
     btn.style.borderRadius = '8px';
     btn.style.cursor = 'pointer';
+    btn.style.flexShrink = '0'; // Prevent shrinking
     btn.style.transition = 'background-color 0.2s';
     btn.addEventListener('mouseover', () => btn.style.backgroundColor = '#ff8edb');
     btn.addEventListener('mouseout', () => btn.style.backgroundColor = '#ff69b4');
@@ -288,6 +293,7 @@
         img.style.borderRadius = '50%';
         img.style.border = '2px solid #ff69b4';
         img.style.objectFit = 'cover';
+        img.style.flexShrink = '0'; // prevent shrinking
         authBar.appendChild(img);
       }
 
