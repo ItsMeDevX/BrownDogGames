@@ -193,7 +193,7 @@
 <!-- Age Gate End -->
 
 
- <!-- Auth Bar -->
+<!-- Auth Bar -->
 <div id="auth-bar" style="
   max-width: 300px;
   margin: 20px auto;  /* Center horizontally with auto left/right */
@@ -211,6 +211,19 @@
   <!-- Content injected by JS -->
 </div>
 
+<!-- Hidden sections, initially hidden -->
+<div id="my-page-section" style="display: none; max-width: 300px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
+  <h2>My Page</h2>
+  <p>Welcome to your personal page!</p>
+  <!-- Add more content here -->
+</div>
+
+<div id="dashboard-section" style="display: none; max-width: 300px; margin: 20px auto; background: #3b3750; padding: 15px; border-radius: 8px; color: white; font-family: 'Rubik Mono One', sans-serif;">
+  <h2>Dashboard</h2>
+  <p>Here is your dashboard content.</p>
+  <!-- Add more content here -->
+</div>
+
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -220,6 +233,8 @@
   );
 
   const authBar = document.getElementById('auth-bar');
+  const myPageSection = document.getElementById('my-page-section');
+  const dashboardSection = document.getElementById('dashboard-section');
 
   function createButton(text, onClick) {
     const btn = document.createElement('button');
@@ -243,6 +258,21 @@
     const { data: { session } } = await supabase.auth.getSession();
     authBar.innerHTML = '';
 
+    // Show or hide hidden sections based on auth status
+    if (session?.user) {
+      myPageSection.style.display = 'block';
+      dashboardSection.style.display = 'block';
+    } else {
+      myPageSection.style.display = 'none';
+      dashboardSection.style.display = 'none';
+    }
+
+    // Always show User Games button
+    const userGamesBtn = createButton('User Games', () => {
+      window.location.href = 'user-games.html';
+    });
+    authBar.appendChild(userGamesBtn);
+
     if (session?.user) {
       const { user_metadata } = session.user;
       const name = user_metadata.full_name || 'GitHub User';
@@ -265,17 +295,22 @@
       nameDiv.innerHTML = `<strong style="font-size: 0.9rem;">${name}</strong><br><small style="font-size: 0.7rem;">${email}</small>`;
       authBar.appendChild(nameDiv);
 
-      const myGamesBtn = createButton('My Games', () => {
-        window.location.href = 'user-games.html';
+      const myPageBtn = createButton('My Page', () => {
+        myPageSection.scrollIntoView({ behavior: 'smooth' });
       });
+      authBar.appendChild(myPageBtn);
+
+      const dashboardBtn = createButton('Dashboard', () => {
+        dashboardSection.scrollIntoView({ behavior: 'smooth' });
+      });
+      authBar.appendChild(dashboardBtn);
 
       const logoutBtn = createButton('Logout', async () => {
         await supabase.auth.signOut();
         window.location.reload();
       });
-
-      authBar.appendChild(myGamesBtn);
       authBar.appendChild(logoutBtn);
+
     } else {
       const loginBtn = createButton('Login with GitHub', async () => {
         await supabase.auth.signInWithOAuth({
