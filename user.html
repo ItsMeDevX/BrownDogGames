@@ -654,14 +654,12 @@
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       text-align: center;
     }
-
     h1 {
       font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1.5rem;
     }
-
     form {
       margin-bottom: 1rem;
       display: flex;
@@ -669,7 +667,6 @@
       justify-content: center;
       gap: 10px;
     }
-
     input, button {
       padding: 10px;
       font-size: 16px;
@@ -677,18 +674,15 @@
       border: none;
       font-family: 'Rubik Mono One', sans-serif;
     }
-
     #game-id {
       width: 20%;
       min-width: 100px;
       max-width: 150px;
     }
-
     #video-url {
       width: 50%;
       max-width: 400px;
     }
-
     button {
       background: #ff4f9f;
       color: #1a1328;
@@ -696,13 +690,11 @@
       cursor: pointer;
       min-width: 100px;
     }
-
     #container {
       max-width: 1000px;
       margin: auto;
       text-align: left;
     }
-
     #links {
       margin: 20px 0;
       padding: 15px;
@@ -711,23 +703,20 @@
       background-color: #2f1a39;
       color: #ff4f9f;
       font-family: monospace;
+      max-height: 600px;
+      overflow-y: auto;
     }
-
     #links h2 {
       margin-top: 0;
       text-align: center;
       text-shadow: 1px 1px 0 #000;
     }
-
     #links-list {
-      min-height: 300px;
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
       justify-content: center;
-      overflow-y: auto;
     }
-
     .link-embed {
       width: 100%;
       max-width: 480px;
@@ -741,14 +730,12 @@
       align-items: center;
       padding: 0;
     }
-
     .link-embed iframe {
       width: 100%;
       height: 270px; /* 16:9 aspect for 480px width */
       border: none;
       display: block;
     }
-
     .twitter-tweet {
       width: 100% !important;
       max-width: 480px !important;
@@ -759,18 +746,15 @@
       background: #2f1a39 !important;
       color: #ff4f9f !important;
     }
-
     @media (max-width: 600px) {
       #game-id, #video-url {
         width: 100%;
         max-width: none;
       }
-
       .link-embed,
       .twitter-tweet {
         max-width: 100%;
       }
-
       .link-embed iframe {
         height: auto;
         aspect-ratio: 16 / 9;
@@ -809,6 +793,7 @@
     const inputUrl = document.getElementById('video-url');
     const inputGameId = document.getElementById('game-id');
     const linksList = document.getElementById('links-list');
+    const linksContainer = document.getElementById('links');
 
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
@@ -847,10 +832,13 @@
             }
           }, 100);
         }
+
+        // Scroll down to new embed (auto-scroll chat style)
+        linksContainer.scrollTop = linksContainer.scrollHeight;
       }
     }
 
-    // Helper to get game_id from URL ?game_id=123 or from input default
+    // Get game_id from URL params
     function getGameIdFromURL() {
       const params = new URLSearchParams(window.location.search);
       return params.get('game_id');
@@ -859,6 +847,7 @@
     async function load(gameId) {
       if (!gameId) return;
       inputGameId.value = gameId;
+      inputGameId.disabled = true;  // Disable input for fixed game_id
 
       const { data } = await supabase
         .from('game_videos')
@@ -869,6 +858,9 @@
 
       linksList.innerHTML = '';
       if (data) data.forEach(video => addLink(video.video_url));
+
+      // Scroll to bottom on load
+      linksContainer.scrollTop = linksContainer.scrollHeight;
     }
 
     form.addEventListener('submit', async e => {
@@ -880,7 +872,7 @@
       inputUrl.value = '';
     });
 
-    // Real-time listener, only add if game_id matches current
+    // Real-time updates filtered by game_id
     supabase.channel('realtime:game_videos')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_videos' }, payload => {
         if (payload.new.video_url && payload.new.game_id === inputGameId.value.trim()) {
@@ -889,9 +881,11 @@
       })
       .subscribe();
 
-    // On page load, try loading game_id from URL param
+    // Auto load on page load using URL param
     const initialGameId = getGameIdFromURL();
-    load(initialGameId);
+    if (initialGameId) {
+      load(initialGameId);
+    }
   </script>
 
 </body>
