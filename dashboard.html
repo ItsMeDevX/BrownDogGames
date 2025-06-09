@@ -173,38 +173,26 @@
       margin-bottom: 1rem;
       text-align: center;
     }
-
-    /* Auth bar */
     #auth-bar {
+      max-width: 320px;
+      margin: 20px auto;
       background-color: #2a243b;
       border-radius: 12px;
       box-shadow: 0 0 12px #00000055;
       padding: 10px 16px;
-      margin-bottom: 1.5rem;
+      font-family: 'Rubik Mono One', sans-serif;
+      color: #fefefe;
+      min-height: 60px;
+      position: relative;
+      user-select: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      color: #fefefe;
-      user-select: none;
-      position: relative;
-    }
-    #user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-    #user-info img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid #ff69b4;
-      object-fit: cover;
     }
     #user-dropdown {
       position: absolute;
-      top: 60px;
+      top: 70px;
       right: 16px;
       background-color: #3b3750;
       border-radius: 8px;
@@ -228,6 +216,22 @@
     #user-dropdown button:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
+    }
+    #user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    #user-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      object-fit: cover;
+    }
+    #user-info div {
+      font-size: 0.9rem;
     }
 
     #games-list {
@@ -279,48 +283,6 @@
     .remove-btn:hover {
       background-color: #ff1a1a;
     }
-
-    form#addGameForm {
-      background-color: #2d1a3a;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px #ff69b4aa;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    form#addGameForm label {
-      font-weight: bold;
-      color: #ffc0cb;
-    }
-    form#addGameForm input,
-    form#addGameForm textarea {
-      width: 100%;
-      padding: 0.7rem;
-      border-radius: 8px;
-      border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-size: 1rem;
-      background-color: #3b2750;
-      color: #fefefe;
-      resize: vertical;
-    }
-    form#addGameForm button {
-      background: #ff69b4;
-      color: #1e1b2e;
-      font-weight: bold;
-      padding: 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: background 0.3s ease;
-      width: 150px;
-      align-self: center;
-    }
-    form#addGameForm button:hover {
-      background: #ff8edb;
-    }
     .message {
       margin-top: 1rem;
       font-weight: bold;
@@ -339,25 +301,11 @@
   <h1>Your Submitted Games</h1>
   <div id="auth-bar"></div>
   <ul id="games-list"></ul>
-
-  <form id="addGameForm" hidden>
-    <label for="githubUser">GitHub Username:</label>
-    <input type="text" id="githubUser" required />
-    <label for="title">Game Title:</label>
-    <input type="text" id="title" required />
-    <label for="description">Description:</label>
-    <textarea id="description" rows="4" required></textarea>
-    <label for="embedUrl">Embed URL:</label>
-    <input type="url" id="embedUrl" required />
-    <label for="screenshotUrl">Screenshot URL (optional):</label>
-    <input type="url" id="screenshotUrl" />
-    <button type="submit" id="submitBtn">Add New Game</button>
-  </form>
-
   <p class="message" id="formMessage" aria-live="polite"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -365,9 +313,7 @@
 
     const authBar = document.getElementById('auth-bar');
     const gamesList = document.getElementById('games-list');
-    const addGameForm = document.getElementById('addGameForm');
     const message = document.getElementById('formMessage');
-    const submitBtn = document.getElementById('submitBtn');
 
     function showMessage(text, type = '') {
       message.textContent = text;
@@ -375,83 +321,96 @@
     }
 
     function toggleDropdown(dropdown) {
-      dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+      dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
     }
 
-    async function renderAuth() {
+    async function renderAuthBar() {
       const { data: { session } } = await supabase.auth.getSession();
       authBar.innerHTML = '';
 
       const userGamesBtn = document.createElement('button');
       userGamesBtn.textContent = 'User Games';
-      userGamesBtn.onclick = () => window.location.href = 'user-games.html';
+      userGamesBtn.style.backgroundColor = '#ff69b4';
+      userGamesBtn.style.color = '#1e1b2e';
+      userGamesBtn.style.border = 'none';
+      userGamesBtn.style.padding = '0.5rem 1rem';
+      userGamesBtn.style.fontWeight = 'bold';
+      userGamesBtn.style.fontSize = '0.9rem';
+      userGamesBtn.style.borderRadius = '8px';
+      userGamesBtn.style.cursor = 'pointer';
+      userGamesBtn.style.transition = 'background-color 0.2s';
+      userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
+      userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
+      userGamesBtn.addEventListener('click', () => {
+        window.location.href = 'user-games.html';
+      });
       authBar.appendChild(userGamesBtn);
 
       if (session?.user) {
-        const user = session.user;
-        const avatar = user.user_metadata.avatar_url || '';
-        const name = user.user_metadata.full_name || user.email;
+        const { user_metadata, id } = session.user;
+        const name = user_metadata.full_name || 'GitHub User';
+        const avatar = user_metadata.avatar_url || '';
 
         const userInfo = document.createElement('div');
         userInfo.id = 'user-info';
-        userInfo.innerHTML = `<img src="${avatar}" alt="Avatar" /> <div><strong>${name}</strong></div>`;
+        if (avatar) {
+          const img = document.createElement('img');
+          img.src = avatar;
+          img.alt = name;
+          userInfo.appendChild(img);
+        }
+        const nameDiv = document.createElement('div');
+        nameDiv.innerHTML = `<strong>${name}</strong>`;
+        userInfo.appendChild(nameDiv);
         authBar.appendChild(userInfo);
 
         const dropdown = document.createElement('div');
         dropdown.id = 'user-dropdown';
+        dropdown.style.display = 'none';
 
-        ['My Page', 'Dashboard', 'Logout'].forEach(text => {
-          const btn = document.createElement('button');
-          btn.textContent = text;
-          btn.onclick = async () => {
-            dropdown.style.display = 'none';
-            if (text === 'Logout') {
-              await supabase.auth.signOut();
-              location.reload();
-            } else {
-              window.location.href = text.toLowerCase().replace(' ', '-') + '.html';
-            }
-          };
-          dropdown.appendChild(btn);
-        });
+        const myPageBtn = document.createElement('button');
+        myPageBtn.textContent = 'My Page';
+        myPageBtn.onclick = () => {
+          dropdown.style.display = 'none';
+          window.location.href = 'user.html';
+        };
 
+        const dashboardBtn = document.createElement('button');
+        dashboardBtn.textContent = 'Dashboard';
+        dashboardBtn.onclick = () => {
+          dropdown.style.display = 'none';
+          window.location.href = 'dashboard.html';
+        };
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = async () => {
+          await supabase.auth.signOut();
+          window.location.reload();
+        };
+
+        dropdown.appendChild(myPageBtn);
+        dropdown.appendChild(dashboardBtn);
+        dropdown.appendChild(logoutBtn);
         authBar.appendChild(dropdown);
+
         userInfo.addEventListener('click', () => toggleDropdown(dropdown));
-        document.addEventListener('click', e => {
+        document.addEventListener('click', (e) => {
           if (!authBar.contains(e.target)) dropdown.style.display = 'none';
         });
 
-        addGameForm.hidden = false;
-        loadGames(user.id);
-
-        addGameForm.onsubmit = async (e) => {
-          e.preventDefault();
-          submitBtn.disabled = true;
-          showMessage('');
-
-          const data = {
-            user_id: user.id,
-            github_user: document.getElementById('githubUser').value.trim(),
-            title: document.getElementById('title').value.trim(),
-            description: document.getElementById('description').value.trim(),
-            embed_url: document.getElementById('embedUrl').value.trim(),
-            screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-            created_at: new Date().toISOString()
-          };
-
-          const { error } = await supabase.from('game_submissions').insert([data]);
-          if (error) {
-            showMessage('Error: ' + error.message, 'error');
-          } else {
-            showMessage('Game submitted successfully!', 'success');
-            loadGames(user.id);
-            addGameForm.reset();
-          }
-          submitBtn.disabled = false;
-        };
+        loadGames(id);
       } else {
         const loginBtn = document.createElement('button');
         loginBtn.textContent = 'Login with GitHub';
+        loginBtn.style.backgroundColor = '#ff69b4';
+        loginBtn.style.color = '#1e1b2e';
+        loginBtn.style.border = 'none';
+        loginBtn.style.padding = '0.5rem 1rem';
+        loginBtn.style.fontWeight = 'bold';
+        loginBtn.style.fontSize = '0.9rem';
+        loginBtn.style.borderRadius = '8px';
+        loginBtn.style.cursor = 'pointer';
         loginBtn.onclick = async () => {
           await supabase.auth.signInWithOAuth({
             provider: 'github',
@@ -516,7 +475,7 @@
       });
     }
 
-    renderAuth();
+    renderAuthBar();
   </script>
 </body>
 </html>
