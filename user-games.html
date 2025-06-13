@@ -180,6 +180,7 @@
         a.className = 'user-btn';
         a.href = `user.html?user=${encodeURIComponent(user)}`;
 
+        // Avatar
         if (images.avatar_url) {
           const avatarImg = document.createElement('img');
           avatarImg.src = images.avatar_url;
@@ -188,28 +189,21 @@
           a.appendChild(avatarImg);
         }
 
+        // Username
         const usernameSpan = document.createElement('span');
         usernameSpan.className = 'username-text';
         usernameSpan.textContent = user;
         a.appendChild(usernameSpan);
 
+        // Cover
         if (images.cover_url) {
-          // If cover_url is a path inside a Supabase storage bucket named 'covers', replace 'covers' if needed.
-          const { data: publicUrlData, error: publicUrlError } = supabase
+          const { publicUrl } = supabase
             .storage
             .from('covers')
             .getPublicUrl(images.cover_url);
 
-          let coverImgSrc = '';
-          if (publicUrlError) {
-            console.error('Error getting public URL:', publicUrlError);
-            coverImgSrc = images.cover_url; // fallback to raw value
-          } else {
-            coverImgSrc = publicUrlData.publicUrl || images.cover_url;
-          }
-
           const coverImg = document.createElement('img');
-          coverImg.src = coverImgSrc;
+          coverImg.src = publicUrl || images.cover_url;
           coverImg.alt = `${user}'s cover`;
           coverImg.className = 'cover-img';
           a.appendChild(coverImg);
