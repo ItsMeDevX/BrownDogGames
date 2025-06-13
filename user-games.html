@@ -556,7 +556,6 @@
     }
   </style>
 </head>
-
 <body>
 
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
@@ -576,9 +575,10 @@
     const userListEl = document.getElementById('userList');
 
     async function loadUsers() {
+      // Select github_user, avatar_url, and cover_url for each submission
       const { data, error } = await supabase
         .from('game_submissions')
-        .select('github_user')
+        .select('github_user, avatar_url, cover_url')
         .order('github_user', { ascending: true });
 
       if (error) {
@@ -586,9 +586,18 @@
         return;
       }
 
-      const uniqueUsers = [...new Set(data.map(entry => entry.github_user))];
+      // Map unique users with their images (first occurrence)
+      const usersMap = new Map();
+      data.forEach(entry => {
+        if (entry.github_user && !usersMap.has(entry.github_user)) {
+          usersMap.set(entry.github_user, {
+            avatar_url: entry.avatar_url,
+            cover_url: entry.cover_url,
+          });
+        }
+      });
 
-      if (uniqueUsers.length === 0) {
+      if (usersMap.size === 0) {
         userListEl.textContent = 'No users found.';
         return;
       }
@@ -596,11 +605,32 @@
       userListEl.textContent = '';
       const fragment = document.createDocumentFragment();
 
-      uniqueUsers.forEach(user => {
+      usersMap.forEach((images, user) => {
         const a = document.createElement('a');
         a.className = 'user-btn';
         a.href = `user.html?user=${encodeURIComponent(user)}`;
-        a.textContent = user;
+
+        if (images.avatar_url) {
+          const avatarImg = document.createElement('img');
+          avatarImg.src = images.avatar_url;
+          avatarImg.alt = `${user}'s avatar`;
+          avatarImg.className = 'avatar-img';
+          a.appendChild(avatarImg);
+        }
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username-text';
+        usernameSpan.textContent = user;
+        a.appendChild(usernameSpan);
+
+        if (images.cover_url) {
+          const coverImg = document.createElement('img');
+          coverImg.src = images.cover_url;
+          coverImg.alt = `${user}'s cover`;
+          coverImg.className = 'cover-img';
+          a.appendChild(coverImg);
+        }
+
         fragment.appendChild(a);
       });
 
