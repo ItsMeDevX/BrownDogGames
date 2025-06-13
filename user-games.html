@@ -26,449 +26,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User Games - BrownDogGames</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
-      color: #fefefe;
-      min-height: 100vh;
-      padding: 3rem 1rem;
-      max-width: 900px;
-      margin: auto;
-      text-align: center;
-      user-select: none;
-    }
-
-    h1 {
-      font-size: 2.8rem;
-      color: #ff69b4;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 2rem;
-      user-select: text;
-      letter-spacing: 0.1em;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      color: #ff69b4;
-      font-weight: 700;
-      font-size: 1.1rem;
-      text-decoration: none;
-      border: 2px solid #ff69b4;
-      padding: 0.65rem 1.4rem;
-      border-radius: 16px;
-      letter-spacing: 0.1em;
-      box-shadow: 0 0 12px #ff69b4aa;
-      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
-    }
-
-    .back-link:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      box-shadow:
-        0 0 25px #ff8bd8ff,
-        0 5px 15px #ff8bd8cc;
-      text-decoration: none;
-    }
-
-    .games-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-      font-size: 1.2rem;
-    }
-
-    .game-card {
-      background-color: #2d1a3a;
-      border-radius: 16px;
-      padding: 1rem 1.2rem 1.6rem;
-      box-shadow:
-        0 0 15px #ff69b4cc,
-        inset 0 0 10px #ff69b4bb;
-      display: flex;
-      flex-direction: column;
-      user-select: text;
-      transition: transform 0.25s ease, box-shadow 0.3s ease;
-    }
-
-    .game-card:hover {
-      transform: translateY(-6px);
-      box-shadow:
-        0 0 25px #ff8bd8ff,
-        inset 0 0 20px #ff8bd8ee;
-    }
-
-    .game-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #ffc0cb;
-      margin-bottom: 0.6rem;
-      letter-spacing: 0.05em;
-    }
-
-    .game-desc {
-      font-size: 1rem;
-      font-weight: 400;
-      color: #ffcee7cc;
-      margin-bottom: 1rem;
-      min-height: 60px;
-    }
-
-    .game-screenshot {
-      width: 100%;
-      border-radius: 14px;
-      box-shadow: 0 0 10px #ff69b4aa;
-      margin-bottom: 1rem;
-      object-fit: cover;
-      aspect-ratio: 16 / 9;
-      background: #1a1020;
-    }
-
-    .play-link {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 12px;
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      font-weight: 700;
-      text-decoration: none;
-      box-shadow: 0 0 12px #ff69b4cc;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
-    }
-
-    .play-link:hover {
-      background-color: #ff8bd8;
-      box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
-    }
-
-    .no-games {
-      font-size: 1.2rem;
-      color: #ffb6c1aa;
-      margin-top: 3rem;
-      user-select: text;
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 2.2rem;
-      }
-      .games-container {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-    }
-  </style>
-</head>
-
-<!-- Age Gate Start -->
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-  #age-gate {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.9);
-    display: none; /* Hide by default */
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    z-index: 9999;
-    color: #ff69b4;
-    font-family: 'Rubik Mono One', sans-serif;
-    text-align: center;
-    padding: 20px;
-  }
-
-  #age-gate.show {
-    display: flex; /* Show when verified needed */
-  }
-
-  #age-gate h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  #age-gate p {
-    margin-bottom: 1.5rem;
-    font-size: 1.1rem;
-    color: #ffc0cb;
-  }
-
-  #age-gate button {
-    background: #ff69b4;
-    color: #1e1b2e;
-    border: none;
-    padding: 0.7rem 1.4rem;
-    font-weight: bold;
-    font-size: 1rem;
-    border-radius: 8px;
-    margin: 0.5rem;
-    cursor: pointer;
-    transition: background 0.2s;
-    min-width: 120px;
-  }
-
-  #age-gate button:hover {
-    background: #ff8edb;
-  }
-</style>
-
-<div id="age-gate">
-  <h2>🔞 Adults Only</h2>
-  <p>You must be 18 or older to access BrownDogGames.</p>
-  <button id="yes-btn">Yes, I’m 18+</button>
-  <button id="no-btn">No, Take Me Back</button>
-</div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const ageGate = document.getElementById('age-gate');
-    const yesBtn = document.getElementById('yes-btn');
-    const noBtn = document.getElementById('no-btn');
-
-    if (localStorage.getItem('isAdult') === 'true') {
-      // User verified, do not show age gate at all
-      ageGate.classList.remove('show');
-    } else {
-      // Show age gate for verification
-      ageGate.classList.add('show');
-    }
-
-    yesBtn.addEventListener('click', () => {
-      localStorage.setItem('isAdult', 'true');
-      ageGate.classList.remove('show'); // Hide age gate
-    });
-
-    noBtn.addEventListener('click', () => {
-      alert('Sorry, you must be 18 or older to enter.');
-      window.location.href = 'https://google.com'; // Redirect as needed
-    });
-  });
-</script>
-<!-- Age Gate End -->
-
-
-<!-- Auth Bar -->
-<div id="auth-bar" style="
-  max-width: 320px;
-  margin: 20px auto;
-  background-color: #2a243b;
-  border-radius: 12px;
-  box-shadow: 0 0 12px #00000055;
-  padding: 10px 16px;
-  font-family: 'Rubik Mono One', sans-serif;
-  color: #fefefe;
-  min-height: 60px;
-  position: relative;  /* For dropdown positioning */
-  user-select: none;
-">
-  <!-- Content injected by JS -->
-</div>
-
-<style>
-  /* Dropdown container */
-  #user-dropdown {
-    position: absolute;
-    top: 70px; /* below the auth bar */
-    right: 16px;
-    background-color: #3b3750;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px #00000077;
-    min-width: 150px;
-    display: none;
-    flex-direction: column;
-    z-index: 1000;
-  }
-  /* Dropdown buttons */
-  #user-dropdown button {
-    background: none;
-    border: none;
-    color: #fefefe;
-    padding: 10px 16px;
-    text-align: left;
-    font-weight: bold;
-    font-family: 'Rubik Mono One', sans-serif;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  #user-dropdown button:hover {
-    background-color: #ff69b4;
-    color: #1e1b2e;
-  }
-  /* User info container (avatar + name) */
-  #user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-  }
-  #user-info img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #ff69b4;
-    object-fit: cover;
-  }
-  #user-info div {
-    font-size: 0.9rem;
-  }
-</style>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  const authBar = document.getElementById('auth-bar');
-
-  function toggleDropdown(dropdown) {
-    dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
-  }
-
-  async function renderAuthBar() {
-    const { data: { session } } = await supabase.auth.getSession();
-    authBar.innerHTML = '';
-
-    const userGamesBtn = document.createElement('button');
-    userGamesBtn.textContent = 'User Games';
-    userGamesBtn.style.backgroundColor = '#ff69b4';
-    userGamesBtn.style.color = '#1e1b2e';
-    userGamesBtn.style.border = 'none';
-    userGamesBtn.style.padding = '0.5rem 1rem';
-    userGamesBtn.style.fontWeight = 'bold';
-    userGamesBtn.style.fontSize = '0.9rem';
-    userGamesBtn.style.borderRadius = '8px';
-    userGamesBtn.style.cursor = 'pointer';
-    userGamesBtn.style.transition = 'background-color 0.2s';
-    userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
-    userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
-    userGamesBtn.addEventListener('click', () => {
-      window.location.href = 'user-games.html';
-    });
-    authBar.appendChild(userGamesBtn);
-
-    if (session?.user) {
-      const { user_metadata } = session.user;
-      const name = user_metadata.full_name || 'GitHub User';
-      const avatar = user_metadata.avatar_url || '';
-      const githubUsername = user_metadata.user_name;
-
-      const userInfo = document.createElement('div');
-      userInfo.id = 'user-info';
-
-      if (avatar) {
-        const img = document.createElement('img');
-        img.src = avatar;
-        img.alt = name;
-        userInfo.appendChild(img);
-      }
-
-      const nameDiv = document.createElement('div');
-      nameDiv.innerHTML = `<strong>${name}</strong>`;
-      userInfo.appendChild(nameDiv);
-      authBar.appendChild(userInfo);
-
-      const dropdown = document.createElement('div');
-      dropdown.id = 'user-dropdown';
-      dropdown.style.display = 'none';
-      dropdown.style.flexDirection = 'column';
-
-      const myPageBtn = document.createElement('button');
-      myPageBtn.textContent = 'My Page';
-      myPageBtn.onclick = async () => {
-        dropdown.style.display = 'none';
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.error('Unable to get user:', userError);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from('game_submissions')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (error) {
-          console.error('Error checking submission:', error);
-          return;
-        }
-
-        if (data && data.length > 0 && githubUsername) {
-          window.location.href = `user.html?user=${githubUsername}`;
-        } else {
-          window.location.href = 'dashboard.html';
-        }
-      };
-
-      const dashboardBtn = document.createElement('button');
-      dashboardBtn.textContent = 'Dashboard';
-      dashboardBtn.onclick = () => {
-        dropdown.style.display = 'none';
-        window.location.href = 'dashboard.html';
-      };
-
-      const logoutBtn = document.createElement('button');
-      logoutBtn.textContent = 'Logout';
-      logoutBtn.onclick = async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
-      };
-
-      dropdown.appendChild(myPageBtn);
-      dropdown.appendChild(dashboardBtn);
-      dropdown.appendChild(logoutBtn);
-
-      authBar.appendChild(dropdown);
-      userInfo.addEventListener('click', () => toggleDropdown(dropdown));
-
-      document.addEventListener('click', (e) => {
-        if (!authBar.contains(e.target)) {
-          dropdown.style.display = 'none';
-        }
-      });
-    } else {
-      const loginBtn = document.createElement('button');
-      loginBtn.textContent = 'Login with GitHub';
-      loginBtn.style.backgroundColor = '#ff69b4';
-      loginBtn.style.color = '#1e1b2e';
-      loginBtn.style.border = 'none';
-      loginBtn.style.padding = '0.5rem 1rem';
-      loginBtn.style.fontWeight = 'bold';
-      loginBtn.style.fontSize = '0.9rem';
-      loginBtn.style.borderRadius = '8px';
-      loginBtn.style.cursor = 'pointer';
-      loginBtn.style.transition = 'background-color 0.2s';
-      loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
-      loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
-      loginBtn.addEventListener('click', async () => {
-        await supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo: window.location.href }
-        });
-      });
-      authBar.appendChild(loginBtn);
-    }
-  }
-
-  renderAuthBar();
-</script>
-  
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>All User Game Pages</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
@@ -535,6 +92,7 @@
       color: #ffc0cb;
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
+      user-select: none;
     }
 
     .user-btn:hover {
@@ -550,6 +108,7 @@
       border: 2px solid #ff69b4;
       background: #1e1b2e;
       margin-bottom: 0.5rem;
+      flex-shrink: 0;
     }
 
     .username-text {
@@ -557,6 +116,7 @@
       margin-bottom: 0.75rem;
       color: #ffc0cb;
       word-break: break-word;
+      user-select: text;
     }
 
     .cover-img {
@@ -568,6 +128,19 @@
       border: 2px solid #ff69b4;
       background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
+      flex-shrink: 0;
+    }
+
+    .cover-link {
+      margin-top: 0.5rem;
+      display: inline-block;
+      color: #ff69b4;
+      text-decoration: underline;
+      font-weight: 700;
+      user-select: text;
+    }
+    .cover-link:hover {
+      color: #ff8bd8;
     }
   </style>
 </head>
@@ -637,11 +210,25 @@
         a.appendChild(usernameSpan);
 
         if (images.cover_url) {
-          const coverImg = document.createElement('img');
-          coverImg.src = images.cover_url;
-          coverImg.alt = `${user}'s cover`;
-          coverImg.className = 'cover-img';
-          a.appendChild(coverImg);
+          // Check if cover_url looks like an image URL
+          const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(images.cover_url);
+
+          if (isImage) {
+            const coverImg = document.createElement('img');
+            coverImg.src = images.cover_url;
+            coverImg.alt = `${user}'s cover`;
+            coverImg.className = 'cover-img';
+            a.appendChild(coverImg);
+          } else {
+            // Show as clickable link if not an image
+            const coverLink = document.createElement('a');
+            coverLink.href = images.cover_url;
+            coverLink.target = '_blank';
+            coverLink.rel = 'noopener noreferrer';
+            coverLink.textContent = 'Cover Link';
+            coverLink.className = 'cover-link';
+            a.appendChild(coverLink);
+          }
         }
 
         fragment.appendChild(a);
