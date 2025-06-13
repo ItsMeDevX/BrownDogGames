@@ -575,7 +575,6 @@
     const userListEl = document.getElementById('userList');
 
     async function loadUsers() {
-      // Select github_user, avatar_url, and cover_url for each submission
       const { data, error } = await supabase
         .from('game_submissions')
         .select('github_user, avatar_url, cover_url')
@@ -586,7 +585,6 @@
         return;
       }
 
-      // Map unique users with their images (first occurrence)
       const usersMap = new Map();
       data.forEach(entry => {
         if (entry.github_user && !usersMap.has(entry.github_user)) {
