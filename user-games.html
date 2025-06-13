@@ -92,7 +92,6 @@
       color: #ffc0cb;
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
-      user-select: none;
     }
 
     .user-btn:hover {
@@ -108,7 +107,6 @@
       border: 2px solid #ff69b4;
       background: #1e1b2e;
       margin-bottom: 0.5rem;
-      flex-shrink: 0;
     }
 
     .username-text {
@@ -116,7 +114,6 @@
       margin-bottom: 0.75rem;
       color: #ffc0cb;
       word-break: break-word;
-      user-select: text;
     }
 
     .cover-img {
@@ -128,19 +125,6 @@
       border: 2px solid #ff69b4;
       background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
-      flex-shrink: 0;
-    }
-
-    .cover-link {
-      margin-top: 0.5rem;
-      display: inline-block;
-      color: #ff69b4;
-      text-decoration: underline;
-      font-weight: 700;
-      user-select: text;
-    }
-    .cover-link:hover {
-      color: #ff8bd8;
     }
   </style>
 </head>
@@ -191,7 +175,7 @@
       userListEl.textContent = '';
       const fragment = document.createDocumentFragment();
 
-      usersMap.forEach((images, user) => {
+      for (const [user, images] of usersMap.entries()) {
         const a = document.createElement('a');
         a.className = 'user-btn';
         a.href = `user.html?user=${encodeURIComponent(user)}`;
@@ -210,29 +194,29 @@
         a.appendChild(usernameSpan);
 
         if (images.cover_url) {
-          // Check if cover_url looks like an image URL
-          const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(images.cover_url);
+          // If cover_url is a path inside a Supabase storage bucket named 'covers', replace 'covers' if needed.
+          const { data: publicUrlData, error: publicUrlError } = supabase
+            .storage
+            .from('covers')
+            .getPublicUrl(images.cover_url);
 
-          if (isImage) {
-            const coverImg = document.createElement('img');
-            coverImg.src = images.cover_url;
-            coverImg.alt = `${user}'s cover`;
-            coverImg.className = 'cover-img';
-            a.appendChild(coverImg);
+          let coverImgSrc = '';
+          if (publicUrlError) {
+            console.error('Error getting public URL:', publicUrlError);
+            coverImgSrc = images.cover_url; // fallback to raw value
           } else {
-            // Show as clickable link if not an image
-            const coverLink = document.createElement('a');
-            coverLink.href = images.cover_url;
-            coverLink.target = '_blank';
-            coverLink.rel = 'noopener noreferrer';
-            coverLink.textContent = 'Cover Link';
-            coverLink.className = 'cover-link';
-            a.appendChild(coverLink);
+            coverImgSrc = publicUrlData.publicUrl || images.cover_url;
           }
+
+          const coverImg = document.createElement('img');
+          coverImg.src = coverImgSrc;
+          coverImg.alt = `${user}'s cover`;
+          coverImg.className = 'cover-img';
+          a.appendChild(coverImg);
         }
 
         fragment.appendChild(a);
-      });
+      }
 
       userListEl.appendChild(fragment);
     }
