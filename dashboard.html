@@ -580,6 +580,7 @@
   <ul id="games-list"></ul>
 
   <form id="addGameForm">
+    <!-- GitHub username removed, auto from auth -->
     <label for="title">Game Title:</label>
     <input type="text" id="title" placeholder="Enter your game title" required />
 
@@ -592,8 +593,8 @@
     <label for="screenshotUrl">Screenshot URL (optional):</label>
     <input type="url" id="screenshotUrl" placeholder="Link to a screenshot" />
 
-    <label for="avatarUrl">Avatar URL (optional):</label>
-    <input type="url" id="avatarUrl" placeholder="Link to your avatar image" />
+    <label for="coverUrl">Cover URL (optional):</label>
+    <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
     <button type="submit" id="submitBtn">Add New Game</button>
   </form>
@@ -624,7 +625,8 @@
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error || !session?.user) {
-        window.location.href = 'login.html';
+        // Not logged in: redirect to login page or show login button
+        window.location.href = 'login.html'; // or your login page
         return false;
       }
 
@@ -633,6 +635,7 @@
     }
 
     async function fetchGames() {
+      // Only fetch games owned by current user
       const { data, error } = await supabase
         .from('game_submissions')
         .select('*')
@@ -675,6 +678,7 @@
         embedLink.target = '_blank';
         embedLink.rel = 'noopener noreferrer';
         embedLink.textContent = 'Play';
+
         urlsDiv.appendChild(embedLink);
 
         if (game.screenshot_url) {
@@ -686,12 +690,13 @@
           urlsDiv.appendChild(screenshotLink);
         }
 
-        if (game.avatar_url) {
-          const avatarImg = document.createElement('img');
-          avatarImg.src = game.avatar_url;
-          avatarImg.alt = 'Avatar';
-          avatarImg.style = 'height: 40px; width: 40px; border-radius: 50%; margin-left: 0.5rem;';
-          urlsDiv.appendChild(avatarImg);
+        if (game.cover_url) {
+          const coverLink = document.createElement('a');
+          coverLink.href = game.cover_url;
+          coverLink.target = '_blank';
+          coverLink.rel = 'noopener noreferrer';
+          coverLink.textContent = 'Cover';
+          urlsDiv.appendChild(coverLink);
         }
 
         infoDiv.appendChild(title);
@@ -707,7 +712,7 @@
             .from('game_submissions')
             .delete()
             .eq('id', game.id)
-            .eq('user_id', currentUser.id);
+            .eq('user_id', currentUser.id); // Double check ownership
 
           if (error) {
             showMessage('Error removing game: ' + error.message, 'error');
@@ -731,11 +736,12 @@
       const data = {
         user_id: currentUser.id,
         github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+        avatar_url: currentUser.user_metadata?.avatar_url || null,
         title: document.getElementById('title').value.trim(),
         description: document.getElementById('description').value.trim(),
         embed_url: document.getElementById('embedUrl').value.trim(),
         screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-        avatar_url: document.getElementById('avatarUrl').value.trim() || currentUser.user_metadata?.avatar_url || null,
+        cover_url: document.getElementById('coverUrl').value.trim() || null,
         created_at: new Date().toISOString()
       };
 
@@ -758,27 +764,28 @@
     })();
   </script>
 
-  <button id="terms-button" style="
-    background-color: #ff69b4;
-    color: #1e1b2e;
-    border: none;
-    padding: 0.5rem 1rem;
-    font-weight: bold;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  ">
-    Submission Terms
-  </button>
+<button id="terms-button" style="
+  background-color: #ff69b4;
+  color: #1e1b2e;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+">
+  Submission Terms
+</button>
 
-  <script>
-    const termsButton = document.getElementById('terms-button');
-    termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
-    termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
-    termsButton.addEventListener('click', () => {
-      window.location.href = 'submission-terms.html';
-    });
-  </script>
+<script>
+  const termsButton = document.getElementById('terms-button');
+  termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
+  termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
+  termsButton.addEventListener('click', () => {
+    window.location.href = 'submission-terms.html';
+  });
+</script>
+  
 </body>
 </html>
