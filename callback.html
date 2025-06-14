@@ -1,67 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Logging in...</title>
-</head>
-<body>
-  <h1>Logging in...</h1>
+<h1>Logging in...</h1>
+<script>
+  const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
+  const redirectUri = 'https://browndoggames.com/callback.html';
 
-  <script>
-    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
-    const redirectUri = 'https://browndoggames.com/callback.html';
+  async function exchangeCodeForToken(code, verifier) {
+    const params = new URLSearchParams({
+      client_id: clientId,
+      code: code,
+      code_verifier: verifier,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code'
+    });
 
-    async function exchangeCodeForToken(code, verifier) {
-      const params = new URLSearchParams({
-        client_id: clientId,
-        code: code,
-        code_verifier: verifier,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code'
-      });
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
 
-      const response = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString()
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error_description || 'Token exchange failed');
-      }
-
-      return await response.json();
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error_description || 'Token exchange failed');
     }
 
-    async function handleCallback() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const verifier = localStorage.getItem('pkce_verifier');
+    return await res.json();
+  }
 
-      if (!code || !verifier) {
-        document.body.innerHTML = 'Error: Missing authorization code or PKCE verifier.';
-        return;
-      }
+  async function handleCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const verifier = localStorage.getItem('pkce_verifier');
 
-      try {
-        const tokenResponse = await exchangeCodeForToken(code, verifier);
-
-        console.log('Token Response:', tokenResponse);
-
-        document.body.innerHTML = '<h2>Login successful!</h2>';
-
-        // Cleanup
-        localStorage.removeItem('pkce_verifier');
-
-        // Optionally redirect to your app's main page
-        // window.location.href = '/app.html';
-
-      } catch (error) {
-        document.body.innerHTML = 'Login failed: ' + error.message;
-      }
+    if (!code || !verifier) {
+      document.body.innerHTML = 'Missing code or PKCE verifier.';
+      return;
     }
 
-    handleCallback();
-  </script>
-</body>
-</html>
+    try {
+      const tokens = await exchangeCodeForToken(code, verifier);
+      console.log('Tokens:', tokens);
+      document.body.innerHTML = '<h2>Login successful!</h2>';
+      localStorage.removeItem('pkce_verifier');
+    } catch (e) {
+      document.body.innerHTML = 'Login failed: ' + e.message;
+    }
+  }
+
+  handleCallback();
+</script>
