@@ -450,7 +450,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BrownDogGames - Submit & View</title>
 <style>
-  /* Your existing styles here... */
   @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
   body {
@@ -530,6 +529,18 @@
       font-size: 1.8rem;
     }
   }
+
+  /* Buttons */
+  #loginBtn, #logoutBtn {
+    background: #ff69b4;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 20px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
 </style>
 </head>
 <body>
@@ -540,12 +551,11 @@
     class="logo"
   />
 
+  <button id="loginBtn">Sign in with Google</button>
+  <button id="logoutBtn" style="display:none;">Sign Out</button>
+
   <h1>Submit Your Game</h1>
-  <!-- We'll dynamically update this iframe's src -->
-  <iframe id="gameForm" 
-    src="" 
-    title="Game Submission Form"
-  ></iframe>
+  <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
 
   <h1>Submitted Games Data</h1>
   <div class="table-wrapper">
@@ -564,30 +574,46 @@
     </table>
   </div>
 
-  <!-- Firebase App (the core Firebase SDK) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <!-- Firebase Auth -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
-    // Your Firebase config - REPLACE with your config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
-    authDomain: "crack-fold-458513-h0.firebaseapp.com",
-    projectId: "crack-fold-458513-h0",
-    storageBucket: "crack-fold-458513-h0.appspot.com",
-    messagingSenderId: "1051697335973",
-    appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
-  };
+    // Your Firebase config - Replace with your own config if different
+    const firebaseConfig = {
+      apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
+      authDomain: "crack-fold-458513-h0.firebaseapp.com",
+      projectId: "crack-fold-458513-h0",
+      storageBucket: "crack-fold-458513-h0.appspot.com",
+      messagingSenderId: "1051697335973",
+      appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
+    };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
+    // Constants
     const SHEET_ID = '1m0pMbcNZ4cWYB3lAOgnc0k4Jq7syj-EGPmtcptvVDEE';
-    const EMAIL_PREFIX_ENTRY_ID = '123456789';  // Replace with your Google Form Email Prefix entry ID
+    const EMAIL_PREFIX_ENTRY_ID = '1551255018';  // Your Google Form Email Prefix entry ID
     const FORM_BASE_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform';
 
+    // DOM elements
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const iframe = document.getElementById('gameForm');
+    const tbody = document.querySelector('#sheetData tbody');
+
+    // Sign in/out handlers
+    loginBtn.onclick = () => {
+      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    };
+
+    logoutBtn.onclick = () => {
+      auth.signOut();
+    };
+
+    // Load sheet data function with filtering by email prefix
     function loadSheetData(emailPrefix) {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
@@ -602,21 +628,22 @@
 
           if (!table || !table.rows || table.rows.length === 0) {
             console.warn('No data found in sheet');
+            tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">No submissions found.</td></tr>`;
             return;
           }
 
           const headers = table.cols.map(col => col.label);
-          const tbody = document.querySelector('#sheetData tbody');
           tbody.innerHTML = '';
 
           table.rows.forEach(row => {
             const rowPrefix = row.c[headers.indexOf('Email Prefix')]?.v || '';
-            if (rowPrefix !== emailPrefix) return; // Skip rows not matching the prefix
+            // Filter by email prefix
+            if (rowPrefix !== emailPrefix) return;
 
             const tr = document.createElement('tr');
 
             headers.forEach((header, i) => {
-              if(header === 'Email Prefix') return; // Skip showing Email Prefix column in table
+              if(header === 'Email Prefix') return; // Hide Email Prefix column
 
               const cell = row.c[i];
               let val = cell && cell.v ? cell.v : '';
@@ -634,31 +661,36 @@
 
             tbody.appendChild(tr);
           });
+
+          // If after filtering no rows found, show message
+          if (!tbody.hasChildNodes()) {
+            tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">No submissions found for your email prefix.</td></tr>`;
+          }
         })
         .catch(err => {
           console.error('Error loading sheet data:', err);
-          const tbody = document.querySelector('#sheetData tbody');
           tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">Failed to load data. Please try again later.</td></tr>`;
         });
     }
 
+    // Listen for auth changes
     auth.onAuthStateChanged(user => {
       if (user) {
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+
         const emailPrefix = user.email.split('@')[0];
 
-        // Generate pre-filled form URL
         const formPrefillUrl = `${FORM_BASE_URL}?entry.${EMAIL_PREFIX_ENTRY_ID}=${encodeURIComponent(emailPrefix)}&embedded=true`;
 
-        // Update iframe src with prefilled URL
-        document.getElementById('gameForm').src = formPrefillUrl;
-
-        // Load sheet data filtered by email prefix
+        iframe.src = formPrefillUrl;
         loadSheetData(emailPrefix);
 
       } else {
-        // Not logged in: show a message or redirect to login
-        document.getElementById('gameForm').src = `${FORM_BASE_URL}?embedded=true`;
-        const tbody = document.querySelector('#sheetData tbody');
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+
+        iframe.src = `${FORM_BASE_URL}?embedded=true`;
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Please log in to view your submissions.</td></tr>`;
       }
     });
