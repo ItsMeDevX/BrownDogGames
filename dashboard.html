@@ -609,7 +609,6 @@
     // Prefill form iframe URL with prefix
     function setFormWithPrefix(prefix) {
       const prefilledURL = `${baseFormURL}&${entryFieldID}=${encodeURIComponent(prefix)}`;
-      console.log('Setting form iframe src:', prefilledURL);
       gameFormIframe.src = prefilledURL;
     }
 
@@ -620,7 +619,6 @@
 
     // Firebase Auth state listener
     auth.onAuthStateChanged(user => {
-      console.log('Auth state changed:', user);
       if (user && user.email) {
         const prefix = user.email.split('@')[0];
         setFormWithPrefix(prefix);
@@ -636,11 +634,10 @@
       try {
         const query = 'select * limit 50';
         const url = baseSheetUrl + encodeURIComponent(query);
-        console.log('Fetching sheet data from:', url);
         const response = await fetch(url);
         const text = await response.text();
 
-        // Parse JSON response inside google.visualization callback
+        // Extract JSON from Google's response wrapper
         const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
         const data = JSON.parse(jsonStr);
 
