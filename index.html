@@ -351,11 +351,11 @@
     dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
   }
 
-  // Helpers for PKCE (from https://datatracker.ietf.org/doc/html/rfc7636)
+  // PKCE helper functions
   async function generateCodeVerifier() {
-    const array = new Uint32Array(56/2);
+    const array = new Uint8Array(56);
     crypto.getRandomValues(array);
-    return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+    return Array.from(array).map(b => ('0' + b.toString(16)).slice(-2)).join('');
   }
   async function generateCodeChallenge(verifier) {
     const encoder = new TextEncoder();
@@ -367,7 +367,7 @@
   }
 
   function redirectToGoogleOAuth() {
-    const clientId = '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com'; // replace
+    const clientId = '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com'; // your client ID
     const redirectUri = 'https://browndoggames.com/callback.html'; // your redirect URI
     const scope = 'openid email profile';
     const state = crypto.randomUUID();
@@ -391,13 +391,18 @@
     });
   }
 
+  // This just fetches stored user info from localStorage
   async function fetchUserInfo() {
-    // You should have your backend issue user info based on tokens stored in localStorage/session etc.
-    // For this example, we assume you have stored user info JSON in localStorage after login.
-    const user = JSON.parse(localStorage.getItem('user_info'));
-    return user;
+    const user = localStorage.getItem('user_info');
+    if (!user) return null;
+    try {
+      return JSON.parse(user);
+    } catch {
+      return null;
+    }
   }
 
+  // Logout clears stored data & rerenders auth bar
   function logout() {
     localStorage.removeItem('user_info');
     localStorage.removeItem('pkce_verifier');
@@ -436,8 +441,9 @@
           box-shadow: 0 0 10px #ff8edb;
           cursor: pointer;
           transition: background-color 0.2s, box-shadow 0.2s;
+          user-select:none;
         " title="Click for options">
-          ${user.name}
+          ${escapeHtml(user.name)}
           <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
         </strong>
       `;
@@ -467,32 +473,46 @@
 
       authBar.appendChild(dropdown);
 
-      userInfo.addEventListener('click', () => toggleDropdown(dropdown));
-      document.addEventListener('click', (e) => {
-        if (!authBar.contains(e.target)) {
-          dropdown.style.display = 'none';
-        }
+      userInfo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleDropdown(dropdown);
+      });
+      document.addEventListener('click', () => {
+        dropdown.style.display = 'none';
       });
 
     } else {
       // Show login button
       const loginBtn = document.createElement('button');
       loginBtn.textContent = 'Login with Google';
-      loginBtn.style.backgroundColor = '#ff69b4';
-      loginBtn.style.color = '#1e1b2e';
-      loginBtn.style.border = 'none';
-      loginBtn.style.padding = '0.5rem 1rem';
-      loginBtn.style.fontWeight = 'bold';
-      loginBtn.style.fontSize = '0.9rem';
-      loginBtn.style.borderRadius = '8px';
-      loginBtn.style.cursor = 'pointer';
-      loginBtn.style.transition = 'background-color 0.2s';
+      Object.assign(loginBtn.style, {
+        backgroundColor: '#ff69b4',
+        color: '#1e1b2e',
+        border: 'none',
+        padding: '0.5rem 1rem',
+        fontWeight: 'bold',
+        fontSize: '0.9rem',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+      });
       loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
       loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
       loginBtn.addEventListener('click', redirectToGoogleOAuth);
 
       authBar.appendChild(loginBtn);
     }
+  }
+
+  // Simple HTML escape function
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   renderAuthBar();
