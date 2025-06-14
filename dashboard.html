@@ -477,17 +477,29 @@
     margin-bottom: 15px;
   }
 
-  iframe {
+  iframe.form-iframe {
     border: none;
     width: 100%;
     height: 650px;
     margin-bottom: 40px;
   }
 
+  iframe.sheet-iframe {
+    border: none;
+    width: 100%;
+    height: 800px;
+    margin-bottom: 40px;
+  }
+
+  /* Wrap table to allow horizontal scroll on small screens */
+  .table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 40px;
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 40px;
     table-layout: fixed;
     word-wrap: break-word;
   }
@@ -540,24 +552,35 @@
   <h1>Submit Your Game</h1>
   <!-- Google Form embed -->
   <iframe
+    class="form-iframe"
     src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true"
     title="Game Submission Form"
   ></iframe>
 
+  <h1>View Spreadsheet</h1>
+  <!-- Google Sheet embed (published to web, replace with your actual published URL if needed) -->
+  <iframe
+    class="sheet-iframe"
+    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQwlHc8f-ZrRtYlYoqPz7WXamXhhtbMyvMZTMRnrcQMdJ3XvK6tYTg3BqRMVyYz-DuZsIgRLDsjHH76/pubhtml?widget=true&headers=false"
+    title="Google Sheet Embed"
+  ></iframe>
+
   <h1>Submitted Games Data</h1>
-  <table id="sheetData" aria-label="Submitted games table">
-    <thead>
-      <tr>
-        <th>Timestamp</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Game URL</th>
-        <th>Screenshot URL</th>
-        <th>Cover URL</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table id="sheetData" aria-label="Submitted games table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Game URL</th>
+          <th>Screenshot URL</th>
+          <th>Cover URL</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
 <script>
   const SHEET_ID = '1m0pMbcNZ4cWYB3lAOgnc0k4Jq7syj-EGPmtcptvVDEE';
@@ -571,7 +594,6 @@
         return res.text();
       })
       .then(dataText => {
-        // Strip the JSON from the function wrapper
         const jsonData = JSON.parse(dataText.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1]);
         const table = jsonData.table;
 
@@ -613,8 +635,9 @@
   }
 
   loadSheetData();
-  // Optional: refresh every 5 minutes
+  // Optionally refresh every 5 minutes:
   // setInterval(loadSheetData, 300000);
 </script>
+
 </body>
 </html>
