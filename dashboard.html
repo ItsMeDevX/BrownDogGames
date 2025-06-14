@@ -462,7 +462,6 @@
   <title>Upload Your Game</title>
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
-    /* your CSS exactly as you provided */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -581,9 +580,7 @@
 
       const formData = new FormData(form);
 
-      // Because Apps Script doesn't support multipart natively, we send base64 encoded files instead
-      // So we read files and convert to base64, then send the whole JSON object to GAS function
-
+      // Convert files to base64 and prepare JSON object for Apps Script
       const filesToRead = ['gameFile', 'screenshotFile', 'coverFile'];
       let filePromises = filesToRead.map(name => {
         const file = formData.get(name);
@@ -612,9 +609,13 @@
         };
 
         google.script.run
-          .withSuccessHandler(() => {
-            showMessage('Game submitted successfully!', 'success');
-            form.reset();
+          .withSuccessHandler(response => {
+            if (response.startsWith('Error')) {
+              showMessage(response, 'error');
+            } else {
+              showMessage('Game submitted successfully!', 'success');
+              form.reset();
+            }
           })
           .withFailureHandler(err => {
             showMessage('Upload failed: ' + err.message, 'error');
