@@ -559,64 +559,62 @@
     <tbody></tbody>
   </table>
 
-  <!-- PapaParse CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script>
-    // IMPORTANT: Use your actual published CSV URL here
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?gid=1832939804&single=true&output=csv';
+<script>
+  const SHEET_ID = '1m0pMbcNZ4cWYB3lAOgnc0k4Jq7syj-EGPmtcptvVDEE';
 
-    function loadSheetData() {
-      fetch(CSV_URL)
-        .then(res => {
-          if (!res.ok) throw new Error('Network response was not ok');
-          return res.text();
-        })
-        .then(csvText => {
-          console.log('CSV Loaded:', csvText.slice(0, 200)); // Debug first 200 chars
-          const results = Papa.parse(csvText, {
-            header: true,
-            skipEmptyLines: true,
+  function loadSheetData() {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.text();
+      })
+      .then(dataText => {
+        // Strip the JSON from the function wrapper
+        const jsonData = JSON.parse(dataText.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1]);
+        const table = jsonData.table;
+
+        if (!table || !table.rows || table.rows.length === 0) {
+          console.warn('No data found in sheet');
+          return;
+        }
+
+        const headers = table.cols.map(col => col.label);
+        const tbody = document.querySelector('#sheetData tbody');
+        tbody.innerHTML = '';
+
+        table.rows.forEach(row => {
+          const tr = document.createElement('tr');
+
+          headers.forEach((header, i) => {
+            const cell = row.c[i];
+            let val = cell && cell.v ? cell.v : '';
+
+            const td = document.createElement('td');
+
+            if (typeof val === 'string' && (val.startsWith('http') || val.includes('drive.google.com'))) {
+              td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
+            } else {
+              td.innerHTML = String(val).replace(/\n/g, '<br>');
+            }
+
+            tr.appendChild(td);
           });
 
-          console.log('Parsed Data:', results.data); // Debug parsed data
-
-          if (!results.data || results.data.length === 0) {
-            console.warn('No data found in CSV');
-            return;
-          }
-
-          const tbody = document.querySelector('#sheetData tbody');
-          tbody.innerHTML = '';
-
-          results.data.forEach(row => {
-            const tr = document.createElement('tr');
-
-            ['Timestamp', 'Title', 'Description', 'Game URL', 'Screenshot URL', 'Cover URL'].forEach(col => {
-              const td = document.createElement('td');
-              const val = row[col] || '';
-
-              if (val.startsWith('http') || val.includes('drive.google.com')) {
-                td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
-              } else {
-                td.innerHTML = val.replace(/\n/g, '<br>');
-              }
-
-              tr.appendChild(td);
-            });
-
-            tbody.appendChild(tr);
-          });
-        })
-        .catch(err => {
-          console.error('Error loading sheet data:', err);
-          const tbody = document.querySelector('#sheetData tbody');
-          tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">Failed to load data. Please try again later.</td></tr>`;
+          tbody.appendChild(tr);
         });
-    }
+      })
+      .catch(err => {
+        console.error('Error loading sheet data:', err);
+        const tbody = document.querySelector('#sheetData tbody');
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">Failed to load data. Please try again later.</td></tr>`;
+      });
+  }
 
-    loadSheetData();
-    // Optional: refresh every 5 minutes
-    // setInterval(loadSheetData, 300000);
-  </script>
+  loadSheetData();
+  // Optional: refresh every 5 minutes
+  // setInterval(loadSheetData, 300000);
+</script>
 </body>
 </html>
