@@ -454,50 +454,174 @@
 </body>
 </html>
 
-<!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
-    <style>
-      body {
-        background: #121212;
-        color: #f0f0f0;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 40px;
-      }
-      button {
-        background: #ff69b4;
-        color: black;
-        border: none;
-        padding: 15px 30px;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 8px;
-      }
-      #status {
-        margin-top: 20px;
-        color: #90ee90;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Click to Upload test.txt</h1>
-    <button onclick="upload()">Upload</button>
-    <div id="status"></div>
 
-    <script>
-      function upload() {
-        document.getElementById("status").textContent = "Uploading...";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Your Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
+  <style>
+    /* your CSS exactly as you provided */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.8rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 1rem;
+    }
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #2d1a3a;
+      padding: 2rem;
+      border-radius: 15px;
+      border: 2px solid #ff69b4;
+      text-align: left;
+    }
+    input, textarea, label {
+      font-family: 'Rubik Mono One', sans-serif;
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      border: 2px solid #ff69b4;
+      border-radius: 8px;
+      padding: 0.8rem;
+    }
+    input[type="file"] {
+      padding: 0.3rem;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button[type="submit"] {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      padding: 0.8rem 1.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover {
+      background-color: #ff8edb;
+    }
+    .message {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      color: #ffc0cb;
+    }
+    .message.success {
+      color: #a3f7bf;
+    }
+    .message.error {
+      color: #ff6b6b;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Upload Your Game</h1>
+
+  <form id="addGameForm">
+    <input type="text" id="title" name="title" placeholder="Game Title" required />
+    <textarea id="description" name="description" placeholder="Game Description" required></textarea>
+
+    <label>
+      Game File (ZIP or HTML bundle): 
+      <input type="file" id="gameFile" name="gameFile" accept=".zip,.html,.htm" required />
+    </label>
+
+    <label>
+      Screenshot (PNG/JPG): 
+      <input type="file" id="screenshotFile" name="screenshotFile" accept="image/*" />
+    </label>
+
+    <label>
+      Cover Image (PNG/JPG): 
+      <input type="file" id="coverFile" name="coverFile" accept="image/*" />
+    </label>
+
+    <button type="submit">Submit Game</button>
+  </form>
+
+  <p class="message" id="formMessage"></p>
+
+  <script>
+    const form = document.getElementById('addGameForm');
+    const message = document.getElementById('formMessage');
+
+    function showMessage(text, type = '') {
+      message.textContent = text;
+      message.className = 'message ' + type;
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      showMessage('Uploading, please wait...');
+
+      const formData = new FormData(form);
+
+      // Because Apps Script doesn't support multipart natively, we send base64 encoded files instead
+      // So we read files and convert to base64, then send the whole JSON object to GAS function
+
+      const filesToRead = ['gameFile', 'screenshotFile', 'coverFile'];
+      let filePromises = filesToRead.map(name => {
+        const file = formData.get(name);
+        if (!file || file.size === 0) return Promise.resolve(null);
+
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            resolve({
+              name: file.name,
+              type: file.type,
+              data: reader.result.split(',')[1]  // base64 string only
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(filePromises).then(files => {
+        const data = {
+          title: formData.get('title'),
+          description: formData.get('description'),
+          gameFile: files[0],
+          screenshotFile: files[1],
+          coverFile: files[2]
+        };
+
         google.script.run
           .withSuccessHandler(() => {
-            document.getElementById("status").textContent = "Upload successful!";
+            showMessage('Game submitted successfully!', 'success');
+            form.reset();
           })
-          .withFailureHandler(e => {
-            document.getElementById("status").textContent = "Error: " + e.message;
+          .withFailureHandler(err => {
+            showMessage('Upload failed: ' + err.message, 'error');
           })
-          .uploadTestFile();
-      }
-    </script>
-  </body>
+          .submitGame(data);
+      });
+    });
+  </script>
+</body>
 </html>
