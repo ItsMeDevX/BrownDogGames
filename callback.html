@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
-<head><title>Logging in...</title></head>
+<head>
+  <title>Logging in...</title>
+</head>
 <body>
   <h1>Logging in...</h1>
 
@@ -23,12 +25,11 @@
         body: params.toString()
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error_description || 'Token exchange failed');
+        throw new Error(data.error_description || 'Token exchange failed');
       }
-
-      return await res.json();
+      return data;
     }
 
     async function handleCallback() {
@@ -37,7 +38,7 @@
       const verifier = localStorage.getItem('pkce_verifier');
 
       if (!code || !verifier) {
-        document.body.innerHTML = 'Missing code or PKCE verifier.';
+        document.body.innerHTML = '<h2>Missing authorization code or verifier</h2>';
         return;
       }
 
@@ -47,9 +48,12 @@
         document.body.innerHTML = '<h2>Login successful!</h2>';
         localStorage.removeItem('pkce_verifier');
 
-        // Save tokens if you want: localStorage.setItem('tokens', JSON.stringify(tokens));
+        // OPTIONAL: decode ID token to get user info
+        const idToken = tokens.id_token;
+        const userInfo = JSON.parse(atob(idToken.split('.')[1]));
+        console.log('User Info:', userInfo);
       } catch (e) {
-        document.body.innerHTML = 'Login failed: ' + e.message;
+        document.body.innerHTML = `<h2>Login failed: ${e.message}</h2>`;
       }
     }
 
