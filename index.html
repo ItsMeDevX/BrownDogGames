@@ -344,116 +344,110 @@
   }
 </style>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
+<script>
   const authBar = document.getElementById('auth-bar');
 
   function toggleDropdown(dropdown) {
     dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
   }
 
-  async function renderAuthBar() {
-    const { data: { session } } = await supabase.auth.getSession();
-    authBar.innerHTML = '';
+  // Helpers for PKCE (from https://datatracker.ietf.org/doc/html/rfc7636)
+  async function generateCodeVerifier() {
+    const array = new Uint32Array(56/2);
+    crypto.getRandomValues(array);
+    return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+  }
+  async function generateCodeChallenge(verifier) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(verifier);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return base64;
+  }
 
-    const userGamesBtn = document.createElement('button');
-    userGamesBtn.textContent = 'User Games';
-    userGamesBtn.style.backgroundColor = '#ff69b4';
-    userGamesBtn.style.color = '#1e1b2e';
-    userGamesBtn.style.border = 'none';
-    userGamesBtn.style.padding = '0.5rem 1rem';
-    userGamesBtn.style.fontWeight = 'bold';
-    userGamesBtn.style.fontSize = '0.9rem';
-    userGamesBtn.style.borderRadius = '8px';
-    userGamesBtn.style.cursor = 'pointer';
-    userGamesBtn.style.transition = 'background-color 0.2s';
-    userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
-    userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
-    userGamesBtn.addEventListener('click', () => {
-      window.location.href = 'user-games.html';
+  function redirectToGoogleOAuth() {
+    const clientId = '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com'; // replace
+    const redirectUri = 'https://browndoggames.com/callback.html'; // your redirect URI
+    const scope = 'openid email profile';
+    const state = crypto.randomUUID();
+
+    generateCodeVerifier().then(async (verifier) => {
+      const challenge = await generateCodeChallenge(verifier);
+      localStorage.setItem('pkce_verifier', verifier);
+      localStorage.setItem('oauth_state', state);
+
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope,
+        state,
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+      });
+
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
     });
-    authBar.appendChild(userGamesBtn);
+  }
 
-    if (session?.user) {
-      const { user_metadata } = session.user;
-      const name = user_metadata.full_name || 'GitHub User';
-      const avatar = user_metadata.avatar_url || '';
-      const githubUsername = user_metadata.user_name;
+  async function fetchUserInfo() {
+    // You should have your backend issue user info based on tokens stored in localStorage/session etc.
+    // For this example, we assume you have stored user info JSON in localStorage after login.
+    const user = JSON.parse(localStorage.getItem('user_info'));
+    return user;
+  }
 
+  function logout() {
+    localStorage.removeItem('user_info');
+    localStorage.removeItem('pkce_verifier');
+    localStorage.removeItem('oauth_state');
+    renderAuthBar();
+  }
+
+  async function renderAuthBar() {
+    authBar.innerHTML = '';
+    const user = await fetchUserInfo();
+
+    if (user) {
+      // Show user info + dropdown
       const userInfo = document.createElement('div');
       userInfo.id = 'user-info';
 
-      if (avatar) {
+      if (user.picture) {
         const img = document.createElement('img');
-        img.src = avatar;
-        img.alt = name;
+        img.src = user.picture;
+        img.alt = user.name;
         userInfo.appendChild(img);
       }
 
-     const nameDiv = document.createElement('div');
-nameDiv.innerHTML = `
-  <strong style="
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #ff69b4;
-    color: #1e1b2e;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    box-shadow: 0 0 10px #ff8edb;
-    cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
-  " title="Click for options">
-    ${name}
-    <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
-  </strong>
-`;
-nameDiv.title = 'Click for options';
-userInfo.title = 'Click avatar or name for dashboard & more';
-userInfo.style.cursor = 'pointer';
-userInfo.appendChild(nameDiv);
-authBar.appendChild(userInfo);
+      const nameDiv = document.createElement('div');
+      nameDiv.innerHTML = `
+        <strong style="
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background-color: #ff69b4;
+          color: #1e1b2e;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: bold;
+          box-shadow: 0 0 10px #ff8edb;
+          cursor: pointer;
+          transition: background-color 0.2s, box-shadow 0.2s;
+        " title="Click for options">
+          ${user.name}
+          <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
+        </strong>
+      `;
+      userInfo.appendChild(nameDiv);
+      authBar.appendChild(userInfo);
 
       const dropdown = document.createElement('div');
       dropdown.id = 'user-dropdown';
       dropdown.style.display = 'none';
       dropdown.style.flexDirection = 'column';
-
-      const myPageBtn = document.createElement('button');
-      myPageBtn.textContent = 'My Page';
-      myPageBtn.onclick = async () => {
-        dropdown.style.display = 'none';
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.error('Unable to get user:', userError);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from('game_submissions')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (error) {
-          console.error('Error checking submission:', error);
-          return;
-        }
-
-        if (data && data.length > 0 && githubUsername) {
-          window.location.href = `user.html?user=${githubUsername}`;
-        } else {
-          window.location.href = 'dashboard.html';
-        }
-      };
 
       const dashboardBtn = document.createElement('button');
       dashboardBtn.textContent = 'Dashboard';
@@ -464,26 +458,26 @@ authBar.appendChild(userInfo);
 
       const logoutBtn = document.createElement('button');
       logoutBtn.textContent = 'Logout';
-      logoutBtn.onclick = async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
+      logoutBtn.onclick = () => {
+        logout();
       };
 
-      dropdown.appendChild(myPageBtn);
       dropdown.appendChild(dashboardBtn);
       dropdown.appendChild(logoutBtn);
 
       authBar.appendChild(dropdown);
-      userInfo.addEventListener('click', () => toggleDropdown(dropdown));
 
+      userInfo.addEventListener('click', () => toggleDropdown(dropdown));
       document.addEventListener('click', (e) => {
         if (!authBar.contains(e.target)) {
           dropdown.style.display = 'none';
         }
       });
+
     } else {
+      // Show login button
       const loginBtn = document.createElement('button');
-      loginBtn.textContent = 'Login with GitHub';
+      loginBtn.textContent = 'Login with Google';
       loginBtn.style.backgroundColor = '#ff69b4';
       loginBtn.style.color = '#1e1b2e';
       loginBtn.style.border = 'none';
@@ -495,12 +489,8 @@ authBar.appendChild(userInfo);
       loginBtn.style.transition = 'background-color 0.2s';
       loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
       loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
-      loginBtn.addEventListener('click', async () => {
-        await supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo: window.location.href }
-        });
-      });
+      loginBtn.addEventListener('click', redirectToGoogleOAuth);
+
       authBar.appendChild(loginBtn);
     }
   }
