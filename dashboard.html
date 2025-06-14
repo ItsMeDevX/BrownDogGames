@@ -448,82 +448,72 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BrownDogGames - Adult Cartoon Games</title>
+<title>BrownDogGames - Submit & View Games</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-  /* Reset */
+  /* Basic reset */
   * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
   }
 
   body {
     font-family: 'Rubik Mono One', sans-serif;
-    background-color: #1e1b2e;
+    background: linear-gradient(135deg, #2c1b33, #191425);
     color: #fefefe;
-    background-image: linear-gradient(135deg, #2c1b33, #191425);
-    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  /* Sticky Logo at top */
-  header {
-    position: sticky;
-    top: 0;
-    background: #1e1b2e;
-    z-index: 1000;
-    padding: 10px 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.8);
-    text-align: center;
-  }
-
+  /* Logo */
   .logo {
-    height: 120px;
-    max-width: 100%;
+    display: block;
+    margin: 0 auto 25px auto;
+    height: 140px;
     width: auto;
   }
 
-  /* Wrapper for content below the sticky header */
-  .content-wrapper {
-    max-width: 700px;
-    margin: 20px auto;
-    padding: 0 15px 40px;
-  }
-
   h1 {
-    font-size: 2.8rem;
     color: #ff69b4;
+    font-size: 2.6rem;
     text-shadow: 2px 2px 0 #000;
-    margin-bottom: 20px;
     text-align: center;
+    margin-bottom: 20px;
   }
 
-  /* Form iframe */
+  /* Google Form iframe */
   iframe {
-    border: none;
     width: 100%;
     height: 650px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(255,105,180,0.3);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);
     margin-bottom: 40px;
   }
 
-  /* Table styling */
+  /* Table styles */
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 40px;
+    box-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
   }
+
   th, td {
     border: 1px solid #ff69b4;
-    padding: 8px 10px;
+    padding: 8px 12px;
     text-align: left;
+    vertical-align: top;
     word-break: break-word;
+    font-size: 0.95rem;
   }
+
   th {
     background-color: #2d1a3a;
   }
+
   tbody tr:nth-child(odd) {
     background-color: #2a2040;
   }
@@ -531,43 +521,27 @@
   a {
     color: #ff69b4;
     text-decoration: none;
-    font-weight: bold;
   }
   a:hover {
     text-decoration: underline;
-  }
-
-  /* Responsive tweaks */
-  @media (max-width: 480px) {
-    h1 {
-      font-size: 2rem;
-    }
-    iframe {
-      height: 500px;
-    }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <a href="index.html" aria-label="BrownDogGames Home">
-    <img 
-      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-      alt="BrownDogGames Logo" 
-      class="logo"
-    >
-  </a>
-</header>
+  <!-- Logo -->
+  <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
 
-<div class="content-wrapper">
+  <!-- Page Title -->
   <h1>Submit Your Game</h1>
 
-  <!-- Google Form -->
+  <!-- Embedded Google Form -->
   <iframe 
-    src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true">
-  </iframe>
+    src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true"
+    aria-label="Submit game form"
+  ></iframe>
 
+  <!-- Submitted Games Table -->
   <h1>Submitted Games Data</h1>
   <table id="sheetData" aria-label="Submitted games data table">
     <thead>
@@ -582,47 +556,49 @@
     </thead>
     <tbody></tbody>
   </table>
-</div>
 
-<script>
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?output=csv';
+  <!-- PapaParse CSV parser -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-}
+  <script>
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?output=csv';
 
-function loadSheetData() {
-  fetch(CSV_URL)
-    .then(response => response.text())
-    .then(text => {
-      const rows = parseCSV(text);
-      const tbody = document.querySelector('#sheetData tbody');
-      tbody.innerHTML = '';
+    function loadSheetData() {
+      fetch(CSV_URL)
+        .then(res => res.text())
+        .then(csvText => {
+          const results = Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+          });
 
-      rows.forEach((row, i) => {
-        if (i === 0) return; // skip header
+          const tbody = document.querySelector('#sheetData tbody');
+          tbody.innerHTML = '';
 
-        const tr = document.createElement('tr');
-        row.forEach(cell => {
-          const td = document.createElement('td');
-          if (cell.startsWith('http')) {
-            td.innerHTML = `<a href="${cell}" target="_blank" rel="noopener noreferrer">${cell}</a>`;
-          } else {
-            td.textContent = cell;
-          }
-          tr.appendChild(td);
+          results.data.forEach(row => {
+            const tr = document.createElement('tr');
+            ['Timestamp', 'Title', 'Description', 'Game URL', 'Screenshot URL', 'Cover URL'].forEach(col => {
+              const td = document.createElement('td');
+              const val = row[col] || '';
+
+              if (val.startsWith('http') || val.includes('drive.google.com')) {
+                td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
+              } else {
+                // preserve new lines in description and title for readability
+                td.innerHTML = val.replace(/\n/g, '<br>');
+              }
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(err => {
+          console.error('Failed to load sheet data:', err);
         });
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(err => {
-      console.error('Error loading sheet data:', err);
-    });
-}
+    }
 
-loadSheetData();
-</script>
+    loadSheetData();
+  </script>
 
 </body>
 </html>
