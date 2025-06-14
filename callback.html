@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logging in - BrownDogGames</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LogoDog.ico" type="image/x-icon">
+  <link rel="icon" href="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LogoDog.ico" type="image/x-icon" />
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
@@ -79,13 +79,17 @@
         if (response.ok) {
           localStorage.removeItem('pkce_verifier');
 
+          const name = escapeHtml(result.name || '');
+          const email = escapeHtml(result.email || '');
+          const picture = escapeHtml(result.picture || '');
+
           document.body.innerHTML = `
             <a href="index.html">
               <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
             </a>
-            <h1>Welcome, ${escapeHtml(result.name)}</h1>
-            <p>Email: ${escapeHtml(result.email)}</p>
-            <img src="${escapeHtml(result.picture)}" alt="Profile Picture" class="profile-pic" />
+            <h1>Welcome, ${name}</h1>
+            <p>Email: ${email}</p>
+            ${picture ? `<img src="${picture}" alt="Profile Picture" class="profile-pic" />` : ''}
             <p>Redirecting to the home page...</p>
           `;
 
@@ -102,19 +106,21 @@
     }
 
     function showError(message) {
+      const safeMsg = escapeHtml(message || 'An error occurred.');
       document.body.innerHTML = `
         <a href="index.html">
           <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
         </a>
         <h1>Login Error</h1>
-        <p class="error">${escapeHtml(message)}</p>
+        <p class="error">${safeMsg}</p>
         <p><a href="index.html" style="color:#ff69b4; text-decoration:none; font-weight:bold;">Back to Home Page</a></p>
       `;
     }
 
     // Basic HTML escaping to prevent injection
     function escapeHtml(text) {
-      return text
+      if (!text) return '';
+      return String(text)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
