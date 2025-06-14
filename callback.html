@@ -1,50 +1,58 @@
-<h1>Logging in...</h1>
-<script>
-  const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
-  const redirectUri = 'https://browndoggames.com/callback.html';
+<!DOCTYPE html>
+<html>
+<head><title>Logging in...</title></head>
+<body>
+  <h1>Logging in...</h1>
 
-  async function exchangeCodeForToken(code, verifier) {
-    const params = new URLSearchParams({
-      client_id: clientId,
-      code: code,
-      code_verifier: verifier,
-      redirect_uri: redirectUri,
-      grant_type: 'authorization_code'
-    });
+  <script>
+    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
+    const redirectUri = 'https://browndoggames.com/callback.html';
 
-    const res = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString()
-    });
+    async function exchangeCodeForToken(code, verifier) {
+      const params = new URLSearchParams({
+        client_id: clientId,
+        code: code,
+        code_verifier: verifier,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      });
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error_description || 'Token exchange failed');
+      const res = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error_description || 'Token exchange failed');
+      }
+
+      return await res.json();
     }
 
-    return await res.json();
-  }
+    async function handleCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const verifier = localStorage.getItem('pkce_verifier');
 
-  async function handleCallback() {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const verifier = localStorage.getItem('pkce_verifier');
+      if (!code || !verifier) {
+        document.body.innerHTML = 'Missing code or PKCE verifier.';
+        return;
+      }
 
-    if (!code || !verifier) {
-      document.body.innerHTML = 'Missing code or PKCE verifier.';
-      return;
+      try {
+        const tokens = await exchangeCodeForToken(code, verifier);
+        console.log('Tokens:', tokens);
+        document.body.innerHTML = '<h2>Login successful!</h2>';
+        localStorage.removeItem('pkce_verifier');
+        // You can now save tokens in localStorage or cookies as needed.
+      } catch (e) {
+        document.body.innerHTML = 'Login failed: ' + e.message;
+      }
     }
 
-    try {
-      const tokens = await exchangeCodeForToken(code, verifier);
-      console.log('Tokens:', tokens);
-      document.body.innerHTML = '<h2>Login successful!</h2>';
-      localStorage.removeItem('pkce_verifier');
-    } catch (e) {
-      document.body.innerHTML = 'Login failed: ' + e.message;
-    }
-  }
-
-  handleCallback();
-</script>
+    handleCallback();
+  </script>
+</body>
+</html>
