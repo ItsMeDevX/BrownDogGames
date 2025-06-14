@@ -278,58 +278,154 @@
 <!-- Age Gate End -->
 
 
-<!-- Auth Bar -->
- <button id="loginBtn">Login with Google</button>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-  <script>
-    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
-    const redirectUri = 'https://browndoggames.com/callback.html';
-    const scope = 'openid email profile';
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
+  authDomain: "crack-fold-458513-h0.firebaseapp.com",
+  projectId: "crack-fold-458513-h0",
+  storageBucket: "crack-fold-458513-h0.appspot.com",  // add this
+  messagingSenderId: "1051697335973",                // add this (same number as your app ID prefix)
+  appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
+};
 
-    function base64urlencode(buffer) {
-      return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const provider = new firebase.auth.GoogleAuthProvider();
 
-    async function sha256(buffer) {
-      return await crypto.subtle.digest('SHA-256', buffer);
-    }
+  const authBar = document.getElementById('auth-bar');
 
-    async function generateCodeVerifier() {
-      const array = new Uint8Array(64);
-      crypto.getRandomValues(array);
-      return base64urlencode(array);
-    }
+  function toggleDropdown(dropdown) {
+    dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
+  }
 
-    async function generateCodeChallenge(verifier) {
-      const data = new TextEncoder().encode(verifier);
-      const digest = await sha256(data);
-      return base64urlencode(digest);
-    }
+  async function renderAuthBar() {
+    authBar.innerHTML = '';
 
-    async function login() {
-      const verifier = await generateCodeVerifier();
-      const challenge = await generateCodeChallenge(verifier);
-      localStorage.setItem('pkce_verifier', verifier);
+    const userGamesBtn = document.createElement('button');
+    userGamesBtn.textContent = 'User Games';
+    userGamesBtn.style = `
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    `;
+    userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
+    userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
+    userGamesBtn.addEventListener('click', () => window.location.href = 'user-games.html');
+    authBar.appendChild(userGamesBtn);
 
-      const params = new URLSearchParams({
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        response_type: 'code',
-        scope,
-        code_challenge: challenge,
-        code_challenge_method: 'S256',
-        access_type: 'offline',
-        prompt: 'consent'
-      });
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        const name = user.displayName || 'User';
+        const avatar = user.photoURL;
 
-      window.location = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-    }
+        const userInfo = document.createElement('div');
+        userInfo.id = 'user-info';
 
-    document.getElementById('loginBtn').addEventListener('click', login);
-  </script>
-</body>
-</html>
+        if (avatar) {
+          const img = document.createElement('img');
+          img.src = avatar;
+          img.alt = name;
+          userInfo.appendChild(img);
+        }
+
+        const nameDiv = document.createElement('div');
+        nameDiv.innerHTML = `
+          <strong style="
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #ff69b4;
+            color: #1e1b2e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px #ff8edb;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+          " title="Click for options">
+            ${name}
+            <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
+          </strong>
+        `;
+        userInfo.title = 'Click avatar or name for dashboard & more';
+        userInfo.style.cursor = 'pointer';
+        userInfo.appendChild(nameDiv);
+        authBar.appendChild(userInfo);
+
+        const dropdown = document.createElement('div');
+        dropdown.id = 'user-dropdown';
+        dropdown.style.display = 'none';
+        dropdown.style.flexDirection = 'column';
+
+        const myPageBtn = document.createElement('button');
+        myPageBtn.textContent = 'My Page';
+        myPageBtn.onclick = () => {
+          dropdown.style.display = 'none';
+          // Add your own logic to check user's game submissions if needed
+          window.location.href = `dashboard.html`;
+        };
+
+        const dashboardBtn = document.createElement('button');
+        dashboardBtn.textContent = 'Dashboard';
+        dashboardBtn.onclick = () => {
+          dropdown.style.display = 'none';
+          window.location.href = 'dashboard.html';
+        };
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = async () => {
+          await auth.signOut();
+          window.location.reload();
+        };
+
+        dropdown.appendChild(myPageBtn);
+        dropdown.appendChild(dashboardBtn);
+        dropdown.appendChild(logoutBtn);
+        authBar.appendChild(dropdown);
+
+        userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+        document.addEventListener('click', (e) => {
+          if (!authBar.contains(e.target)) {
+            dropdown.style.display = 'none';
+          }
+        });
+
+      } else {
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with Google';
+        loginBtn.style = `
+          background-color: #ff69b4;
+          color: #1e1b2e;
+          border: none;
+          padding: 0.5rem 1rem;
+          font-weight: bold;
+          font-size: 0.9rem;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        `;
+        loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
+        loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
+        loginBtn.addEventListener('click', () => auth.signInWithPopup(provider));
+        authBar.appendChild(loginBtn);
+      }
+    });
+  }
+
+  renderAuthBar();
+</script>
   
   <main>
     <ul class="game-list">
