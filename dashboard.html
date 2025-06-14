@@ -476,52 +476,70 @@
   <title>BrownDogGames Dashboard</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1e1b2e;
+      background: linear-gradient(135deg, #2c1b33, #191425);
       color: #fefefe;
       max-width: 900px;
-      margin: 20px auto;
+      margin: 30px auto;
       padding: 20px;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
     }
+
     h1 {
       color: #ff69b4;
-      font-size: 2.4rem;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px #000;
+      margin-bottom: 1rem;
     }
-    #gameForm {
+
+    #signInBtn {
+      background-color: #ff69b4;
+      border: none;
+      color: #1e1b2e;
+      font-size: 1.3rem;
+      padding: 12px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 30px;
+      transition: background-color 0.3s ease;
+      position: relative;
+      z-index: 10;
+    }
+    #signInBtn:hover {
+      background-color: #ff8edb;
+    }
+
+    iframe#gameForm {
       border: none;
       width: 100%;
-      height: 650px;
+      height: 700px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #ff69b4cc;
       margin-bottom: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px #ff69b4cc;
     }
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: 12px;
-      box-shadow: 0 0 15px #ff69b4cc;
-      background: #2a243b;
-      padding: 15px;
-    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
+      margin-top: 20px;
       color: #fefefe;
+      box-shadow: 0 0 15px #ff69b4cc;
+      border-radius: 10px;
+      overflow: hidden;
     }
+
     th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #443366;
+      padding: 10px;
+      border-bottom: 1px solid #ff69b480;
       text-align: left;
     }
+
     th {
-      background-color: #3b3750;
+      background-color: #3b2750;
       font-weight: bold;
     }
+
     a {
       color: #ff69b4;
       text-decoration: none;
@@ -529,53 +547,49 @@
     a:hover {
       text-decoration: underline;
     }
-    #signInBtn {
-      background-color: #ff69b4;
-      border: none;
-      color: white;
-      font-size: 1.2rem;
-      padding: 12px 25px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 30px;
-      transition: background-color 0.3s;
-    }
-    #signInBtn:hover {
-      background-color: #ff8edb;
+
+    #loadingMessage {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: #ff69b4;
     }
   </style>
 </head>
 <body>
 
-  <h1>Submit Your Game</h1>
+  <h1>Submit Your Game - Dashboard</h1>
 
   <button id="signInBtn">Sign in with Google to Prefill Form</button>
 
-  <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
+  <iframe
+    id="gameForm"
+    src=""
+    title="Game Submission Form"
+    aria-label="Game submission form"
+  ></iframe>
 
   <h1>Submitted Games Data</h1>
-  <div class="table-wrapper">
-    <table id="sheetData" aria-label="Submitted games table">
-      <thead>
-        <tr>
-          <th>Timestamp</th>
-          <th>Title</th>
-          <th>Description</th>
-          <th>Game URL</th>
-          <th>Screenshot URL</th>
-          <th>Cover URL</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <div id="loadingMessage">Loading submitted games...</div>
+  <table id="sheetData" aria-label="Submitted games table">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Game URL</th>
+        <th>Screenshot URL</th>
+        <th>Cover URL</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script>
-    // Firebase config — replace with your own if needed
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
       authDomain: "crack-fold-458513-h0.firebaseapp.com",
@@ -585,41 +599,34 @@
       appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-
-    // Google Auth provider
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    // DOM elements
-    const gameFormIframe = document.getElementById('gameForm');
     const signInBtn = document.getElementById('signInBtn');
+    const gameFormIframe = document.getElementById('gameForm');
     const sheetTableBody = document.querySelector('#sheetData tbody');
+    const loadingMessage = document.getElementById('loadingMessage');
 
-    // Google Form URL and prefill field
-    const baseFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url";
     const entryFieldID = "entry.1551255018";
+    const baseFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url";
 
-    // Google Sheet details
-    const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
-    const sheetTab = 'Form Responses 1';
-    const baseSheetUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetTab)}&tq=`;
-
-    // Prefill form iframe URL with prefix
+    // Prefill the form URL with the prefix
     function setFormWithPrefix(prefix) {
-      const prefilledURL = `${baseFormURL}&${entryFieldID}=${encodeURIComponent(prefix)}`;
-      gameFormIframe.src = prefilledURL;
+      const url = `${baseFormURL}&${entryFieldID}=${encodeURIComponent(prefix)}`;
+      gameFormIframe.src = url;
     }
 
-    // Handle Google sign-in
+    // Sign in button click handler
     signInBtn.addEventListener('click', () => {
-      auth.signInWithPopup(provider).catch(err => alert('Sign-in error: ' + err.message));
+      auth.signInWithPopup(provider).catch(err => {
+        alert("Sign-in error: " + err.message);
+      });
     });
 
-    // Firebase Auth state listener
+    // Auth state observer
     auth.onAuthStateChanged(user => {
-      if (user && user.email) {
+      if (user) {
         const prefix = user.email.split('@')[0];
         setFormWithPrefix(prefix);
         signInBtn.style.display = 'none';
@@ -629,68 +636,65 @@
       }
     });
 
-    // Fetch sheet data and populate table
+    // Load Google Sheets data (first 50 rows)
+    const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
+    const sheetTab = 'Form Responses 1';
+    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetTab)}&tq=`;
+
     async function fetchSheetData() {
       try {
         const query = 'select * limit 50';
-        const url = baseSheetUrl + encodeURIComponent(query);
+        const url = baseUrl + encodeURIComponent(query);
         const response = await fetch(url);
         const text = await response.text();
-
-        // Extract JSON from Google's response wrapper
+        // Extract JSON from returned JS
         const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
         const data = JSON.parse(jsonStr);
-
-        const rows = data.table.rows.map(row => row.c.map(cell => (cell ? cell.v : '')));
+        const rows = data.table.rows.map(r => r.c.map(c => (c ? c.v : '')));
         renderSheetData(rows);
-      } catch (error) {
-        console.error('Error fetching sheet data:', error);
-        sheetTableBody.innerHTML = `<tr><td colspan="6" style="color:#ff69b4; padding:20px; text-align:center;">
-          Failed to load submitted games. Try refreshing.
-        </td></tr>`;
+        loadingMessage.style.display = 'none';
+      } catch (err) {
+        loadingMessage.textContent = "Error loading submitted games. Please try again later.";
+        console.error('Sheet fetch error:', err);
       }
     }
 
-    // Render sheet rows into table
     function renderSheetData(rows) {
       sheetTableBody.innerHTML = '';
       if (!rows.length) {
         sheetTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No submitted games found.</td></tr>';
         return;
       }
-
       rows.forEach(row => {
         const [timestamp, title, description, gameURL, screenshotURL, coverURL] = row;
         const tr = document.createElement('tr');
-
-        function createCell(content, isLink = false) {
+        function createCell(text, isLink = false) {
           const td = document.createElement('td');
-          if (isLink && content) {
+          if (isLink && text) {
             const a = document.createElement('a');
-            a.href = content;
+            a.href = text;
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
-            a.textContent = content;
+            a.textContent = text;
             td.appendChild(a);
           } else {
-            td.textContent = content || '';
+            td.textContent = text || '';
           }
           return td;
         }
-
         tr.appendChild(createCell(timestamp));
         tr.appendChild(createCell(title));
         tr.appendChild(createCell(description));
         tr.appendChild(createCell(gameURL, true));
         tr.appendChild(createCell(screenshotURL, true));
         tr.appendChild(createCell(coverURL, true));
-
         sheetTableBody.appendChild(tr);
       });
     }
 
-    // Fetch sheet data on load
+    // Fetch the sheet data immediately
     fetchSheetData();
+
   </script>
 </body>
 </html>
