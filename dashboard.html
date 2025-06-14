@@ -467,6 +467,7 @@
 </script>
 </body>
 </html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -564,7 +565,7 @@
   />
 
   <h1>Submit Your Game</h1>
-  <iframe id="gameForm" src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url" title="Game Submission Form"></iframe>
+  <iframe id="gameForm" src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true" title="Game Submission Form"></iframe>
 
   <h1>Submitted Games Data</h1>
   <div class="table-wrapper">
@@ -584,10 +585,10 @@
   </div>
 
   <script>
-    const sheetID = '1rMA6f-dzVstri8lIDStVx8UL6AOk-pAGO5p9gADjdi0';
-    const sheetTab = 'Submitted_Games'; // Change if your tab name differs
+    const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
+    const sheetTab = 'Form Responses 1';
 
-    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
+    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetTab)}&tq=`;
 
     const sheetTableBody = document.querySelector('#sheetData tbody');
 
@@ -595,7 +596,6 @@
       return encodeURIComponent(query);
     }
 
-    // Fetch all rows (limit to 50 for performance)
     async function fetchSheetData() {
       try {
         const query = 'select * limit 50';
