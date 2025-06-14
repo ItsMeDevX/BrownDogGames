@@ -485,6 +485,37 @@
     border-radius: 8px;
     box-shadow: 0 0 15px #ff69b4aa;
   }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+  }
+
+  th, td {
+    border: 1px solid #ff69b4;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background-color: #2d1a3a;
+  }
+
+  tbody tr:nth-child(odd) {
+    background-color: #2a2040;
+  }
+
+  a {
+    color: #ff69b4;
+    text-decoration: none;
+    word-break: break-word;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -504,11 +535,67 @@
   ></iframe>
 
   <h1>Submitted Games Data</h1>
-  <!-- Embedded Google Sheet published HTML -->
-  <iframe
-    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pubhtml"
-    title="Submitted Games Sheet"
-  ></iframe>
+  <table id="sheetData">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Game URL</th>
+        <th>Screenshot URL</th>
+        <th>Cover URL</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
+  <!-- PapaParse CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    // Your published Google Sheets CSV URL (replace with your actual published CSV link)
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?output=csv';
+
+    function loadSheetData() {
+      fetch(CSV_URL)
+        .then(response => response.text())
+        .then(csvText => {
+          const results = Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true
+          });
+
+          if (!results.data || results.data.length === 0) {
+            console.warn('No data found in CSV');
+            return;
+          }
+
+          const tbody = document.querySelector('#sheetData tbody');
+          tbody.innerHTML = '';
+
+          results.data.forEach(row => {
+            const tr = document.createElement('tr');
+
+            ['Timestamp', 'Title', 'Description', 'Game URL', 'Screenshot URL', 'Cover URL'].forEach(col => {
+              const td = document.createElement('td');
+              const val = row[col] || '';
+
+              if (val.startsWith('http') || val.includes('drive.google.com')) {
+                td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
+              } else {
+                td.innerHTML = val.replace(/\n/g, '<br>');
+              }
+              tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(error => {
+          console.error('Error loading sheet data:', error);
+        });
+    }
+
+    loadSheetData();
+  </script>
 </body>
 </html>
