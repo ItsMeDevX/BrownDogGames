@@ -234,79 +234,84 @@
 <!-- Age Gate End -->
 
 
-<!-- Auth Bar -->
-<div id="auth-bar" style="
-  max-width: 320px;
-  margin: 20px auto;
-  background-color: #2a243b;
-  border-radius: 12px;
-  box-shadow: 0 0 12px #00000055;
-  padding: 10px 16px;
-  font-family: 'Rubik Mono One', sans-serif;
-  color: #fefefe;
-  min-height: 60px;
-  position: relative;  /* For dropdown positioning */
-  user-select: none;
-">
-  <!-- Content injected by JS -->
-</div>
+<!-- Firebase SDKs -->
+ <style>
+    #auth-bar {
+      max-width: 320px;
+      margin: 20px auto;
+      background-color: #2a243b;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #00000055;
+      padding: 10px 16px;
+      font-family: 'Rubik Mono One', sans-serif;
+      color: #fefefe;
+      min-height: 60px;
+      position: relative;
+      user-select: none;
+    }
+    #user-dropdown {
+      position: absolute;
+      top: 70px;
+      right: 16px;
+      background-color: #3b3750;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px #00000077;
+      min-width: 150px;
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+    }
+    #user-dropdown button {
+      background: none;
+      border: none;
+      color: #fefefe;
+      padding: 10px 16px;
+      text-align: left;
+      font-weight: bold;
+      font-family: 'Rubik Mono One', sans-serif;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #user-dropdown button:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+    }
+    #user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    #user-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
 
-<style>
-  /* Dropdown container */
-  #user-dropdown {
-    position: absolute;
-    top: 70px; /* below the auth bar */
-    right: 16px;
-    background-color: #3b3750;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px #00000077;
-    min-width: 150px;
-    display: none;
-    flex-direction: column;
-    z-index: 1000;
-  }
-  /* Dropdown buttons */
-  #user-dropdown button {
-    background: none;
-    border: none;
-    color: #fefefe;
-    padding: 10px 16px;
-    text-align: left;
-    font-weight: bold;
-    font-family: 'Rubik Mono One', sans-serif;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  #user-dropdown button:hover {
-    background-color: #ff69b4;
-    color: #1e1b2e;
-  }
-  /* User info container (avatar + name) */
-  #user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-  }
-  #user-info img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #ff69b4;
-    object-fit: cover;
-  }
-  #user-info div {
-    font-size: 0.9rem;
-  }
-</style>
+<div id="auth-bar"></div>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+<script>
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
+    authDomain: "crack-fold-458513-h0.firebaseapp.com",
+    projectId: "crack-fold-458513-h0",
+    storageBucket: "crack-fold-458513-h0.appspot.com",
+    messagingSenderId: "1051697335973",
+    appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const provider = new firebase.auth.GoogleAuthProvider();
 
   const authBar = document.getElementById('auth-bar');
 
@@ -314,155 +319,140 @@
     dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
   }
 
-  async function renderAuthBar() {
-    const { data: { session } } = await supabase.auth.getSession();
+  function renderAuthBar() {
     authBar.innerHTML = '';
 
     const userGamesBtn = document.createElement('button');
     userGamesBtn.textContent = 'User Games';
-    userGamesBtn.style.backgroundColor = '#ff69b4';
-    userGamesBtn.style.color = '#1e1b2e';
-    userGamesBtn.style.border = 'none';
-    userGamesBtn.style.padding = '0.5rem 1rem';
-    userGamesBtn.style.fontWeight = 'bold';
-    userGamesBtn.style.fontSize = '0.9rem';
-    userGamesBtn.style.borderRadius = '8px';
-    userGamesBtn.style.cursor = 'pointer';
-    userGamesBtn.style.transition = 'background-color 0.2s';
+    userGamesBtn.style = `
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    `;
     userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
     userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
-    userGamesBtn.addEventListener('click', () => {
-      window.location.href = 'user-games.html';
-    });
+    userGamesBtn.addEventListener('click', () => window.location.href = 'user-games.html');
     authBar.appendChild(userGamesBtn);
 
-    if (session?.user) {
-      const { user_metadata } = session.user;
-      const name = user_metadata.full_name || 'GitHub User';
-      const avatar = user_metadata.avatar_url || '';
-      const githubUsername = user_metadata.user_name;
+    auth.onAuthStateChanged((user) => {
+      authBar.innerHTML = ''; // clear before rendering
 
-      const userInfo = document.createElement('div');
-      userInfo.id = 'user-info';
+      if (user) {
+        // Logged in UI
+        const name = user.displayName || 'User';
+        const avatar = user.photoURL;
 
-      if (avatar) {
-        const img = document.createElement('img');
-        img.src = avatar;
-        img.alt = name;
-        userInfo.appendChild(img);
-      }
+        const userInfo = document.createElement('div');
+        userInfo.id = 'user-info';
 
- const nameDiv = document.createElement('div');
-nameDiv.innerHTML = `
-  <strong style="
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #ff69b4;
-    color: #1e1b2e;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    box-shadow: 0 0 10px #ff8edb;
-    cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
-  " title="Click for options">
-    ${name}
-    <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
-  </strong>
-`;
-nameDiv.title = 'Click for options';
-userInfo.title = 'Click avatar or name for dashboard & more';
-userInfo.style.cursor = 'pointer';
-userInfo.appendChild(nameDiv);
-authBar.appendChild(userInfo);
+        if (avatar) {
+          const img = document.createElement('img');
+          img.src = avatar;
+          img.alt = name;
+          userInfo.appendChild(img);
+        }
 
-      const dropdown = document.createElement('div');
-      dropdown.id = 'user-dropdown';
-      dropdown.style.display = 'none';
-      dropdown.style.flexDirection = 'column';
+        const nameDiv = document.createElement('div');
+        nameDiv.innerHTML = `
+          <strong style="
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #ff69b4;
+            color: #1e1b2e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px #ff8edb;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+          " title="Click for options">
+            ${name}
+            <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
+          </strong>
+        `;
+        userInfo.title = 'Click avatar or name for dashboard & more';
+        userInfo.style.cursor = 'pointer';
+        userInfo.appendChild(nameDiv);
+        authBar.appendChild(userInfo);
 
-      const myPageBtn = document.createElement('button');
-      myPageBtn.textContent = 'My Page';
-      myPageBtn.onclick = async () => {
+        const dropdown = document.createElement('div');
+        dropdown.id = 'user-dropdown';
         dropdown.style.display = 'none';
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.error('Unable to get user:', userError);
-          return;
-        }
+        dropdown.style.flexDirection = 'column';
 
-        const { data, error } = await supabase
-          .from('game_submissions')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (error) {
-          console.error('Error checking submission:', error);
-          return;
-        }
-
-        if (data && data.length > 0 && githubUsername) {
-          window.location.href = `user.html?user=${githubUsername}`;
-        } else {
-          window.location.href = 'dashboard.html';
-        }
-      };
-
-      const dashboardBtn = document.createElement('button');
-      dashboardBtn.textContent = 'Dashboard';
-      dashboardBtn.onclick = () => {
-        dropdown.style.display = 'none';
-        window.location.href = 'dashboard.html';
-      };
-
-      const logoutBtn = document.createElement('button');
-      logoutBtn.textContent = 'Logout';
-      logoutBtn.onclick = async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
-      };
-
-      dropdown.appendChild(myPageBtn);
-      dropdown.appendChild(dashboardBtn);
-      dropdown.appendChild(logoutBtn);
-
-      authBar.appendChild(dropdown);
-      userInfo.addEventListener('click', () => toggleDropdown(dropdown));
-
-      document.addEventListener('click', (e) => {
-        if (!authBar.contains(e.target)) {
+        // My Page button
+        const myPageBtn = document.createElement('button');
+        myPageBtn.textContent = 'My Page';
+        myPageBtn.onclick = () => {
           dropdown.style.display = 'none';
-        }
-      });
-    } else {
-      const loginBtn = document.createElement('button');
-      loginBtn.textContent = 'Login with GitHub';
-      loginBtn.style.backgroundColor = '#ff69b4';
-      loginBtn.style.color = '#1e1b2e';
-      loginBtn.style.border = 'none';
-      loginBtn.style.padding = '0.5rem 1rem';
-      loginBtn.style.fontWeight = 'bold';
-      loginBtn.style.fontSize = '0.9rem';
-      loginBtn.style.borderRadius = '8px';
-      loginBtn.style.cursor = 'pointer';
-      loginBtn.style.transition = 'background-color 0.2s';
-      loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
-      loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
-      loginBtn.addEventListener('click', async () => {
-        await supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo: window.location.href }
+          window.location.href = 'user.html'; // update this URL if needed
+        };
+
+        const dashboardBtn = document.createElement('button');
+        dashboardBtn.textContent = 'Dashboard';
+        dashboardBtn.onclick = () => {
+          dropdown.style.display = 'none';
+          window.location.href = 'dashboard.html';
+        };
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = async () => {
+          await auth.signOut();
+          window.location.reload();
+        };
+
+        dropdown.appendChild(myPageBtn);
+        dropdown.appendChild(dashboardBtn);
+        dropdown.appendChild(logoutBtn);
+        authBar.appendChild(dropdown);
+
+        userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+
+        document.addEventListener('click', (e) => {
+          if (!authBar.contains(e.target)) {
+            dropdown.style.display = 'none';
+          }
         });
-      });
-      authBar.appendChild(loginBtn);
-    }
+      } else {
+        // Logged out UI
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with Google';
+        loginBtn.style = `
+          background-color: #ff69b4;
+          color: #1e1b2e;
+          border: none;
+          padding: 0.5rem 1rem;
+          font-weight: bold;
+          font-size: 0.9rem;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        `;
+        loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
+        loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
+        loginBtn.addEventListener('click', () => auth.signInWithPopup(provider));
+        authBar.appendChild(loginBtn);
+      }
+    });
   }
 
-  renderAuthBar();
+  // Wait for DOM to load then render
+  document.addEventListener('DOMContentLoaded', () => {
+    renderAuthBar();
+  });
 </script>
+
+</body>
+</html>
 
 <!DOCTYPE html>
 <html lang="en">
