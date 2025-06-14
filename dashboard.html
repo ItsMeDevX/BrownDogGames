@@ -450,6 +450,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BrownDogGames - Submit & View</title>
 <style>
+  /* Your existing styles here... */
   @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
   body {
@@ -484,7 +485,6 @@
     margin-bottom: 40px;
   }
 
-  /* Table wrapper allows horizontal scroll on small devices */
   .table-wrapper {
     overflow-x: auto;
     margin-bottom: 40px;
@@ -522,7 +522,6 @@
     text-decoration: underline;
   }
 
-  /* Responsive for smaller screens */
   @media (max-width: 600px) {
     body {
       padding: 10px;
@@ -535,7 +534,6 @@
 </head>
 <body>
 
-  <!-- Logo -->
   <img
     src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png"
     alt="BrownDogGames Logo"
@@ -543,9 +541,9 @@
   />
 
   <h1>Submit Your Game</h1>
-  <!-- Google Form embed -->
-  <iframe
-    src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true"
+  <!-- We'll dynamically update this iframe's src -->
+  <iframe id="gameForm" 
+    src="" 
     title="Game Submission Form"
   ></iframe>
 
@@ -566,63 +564,105 @@
     </table>
   </div>
 
-<script>
-  const SHEET_ID = '1m0pMbcNZ4cWYB3lAOgnc0k4Jq7syj-EGPmtcptvVDEE';
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-  function loadSheetData() {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+  <script>
+    // Your Firebase config - REPLACE with your config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
+    authDomain: "crack-fold-458513-h0.firebaseapp.com",
+    projectId: "crack-fold-458513-h0",
+    storageBucket: "crack-fold-458513-h0.appspot.com",
+    messagingSenderId: "1051697335973",
+    appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
+  };
 
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.text();
-      })
-      .then(dataText => {
-        const jsonData = JSON.parse(dataText.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1]);
-        const table = jsonData.table;
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-        if (!table || !table.rows || table.rows.length === 0) {
-          console.warn('No data found in sheet');
-          return;
-        }
+    const SHEET_ID = '1m0pMbcNZ4cWYB3lAOgnc0k4Jq7syj-EGPmtcptvVDEE';
+    const EMAIL_PREFIX_ENTRY_ID = '123456789';  // Replace with your Google Form Email Prefix entry ID
+    const FORM_BASE_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform';
 
-        const headers = table.cols.map(col => col.label);
-        const tbody = document.querySelector('#sheetData tbody');
-        tbody.innerHTML = '';
+    function loadSheetData(emailPrefix) {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-        table.rows.forEach(row => {
-          const tr = document.createElement('tr');
+      fetch(url)
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.text();
+        })
+        .then(dataText => {
+          const jsonData = JSON.parse(dataText.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1]);
+          const table = jsonData.table;
 
-          headers.forEach((header, i) => {
-            const cell = row.c[i];
-            let val = cell && cell.v ? cell.v : '';
+          if (!table || !table.rows || table.rows.length === 0) {
+            console.warn('No data found in sheet');
+            return;
+          }
 
-            const td = document.createElement('td');
+          const headers = table.cols.map(col => col.label);
+          const tbody = document.querySelector('#sheetData tbody');
+          tbody.innerHTML = '';
 
-            if (typeof val === 'string' && (val.startsWith('http') || val.includes('drive.google.com'))) {
-              td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
-            } else {
-              td.innerHTML = String(val).replace(/\n/g, '<br>');
-            }
+          table.rows.forEach(row => {
+            const rowPrefix = row.c[headers.indexOf('Email Prefix')]?.v || '';
+            if (rowPrefix !== emailPrefix) return; // Skip rows not matching the prefix
 
-            tr.appendChild(td);
+            const tr = document.createElement('tr');
+
+            headers.forEach((header, i) => {
+              if(header === 'Email Prefix') return; // Skip showing Email Prefix column in table
+
+              const cell = row.c[i];
+              let val = cell && cell.v ? cell.v : '';
+
+              const td = document.createElement('td');
+
+              if (typeof val === 'string' && (val.startsWith('http') || val.includes('drive.google.com'))) {
+                td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
+              } else {
+                td.innerHTML = String(val).replace(/\n/g, '<br>');
+              }
+
+              tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
           });
-
-          tbody.appendChild(tr);
+        })
+        .catch(err => {
+          console.error('Error loading sheet data:', err);
+          const tbody = document.querySelector('#sheetData tbody');
+          tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">Failed to load data. Please try again later.</td></tr>`;
         });
-      })
-      .catch(err => {
-        console.error('Error loading sheet data:', err);
-        const tbody = document.querySelector('#sheetData tbody');
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">Failed to load data. Please try again later.</td></tr>`;
-      });
-  }
+    }
 
-  loadSheetData();
-  // Optionally refresh every 5 minutes:
-  // setInterval(loadSheetData, 300000);
-</script>
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const emailPrefix = user.email.split('@')[0];
+
+        // Generate pre-filled form URL
+        const formPrefillUrl = `${FORM_BASE_URL}?entry.${EMAIL_PREFIX_ENTRY_ID}=${encodeURIComponent(emailPrefix)}&embedded=true`;
+
+        // Update iframe src with prefilled URL
+        document.getElementById('gameForm').src = formPrefillUrl;
+
+        // Load sheet data filtered by email prefix
+        loadSheetData(emailPrefix);
+
+      } else {
+        // Not logged in: show a message or redirect to login
+        document.getElementById('gameForm').src = `${FORM_BASE_URL}?embedded=true`;
+        const tbody = document.querySelector('#sheetData tbody');
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Please log in to view your submissions.</td></tr>`;
+      }
+    });
+  </script>
 
 </body>
 </html>
-
