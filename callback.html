@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logging in - BrownDogGames</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LogoDog.ico" type="image/x-icon" />
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background: linear-gradient(135deg, #2c1b33, #191425);
@@ -22,39 +19,26 @@
       align-items: center;
       text-align: center;
     }
-
     .logo {
       height: 80px;
-      width: auto;
-      margin: 20px auto;
-      max-width: 100%;
+      margin: 20px;
     }
-
-    h1 {
-      font-size: 2.5rem;
-      color: #ff69b4;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1rem;
-    }
-
-    p {
-      font-size: 1.2rem;
-      margin: 0.5rem 0 1.5rem;
-    }
-
     .profile-pic {
       border-radius: 50%;
       max-width: 150px;
       margin-top: 1rem;
       box-shadow: 0 0 12px #ff69b4aa;
     }
-
     .error {
       color: #ff6b6b;
       font-weight: bold;
       margin-top: 1rem;
     }
   </style>
+</head>
+<body>
+  <h1>Logging in...</h1>
+  <p>Please wait while we authenticate you.</p>
 
   <script>
     async function handleOAuthCallback() {
@@ -63,75 +47,58 @@
       const verifier = localStorage.getItem('pkce_verifier');
 
       if (!code || !verifier) {
-        showError('Missing authorization code or verifier. Please try logging in again.');
-        return;
+        return showError('Missing code or verifier.');
       }
 
       try {
-        // Debug logging
-        console.log('Exchanging code for tokens...', { code, verifier });
-
-        const response = await fetch('/api/oauth/google', {
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, verifier }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com',
+            code,
+            code_verifier: verifier,
+            redirect_uri: 'https://browndoggames.com/callback.html',
+            grant_type: 'authorization_code'
+          }),
         });
 
-        if (!response.ok) {
-          // Try to parse error JSON if possible
-          let errorResult = {};
-          try {
-            errorResult = await response.json();
-          } catch (e) {
-            // ignore parse error
-          }
-          throw new Error(errorResult.error || 'Unknown login error occurred.');
+        const tokenData = await tokenRes.json();
+
+        if (!tokenData.access_token) {
+          throw new Error('Could not get access token');
         }
 
-        const result = await response.json();
-
-        // Remove verifier after success
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+        const user = await userInfoRes.json();
+        localStorage.setItem('user_info', JSON.stringify(user));
         localStorage.removeItem('pkce_verifier');
 
-        const name = escapeHtml(result.name || '');
-        const email = escapeHtml(result.email || '');
-        const picture = escapeHtml(result.picture || '');
-
         document.body.innerHTML = `
-          <a href="index.html">
-            <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
-          </a>
-          <h1>Welcome, ${name}</h1>
-          <p>Email: ${email}</p>
-          ${picture ? `<img src="${picture}" alt="Profile Picture" class="profile-pic" />` : ''}
-          <p>Redirecting to the home page...</p>
+          <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" class="logo" />
+          <h1>Welcome, ${escapeHtml(user.name || '')}</h1>
+          <p>Email: ${escapeHtml(user.email || '')}</p>
+          ${user.picture ? `<img src="${escapeHtml(user.picture)}" class="profile-pic" />` : ''}
+          <p>Redirecting...</p>
         `;
-
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 3000);
+        setTimeout(() => window.location.href = '/', 3000);
       } catch (err) {
-        console.error('OAuth callback error:', err);
-        showError(err.message || 'Unexpected error. Please try again later.');
+        showError(err.message);
       }
     }
 
-    function showError(message) {
-      const safeMsg = escapeHtml(message || 'An error occurred.');
+    function showError(msg) {
       document.body.innerHTML = `
-        <a href="index.html">
-          <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
-        </a>
-        <h1>Login Error</h1>
-        <p class="error">${safeMsg}</p>
-        <p><a href="index.html" style="color:#ff69b4; text-decoration:none; font-weight:bold;">Back to Home Page</a></p>
+        <h1>Login Failed</h1>
+        <p class="error">${escapeHtml(msg)}</p>
+        <p><a href="/" style="color:#ff69b4;">Return Home</a></p>
       `;
     }
 
-    // Basic HTML escaping to prevent injection
     function escapeHtml(text) {
-      if (!text) return '';
-      return String(text)
+      return String(text || '')
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -139,19 +106,7 @@
         .replace(/'/g, "&#039;");
     }
 
-    window.addEventListener('DOMContentLoaded', handleOAuthCallback);
+    handleOAuthCallback();
   </script>
-</head>
-<body>
-  <a href="index.html">
-    <img
-      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png"
-      alt="BrownDogGames Logo"
-      class="logo"
-    />
-  </a>
-
-  <h1>Logging in...</h1>
-  <p>Please wait a moment while we process your login.</p>
 </body>
 </html>
