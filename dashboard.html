@@ -471,90 +471,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BrownDogGames - Submit & View</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrownDogGames - Submit & View</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-  body {
-    font-family: 'Rubik Mono One', sans-serif;
-    background-color: #1e1b2e;
-    color: #fefefe;
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background-image: linear-gradient(135deg, #2c1b33, #191425);
-    text-align: center;
-  }
-
-  .logo {
-    max-width: 180px;
-    height: auto;
-    margin: 0 auto 20px;
-    display: block;
-  }
-
-  h1 {
-    color: #ff69b4;
-    font-size: 2.4rem;
-    text-shadow: 2px 2px 0 #000;
-    margin-bottom: 15px;
-  }
-
-  iframe {
-    border: none;
-    width: 100%;
-    height: 650px;
-    margin-bottom: 40px;
-  }
-
-  .table-wrapper {
-    overflow-x: auto;
-    margin-bottom: 40px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    word-wrap: break-word;
-  }
-
-  th, td {
-    border: 1px solid #ff69b4;
-    padding: 8px;
-    text-align: left;
-    vertical-align: top;
-  }
-
-  th {
-    background-color: #2d1a3a;
-  }
-
-  tbody tr:nth-child(odd) {
-    background-color: #2a2040;
-  }
-
-  a {
-    color: #ff69b4;
-    text-decoration: none;
-    word-break: break-word;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 600px) {
     body {
-      padding: 10px;
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      text-align: center;
     }
+
+    .logo {
+      max-width: 180px;
+      height: auto;
+      margin: 0 auto 20px;
+      display: block;
+    }
+
     h1 {
-      font-size: 1.8rem;
+      color: #ff69b4;
+      font-size: 2.4rem;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 15px;
     }
-  }
-</style>
+
+    iframe {
+      border: none;
+      width: 100%;
+      height: 650px;
+      margin-bottom: 40px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      margin-bottom: 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      word-wrap: break-word;
+    }
+
+    th, td {
+      border: 1px solid #ff69b4;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #2d1a3a;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #2a2040;
+    }
+
+    a {
+      color: #ff69b4;
+      text-decoration: none;
+      word-break: break-word;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -565,7 +565,7 @@
   />
 
   <h1>Submit Your Game</h1>
-  <iframe id="gameForm" src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true" title="Game Submission Form"></iframe>
+  <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
 
   <h1>Submitted Games Data</h1>
   <div class="table-wrapper">
@@ -585,11 +585,26 @@
   </div>
 
   <script>
+    // Autofill the form with prefix from URL
+    (function autoFillForm() {
+      const params = new URLSearchParams(window.location.search);
+      const prefix = params.get("prefix");
+
+      const baseFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform";
+      const entryPrefixId = "entry.1551255018"; // Replace with actual field ID
+
+      let fullFormUrl = baseFormUrl;
+      if (prefix) {
+        fullFormUrl += `?${entryPrefixId}=${encodeURIComponent(prefix)}`;
+      }
+
+      document.getElementById("gameForm").src = fullFormUrl;
+    })();
+
     const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
-    const sheetTab = 'Form Responses 1';
+    const sheetTab = 'Form Responses 1'; // Make sure this is the correct tab name
 
-    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetTab)}&tq=`;
-
+    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
     const sheetTableBody = document.querySelector('#sheetData tbody');
 
     function encodeQuery(query) {
@@ -603,10 +618,8 @@
 
         const response = await fetch(url);
         const text = await response.text();
-
         const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
         const data = JSON.parse(jsonStr);
-
         const rows = data.table.rows.map(r => r.c.map(c => (c ? c.v : '')));
 
         renderSheetData(rows);
