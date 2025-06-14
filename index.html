@@ -283,28 +283,34 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
-  authDomain: "crack-fold-458513-h0.firebaseapp.com",
-  projectId: "crack-fold-458513-h0",
-  storageBucket: "crack-fold-458513-h0.appspot.com",  // add this
-  messagingSenderId: "1051697335973",                // add this (same number as your app ID prefix)
-  appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
-};
+  // Your Firebase config object
+  const firebaseConfig = {
+    apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
+    authDomain: "crack-fold-458513-h0.firebaseapp.com",
+    projectId: "crack-fold-458513-h0",
+    storageBucket: "crack-fold-458513-h0.appspot.com",
+    messagingSenderId: "1051697335973",
+    appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
+  };
 
+  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const provider = new firebase.auth.GoogleAuthProvider();
 
   const authBar = document.getElementById('auth-bar');
 
+  // Toggle dropdown menu visibility
   function toggleDropdown(dropdown) {
     dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
   }
 
-  async function renderAuthBar() {
+  // Listen to auth state changes and update UI
+  auth.onAuthStateChanged(user => {
+    // Clear existing UI
     authBar.innerHTML = '';
 
+    // Always show User Games button
     const userGamesBtn = document.createElement('button');
     userGamesBtn.textContent = 'User Games';
     userGamesBtn.style = `
@@ -317,114 +323,159 @@ const firebaseConfig = {
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
+      margin-right: 12px;
     `;
     userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
     userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
     userGamesBtn.addEventListener('click', () => window.location.href = 'user-games.html');
     authBar.appendChild(userGamesBtn);
 
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        const name = user.displayName || 'User';
-        const avatar = user.photoURL;
+    if (user) {
+      // User is signed in — show avatar, name, dropdown
 
-        const userInfo = document.createElement('div');
-        userInfo.id = 'user-info';
+      const userInfo = document.createElement('div');
+      userInfo.id = 'user-info';
+      userInfo.style.display = 'inline-flex';
+      userInfo.style.alignItems = 'center';
+      userInfo.style.gap = '10px';
+      userInfo.style.cursor = 'pointer';
+      userInfo.style.position = 'relative';
 
-        if (avatar) {
-          const img = document.createElement('img');
-          img.src = avatar;
-          img.alt = name;
-          userInfo.appendChild(img);
-        }
+      if (user.photoURL) {
+        const img = document.createElement('img');
+        img.src = user.photoURL;
+        img.alt = user.displayName || 'User';
+        img.style.width = '40px';
+        img.style.height = '40px';
+        img.style.borderRadius = '50%';
+        img.style.border = '2px solid #ff69b4';
+        img.style.objectFit = 'cover';
+        userInfo.appendChild(img);
+      }
 
-        const nameDiv = document.createElement('div');
-        nameDiv.innerHTML = `
-          <strong style="
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background-color: #ff69b4;
-            color: #1e1b2e;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            box-shadow: 0 0 10px #ff8edb;
-            cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
-          " title="Click for options">
-            ${name}
-            <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
-          </strong>
-        `;
-        userInfo.title = 'Click avatar or name for dashboard & more';
-        userInfo.style.cursor = 'pointer';
-        userInfo.appendChild(nameDiv);
-        authBar.appendChild(userInfo);
-
-        const dropdown = document.createElement('div');
-        dropdown.id = 'user-dropdown';
-        dropdown.style.display = 'none';
-        dropdown.style.flexDirection = 'column';
-
-        const myPageBtn = document.createElement('button');
-        myPageBtn.textContent = 'My Page';
-        myPageBtn.onclick = () => {
-          dropdown.style.display = 'none';
-          // Add your own logic to check user's game submissions if needed
-          window.location.href = `dashboard.html`;
-        };
-
-        const dashboardBtn = document.createElement('button');
-        dashboardBtn.textContent = 'Dashboard';
-        dashboardBtn.onclick = () => {
-          dropdown.style.display = 'none';
-          window.location.href = 'dashboard.html';
-        };
-
-        const logoutBtn = document.createElement('button');
-        logoutBtn.textContent = 'Logout';
-        logoutBtn.onclick = async () => {
-          await auth.signOut();
-          window.location.reload();
-        };
-
-        dropdown.appendChild(myPageBtn);
-        dropdown.appendChild(dashboardBtn);
-        dropdown.appendChild(logoutBtn);
-        authBar.appendChild(dropdown);
-
-        userInfo.addEventListener('click', () => toggleDropdown(dropdown));
-        document.addEventListener('click', (e) => {
-          if (!authBar.contains(e.target)) {
-            dropdown.style.display = 'none';
-          }
-        });
-
-      } else {
-        const loginBtn = document.createElement('button');
-        loginBtn.textContent = 'Login with Google';
-        loginBtn.style = `
+      const nameDiv = document.createElement('div');
+      nameDiv.innerHTML = `
+        <strong style="
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           background-color: #ff69b4;
           color: #1e1b2e;
-          border: none;
-          padding: 0.5rem 1rem;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 0.85rem;
           font-weight: bold;
-          font-size: 0.9rem;
-          border-radius: 8px;
+          box-shadow: 0 0 10px #ff8edb;
           cursor: pointer;
-          transition: background-color 0.2s;
-        `;
-        loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
-        loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
-        loginBtn.addEventListener('click', () => auth.signInWithPopup(provider));
-        authBar.appendChild(loginBtn);
-      }
-    });
-  }
+          transition: background-color 0.2s, box-shadow 0.2s;
+        " title="Click for options">
+          ${user.displayName || 'User'}
+          <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
+        </strong>
+      `;
+      userInfo.appendChild(nameDiv);
+      authBar.appendChild(userInfo);
 
-  renderAuthBar();
+      // Dropdown menu
+      const dropdown = document.createElement('div');
+      dropdown.id = 'user-dropdown';
+      dropdown.style.position = 'absolute';
+      dropdown.style.top = '70px';
+      dropdown.style.right = '0';
+      dropdown.style.backgroundColor = '#3b3750';
+      dropdown.style.borderRadius = '8px';
+      dropdown.style.boxShadow = '0 4px 12px #00000077';
+      dropdown.style.minWidth = '150px';
+      dropdown.style.display = 'none';
+      dropdown.style.flexDirection = 'column';
+      dropdown.style.zIndex = '1000';
+
+      // Dashboard button
+      const dashboardBtn = document.createElement('button');
+      dashboardBtn.textContent = 'Dashboard';
+      dashboardBtn.style.background = 'none';
+      dashboardBtn.style.border = 'none';
+      dashboardBtn.style.color = '#fefefe';
+      dashboardBtn.style.padding = '10px 16px';
+      dashboardBtn.style.textAlign = 'left';
+      dashboardBtn.style.fontWeight = 'bold';
+      dashboardBtn.style.fontFamily = "'Rubik Mono One', sans-serif";
+      dashboardBtn.style.cursor = 'pointer';
+      dashboardBtn.style.transition = 'background-color 0.2s';
+      dashboardBtn.addEventListener('mouseover', () => {
+        dashboardBtn.style.backgroundColor = '#ff69b4';
+        dashboardBtn.style.color = '#1e1b2e';
+      });
+      dashboardBtn.addEventListener('mouseout', () => {
+        dashboardBtn.style.backgroundColor = 'transparent';
+        dashboardBtn.style.color = '#fefefe';
+      });
+      dashboardBtn.onclick = () => {
+        dropdown.style.display = 'none';
+        window.location.href = 'dashboard.html';
+      };
+      dropdown.appendChild(dashboardBtn);
+
+      // Logout button
+      const logoutBtn = document.createElement('button');
+      logoutBtn.textContent = 'Logout';
+      logoutBtn.style.background = 'none';
+      logoutBtn.style.border = 'none';
+      logoutBtn.style.color = '#fefefe';
+      logoutBtn.style.padding = '10px 16px';
+      logoutBtn.style.textAlign = 'left';
+      logoutBtn.style.fontWeight = 'bold';
+      logoutBtn.style.fontFamily = "'Rubik Mono One', sans-serif";
+      logoutBtn.style.cursor = 'pointer';
+      logoutBtn.style.transition = 'background-color 0.2s';
+      logoutBtn.addEventListener('mouseover', () => {
+        logoutBtn.style.backgroundColor = '#ff69b4';
+        logoutBtn.style.color = '#1e1b2e';
+      });
+      logoutBtn.addEventListener('mouseout', () => {
+        logoutBtn.style.backgroundColor = 'transparent';
+        logoutBtn.style.color = '#fefefe';
+      });
+      logoutBtn.onclick = async () => {
+        await auth.signOut();
+        window.location.reload();
+      };
+      dropdown.appendChild(logoutBtn);
+
+      authBar.appendChild(dropdown);
+
+      // Toggle dropdown on clicking userInfo
+      userInfo.addEventListener('click', (e) => {
+        e.stopPropagation();  // Prevent event bubbling to document
+        toggleDropdown(dropdown);
+      });
+
+      // Hide dropdown if clicking outside
+      document.addEventListener('click', () => {
+        dropdown.style.display = 'none';
+      });
+
+    } else {
+      // No user signed in, show login button
+      const loginBtn = document.createElement('button');
+      loginBtn.textContent = 'Login with Google';
+      loginBtn.style = `
+        background-color: #ff69b4;
+        color: #1e1b2e;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      `;
+      loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
+      loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
+      loginBtn.addEventListener('click', () => auth.signInWithPopup(provider));
+      authBar.appendChild(loginBtn);
+    }
+  });
 </script>
   
   <main>
