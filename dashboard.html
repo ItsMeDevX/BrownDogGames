@@ -452,7 +452,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-  /* Reset & basics */
+  /* Reset */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -463,26 +463,32 @@
     font-family: 'Rubik Mono One', sans-serif;
     background-color: #1e1b2e;
     color: #fefefe;
-    min-height: 100vh;
     background-image: linear-gradient(135deg, #2c1b33, #191425);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
+    min-height: 100vh;
   }
 
-  /* Logo fixed at top center */
+  /* Sticky Logo at top */
+  header {
+    position: sticky;
+    top: 0;
+    background: #1e1b2e;
+    z-index: 1000;
+    padding: 10px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    text-align: center;
+  }
+
   .logo {
-    height: 150px;
-    width: auto;
+    height: 120px;
     max-width: 100%;
-    margin-bottom: 40px;
+    width: auto;
   }
 
-  /* Wrapper for form + table content */
+  /* Wrapper for content below the sticky header */
   .content-wrapper {
-    width: 100%;
     max-width: 700px;
+    margin: 20px auto;
+    padding: 0 15px 40px;
   }
 
   h1 {
@@ -493,17 +499,17 @@
     text-align: center;
   }
 
-  /* Google Form iframe */
+  /* Form iframe */
   iframe {
     border: none;
     width: 100%;
     height: 650px;
-    margin-bottom: 40px;
     border-radius: 12px;
     box-shadow: 0 0 15px rgba(255,105,180,0.3);
+    margin-bottom: 40px;
   }
 
-  /* Table */
+  /* Table styling */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -513,6 +519,7 @@
     border: 1px solid #ff69b4;
     padding: 8px 10px;
     text-align: left;
+    word-break: break-word;
   }
   th {
     background-color: #2d1a3a;
@@ -520,6 +527,7 @@
   tbody tr:nth-child(odd) {
     background-color: #2a2040;
   }
+
   a {
     color: #ff69b4;
     text-decoration: none;
@@ -528,23 +536,34 @@
   a:hover {
     text-decoration: underline;
   }
+
+  /* Responsive tweaks */
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 2rem;
+    }
+    iframe {
+      height: 500px;
+    }
+  }
 </style>
 </head>
 <body>
 
-<!-- Logo fixed at top -->
-<a href="index.html" aria-label="BrownDogGames Home">
-  <img 
-    src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-    alt="BrownDogGames Logo" 
-    class="logo"
-  >
-</a>
+<header>
+  <a href="index.html" aria-label="BrownDogGames Home">
+    <img 
+      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+      alt="BrownDogGames Logo" 
+      class="logo"
+    >
+  </a>
+</header>
 
 <div class="content-wrapper">
   <h1>Submit Your Game</h1>
 
-  <!-- Google Form Embed -->
+  <!-- Google Form -->
   <iframe 
     src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true">
   </iframe>
@@ -566,7 +585,6 @@
 </div>
 
 <script>
-// Your published CSV URL
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?output=csv';
 
 function parseCSV(text) {
