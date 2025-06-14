@@ -46,33 +46,45 @@
     }
   </style>
 
-  <!-- Supabase Auth Callback Logic -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-    const redirectToHome = (delay = 2000) => {
-      setTimeout(() => {
-        window.location.href = '/';
-      }, delay);
-    };
-
+  <script>
     async function handleOAuthCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const verifier = localStorage.getItem('pkce_verifier');
+
+      if (!code || !verifier) {
+        document.body.innerHTML = `<h1>Error</h1><p>Missing authorization code or verifier. Please try logging in again.</p>`;
+        return;
+      }
+
       try {
-        const { error } = await supabase.auth.exchangeCodeForSession();
-        if (error) {
-          console.error('Login failed:', error.message);
-          redirectToHome(4000);
-          return;
+        const response = await fetch('/api/oauth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, verifier }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          localStorage.removeItem('pkce_verifier');
+          document.body.innerHTML = `
+            <h1>Welcome, ${result.name}</h1>
+            <p>Email: ${result.email}</p>
+            <img src="${result.picture}" alt="Profile Picture" style="border-radius: 50%; max-width: 150px; margin-top: 1rem;">
+          `;
+
+          // Redirect to home or dashboard after delay
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 3000);
+
+        } else {
+          document.body.innerHTML = `<h1>Login Failed</h1><p>${result.error || 'Unknown error occurred.'}</p>`;
         }
-        redirectToHome(2000);
       } catch (err) {
-        console.error('Unexpected error:', err);
-        redirectToHome(5000);
+        console.error(err);
+        document.body.innerHTML = `<h1>Unexpected Error</h1><p>Please try again later.</p>`;
       }
     }
 
@@ -93,4 +105,3 @@
   <p>Please wait a moment while we process your login.</p>
 </body>
 </html>
-
