@@ -279,244 +279,145 @@
 
 
 <!-- Auth Bar -->
-<div id="auth-bar" style="
-  max-width: 320px;
-  margin: 20px auto;
-  background-color: #2a243b;
-  border-radius: 12px;
-  box-shadow: 0 0 12px #00000055;
-  padding: 10px 16px;
-  font-family: 'Rubik Mono One', sans-serif;
-  color: #fefefe;
-  min-height: 60px;
-  position: relative;  /* For dropdown positioning */
-  user-select: none;
-">
-  <!-- Content injected by JS -->
-</div>
+ <div id="auth-bar"></div>
 
-<style>
-  /* Dropdown container */
-  #user-dropdown {
-    position: absolute;
-    top: 70px; /* below the auth bar */
-    right: 16px;
-    background-color: #3b3750;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px #00000077;
-    min-width: 150px;
-    display: none;
-    flex-direction: column;
-    z-index: 1000;
-  }
-  /* Dropdown buttons */
-  #user-dropdown button {
-    background: none;
-    border: none;
-    color: #fefefe;
-    padding: 10px 16px;
-    text-align: left;
-    font-weight: bold;
-    font-family: 'Rubik Mono One', sans-serif;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  #user-dropdown button:hover {
-    background-color: #ff69b4;
-    color: #1e1b2e;
-  }
-  /* User info container (avatar + name) */
-  #user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-  }
-  #user-info img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #ff69b4;
-    object-fit: cover;
-  }
-  #user-info div {
-    font-size: 0.9rem;
-  }
-</style>
+  <script>
+    const authBar = document.getElementById('auth-bar');
 
-<script>
-  const authBar = document.getElementById('auth-bar');
-
-  function toggleDropdown(dropdown) {
-    dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
-  }
-
-  // PKCE helper functions
-  async function generateCodeVerifier() {
-    const array = new Uint8Array(56);
-    crypto.getRandomValues(array);
-    return Array.from(array).map(b => ('0' + b.toString(16)).slice(-2)).join('');
-  }
-  async function generateCodeChallenge(verifier) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(verifier);
-    const digest = await crypto.subtle.digest('SHA-256', data);
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    return base64;
-  }
-
-  function redirectToGoogleOAuth() {
-    const clientId = '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com'; // your client ID
-    const redirectUri = 'https://browndoggames.com/callback.html'; // your redirect URI
-    const scope = 'openid email profile';
-    const state = crypto.randomUUID();
-
-    generateCodeVerifier().then(async (verifier) => {
-      const challenge = await generateCodeChallenge(verifier);
-      localStorage.setItem('pkce_verifier', verifier);
-      localStorage.setItem('oauth_state', state);
-
-      const params = new URLSearchParams({
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        response_type: 'code',
-        scope,
-        state,
-        code_challenge: challenge,
-        code_challenge_method: 'S256',
-      });
-
-      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-    });
-  }
-
-  // This just fetches stored user info from localStorage
-  async function fetchUserInfo() {
-    const user = localStorage.getItem('user_info');
-    if (!user) return null;
-    try {
-      return JSON.parse(user);
-    } catch {
-      return null;
+    async function generateCodeVerifier() {
+      const array = new Uint8Array(56);
+      crypto.getRandomValues(array);
+      return Array.from(array).map(b => ('0' + b.toString(16)).slice(-2)).join('');
     }
-  }
 
-  // Logout clears stored data & rerenders auth bar
-  function logout() {
-    localStorage.removeItem('user_info');
-    localStorage.removeItem('pkce_verifier');
-    localStorage.removeItem('oauth_state');
-    renderAuthBar();
-  }
+    async function generateCodeChallenge(verifier) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(verifier);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return base64;
+    }
 
-  async function renderAuthBar() {
-    authBar.innerHTML = '';
-    const user = await fetchUserInfo();
+    function redirectToGoogleOAuth() {
+      const clientId = '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com';
+      const redirectUri = 'https://browndoggames.com/callback.html';
+      const scope = 'openid email profile';
+      const state = crypto.randomUUID();
 
-    if (user) {
-      // Show user info + dropdown
-      const userInfo = document.createElement('div');
-      userInfo.id = 'user-info';
+      generateCodeVerifier().then(async (verifier) => {
+        const challenge = await generateCodeChallenge(verifier);
+        localStorage.setItem('pkce_verifier', verifier);
+        localStorage.setItem('oauth_state', state);
 
-      if (user.picture) {
-        const img = document.createElement('img');
-        img.src = user.picture;
-        img.alt = user.name;
-        userInfo.appendChild(img);
+        const params = new URLSearchParams({
+          client_id: clientId,
+          redirect_uri: redirectUri,
+          response_type: 'code',
+          scope,
+          state,
+          code_challenge: challenge,
+          code_challenge_method: 'S256',
+        });
+
+        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      });
+    }
+
+    async function fetchUserInfo() {
+      const user = localStorage.getItem('user_info');
+      if (!user) return null;
+      try {
+        return JSON.parse(user);
+      } catch {
+        return null;
       }
-
-      const nameDiv = document.createElement('div');
-      nameDiv.innerHTML = `
-        <strong style="
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background-color: #ff69b4;
-          color: #1e1b2e;
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: bold;
-          box-shadow: 0 0 10px #ff8edb;
-          cursor: pointer;
-          transition: background-color 0.2s, box-shadow 0.2s;
-          user-select:none;
-        " title="Click for options">
-          ${escapeHtml(user.name)}
-          <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
-        </strong>
-      `;
-      userInfo.appendChild(nameDiv);
-      authBar.appendChild(userInfo);
-
-      const dropdown = document.createElement('div');
-      dropdown.id = 'user-dropdown';
-      dropdown.style.display = 'none';
-      dropdown.style.flexDirection = 'column';
-
-      const dashboardBtn = document.createElement('button');
-      dashboardBtn.textContent = 'Dashboard';
-      dashboardBtn.onclick = () => {
-        dropdown.style.display = 'none';
-        window.location.href = 'dashboard.html';
-      };
-
-      const logoutBtn = document.createElement('button');
-      logoutBtn.textContent = 'Logout';
-      logoutBtn.onclick = () => {
-        logout();
-      };
-
-      dropdown.appendChild(dashboardBtn);
-      dropdown.appendChild(logoutBtn);
-
-      authBar.appendChild(dropdown);
-
-      userInfo.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleDropdown(dropdown);
-      });
-      document.addEventListener('click', () => {
-        dropdown.style.display = 'none';
-      });
-
-    } else {
-      // Show login button
-      const loginBtn = document.createElement('button');
-      loginBtn.textContent = 'Login with Google';
-      Object.assign(loginBtn.style, {
-        backgroundColor: '#ff69b4',
-        color: '#1e1b2e',
-        border: 'none',
-        padding: '0.5rem 1rem',
-        fontWeight: 'bold',
-        fontSize: '0.9rem',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s',
-      });
-      loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
-      loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
-      loginBtn.addEventListener('click', redirectToGoogleOAuth);
-
-      authBar.appendChild(loginBtn);
     }
-  }
 
-  // Simple HTML escape function
-  function escapeHtml(text) {
-    if (!text) return '';
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+    function logout() {
+      localStorage.removeItem('user_info');
+      localStorage.removeItem('pkce_verifier');
+      localStorage.removeItem('oauth_state');
+      renderAuthBar();
+    }
 
-  renderAuthBar();
-</script>
+    function toggleDropdown(dropdown) {
+      dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    async function renderAuthBar() {
+      authBar.innerHTML = '';
+      const user = await fetchUserInfo();
+
+      if (user) {
+        const userInfo = document.createElement('div');
+        userInfo.id = 'user-info';
+
+        if (user.picture) {
+          const img = document.createElement('img');
+          img.src = user.picture;
+          img.alt = user.name;
+          userInfo.appendChild(img);
+        }
+
+        const nameDiv = document.createElement('div');
+        nameDiv.innerHTML = `
+          <strong style="background-color:#ff69b4; color:#1e1b2e; padding:6px 12px; border-radius:20px; font-size:0.85rem; cursor:pointer;">
+            ${escapeHtml(user.name)} <span style="font-size: 1.2rem;">▾</span>
+          </strong>
+        `;
+        userInfo.appendChild(nameDiv);
+        authBar.appendChild(userInfo);
+
+        const dropdown = document.createElement('div');
+        dropdown.id = 'user-dropdown';
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = () => logout();
+
+        dropdown.appendChild(logoutBtn);
+        authBar.appendChild(dropdown);
+
+        userInfo.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleDropdown(dropdown);
+        });
+        document.addEventListener('click', () => {
+          dropdown.style.display = 'none';
+        });
+
+      } else {
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with Google';
+        Object.assign(loginBtn.style, {
+          backgroundColor: '#ff69b4',
+          color: '#1e1b2e',
+          border: 'none',
+          padding: '0.5rem 1rem',
+          fontWeight: 'bold',
+          fontSize: '0.9rem',
+          borderRadius: '8px',
+          cursor: 'pointer',
+        });
+        loginBtn.onclick = redirectToGoogleOAuth;
+        authBar.appendChild(loginBtn);
+      }
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    renderAuthBar();
+  </script>
+</body>
+</html>
   
   <main>
     <ul class="game-list">
