@@ -551,12 +551,12 @@
 
     <label>
       Screenshot (PNG/JPG): 
-      <input type="file" id="screenshotFile" name="screenshotFile" accept="image/*" />
+      <input type="file" id="screenshotFile" name="screenshotFile" accept="image/png,image/jpeg" />
     </label>
 
     <label>
       Cover Image (PNG/JPG): 
-      <input type="file" id="coverFile" name="coverFile" accept="image/*" />
+      <input type="file" id="coverFile" name="coverFile" accept="image/png,image/jpeg" />
     </label>
 
     <button type="submit">Submit Game</button>
@@ -580,9 +580,6 @@
 
       const formData = new FormData(form);
 
-      // Because Apps Script doesn't support multipart natively, we send base64 encoded files instead
-      // So we read files and convert to base64, then send the whole JSON object to GAS function
-
       const filesToRead = ['gameFile', 'screenshotFile', 'coverFile'];
       let filePromises = filesToRead.map(name => {
         const file = formData.get(name);
@@ -594,7 +591,7 @@
             resolve({
               name: file.name,
               type: file.type,
-              data: reader.result.split(',')[1]  // base64 string only
+              data: reader.result.split(',')[1]  // base64 only
             });
           };
           reader.readAsDataURL(file);
@@ -610,6 +607,7 @@
           coverFile: files[2]
         };
 
+        // THIS is the critical fix: use google.script.run with proper handlers
         google.script.run
           .withSuccessHandler(() => {
             showMessage('Game submitted successfully!', 'success');
