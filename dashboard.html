@@ -461,7 +461,7 @@
   <title>Upload Your Game</title>
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
-    /* your CSS exactly as you provided */
+    /* Your CSS unchanged */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -575,12 +575,11 @@
 
     form.addEventListener('submit', e => {
       e.preventDefault();
-
       showMessage('Uploading, please wait...');
 
       const formData = new FormData(form);
-
       const filesToRead = ['gameFile', 'screenshotFile', 'coverFile'];
+
       let filePromises = filesToRead.map(name => {
         const file = formData.get(name);
         if (!file || file.size === 0) return Promise.resolve(null);
@@ -607,7 +606,6 @@
           coverFile: files[2]
         };
 
-        // THIS is the critical fix: use google.script.run with proper handlers
         google.script.run
           .withSuccessHandler(() => {
             showMessage('Game submitted successfully!', 'success');
