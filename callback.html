@@ -44,10 +44,16 @@
     async function handleOAuthCallback() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
+      const state = params.get('state');
+      const storedState = localStorage.getItem('oauth_state');
       const verifier = localStorage.getItem('pkce_verifier');
 
       if (!code || !verifier) {
-        return showError('Missing code or verifier.');
+        return showError('Missing authorization code or PKCE verifier.');
+      }
+
+      if (!state || state !== storedState) {
+        return showError('Invalid OAuth state. Please try again.');
       }
 
       try {
@@ -64,28 +70,35 @@
         });
 
         const tokenData = await tokenRes.json();
+        console.log('Token Response:', tokenData);
 
         if (!tokenData.access_token) {
-          throw new Error('Could not get access token');
+          throw new Error(tokenData.error_description || 'Failed to retrieve access token.');
         }
 
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenData.access_token}` },
         });
+
         const user = await userInfoRes.json();
+        console.log('User Info:', user);
+
         localStorage.setItem('user_info', JSON.stringify(user));
         localStorage.removeItem('pkce_verifier');
+        localStorage.removeItem('oauth_state');
 
         document.body.innerHTML = `
           <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" class="logo" />
           <h1>Welcome, ${escapeHtml(user.name || '')}</h1>
           <p>Email: ${escapeHtml(user.email || '')}</p>
           ${user.picture ? `<img src="${escapeHtml(user.picture)}" class="profile-pic" />` : ''}
-          <p>Redirecting...</p>
+          <p>Redirecting to home...</p>
         `;
+
         setTimeout(() => window.location.href = '/', 3000);
       } catch (err) {
-        showError(err.message);
+        console.error('OAuth Callback Error:', err);
+        showError(err.message || 'An unexpected error occurred.');
       }
     }
 
