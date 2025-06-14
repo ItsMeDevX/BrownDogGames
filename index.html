@@ -280,58 +280,54 @@
 
 <!-- Auth Bar -->
   <button id="loginBtn">Login with Google</button>
+<script>
+  const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
+  const redirectUri = 'https://browndoggames.com/callback.html';
+  const scope = 'openid email profile';
 
-  <script>
-    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
-    const redirectUri = 'https://browndoggames.com/callback.html'; // Your callback page URL
-    const scope = 'openid email profile';
+  function base64urlencode(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
 
-    // Base64-urlencode function
-    function base64urlencode(buffer) {
-      return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
+  async function sha256(buffer) {
+    return await crypto.subtle.digest('SHA-256', buffer);
+  }
 
-    async function sha256(buffer) {
-      return await crypto.subtle.digest('SHA-256', buffer);
-    }
+  async function generateCodeVerifier() {
+    const array = new Uint8Array(128);
+    crypto.getRandomValues(array);
+    return base64urlencode(array);
+  }
 
-    async function generateCodeVerifier() {
-      const array = new Uint8Array(128);
-      crypto.getRandomValues(array);
-      return base64urlencode(array);
-    }
+  async function generateCodeChallenge(verifier) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(verifier);
+    const digest = await sha256(data);
+    return base64urlencode(digest);
+  }
 
-    async function generateCodeChallenge(verifier) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(verifier);
-      const digest = await sha256(data);
-      return base64urlencode(digest);
-    }
+  async function login() {
+    const verifier = await generateCodeVerifier();
+    const challenge = await generateCodeChallenge(verifier);
+    localStorage.setItem('pkce_verifier', verifier);
 
-    async function login() {
-      const verifier = await generateCodeVerifier();
-      const challenge = await generateCodeChallenge(verifier);
-      localStorage.setItem('pkce_verifier', verifier);
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: scope,
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+      access_type: 'offline',
+      prompt: 'consent'
+    });
 
-      const params = new URLSearchParams({
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        response_type: 'code',
-        scope: scope,
-        code_challenge: challenge,
-        code_challenge_method: 'S256',
-        access_type: 'offline',
-        prompt: 'consent'
-      });
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
 
-      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-    }
-
-    document.getElementById('loginBtn').addEventListener('click', login);
-  </script>
-</body>
-</html>
+  document.getElementById('loginBtn').addEventListener('click', login);
+</script>
   
   <main>
     <ul class="game-list">
