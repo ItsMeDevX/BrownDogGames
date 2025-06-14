@@ -475,6 +475,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BrownDogGames - Submit & View</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1e1b2e;
@@ -485,84 +486,173 @@
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
     }
-    .form-button {
-      display: inline-block;
-      background-color: #ff69b4;
-      color: white;
-      padding: 14px 24px;
+    .logo {
+      max-width: 180px;
+      height: auto;
+      margin: 0 auto 20px;
+      display: block;
+    }
+    h1 {
+      color: #ff69b4;
+      font-size: 2.4rem;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 15px;
+    }
+    iframe {
       border: none;
-      border-radius: 10px;
-      text-decoration: none;
-      font-size: 1.1rem;
-      margin-bottom: 30px;
+      width: 100%;
+      height: 650px;
+      margin-bottom: 40px;
+    }
+    button {
+      background-color: #ff69b4;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      padding: 12px 25px;
+      border-radius: 8px;
       cursor: pointer;
+      margin-bottom: 30px;
     }
   </style>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
+  <img
+    src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png"
+    alt="BrownDogGames Logo"
+    class="logo"
+  />
+
   <h1>Submit Your Game</h1>
 
-  <button id="openFormBtn" class="form-button" disabled>
-    Loading...
-  </button>
+  <button id="signInBtn">Sign in with Google to Prefill Form</button>
+
+  <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
+
+  <h1>Submitted Games Data</h1>
+  <div class="table-wrapper">
+    <table id="sheetData" aria-label="Submitted games table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Game URL</th>
+          <th>Screenshot URL</th>
+          <th>Cover URL</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script>
-    // Your Firebase config — REPLACE with your actual Firebase config!
+    // Firebase config (replace with your config)
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      // other config as needed
+      apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
+      authDomain: "crack-fold-458513-h0.firebaseapp.com",
+      projectId: "crack-fold-458513-h0",
+      storageBucket: "crack-fold-458513-h0.appspot.com",
+      messagingSenderId: "1051697335973",
+      appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
     };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Google Sign-In function
-    function signInWithGoogle() {
+    const entryFieldID = "entry.1551255018"; // prefillable field ID
+    const baseFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url";
+
+    const gameFormIframe = document.getElementById('gameForm');
+    const signInBtn = document.getElementById('signInBtn');
+
+    // Prefill form URL and set iframe src
+    function setFormWithPrefix(prefix) {
+      const prefilledURL = `${baseFormURL}&${entryFieldID}=${encodeURIComponent(prefix)}`;
+      gameFormIframe.src = prefilledURL;
+    }
+
+    // On sign-in success, get user email prefix and set iframe src
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const prefix = user.email.split('@')[0];
+        setFormWithPrefix(prefix);
+        signInBtn.style.display = 'none'; // Hide sign-in button when signed in
+      } else {
+        setFormWithPrefix('BrownDogGames'); // default prefix
+        signInBtn.style.display = 'inline-block'; // show sign-in button
+      }
+    });
+
+    // Sign in with Google on button click
+    signInBtn.addEventListener('click', () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(error => {
-        alert("Sign-in error: " + error.message);
+      auth.signInWithPopup(provider).catch(err => alert('Sign-in error: ' + err.message));
+    });
+
+    // Fetch and display submitted games data (same as before)
+    const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
+    const sheetTab = 'Form Responses 1';
+    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
+    const sheetTableBody = document.querySelector('#sheetData tbody');
+
+    async function fetchSheetData() {
+      try {
+        const query = 'select * limit 50';
+        const url = baseUrl + encodeURIComponent(query);
+        const response = await fetch(url);
+        const text = await response.text();
+        const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
+        const data = JSON.parse(jsonStr);
+        const rows = data.table.rows.map(r => r.c.map(c => (c ? c.v : '')));
+        renderSheetData(rows);
+      } catch (err) {
+        sheetTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ff69b4;">
+          Error loading submitted games. Please try again later.
+        </td></tr>`;
+        console.error('Sheet error:', err);
+      }
+    }
+
+    function renderSheetData(rows) {
+      sheetTableBody.innerHTML = '';
+      if (!rows.length) {
+        sheetTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No submitted games found.</td></tr>';
+        return;
+      }
+      rows.forEach(row => {
+        const [timestamp, title, description, gameURL, screenshotURL, coverURL] = row;
+        const tr = document.createElement('tr');
+        function createCell(text, isLink) {
+          const td = document.createElement('td');
+          if (isLink && text) {
+            const a = document.createElement('a');
+            a.href = text;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = text;
+            td.appendChild(a);
+          } else {
+            td.textContent = text || '';
+          }
+          return td;
+        }
+        tr.appendChild(createCell(timestamp, false));
+        tr.appendChild(createCell(title, false));
+        tr.appendChild(createCell(description, false));
+        tr.appendChild(createCell(gameURL, true));
+        tr.appendChild(createCell(screenshotURL, true));
+        tr.appendChild(createCell(coverURL, true));
+        sheetTableBody.appendChild(tr);
       });
     }
 
-    const openFormBtn = document.getElementById('openFormBtn');
+    // Initial data load (no sign-in needed)
+    fetchSheetData();
 
-    // Update button to open form with prefilled email prefix
-    function updateFormButton(user) {
-      if (!user) {
-        openFormBtn.textContent = "Sign in with Google to submit your game";
-        openFormBtn.onclick = signInWithGoogle;
-        openFormBtn.disabled = false;
-        return;
-      }
-
-      // Get user email prefix (before @)
-      const email = user.email || "";
-      const prefix = email.split('@')[0];
-
-      // Build prefilled form URL
-      const baseFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url';
-      const prefillField = 'entry.1551255018=' + encodeURIComponent(prefix);
-      const fullUrl = `${baseFormUrl}&${prefillField}`;
-
-      openFormBtn.textContent = `Submit Your Game as "${prefix}"`;
-      openFormBtn.disabled = false;
-      openFormBtn.onclick = () => {
-        window.open(fullUrl, '_blank');
-      };
-    }
-
-    // Listen for auth state changes
-    auth.onAuthStateChanged(user => {
-      updateFormButton(user);
-    });
   </script>
-
 </body>
 </html>
