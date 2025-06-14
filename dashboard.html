@@ -485,48 +485,6 @@
     border-radius: 8px;
     box-shadow: 0 0 15px #ff69b4aa;
   }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 40px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 0 20px #ff69b4aa;
-  }
-
-  th, td {
-    border: 1px solid #ff69b4;
-    padding: 10px;
-    text-align: left;
-    vertical-align: top;
-  }
-
-  th {
-    background-color: #2d1a3a;
-    font-weight: 700;
-    font-size: 1.1rem;
-  }
-
-  tbody tr:nth-child(odd) {
-    background-color: #2a2040;
-  }
-
-  tbody tr:hover {
-    background-color: #ff69b4;
-    color: #1e1b2e;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  a {
-    color: #ff69b4;
-    text-decoration: none;
-    word-break: break-word;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
 </style>
 </head>
 <body>
@@ -546,67 +504,11 @@
   ></iframe>
 
   <h1>Submitted Games Data</h1>
-  <table id="sheetData">
-    <thead>
-      <tr>
-        <th>Timestamp</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Game URL</th>
-        <th>Screenshot URL</th>
-        <th>Cover URL</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- Embedded Google Sheet published HTML -->
+  <iframe
+    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pubhtml"
+    title="Submitted Games Sheet"
+  ></iframe>
 
-  <!-- PapaParse CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script>
-    // Published CSV URL for your Google Sheet's data
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRsAvO9brHygdWq6jp9g6-QK6W-zFlFHJwW2ZDY8uYkmndF9WrEuHsOdl1HLF_BA/pub?output=csv';
-
-    function loadSheetData() {
-      fetch(CSV_URL)
-        .then(res => res.text())
-        .then(csvText => {
-          const results = Papa.parse(csvText, {
-            header: true,
-            skipEmptyLines: true,
-          });
-
-          if (!results.data || results.data.length === 0) {
-            console.warn('No data found in CSV');
-            return;
-          }
-
-          const tbody = document.querySelector('#sheetData tbody');
-          tbody.innerHTML = '';
-
-          results.data.forEach(row => {
-            const tr = document.createElement('tr');
-
-            ['Timestamp', 'Title', 'Description', 'Game URL', 'Screenshot URL', 'Cover URL'].forEach(col => {
-              const td = document.createElement('td');
-              const val = row[col] || '';
-
-              if (val.startsWith('http') || val.includes('drive.google.com')) {
-                td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
-              } else {
-                td.innerHTML = val.replace(/\n/g, '<br>');
-              }
-              tr.appendChild(td);
-            });
-
-            tbody.appendChild(tr);
-          });
-        })
-        .catch(err => {
-          console.error('Error loading sheet data:', err);
-        });
-    }
-
-    loadSheetData();
-  </script>
 </body>
 </html>
