@@ -443,7 +443,7 @@
   });
 </script>
  
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -464,25 +464,32 @@
     background-color: #1e1b2e;
     color: #fefefe;
     min-height: 100vh;
-    padding: 20px;
     background-image: linear-gradient(135deg, #2c1b33, #191425);
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
   }
 
-  /* Logo */
+  /* Logo fixed at top center */
   .logo {
     height: 150px;
     width: auto;
-    display: block;
-    margin: 20px auto 30px;
     max-width: 100%;
+    margin-bottom: 40px;
+  }
+
+  /* Wrapper for form + table content */
+  .content-wrapper {
+    width: 100%;
+    max-width: 700px;
   }
 
   h1 {
     font-size: 2.8rem;
     color: #ff69b4;
     text-shadow: 2px 2px 0 #000;
-    margin: 15px 0 10px;
+    margin-bottom: 20px;
     text-align: center;
   }
 
@@ -491,14 +498,16 @@
     border: none;
     width: 100%;
     height: 650px;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(255,105,180,0.3);
   }
 
   /* Table */
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-bottom: 40px;
   }
   th, td {
     border: 1px solid #ff69b4;
@@ -523,8 +532,8 @@
 </head>
 <body>
 
-<!-- Logo -->
-<a href="index.html">
+<!-- Logo fixed at top -->
+<a href="index.html" aria-label="BrownDogGames Home">
   <img 
     src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
     alt="BrownDogGames Logo" 
@@ -532,30 +541,32 @@
   >
 </a>
 
-<h1>Submit Your Game</h1>
+<div class="content-wrapper">
+  <h1>Submit Your Game</h1>
 
-<!-- Google Form Embed -->
-<iframe 
-  src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true">
-</iframe>
+  <!-- Google Form Embed -->
+  <iframe 
+    src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true">
+  </iframe>
 
-<h1>Submitted Games Data</h1>
-<table id="sheetData">
-  <thead>
-    <tr>
-      <th>Timestamp</th>
-      <th>Title</th>
-      <th>Description</th>
-      <th>Game URL</th>
-      <th>Screenshot URL</th>
-      <th>Cover URL</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <h1>Submitted Games Data</h1>
+  <table id="sheetData" aria-label="Submitted games data table">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Game URL</th>
+        <th>Screenshot URL</th>
+        <th>Cover URL</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <script>
-// Your published CSV URL — replace with your actual published sheet CSV link:
+// Your published CSV URL
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?output=csv';
 
 function parseCSV(text) {
