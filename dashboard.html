@@ -461,44 +461,78 @@
     padding: 20px;
     background-image: linear-gradient(135deg, #2c1b33, #191425);
     text-align: center;
+    user-select: none;
   }
 
   .logo {
     max-width: 180px;
     height: auto;
-    margin: 0 auto 20px;
+    margin: 0 auto 25px;
     display: block;
+    filter: drop-shadow(0 0 3px #ff69b4);
   }
 
   h1 {
     color: #ff69b4;
-    font-size: 2.4rem;
-    text-shadow: 2px 2px 0 #000;
-    margin-bottom: 15px;
+    font-size: 2.6rem;
+    text-shadow: 2px 2px 4px #000;
+    margin-bottom: 20px;
+    letter-spacing: 1.2px;
   }
 
   iframe {
-    border: none;
+    border: 3px solid #ff69b4;
+    border-radius: 10px;
     width: 100%;
     height: 650px;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+    box-shadow: 0 0 20px #ff69b4aa;
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  iframe:hover {
+    box-shadow: 0 0 30px #ff69b4ee;
   }
 
   table {
     width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 40px;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    margin-bottom: 50px;
+    box-shadow: 0 0 15px #ff69b4cc;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #2d1a3a;
   }
 
   th, td {
-    border: 1px solid #ff69b4;
-    padding: 8px;
+    padding: 12px 15px;
     text-align: left;
     vertical-align: top;
+    color: #fefefe;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
   }
 
   th {
-    background-color: #2d1a3a;
+    background-color: #3f2b57;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 2px solid #ff69b4;
+    user-select: text;
+  }
+
+  tbody tr {
+    background-color: #3b2e55;
+    transition: background-color 0.25s ease;
+    border-radius: 8px;
+    box-shadow: inset 0 0 5px #ff69b4aa;
+  }
+
+  tbody tr:hover {
+    background-color: #ff69b4aa;
+    color: #1e1b2e;
+    font-weight: 600;
   }
 
   tbody tr:nth-child(odd) {
@@ -508,11 +542,28 @@
   a {
     color: #ff69b4;
     text-decoration: none;
-    word-break: break-all;
+    word-break: break-word;
+    font-weight: 600;
+    transition: color 0.2s ease-in-out;
   }
 
   a:hover {
+    color: #ffa6d2;
     text-decoration: underline;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 600px) {
+    body {
+      padding: 15px;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    th, td {
+      padding: 10px 8px;
+      font-size: 0.85rem;
+    }
   }
 </style>
 </head>
@@ -579,7 +630,6 @@
               if (val.startsWith('http') || val.includes('drive.google.com')) {
                 td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
               } else {
-                // Replace newlines with <br> to keep formatting
                 td.innerHTML = val.replace(/\n/g, '<br>');
               }
               tr.appendChild(td);
