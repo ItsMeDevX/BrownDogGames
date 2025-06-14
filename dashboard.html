@@ -529,18 +529,6 @@
       font-size: 1.8rem;
     }
   }
-
-  /* Buttons */
-  #loginBtn, #logoutBtn {
-    background: #ff69b4;
-    border: none;
-    padding: 10px 20px;
-    color: white;
-    font-weight: bold;
-    margin-bottom: 20px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
 </style>
 </head>
 <body>
@@ -550,9 +538,6 @@
     alt="BrownDogGames Logo"
     class="logo"
   />
-
-  <button id="loginBtn">Sign in with Google</button>
-  <button id="logoutBtn" style="display:none;">Sign Out</button>
 
   <h1>Submit Your Game</h1>
   <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
@@ -579,7 +564,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
-    // Your Firebase config - Replace with your own config if different
     const firebaseConfig = {
       apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
       authDomain: "crack-fold-458513-h0.firebaseapp.com",
@@ -593,27 +577,18 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Constants
+    // Set auth persistence to NONE to prevent auto sign-in on page reload
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(error => {
+      console.error('Error setting auth persistence:', error);
+    });
+
     const SHEET_ID = '1m0pMbcNZ4cWYB3lAOgnc0k4Jq7syj-EGPmtcptvVDEE';
-    const EMAIL_PREFIX_ENTRY_ID = '1551255018';  // Your Google Form Email Prefix entry ID
+    const EMAIL_PREFIX_ENTRY_ID = '1551255018'; // Your Google Form Email Prefix entry ID
     const FORM_BASE_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform';
 
-    // DOM elements
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
     const iframe = document.getElementById('gameForm');
     const tbody = document.querySelector('#sheetData tbody');
 
-    // Sign in/out handlers
-    loginBtn.onclick = () => {
-      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-    };
-
-    logoutBtn.onclick = () => {
-      auth.signOut();
-    };
-
-    // Load sheet data function with filtering by email prefix
     function loadSheetData(emailPrefix) {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
@@ -627,7 +602,6 @@
           const table = jsonData.table;
 
           if (!table || !table.rows || table.rows.length === 0) {
-            console.warn('No data found in sheet');
             tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">No submissions found.</td></tr>`;
             return;
           }
@@ -637,13 +611,12 @@
 
           table.rows.forEach(row => {
             const rowPrefix = row.c[headers.indexOf('Email Prefix')]?.v || '';
-            // Filter by email prefix
             if (rowPrefix !== emailPrefix) return;
 
             const tr = document.createElement('tr');
 
             headers.forEach((header, i) => {
-              if(header === 'Email Prefix') return; // Hide Email Prefix column
+              if(header === 'Email Prefix') return;
 
               const cell = row.c[i];
               let val = cell && cell.v ? cell.v : '';
@@ -662,7 +635,6 @@
             tbody.appendChild(tr);
           });
 
-          // If after filtering no rows found, show message
           if (!tbody.hasChildNodes()) {
             tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">No submissions found for your email prefix.</td></tr>`;
           }
@@ -673,23 +645,14 @@
         });
     }
 
-    // Listen for auth changes
     auth.onAuthStateChanged(user => {
       if (user) {
-        loginBtn.style.display = 'none';
-        logoutBtn.style.display = 'inline-block';
-
         const emailPrefix = user.email.split('@')[0];
-
         const formPrefillUrl = `${FORM_BASE_URL}?entry.${EMAIL_PREFIX_ENTRY_ID}=${encodeURIComponent(emailPrefix)}&embedded=true`;
 
         iframe.src = formPrefillUrl;
         loadSheetData(emailPrefix);
-
       } else {
-        loginBtn.style.display = 'inline-block';
-        logoutBtn.style.display = 'none';
-
         iframe.src = `${FORM_BASE_URL}?embedded=true`;
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Please log in to view your submissions.</td></tr>`;
       }
