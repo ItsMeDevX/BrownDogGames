@@ -473,24 +473,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BrownDogGames - Submit & View</title>
+  <title>BrownDogGames - Dashboard</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1e1b2e;
       color: #fefefe;
-      max-width: 800px;
+      max-width: 900px;
       margin: 20px auto;
       padding: 20px;
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
-    }
-    .logo {
-      max-width: 180px;
-      height: auto;
-      margin: 0 auto 20px;
-      display: block;
     }
     h1 {
       color: #ff69b4;
@@ -498,13 +492,44 @@
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 15px;
     }
-    iframe {
+    #gameForm {
       border: none;
       width: 100%;
       height: 650px;
       margin-bottom: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #ff69b4cc;
     }
-    button {
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #ff69b4cc;
+      background: #2a243b;
+      padding: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      color: #fefefe;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #443366;
+      text-align: left;
+    }
+    th {
+      background-color: #3b3750;
+      font-weight: bold;
+    }
+    a {
+      color: #ff69b4;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    #signInBtn {
       background-color: #ff69b4;
       border: none;
       color: white;
@@ -513,20 +538,18 @@
       border-radius: 8px;
       cursor: pointer;
       margin-bottom: 30px;
+      transition: background-color 0.3s;
+    }
+    #signInBtn:hover {
+      background-color: #ff8edb;
     }
   </style>
 </head>
 <body>
 
-  <img
-    src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png"
-    alt="BrownDogGames Logo"
-    class="logo"
-  />
-
   <h1>Submit Your Game</h1>
 
-  <button id="signInBtn" style="display:none;">Sign in with Google to Prefill Form</button>
+  <button id="signInBtn">Sign in with Google to Prefill Form</button>
 
   <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
 
@@ -547,11 +570,12 @@
     </table>
   </div>
 
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script>
-    // Firebase config (replace with your config)
+    // Firebase config (replace with your own)
     const firebaseConfig = {
       apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
       authDomain: "crack-fold-458513-h0.firebaseapp.com",
@@ -564,92 +588,118 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+
+    // Google Auth provider
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    const entryFieldID = "entry.1551255018"; // prefillable field ID
-    const baseFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url";
-
+    // DOM elements
     const gameFormIframe = document.getElementById('gameForm');
     const signInBtn = document.getElementById('signInBtn');
+    const sheetTableBody = document.querySelector('#sheetData tbody');
 
+    // Google Form base URL and prefillable entry field ID
+    const baseFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url";
+    const entryFieldID = "entry.1551255018";
+
+    // Google Sheet details
+    const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
+    const sheetTab = 'Form Responses 1';
+    const baseSheetUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
+
+    // Set iframe src with prefix
     function setFormWithPrefix(prefix) {
       const prefilledURL = `${baseFormURL}&${entryFieldID}=${encodeURIComponent(prefix)}`;
+      console.log('Setting form iframe src:', prefilledURL);
       gameFormIframe.src = prefilledURL;
     }
 
-    // Listen for auth changes and update iframe + UI accordingly
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const prefix = user.email.split('@')[0];
-        setFormWithPrefix(prefix);
-        signInBtn.style.display = 'none';
-      } else {
-        setFormWithPrefix('BrownDogGames'); // default prefix
-        signInBtn.style.display = 'inline-block';
-      }
-    });
-
-    // Google Sign-In button click
+    // Sign-in button click handler
     signInBtn.addEventListener('click', () => {
       auth.signInWithPopup(provider).catch(err => alert('Sign-in error: ' + err.message));
     });
 
-    // --- Sheet data fetching logic unchanged ---
-    const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
-    const sheetTab = 'Form Responses 1';
-    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
-    const sheetTableBody = document.querySelector('#sheetData tbody');
+    // Auth state observer
+    auth.onAuthStateChanged(user => {
+      console.log('Auth state changed:', user);
+      if (user && user.email) {
+        const prefix = user.email.split('@')[0];
+        setFormWithPrefix(prefix);
+        signInBtn.style.display = 'none';
+      } else {
+        setFormWithPrefix('BrownDogGames');
+        signInBtn.style.display = 'inline-block';
+      }
+    });
 
+    // Fetch and render sheet data
     async function fetchSheetData() {
       try {
         const query = 'select * limit 50';
-        const url = baseUrl + encodeURIComponent(query);
+        const url = baseSheetUrl + encodeURIComponent(query);
+        console.log('Fetching sheet data from:', url);
         const response = await fetch(url);
         const text = await response.text();
+
+        // Debug partial response
+        console.log('Sheet response starts with:', text.slice(0, 200));
+
+        // Parse JSON inside response callback wrapper
         const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
         const data = JSON.parse(jsonStr);
-        const rows = data.table.rows.map(r => r.c.map(c => (c ? c.v : '')));
+
+        const rows = data.table.rows.map(row => row.c.map(cell => (cell ? cell.v : '')));
         renderSheetData(rows);
-      } catch (err) {
-        sheetTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ff69b4;">
-          Error loading submitted games. Please try again later.
+      } catch (error) {
+        console.error('Error fetching sheet data:', error);
+        sheetTableBody.innerHTML = `<tr><td colspan="6" style="color:#ff69b4; padding:20px; text-align:center;">
+          Failed to load submitted games. Try refreshing.
         </td></tr>`;
-        console.error('Sheet error:', err);
       }
     }
 
+    // Render sheet data rows into table body
     function renderSheetData(rows) {
       sheetTableBody.innerHTML = '';
       if (!rows.length) {
         sheetTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No submitted games found.</td></tr>';
         return;
       }
+
       rows.forEach(row => {
         const [timestamp, title, description, gameURL, screenshotURL, coverURL] = row;
         const tr = document.createElement('tr');
-        function createCell(text, isLink) {
+
+        function createCell(content, isLink = false) {
           const td = document.createElement('td');
-          if (isLink && text) {
+          if (isLink && content) {
             const a = document.createElement('a');
-            a.href = text;
+            a.href = content;
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
-            a.textContent = text;
+            a.textContent = content;
             td.appendChild(a);
           } else {
-            td.textContent = text || '';
+            td.textContent = content || '';
           }
           return td;
         }
-        tr.appendChild(createCell(timestamp, false));
-        tr.appendChild(createCell(title, false));
-        tr.appendChild(createCell(description, false));
+
+        tr.appendChild(createCell(timestamp));
+        tr.appendChild(createCell(title));
+        tr.appendChild(createCell(description));
         tr.appendChild(createCell(gameURL, true));
         tr.appendChild(createCell(screenshotURL, true));
         tr.appendChild(createCell(coverURL, true));
+
         sheetTableBody.appendChild(tr);
       });
     }
+
+    // Load sheet data on page load
+    fetchSheetData();
+  </script>
+</body>
+</html>
 
     fetchSheetData();
   </script>
