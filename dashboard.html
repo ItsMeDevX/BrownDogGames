@@ -502,11 +502,21 @@
       margin-bottom: 15px;
     }
 
-    iframe {
-      border: none;
-      width: 100%;
-      height: 650px;
+    .form-button {
+      display: inline-block;
+      padding: 12px 24px;
       margin-bottom: 40px;
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .form-button:hover {
+      background-color: #ff85c1;
     }
 
     .table-wrapper {
@@ -565,7 +575,7 @@
   />
 
   <h1>Submit Your Game</h1>
-  <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
+  <a id="formLink" target="_blank" class="form-button">Submit a Game</a>
 
   <h1>Submitted Games Data</h1>
   <div class="table-wrapper">
@@ -585,25 +595,17 @@
   </div>
 
   <script>
-    // Autofill the form with prefix from URL
-    (function autoFillForm() {
-      const params = new URLSearchParams(window.location.search);
-      const prefix = params.get("prefix");
+    // Autofill form link using ?prefix=YourName
+    const params = new URLSearchParams(window.location.search);
+    const prefix = params.get("prefix") || "";
+    const entryFieldId = "entry.1551255018"; // Replace with actual field ID if changed
+    const baseFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform";
+    const autofilledUrl = prefix ? `${baseFormUrl}?${entryFieldId}=${encodeURIComponent(prefix)}` : baseFormUrl;
+    document.getElementById("formLink").href = autofilledUrl;
 
-      const baseFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform";
-      const entryPrefixId = "entry.1551255018"; // Replace with actual field ID
-
-      let fullFormUrl = baseFormUrl;
-      if (prefix) {
-        fullFormUrl += `?${entryPrefixId}=${encodeURIComponent(prefix)}`;
-      }
-
-      document.getElementById("gameForm").src = fullFormUrl;
-    })();
-
+    // Fetch Google Sheets Data
     const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
-    const sheetTab = 'Form Responses 1'; // Make sure this is the correct tab name
-
+    const sheetTab = 'Form Responses 1'; // Make sure this matches your tab name
     const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
     const sheetTableBody = document.querySelector('#sheetData tbody');
 
@@ -615,13 +617,11 @@
       try {
         const query = 'select * limit 50';
         const url = baseUrl + encodeQuery(query);
-
         const response = await fetch(url);
         const text = await response.text();
         const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
         const data = JSON.parse(jsonStr);
         const rows = data.table.rows.map(r => r.c.map(c => (c ? c.v : '')));
-
         renderSheetData(rows);
       } catch (err) {
         sheetTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ff69b4;">
