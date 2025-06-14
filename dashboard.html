@@ -467,3 +467,195 @@
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BrownDogGames - Submit & View</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+  body {
+    font-family: 'Rubik Mono One', sans-serif;
+    background-color: #1e1b2e;
+    color: #fefefe;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-image: linear-gradient(135deg, #2c1b33, #191425);
+    text-align: center;
+  }
+
+  .logo {
+    max-width: 180px;
+    height: auto;
+    margin: 0 auto 20px;
+    display: block;
+  }
+
+  h1 {
+    color: #ff69b4;
+    font-size: 2.4rem;
+    text-shadow: 2px 2px 0 #000;
+    margin-bottom: 15px;
+  }
+
+  iframe {
+    border: none;
+    width: 100%;
+    height: 650px;
+    margin-bottom: 40px;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 40px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    word-wrap: break-word;
+  }
+
+  th, td {
+    border: 1px solid #ff69b4;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background-color: #2d1a3a;
+  }
+
+  tbody tr:nth-child(odd) {
+    background-color: #2a2040;
+  }
+
+  a {
+    color: #ff69b4;
+    text-decoration: none;
+    word-break: break-word;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 600px) {
+    body {
+      padding: 10px;
+    }
+    h1 {
+      font-size: 1.8rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <img
+    src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png"
+    alt="BrownDogGames Logo"
+    class="logo"
+  />
+
+  <h1>Submit Your Game</h1>
+  <iframe id="gameForm" src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url" title="Game Submission Form"></iframe>
+
+  <h1>Submitted Games Data</h1>
+  <div class="table-wrapper">
+    <table id="sheetData" aria-label="Submitted games table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Game URL</th>
+          <th>Screenshot URL</th>
+          <th>Cover URL</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const sheetID = '1rMA6f-dzVstri8lIDStVx8UL6AOk-pAGO5p9gADjdi0';
+    const sheetTab = 'Submitted_Games'; // Change if your tab name differs
+
+    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
+
+    const sheetTableBody = document.querySelector('#sheetData tbody');
+
+    function encodeQuery(query) {
+      return encodeURIComponent(query);
+    }
+
+    // Fetch all rows (limit to 50 for performance)
+    async function fetchSheetData() {
+      try {
+        const query = 'select * limit 50';
+        const url = baseUrl + encodeQuery(query);
+
+        const response = await fetch(url);
+        const text = await response.text();
+
+        const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
+        const data = JSON.parse(jsonStr);
+
+        const rows = data.table.rows.map(r => r.c.map(c => (c ? c.v : '')));
+
+        renderSheetData(rows);
+      } catch (err) {
+        sheetTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ff69b4;">
+          Error loading submitted games. Please try again later.
+        </td></tr>`;
+        console.error('Error fetching sheet data:', err);
+      }
+    }
+
+    function renderSheetData(rows) {
+      sheetTableBody.innerHTML = '';
+      if (rows.length === 0) {
+        sheetTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No submitted games found.</td></tr>';
+        return;
+      }
+
+      rows.forEach(row => {
+        const [timestamp, title, description, gameURL, screenshotURL, coverURL] = row;
+        const tr = document.createElement('tr');
+
+        function createCell(text, isLink) {
+          const td = document.createElement('td');
+          if (isLink && text) {
+            const a = document.createElement('a');
+            a.href = text;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = text;
+            td.appendChild(a);
+          } else {
+            td.textContent = text || '';
+          }
+          return td;
+        }
+
+        tr.appendChild(createCell(timestamp, false));
+        tr.appendChild(createCell(title, false));
+        tr.appendChild(createCell(description, false));
+        tr.appendChild(createCell(gameURL, true));
+        tr.appendChild(createCell(screenshotURL, true));
+        tr.appendChild(createCell(coverURL, true));
+
+        sheetTableBody.appendChild(tr);
+      });
+    }
+
+    fetchSheetData();
+  </script>
+</body>
+</html>
