@@ -279,142 +279,58 @@
 
 
 <!-- Auth Bar -->
- <div id="auth-bar"></div>
+ </style>
+</head>
+<body>
+  <button id="loginBtn">Login with Google</button>
 
   <script>
-    const authBar = document.getElementById('auth-bar');
+    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
+    const redirectUri = 'https://browndoggames.com/callback.html';
+    const scope = 'openid email profile';
+
+    function base64urlencode(str) {
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    async function sha256(buffer) {
+      return await crypto.subtle.digest('SHA-256', buffer);
+    }
 
     async function generateCodeVerifier() {
-      const array = new Uint8Array(56);
+      const array = new Uint8Array(128);
       crypto.getRandomValues(array);
-      return Array.from(array).map(b => ('0' + b.toString(16)).slice(-2)).join('');
+      return base64urlencode(array);
     }
 
     async function generateCodeChallenge(verifier) {
       const encoder = new TextEncoder();
       const data = encoder.encode(verifier);
-      const digest = await crypto.subtle.digest('SHA-256', data);
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-      return base64;
+      const digest = await sha256(data);
+      return base64urlencode(digest);
     }
 
-    function redirectToGoogleOAuth() {
-      const clientId = '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com';
-      const redirectUri = 'https://browndoggames.com/callback.html';
-      const scope = 'openid email profile';
-      const state = crypto.randomUUID();
+    async function login() {
+      const verifier = await generateCodeVerifier();
+      const challenge = await generateCodeChallenge(verifier);
+      localStorage.setItem('pkce_verifier', verifier);
 
-      generateCodeVerifier().then(async (verifier) => {
-        const challenge = await generateCodeChallenge(verifier);
-        localStorage.setItem('pkce_verifier', verifier);
-        localStorage.setItem('oauth_state', state);
-
-        const params = new URLSearchParams({
-          client_id: clientId,
-          redirect_uri: redirectUri,
-          response_type: 'code',
-          scope,
-          state,
-          code_challenge: challenge,
-          code_challenge_method: 'S256',
-        });
-
-        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: scope,
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+        access_type: 'offline',  // Optional, for refresh tokens
+        prompt: 'consent'        // Optional, to force consent screen
       });
+
+      window.location = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
     }
 
-    async function fetchUserInfo() {
-      const user = localStorage.getItem('user_info');
-      if (!user) return null;
-      try {
-        return JSON.parse(user);
-      } catch {
-        return null;
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem('user_info');
-      localStorage.removeItem('pkce_verifier');
-      localStorage.removeItem('oauth_state');
-      renderAuthBar();
-    }
-
-    function toggleDropdown(dropdown) {
-      dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    async function renderAuthBar() {
-      authBar.innerHTML = '';
-      const user = await fetchUserInfo();
-
-      if (user) {
-        const userInfo = document.createElement('div');
-        userInfo.id = 'user-info';
-
-        if (user.picture) {
-          const img = document.createElement('img');
-          img.src = user.picture;
-          img.alt = user.name;
-          userInfo.appendChild(img);
-        }
-
-        const nameDiv = document.createElement('div');
-        nameDiv.innerHTML = `
-          <strong style="background-color:#ff69b4; color:#1e1b2e; padding:6px 12px; border-radius:20px; font-size:0.85rem; cursor:pointer;">
-            ${escapeHtml(user.name)} <span style="font-size: 1.2rem;">▾</span>
-          </strong>
-        `;
-        userInfo.appendChild(nameDiv);
-        authBar.appendChild(userInfo);
-
-        const dropdown = document.createElement('div');
-        dropdown.id = 'user-dropdown';
-
-        const logoutBtn = document.createElement('button');
-        logoutBtn.textContent = 'Logout';
-        logoutBtn.onclick = () => logout();
-
-        dropdown.appendChild(logoutBtn);
-        authBar.appendChild(dropdown);
-
-        userInfo.addEventListener('click', (e) => {
-          e.stopPropagation();
-          toggleDropdown(dropdown);
-        });
-        document.addEventListener('click', () => {
-          dropdown.style.display = 'none';
-        });
-
-      } else {
-        const loginBtn = document.createElement('button');
-        loginBtn.textContent = 'Login with Google';
-        Object.assign(loginBtn.style, {
-          backgroundColor: '#ff69b4',
-          color: '#1e1b2e',
-          border: 'none',
-          padding: '0.5rem 1rem',
-          fontWeight: 'bold',
-          fontSize: '0.9rem',
-          borderRadius: '8px',
-          cursor: 'pointer',
-        });
-        loginBtn.onclick = redirectToGoogleOAuth;
-        authBar.appendChild(loginBtn);
-      }
-    }
-
-    function escapeHtml(text) {
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    renderAuthBar();
+    document.getElementById('loginBtn').addEventListener('click', login);
   </script>
 </body>
 </html>
