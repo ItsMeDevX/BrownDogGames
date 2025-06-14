@@ -227,61 +227,61 @@
 
 
 <!-- Firebase SDKs -->
- <style>
-    #auth-bar {
-      max-width: 320px;
-      margin: 20px auto;
-      background-color: #2a243b;
-      border-radius: 12px;
-      box-shadow: 0 0 12px #00000055;
-      padding: 10px 16px;
-      font-family: 'Rubik Mono One', sans-serif;
-      color: #fefefe;
-      min-height: 60px;
-      position: relative;
-      user-select: none;
-    }
-    #user-dropdown {
-      position: absolute;
-      top: 70px;
-      right: 16px;
-      background-color: #3b3750;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px #00000077;
-      min-width: 150px;
-      display: none;
-      flex-direction: column;
-      z-index: 1000;
-    }
-    #user-dropdown button {
-      background: none;
-      border: none;
-      color: #fefefe;
-      padding: 10px 16px;
-      text-align: left;
-      font-weight: bold;
-      font-family: 'Rubik Mono One', sans-serif;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    #user-dropdown button:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-    }
-    #user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-    #user-info img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid #ff69b4;
-      object-fit: cover;
-    }
-  </style>
+<style>
+  #auth-bar {
+    max-width: 320px;
+    margin: 20px auto;
+    background-color: #2a243b;
+    border-radius: 12px;
+    box-shadow: 0 0 12px #00000055;
+    padding: 10px 16px;
+    font-family: 'Rubik Mono One', sans-serif;
+    color: #fefefe;
+    min-height: 60px;
+    position: relative;
+    user-select: none;
+  }
+  #user-dropdown {
+    position: absolute;
+    top: 70px;
+    right: 16px;
+    background-color: #3b3750;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px #00000077;
+    min-width: 150px;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+  }
+  #user-dropdown button {
+    background: none;
+    border: none;
+    color: #fefefe;
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: bold;
+    font-family: 'Rubik Mono One', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  #user-dropdown button:hover {
+    background-color: #ff69b4;
+    color: #1e1b2e;
+  }
+  #user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  #user-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #ff69b4;
+    object-fit: cover;
+  }
+</style>
 </head>
 <body>
 
@@ -291,7 +291,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <script>
-  // Your Firebase config
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyDRfcnfEd_-wQ6hCllx0AZ_bwarKku-Yms",
     authDomain: "crack-fold-458513-h0.firebaseapp.com",
@@ -308,12 +308,13 @@
   const authBar = document.getElementById('auth-bar');
 
   function toggleDropdown(dropdown) {
-    dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
+    dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
   }
 
-  function renderAuthBar() {
+  function renderLoggedIn(user) {
     authBar.innerHTML = '';
 
+    // User Games Button
     const userGamesBtn = document.createElement('button');
     userGamesBtn.textContent = 'User Games';
     userGamesBtn.style = `
@@ -332,116 +333,140 @@
     userGamesBtn.addEventListener('click', () => window.location.href = 'user-games.html');
     authBar.appendChild(userGamesBtn);
 
-    auth.onAuthStateChanged((user) => {
-      authBar.innerHTML = ''; // clear before rendering
+    // User Info & Dropdown
+    const name = user.displayName || 'User';
+    const avatar = user.photoURL;
 
-      if (user) {
-        // Logged in UI
-        const name = user.displayName || 'User';
-        const avatar = user.photoURL;
+    const userInfo = document.createElement('div');
+    userInfo.id = 'user-info';
 
-        const userInfo = document.createElement('div');
-        userInfo.id = 'user-info';
+    if (avatar) {
+      const img = document.createElement('img');
+      img.src = avatar;
+      img.alt = name;
+      userInfo.appendChild(img);
+    }
 
-        if (avatar) {
-          const img = document.createElement('img');
-          img.src = avatar;
-          img.alt = name;
-          userInfo.appendChild(img);
-        }
+    const nameDiv = document.createElement('div');
+    nameDiv.innerHTML = `
+      <strong style="
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background-color: #ff69b4;
+        color: #1e1b2e;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        box-shadow: 0 0 10px #ff8edb;
+        cursor: pointer;
+        transition: background-color 0.2s, box-shadow 0.2s;
+      " title="Click for options">
+        ${name}
+        <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
+      </strong>
+    `;
+    userInfo.title = 'Click avatar or name for dashboard & more';
+    userInfo.style.cursor = 'pointer';
+    userInfo.appendChild(nameDiv);
+    authBar.appendChild(userInfo);
 
-        const nameDiv = document.createElement('div');
-        nameDiv.innerHTML = `
-          <strong style="
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background-color: #ff69b4;
-            color: #1e1b2e;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            box-shadow: 0 0 10px #ff8edb;
-            cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
-          " title="Click for options">
-            ${name}
-            <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
-          </strong>
-        `;
-        userInfo.title = 'Click avatar or name for dashboard & more';
-        userInfo.style.cursor = 'pointer';
-        userInfo.appendChild(nameDiv);
-        authBar.appendChild(userInfo);
+    const dropdown = document.createElement('div');
+    dropdown.id = 'user-dropdown';
+    dropdown.style.display = 'none';
+    dropdown.style.flexDirection = 'column';
 
-        const dropdown = document.createElement('div');
-        dropdown.id = 'user-dropdown';
+    const myPageBtn = document.createElement('button');
+    myPageBtn.textContent = 'My Page';
+    myPageBtn.onclick = () => {
+      dropdown.style.display = 'none';
+      window.location.href = 'user.html';
+    };
+
+    const dashboardBtn = document.createElement('button');
+    dashboardBtn.textContent = 'Dashboard';
+    dashboardBtn.onclick = () => {
+      dropdown.style.display = 'none';
+      window.location.href = 'dashboard.html';
+    };
+
+    const logoutBtn = document.createElement('button');
+    logoutBtn.textContent = 'Logout';
+    logoutBtn.onclick = async () => {
+      await auth.signOut();
+      window.location.reload();
+    };
+
+    dropdown.appendChild(myPageBtn);
+    dropdown.appendChild(dashboardBtn);
+    dropdown.appendChild(logoutBtn);
+    authBar.appendChild(dropdown);
+
+    userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+      if (!authBar.contains(e.target)) {
         dropdown.style.display = 'none';
-        dropdown.style.flexDirection = 'column';
-
-        // My Page button
-        const myPageBtn = document.createElement('button');
-        myPageBtn.textContent = 'My Page';
-        myPageBtn.onclick = () => {
-          dropdown.style.display = 'none';
-          window.location.href = 'user.html'; // update this URL if needed
-        };
-
-        const dashboardBtn = document.createElement('button');
-        dashboardBtn.textContent = 'Dashboard';
-        dashboardBtn.onclick = () => {
-          dropdown.style.display = 'none';
-          window.location.href = 'dashboard.html';
-        };
-
-        const logoutBtn = document.createElement('button');
-        logoutBtn.textContent = 'Logout';
-        logoutBtn.onclick = async () => {
-          await auth.signOut();
-          window.location.reload();
-        };
-
-        dropdown.appendChild(myPageBtn);
-        dropdown.appendChild(dashboardBtn);
-        dropdown.appendChild(logoutBtn);
-        authBar.appendChild(dropdown);
-
-        userInfo.addEventListener('click', () => toggleDropdown(dropdown));
-
-        document.addEventListener('click', (e) => {
-          if (!authBar.contains(e.target)) {
-            dropdown.style.display = 'none';
-          }
-        });
-      } else {
-        // Logged out UI
-        const loginBtn = document.createElement('button');
-        loginBtn.textContent = 'Login with Google';
-        loginBtn.style = `
-          background-color: #ff69b4;
-          color: #1e1b2e;
-          border: none;
-          padding: 0.5rem 1rem;
-          font-weight: bold;
-          font-size: 0.9rem;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        `;
-        loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
-        loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
-        loginBtn.addEventListener('click', () => auth.signInWithPopup(provider));
-        authBar.appendChild(loginBtn);
       }
     });
   }
 
-  // Wait for DOM to load then render
-  document.addEventListener('DOMContentLoaded', () => {
-    renderAuthBar();
+  function renderLoggedOut() {
+    authBar.innerHTML = '';
+
+    // User Games Button (optional on logged out? You can keep it if you want)
+    const userGamesBtn = document.createElement('button');
+    userGamesBtn.textContent = 'User Games';
+    userGamesBtn.style = `
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    `;
+    userGamesBtn.addEventListener('mouseover', () => userGamesBtn.style.backgroundColor = '#ff8edb');
+    userGamesBtn.addEventListener('mouseout', () => userGamesBtn.style.backgroundColor = '#ff69b4');
+    userGamesBtn.addEventListener('click', () => window.location.href = 'user-games.html');
+    authBar.appendChild(userGamesBtn);
+
+    // Login button
+    const loginBtn = document.createElement('button');
+    loginBtn.textContent = 'Login with Google';
+    loginBtn.style = `
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    `;
+    loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
+    loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
+    loginBtn.addEventListener('click', () => auth.signInWithPopup(provider));
+    authBar.appendChild(loginBtn);
+  }
+
+  // Attach auth listener once
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      renderLoggedIn(user);
+    } else {
+      renderLoggedOut();
+    }
   });
+
 </script>
+</body>
+</html>
  
 <!DOCTYPE html>
 <html lang="en">
@@ -560,8 +585,8 @@
   </div>
 
   <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -573,91 +598,109 @@
       appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Set auth persistence to NONE to prevent auto sign-in on page reload
-    auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(error => {
-      console.error('Error setting auth persistence:', error);
-    });
+    // Persistence can be changed if needed
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
 
-    const SHEET_ID = '1m0pMbcNZ4cWYB3lAOgnc0k4Jq7syj-EGPmtcptvVDEE';
-    const EMAIL_PREFIX_ENTRY_ID = '1551255018'; // Your Google Form Email Prefix entry ID
-    const FORM_BASE_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform';
+    const gameForm = document.getElementById('gameForm');
+    const sheetTableBody = document.querySelector('#sheetData tbody');
 
-    const iframe = document.getElementById('gameForm');
-    const tbody = document.querySelector('#sheetData tbody');
+    // Google Sheets public URL and parameters
+    // You need to replace this with your actual sheet ID & tab
+    const sheetID = '1-5h7PEz8hr7_qy8cRurHX7xRw1Ixyy03yscYkTWLo2mM';
+    const sheetTab = 'Submitted_Games';
+    const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
 
-    function loadSheetData(emailPrefix) {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-
-      fetch(url)
-        .then(res => {
-          if (!res.ok) throw new Error('Network response was not ok');
-          return res.text();
-        })
-        .then(dataText => {
-          const jsonData = JSON.parse(dataText.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1]);
-          const table = jsonData.table;
-
-          if (!table || !table.rows || table.rows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">No submissions found.</td></tr>`;
-            return;
-          }
-
-          const headers = table.cols.map(col => col.label);
-          tbody.innerHTML = '';
-
-          table.rows.forEach(row => {
-            const rowPrefix = row.c[headers.indexOf('Email Prefix')]?.v || '';
-            if (rowPrefix !== emailPrefix) return;
-
-            const tr = document.createElement('tr');
-
-            headers.forEach((header, i) => {
-              if(header === 'Email Prefix') return;
-
-              const cell = row.c[i];
-              let val = cell && cell.v ? cell.v : '';
-
-              const td = document.createElement('td');
-
-              if (typeof val === 'string' && (val.startsWith('http') || val.includes('drive.google.com'))) {
-                td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
-              } else {
-                td.innerHTML = String(val).replace(/\n/g, '<br>');
-              }
-
-              tr.appendChild(td);
-            });
-
-            tbody.appendChild(tr);
-          });
-
-          if (!tbody.hasChildNodes()) {
-            tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">No submissions found for your email prefix.</td></tr>`;
-          }
-        })
-        .catch(err => {
-          console.error('Error loading sheet data:', err);
-          tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">Failed to load data. Please try again later.</td></tr>`;
-        });
+    // Helper to encode queries
+    function encodeQuery(query) {
+      return encodeURIComponent(query);
     }
 
+    // Create prefilled Google Form URL, inserting email prefix in first field
+    function getPrefilledFormURL(emailPrefix) {
+      // Example prefilled URL — replace field ID with your form field ID
+      return `https://docs.google.com/forms/d/e/1FAIpQLSeYDwOiHjZTTajimFhF3M98XxYKjrg7GQjVL33ETLcSjTYSdA/viewform?usp=pp_url&entry.1363523117=${emailPrefix}`;
+    }
+
+    // Render the Google Sheets data into the table
+    function renderSheetData(rows) {
+      sheetTableBody.innerHTML = '';
+      if (rows.length === 0) {
+        sheetTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No submitted games found for your account.</td></tr>';
+        return;
+      }
+
+      rows.forEach(row => {
+        const [timestamp, title, description, gameURL, screenshotURL, coverURL] = row;
+        const tr = document.createElement('tr');
+
+        function createCell(text, isLink) {
+          const td = document.createElement('td');
+          if (isLink && text) {
+            const a = document.createElement('a');
+            a.href = text;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = text;
+            td.appendChild(a);
+          } else {
+            td.textContent = text || '';
+          }
+          return td;
+        }
+
+        tr.appendChild(createCell(timestamp, false));
+        tr.appendChild(createCell(title, false));
+        tr.appendChild(createCell(description, false));
+        tr.appendChild(createCell(gameURL, true));
+        tr.appendChild(createCell(screenshotURL, true));
+        tr.appendChild(createCell(coverURL, true));
+
+        sheetTableBody.appendChild(tr);
+      });
+    }
+
+    // Fetch the sheet data filtered by email prefix
+    async function fetchSheetData(emailPrefix) {
+      try {
+        // Query: select all where first column contains email prefix
+        const query = `select * where A contains '${emailPrefix}' order by A desc`;
+        const url = baseUrl + encodeQuery(query);
+
+        const response = await fetch(url);
+        const text = await response.text();
+
+        // The response is not a JSON, but JSONP with some extra chars:
+        // Parse out the JSON part:
+        const jsonStr = text.match(/google\.visualization\.Query\.setResponse\((.*)\);/s)[1];
+        const data = JSON.parse(jsonStr);
+
+        // Extract rows data
+        const rows = data.table.rows.map(r => r.c.map(c => (c ? c.v : '')));
+
+        renderSheetData(rows);
+
+      } catch (err) {
+        sheetTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ff69b4;">
+          Error loading submitted games. Please try again later.
+        </td></tr>`;
+        console.error('Error fetching sheet data:', err);
+      }
+    }
+
+    // On auth state change
     auth.onAuthStateChanged(user => {
       if (user) {
         const emailPrefix = user.email.split('@')[0];
-        const formPrefillUrl = `${FORM_BASE_URL}?entry.${EMAIL_PREFIX_ENTRY_ID}=${encodeURIComponent(emailPrefix)}&embedded=true`;
-
-        iframe.src = formPrefillUrl;
-        loadSheetData(emailPrefix);
+        gameForm.src = getPrefilledFormURL(emailPrefix);
+        fetchSheetData(emailPrefix);
       } else {
-        iframe.src = `${FORM_BASE_URL}?embedded=true`;
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Please log in to view your submissions.</td></tr>`;
+        gameForm.src = '';
+        sheetTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">You need to log in to submit and view your games.</td></tr>';
       }
     });
   </script>
-
 </body>
 </html>
