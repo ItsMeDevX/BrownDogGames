@@ -279,16 +279,16 @@
 
 
 <!-- Auth Bar -->
- <button id="loginBtn">Login with Google</button>
+  <button id="loginBtn">Login with Google</button>
 
   <script>
     const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
-    const redirectUri = 'https://browndoggames.com/callback.html';
+    const redirectUri = 'https://browndoggames.com/callback.html'; // Your callback page URL
     const scope = 'openid email profile';
 
-    // Base64-urlencode
+    // Base64-urlencode function
     function base64urlencode(buffer) {
-      return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)))
+      return btoa(String.fromCharCode(...new Uint8Array(buffer)))
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
@@ -325,7 +325,7 @@
         prompt: 'consent'
       });
 
-      window.location = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
     }
 
     document.getElementById('loginBtn').addEventListener('click', login);
