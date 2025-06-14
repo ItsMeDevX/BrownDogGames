@@ -461,108 +461,77 @@
     padding: 20px;
     background-image: linear-gradient(135deg, #2c1b33, #191425);
     text-align: center;
-    user-select: none;
   }
 
   .logo {
     max-width: 180px;
     height: auto;
-    margin: 0 auto 25px;
+    margin: 0 auto 20px;
     display: block;
-    filter: drop-shadow(0 0 3px #ff69b4);
   }
 
   h1 {
     color: #ff69b4;
-    font-size: 2.6rem;
-    text-shadow: 2px 2px 4px #000;
-    margin-bottom: 20px;
-    letter-spacing: 1.2px;
+    font-size: 2.4rem;
+    text-shadow: 2px 2px 0 #000;
+    margin-bottom: 15px;
   }
 
   iframe {
-    border: 3px solid #ff69b4;
-    border-radius: 10px;
+    border: none;
     width: 100%;
     height: 650px;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
+    border-radius: 12px;
     box-shadow: 0 0 20px #ff69b4aa;
-    transition: box-shadow 0.3s ease-in-out;
-  }
-
-  iframe:hover {
-    box-shadow: 0 0 30px #ff69b4ee;
   }
 
   table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 10px;
-    margin-bottom: 50px;
-    box-shadow: 0 0 15px #ff69b4cc;
-    border-radius: 10px;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+    box-shadow: 0 0 15px #ff69b4aa;
+    border-radius: 8px;
     overflow: hidden;
-    background: #2d1a3a;
   }
 
   th, td {
-    padding: 12px 15px;
+    border: 1px solid #ff69b4;
+    padding: 12px 10px;
     text-align: left;
     vertical-align: top;
-    color: #fefefe;
     font-size: 0.9rem;
-    letter-spacing: 0.04em;
   }
 
   th {
-    background-color: #3f2b57;
+    background-color: #2d1a3a;
     font-weight: 700;
-    text-transform: uppercase;
-    border-bottom: 2px solid #ff69b4;
-    user-select: text;
-  }
-
-  tbody tr {
-    background-color: #3b2e55;
-    transition: background-color 0.25s ease;
-    border-radius: 8px;
-    box-shadow: inset 0 0 5px #ff69b4aa;
-  }
-
-  tbody tr:hover {
-    background-color: #ff69b4aa;
-    color: #1e1b2e;
-    font-weight: 600;
   }
 
   tbody tr:nth-child(odd) {
     background-color: #2a2040;
   }
 
+  tbody tr:hover {
+    background-color: #3e2959;
+    transition: background-color 0.3s ease;
+  }
+
   a {
     color: #ff69b4;
     text-decoration: none;
     word-break: break-word;
-    font-weight: 600;
-    transition: color 0.2s ease-in-out;
   }
 
   a:hover {
-    color: #ffa6d2;
     text-decoration: underline;
   }
 
   /* Responsive tweaks */
   @media (max-width: 600px) {
-    body {
-      padding: 15px;
-    }
-    h1 {
-      font-size: 2rem;
-    }
     th, td {
-      padding: 10px 8px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      padding: 8px 6px;
     }
   }
 </style>
@@ -605,7 +574,10 @@
 
     function loadSheetData() {
       fetch(CSV_URL)
-        .then(res => res.text())
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.text();
+        })
         .then(csvText => {
           const results = Papa.parse(csvText, {
             header: true,
@@ -640,10 +612,13 @@
         })
         .catch(err => {
           console.error('Error loading sheet data:', err);
+          const tbody = document.querySelector('#sheetData tbody');
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ff69b4;">Failed to load data. Please check the CSV URL and try again.</td></tr>';
         });
     }
 
     loadSheetData();
   </script>
+
 </body>
 </html>
