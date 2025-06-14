@@ -2,47 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logging in - BrownDogGames</title>
   <link rel="icon" href="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LogoDog.ico" type="image/x-icon">
 
-  <!-- Logo Style -->
-  <style>
-    .logo {
-      height: 80px;
-      width: auto;
-      display: block;
-      margin: 20px auto;
-      max-width: 100%;
-    }
-  </style>
-
-  <!-- Page Styles -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1e1b2e;
+      background: linear-gradient(135deg, #2c1b33, #191425);
       color: #fefefe;
       min-height: 100vh;
       margin: 0;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
     }
+
+    .logo {
+      height: 80px;
+      width: auto;
+      margin: 20px auto;
+      max-width: 100%;
+    }
+
     h1 {
       font-size: 2.5rem;
       color: #ff69b4;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 1rem;
     }
+
     p {
       font-size: 1.2rem;
-      margin: 0.5rem 0;
+      margin: 0.5rem 0 1.5rem;
+    }
+
+    .profile-pic {
+      border-radius: 50%;
+      max-width: 150px;
+      margin-top: 1rem;
+      box-shadow: 0 0 12px #ff69b4aa;
+    }
+
+    .error {
+      color: #ff6b6b;
+      font-weight: bold;
+      margin-top: 1rem;
     }
   </style>
 
@@ -53,7 +63,7 @@
       const verifier = localStorage.getItem('pkce_verifier');
 
       if (!code || !verifier) {
-        document.body.innerHTML = `<h1>Error</h1><p>Missing authorization code or verifier. Please try logging in again.</p>`;
+        showError('Missing authorization code or verifier. Please try logging in again.');
         return;
       }
 
@@ -68,31 +78,54 @@
 
         if (response.ok) {
           localStorage.removeItem('pkce_verifier');
+
           document.body.innerHTML = `
-            <h1>Welcome, ${result.name}</h1>
-            <p>Email: ${result.email}</p>
-            <img src="${result.picture}" alt="Profile Picture" style="border-radius: 50%; max-width: 150px; margin-top: 1rem;">
+            <a href="index.html">
+              <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
+            </a>
+            <h1>Bienvenido, ${escapeHtml(result.name)}</h1>
+            <p>Email: ${escapeHtml(result.email)}</p>
+            <img src="${escapeHtml(result.picture)}" alt="Profile Picture" class="profile-pic" />
+            <p>Redirigiendo a la página principal...</p>
           `;
 
-          // Redirect to home or dashboard after delay
           setTimeout(() => {
             window.location.href = '/';
           }, 3000);
-
         } else {
-          document.body.innerHTML = `<h1>Login Failed</h1><p>${result.error || 'Unknown error occurred.'}</p>`;
+          showError(result.error || 'Error desconocido al iniciar sesión.');
         }
       } catch (err) {
         console.error(err);
-        document.body.innerHTML = `<h1>Unexpected Error</h1><p>Please try again later.</p>`;
+        showError('Error inesperado. Por favor, intenta nuevamente más tarde.');
       }
+    }
+
+    function showError(message) {
+      document.body.innerHTML = `
+        <a href="index.html">
+          <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
+        </a>
+        <h1>Error al iniciar sesión</h1>
+        <p class="error">${escapeHtml(message)}</p>
+        <p><a href="index.html" style="color:#ff69b4; text-decoration:none; font-weight:bold;">Volver a la página principal</a></p>
+      `;
+    }
+
+    // Basic HTML escaping to prevent injection
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     window.addEventListener('DOMContentLoaded', handleOAuthCallback);
   </script>
 </head>
 <body>
-  <!-- Logo -->
   <a href="index.html">
     <img 
       src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
@@ -101,7 +134,7 @@
     >
   </a>
 
-  <h1>Logging you in...</h1>
-  <p>Please wait a moment while we process your login.</p>
+  <h1>Iniciando sesión...</h1>
+  <p>Por favor, espera un momento mientras procesamos tu inicio de sesión.</p>
 </body>
 </html>
