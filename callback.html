@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logging in - BrownDogGames</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background: linear-gradient(135deg, #2c1b33, #191425);
@@ -18,10 +17,6 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-    }
-    .logo {
-      height: 80px;
-      margin: 20px;
     }
     .profile-pic {
       border-radius: 50%;
@@ -41,74 +36,8 @@
   <p>Please wait while we authenticate you.</p>
 
   <script>
-    async function handleOAuthCallback() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      const state = params.get('state');
-      const storedState = localStorage.getItem('oauth_state');
-      const verifier = localStorage.getItem('pkce_verifier');
-
-      if (!code || !verifier) {
-        return showError('Missing authorization code or PKCE verifier.');
-      }
-
-      if (!state || state !== storedState) {
-        return showError('Invalid OAuth state. Please try again.');
-      }
-
-      try {
-        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: '1051697335973-jnmuptit8r4hg7ohu2e5vh7n28s32d73.apps.googleusercontent.com',
-            code,
-            code_verifier: verifier,
-            redirect_uri: 'https://browndoggames.com/callback.html',
-            grant_type: 'authorization_code'
-          }),
-        });
-
-        const tokenData = await tokenRes.json();
-        console.log('Token Response:', tokenData);
-
-        if (!tokenData.access_token) {
-          throw new Error(tokenData.error_description || 'Failed to retrieve access token.');
-        }
-
-        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenData.access_token}` },
-        });
-
-        const user = await userInfoRes.json();
-        console.log('User Info:', user);
-
-        localStorage.setItem('user_info', JSON.stringify(user));
-        localStorage.removeItem('pkce_verifier');
-        localStorage.removeItem('oauth_state');
-
-        document.body.innerHTML = `
-          <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" class="logo" />
-          <h1>Welcome, ${escapeHtml(user.name || '')}</h1>
-          <p>Email: ${escapeHtml(user.email || '')}</p>
-          ${user.picture ? `<img src="${escapeHtml(user.picture)}" class="profile-pic" />` : ''}
-          <p>Redirecting to home...</p>
-        `;
-
-        setTimeout(() => window.location.href = '/', 3000);
-      } catch (err) {
-        console.error('OAuth Callback Error:', err);
-        showError(err.message || 'An unexpected error occurred.');
-      }
-    }
-
-    function showError(msg) {
-      document.body.innerHTML = `
-        <h1>Login Failed</h1>
-        <p class="error">${escapeHtml(msg)}</p>
-        <p><a href="/" style="color:#ff69b4;">Return Home</a></p>
-      `;
-    }
+    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
+    const redirectUri = 'https://browndoggames.com/callback.html';
 
     function escapeHtml(text) {
       return String(text || '')
@@ -117,6 +46,67 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+
+    async function handleOAuthCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const verifier = localStorage.getItem('pkce_verifier');
+
+      if (!code || !verifier) {
+        showError('Missing authorization code or PKCE verifier.');
+        return;
+      }
+
+      try {
+        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: clientId,
+            code: code,
+            code_verifier: verifier,
+            redirect_uri: redirectUri,
+            grant_type: 'authorization_code'
+          })
+        });
+
+        const tokenData = await tokenResponse.json();
+
+        if (!tokenData.access_token) {
+          throw new Error(tokenData.error_description || 'Failed to get access token');
+        }
+
+        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: {
+            Authorization: `Bearer ${tokenData.access_token}`
+          }
+        });
+
+        const user = await userInfoResponse.json();
+
+        localStorage.setItem('user_info', JSON.stringify(user));
+        localStorage.removeItem('pkce_verifier');
+
+        document.body.innerHTML = `
+          <h1>Welcome, ${escapeHtml(user.name || 'User')}</h1>
+          <p>Email: ${escapeHtml(user.email || '')}</p>
+          ${user.picture ? `<img src="${escapeHtml(user.picture)}" class="profile-pic" alt="Profile picture" />` : ''}
+          <p>Redirecting to homepage...</p>
+        `;
+
+        setTimeout(() => window.location.href = '/', 3000);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function showError(message) {
+      document.body.innerHTML = `
+        <h1>Login Failed</h1>
+        <p class="error">${escapeHtml(message)}</p>
+        <p><a href="/" style="color:#ff69b4;">Return Home</a></p>
+      `;
     }
 
     handleOAuthCallback();
