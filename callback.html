@@ -68,40 +68,51 @@
       }
 
       try {
+        // Debug logging
+        console.log('Exchanging code for tokens...', { code, verifier });
+
         const response = await fetch('/api/oauth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code, verifier }),
         });
 
+        if (!response.ok) {
+          // Try to parse error JSON if possible
+          let errorResult = {};
+          try {
+            errorResult = await response.json();
+          } catch (e) {
+            // ignore parse error
+          }
+          throw new Error(errorResult.error || 'Unknown login error occurred.');
+        }
+
         const result = await response.json();
 
-        if (response.ok) {
-          localStorage.removeItem('pkce_verifier');
+        // Remove verifier after success
+        localStorage.removeItem('pkce_verifier');
 
-          const name = escapeHtml(result.name || '');
-          const email = escapeHtml(result.email || '');
-          const picture = escapeHtml(result.picture || '');
+        const name = escapeHtml(result.name || '');
+        const email = escapeHtml(result.email || '');
+        const picture = escapeHtml(result.picture || '');
 
-          document.body.innerHTML = `
-            <a href="index.html">
-              <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
-            </a>
-            <h1>Welcome, ${name}</h1>
-            <p>Email: ${email}</p>
-            ${picture ? `<img src="${picture}" alt="Profile Picture" class="profile-pic" />` : ''}
-            <p>Redirecting to the home page...</p>
-          `;
+        document.body.innerHTML = `
+          <a href="index.html">
+            <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" alt="BrownDogGames Logo" class="logo" />
+          </a>
+          <h1>Welcome, ${name}</h1>
+          <p>Email: ${email}</p>
+          ${picture ? `<img src="${picture}" alt="Profile Picture" class="profile-pic" />` : ''}
+          <p>Redirecting to the home page...</p>
+        `;
 
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 3000);
-        } else {
-          showError(result.error || 'Unknown login error occurred.');
-        }
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000);
       } catch (err) {
-        console.error(err);
-        showError('Unexpected error. Please try again later.');
+        console.error('OAuth callback error:', err);
+        showError(err.message || 'Unexpected error. Please try again later.');
       }
     }
 
@@ -133,11 +144,11 @@
 </head>
 <body>
   <a href="index.html">
-    <img 
-      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-      alt="BrownDogGames Logo" 
+    <img
+      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png"
+      alt="BrownDogGames Logo"
       class="logo"
-    >
+    />
   </a>
 
   <h1>Logging in...</h1>
