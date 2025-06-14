@@ -482,14 +482,14 @@
     width: 100%;
     height: 650px;
     margin-bottom: 40px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px #ff69b4aa;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 40px;
+    table-layout: fixed;
+    word-wrap: break-word;
   }
 
   th, td {
@@ -516,6 +516,16 @@
   a:hover {
     text-decoration: underline;
   }
+
+  /* Responsive for smaller screens */
+  @media (max-width: 600px) {
+    body {
+      padding: 10px;
+    }
+    h1 {
+      font-size: 1.8rem;
+    }
+  }
 </style>
 </head>
 <body>
@@ -535,7 +545,7 @@
   ></iframe>
 
   <h1>Submitted Games Data</h1>
-  <table id="sheetData">
+  <table id="sheetData" aria-label="Submitted games table">
     <thead>
       <tr>
         <th>Timestamp</th>
@@ -552,16 +562,18 @@
   <!-- PapaParse CDN -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    // Your published Google Sheets CSV URL (replace with your actual published CSV link)
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?output=csv';
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?gid=1832939804&single=true&output=csv';
 
     function loadSheetData() {
       fetch(CSV_URL)
-        .then(response => response.text())
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.text();
+        })
         .then(csvText => {
           const results = Papa.parse(csvText, {
             header: true,
-            skipEmptyLines: true
+            skipEmptyLines: true,
           });
 
           if (!results.data || results.data.length === 0) {
@@ -579,23 +591,31 @@
               const td = document.createElement('td');
               const val = row[col] || '';
 
+              // Linkify URLs, including Google Drive links
               if (val.startsWith('http') || val.includes('drive.google.com')) {
                 td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
               } else {
+                // Preserve newlines formatting
                 td.innerHTML = val.replace(/\n/g, '<br>');
               }
+
               tr.appendChild(td);
             });
 
             tbody.appendChild(tr);
           });
         })
-        .catch(error => {
-          console.error('Error loading sheet data:', error);
+        .catch(err => {
+          console.error('Error loading sheet data:', err);
+          const tbody = document.querySelector('#sheetData tbody');
+          tbody.innerHTML = `<tr><td colspan="6" style="color:#ff6f91; text-align:center;">Failed to load data. Please try again later.</td></tr>`;
         });
     }
 
     loadSheetData();
+
+    // Optional: Refresh data every 5 minutes (300000 ms)
+    // setInterval(loadSheetData, 300000);
   </script>
 </body>
 </html>
