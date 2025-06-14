@@ -279,18 +279,16 @@
 
 
 <!-- Auth Bar -->
- </style>
-</head>
-<body>
-  <button id="loginBtn">Login with Google</button>
+ <button id="loginBtn">Login with Google</button>
 
   <script>
-    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
+    const clientId = 'YOUR_CLIENT_ID_HERE';
     const redirectUri = 'https://browndoggames.com/callback.html';
     const scope = 'openid email profile';
 
-    function base64urlencode(str) {
-      return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
+    // Base64-urlencode
+    function base64urlencode(buffer) {
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)))
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
@@ -323,8 +321,8 @@
         scope: scope,
         code_challenge: challenge,
         code_challenge_method: 'S256',
-        access_type: 'offline',  // Optional, for refresh tokens
-        prompt: 'consent'        // Optional, to force consent screen
+        access_type: 'offline',
+        prompt: 'consent'
       });
 
       window.location = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
