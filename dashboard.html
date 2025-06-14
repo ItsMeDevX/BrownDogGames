@@ -562,6 +562,7 @@
   <!-- PapaParse CDN -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
+    // IMPORTANT: Use your actual published CSV URL here
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVvCsgZSmjJZTPNjbTBpoIx011TQiPkuCcYBqOGWIWCenJckKu3qfau0TxwtDOSIGsF-2Y54Bfssya/pub?gid=1832939804&single=true&output=csv';
 
     function loadSheetData() {
@@ -571,10 +572,13 @@
           return res.text();
         })
         .then(csvText => {
+          console.log('CSV Loaded:', csvText.slice(0, 200)); // Debug first 200 chars
           const results = Papa.parse(csvText, {
             header: true,
             skipEmptyLines: true,
           });
+
+          console.log('Parsed Data:', results.data); // Debug parsed data
 
           if (!results.data || results.data.length === 0) {
             console.warn('No data found in CSV');
@@ -591,11 +595,9 @@
               const td = document.createElement('td');
               const val = row[col] || '';
 
-              // Linkify URLs, including Google Drive links
               if (val.startsWith('http') || val.includes('drive.google.com')) {
                 td.innerHTML = `<a href="${val}" target="_blank" rel="noopener noreferrer">${val}</a>`;
               } else {
-                // Preserve newlines formatting
                 td.innerHTML = val.replace(/\n/g, '<br>');
               }
 
@@ -613,8 +615,7 @@
     }
 
     loadSheetData();
-
-    // Optional: Refresh data every 5 minutes (300000 ms)
+    // Optional: refresh every 5 minutes
     // setInterval(loadSheetData, 300000);
   </script>
 </body>
