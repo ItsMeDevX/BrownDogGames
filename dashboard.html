@@ -454,7 +454,6 @@
 </body>
 </html>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -467,22 +466,28 @@
     color: #fefefe;
     font-family: 'Rubik Mono One', sans-serif;
     max-width: 700px;
-    margin: 40px auto;
-    padding: 20px;
-    line-height: 1.6;
+    margin: 20px auto; /* less vertical margin */
+    padding: 10px 20px;
+    line-height: 1.4; /* tighter line height */
     text-align: left;
+  }
+  .logo {
+    display: block;
+    max-width: 180px;
+    height: auto;
+    margin: 10px auto 15px; /* tighter margins */
   }
   h1 {
     color: #ff69b4;
-    font-size: 2.8rem;
+    font-size: 2.4rem; /* slightly smaller */
     text-shadow: 2px 2px 0 #000;
-    margin-bottom: 1rem;
+    margin: 15px 0 10px; /* less vertical spacing */
     text-align: center;
   }
   a {
     display: inline-block;
-    margin-top: 1rem;
-    padding: 0.7rem 1.4rem;
+    margin-top: 8px; /* less margin */
+    padding: 0.5rem 1rem; /* smaller padding */
     background-color: #ff69b4;
     color: #1e1b2e;
     font-weight: bold;
@@ -496,11 +501,11 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 30px;
+    margin-top: 20px; /* less space above table */
   }
   th, td {
     border: 1px solid #ff69b4;
-    padding: 8px;
+    padding: 6px 8px; /* smaller padding */
     text-align: left;
   }
   th {
@@ -509,18 +514,25 @@
   tbody tr:nth-child(odd) {
     background-color: #2a2040;
   }
+  iframe {
+    border: none;
+    width: 100%;
+    height: 650px; /* slightly smaller height */
+    margin-bottom: 20px; /* space below form */
+  }
 </style>
 </head>
 <body>
+
+<!-- Put your logo here, example: -->
+<img src="your-logo-url.png" alt="Logo" class="logo" />
 
 <h1>Submit Your Game</h1>
 
 <!-- Embed your Google Form here -->
 <iframe 
   src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true" 
-  width="100%" height="700" frameborder="0" marginheight="0" marginwidth="0">
-  Loading…
-</iframe>
+  ></iframe>
 
 <h1>Submitted Games Data</h1>
 <table id="sheetData">
@@ -555,12 +567,11 @@ function loadSheetData() {
       tbody.innerHTML = ''; // clear
 
       rows.forEach((row, i) => {
-        if(i === 0) return; // skip header row from sheet
+        if(i === 0) return; // skip header row
 
         const tr = document.createElement('tr');
         row.forEach(cell => {
           const td = document.createElement('td');
-          // If this cell looks like a URL, make it clickable link
           if(cell.startsWith('http')) {
             td.innerHTML = `<a href="${cell}" target="_blank" rel="noopener noreferrer">${cell}</a>`;
           } else {
