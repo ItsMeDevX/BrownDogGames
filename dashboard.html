@@ -526,7 +526,7 @@
 
   <h1>Submit Your Game</h1>
 
-  <button id="signInBtn">Sign in with Google to Prefill Form</button>
+  <button id="signInBtn" style="display:none;">Sign in with Google to Prefill Form</button>
 
   <iframe id="gameForm" src="" title="Game Submission Form"></iframe>
 
@@ -560,8 +560,11 @@
       messagingSenderId: "1051697335973",
       appId: "1:1051697335973:web:d7a936a1622bae8bfbc74c"
     };
+
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
 
     const entryFieldID = "entry.1551255018"; // prefillable field ID
     const baseFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?usp=pp_url";
@@ -569,31 +572,29 @@
     const gameFormIframe = document.getElementById('gameForm');
     const signInBtn = document.getElementById('signInBtn');
 
-    // Prefill form URL and set iframe src
     function setFormWithPrefix(prefix) {
       const prefilledURL = `${baseFormURL}&${entryFieldID}=${encodeURIComponent(prefix)}`;
       gameFormIframe.src = prefilledURL;
     }
 
-    // On sign-in success, get user email prefix and set iframe src
+    // Listen for auth changes and update iframe + UI accordingly
     auth.onAuthStateChanged(user => {
       if (user) {
         const prefix = user.email.split('@')[0];
         setFormWithPrefix(prefix);
-        signInBtn.style.display = 'none'; // Hide sign-in button when signed in
+        signInBtn.style.display = 'none';
       } else {
         setFormWithPrefix('BrownDogGames'); // default prefix
-        signInBtn.style.display = 'inline-block'; // show sign-in button
+        signInBtn.style.display = 'inline-block';
       }
     });
 
-    // Sign in with Google on button click
+    // Google Sign-In button click
     signInBtn.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).catch(err => alert('Sign-in error: ' + err.message));
     });
 
-    // Fetch and display submitted games data (same as before)
+    // --- Sheet data fetching logic unchanged ---
     const sheetID = '1PxJnUlC-7nS7-KWLpBGW5t4Udlo0TeVUJ-CgoJbEDP8';
     const sheetTab = 'Form Responses 1';
     const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetTab}&tq=`;
@@ -650,9 +651,8 @@
       });
     }
 
-    // Initial data load (no sign-in needed)
     fetchSheetData();
-
   </script>
+
 </body>
 </html>
