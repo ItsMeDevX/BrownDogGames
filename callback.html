@@ -1,115 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Logging in - BrownDogGames</title>
-  <style>
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #2c1b33, #191425);
-      color: #fefefe;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-    .profile-pic {
-      border-radius: 50%;
-      max-width: 150px;
-      margin-top: 1rem;
-      box-shadow: 0 0 12px #ff69b4aa;
-    }
-    .error {
-      color: #ff6b6b;
-      font-weight: bold;
-      margin-top: 1rem;
-    }
-  </style>
-</head>
+<html>
+<head><title>Logging in...</title></head>
 <body>
   <h1>Logging in...</h1>
-  <p>Please wait while we authenticate you.</p>
 
   <script>
-    const clientId = '1051697335973-sd42gvr5ki3mpfm0pei45ciel019mujm.apps.googleusercontent.com';
+    const clientId = 'YOUR_CLIENT_ID_HERE';
     const redirectUri = 'https://browndoggames.com/callback.html';
 
-    function escapeHtml(text) {
-      return String(text || '')
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    async function exchangeCodeForToken(code, verifier) {
+      const params = new URLSearchParams({
+        client_id: clientId,
+        code: code,
+        code_verifier: verifier,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      });
+
+      const res = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      });
+
+      return await res.json();
     }
 
-    async function handleOAuthCallback() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
+    async function handleCallback() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
       const verifier = localStorage.getItem('pkce_verifier');
 
       if (!code || !verifier) {
-        showError('Missing authorization code or PKCE verifier.');
+        document.body.innerHTML = 'Error: Missing code or verifier.';
         return;
       }
 
       try {
-        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: clientId,
-            code: code,
-            code_verifier: verifier,
-            redirect_uri: redirectUri,
-            grant_type: 'authorization_code'
-          })
-        });
-
-        const tokenData = await tokenResponse.json();
-
-        if (!tokenData.access_token) {
-          throw new Error(tokenData.error_description || 'Failed to get access token');
+        const tokenResponse = await exchangeCodeForToken(code, verifier);
+        if (tokenResponse.error) {
+          throw new Error(tokenResponse.error_description || tokenResponse.error);
         }
 
-        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: {
-            Authorization: `Bearer ${tokenData.access_token}`
-          }
-        });
+        // Save tokens or user info as needed:
+        console.log('Tokens:', tokenResponse);
+        document.body.innerHTML = '<h2>Login successful!</h2>';
 
-        const user = await userInfoResponse.json();
-
-        localStorage.setItem('user_info', JSON.stringify(user));
         localStorage.removeItem('pkce_verifier');
-
-        document.body.innerHTML = `
-          <h1>Welcome, ${escapeHtml(user.name || 'User')}</h1>
-          <p>Email: ${escapeHtml(user.email || '')}</p>
-          ${user.picture ? `<img src="${escapeHtml(user.picture)}" class="profile-pic" alt="Profile picture" />` : ''}
-          <p>Redirecting to homepage...</p>
-        `;
-
-        setTimeout(() => window.location.href = '/', 3000);
-      } catch (error) {
-        showError(error.message);
+        // Redirect or load your app
+      } catch (err) {
+        document.body.innerHTML = 'Login failed: ' + err.message;
       }
     }
 
-    function showError(message) {
-      document.body.innerHTML = `
-        <h1>Login Failed</h1>
-        <p class="error">${escapeHtml(message)}</p>
-        <p><a href="/" style="color:#ff69b4;">Return Home</a></p>
-      `;
-    }
-
-    handleOAuthCallback();
+    handleCallback();
   </script>
 </body>
 </html>
