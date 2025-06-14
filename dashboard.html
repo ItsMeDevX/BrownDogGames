@@ -458,171 +458,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Upload Your Game</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1e1b2e;
-      color: #fefefe;
-      min-height: 100vh;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
-      text-align: center;
-    }
-    h1 {
-      font-size: 2.8rem;
-      color: #ff69b4;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1rem;
-    }
-    form {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #2d1a3a;
-      padding: 2rem;
-      border-radius: 15px;
-      border: 2px solid #ff69b4;
-      text-align: left;
-    }
-    input, textarea, label {
-      font-family: 'Rubik Mono One', sans-serif;
-      display: block;
-      width: 100%;
-      margin-bottom: 1rem;
-      background-color: #1e1b2e;
-      color: #fefefe;
-      border: 2px solid #ff69b4;
-      border-radius: 8px;
-      padding: 0.8rem;
-    }
-    input[type="file"] {
-      padding: 0.3rem;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-    button[type="submit"] {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      font-size: 1rem;
-      font-weight: bold;
-      border: none;
-      padding: 0.8rem 1.6rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button[type="submit"]:hover {
-      background-color: #ff8edb;
-    }
-    .message {
-      margin-top: 1.5rem;
-      font-size: 1rem;
-      color: #ffc0cb;
-    }
-    .message.success {
-      color: #a3f7bf;
-    }
-    .message.error {
-      color: #ff6b6b;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Submit Game & View Data</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+  body {
+    background-color: #1e1b2e;
+    color: #fefefe;
+    font-family: 'Rubik Mono One', sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+    line-height: 1.6;
+    text-align: left;
+  }
+  h1 {
+    color: #ff69b4;
+    font-size: 2.8rem;
+    text-shadow: 2px 2px 0 #000;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  a {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.7rem 1.4rem;
+    background-color: #ff69b4;
+    color: #1e1b2e;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+  a:hover {
+    background-color: #ff8edb;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+  }
+  th, td {
+    border: 1px solid #ff69b4;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #2d1a3a;
+  }
+  tbody tr:nth-child(odd) {
+    background-color: #2a2040;
+  }
+</style>
 </head>
 <body>
 
-  <h1>Upload Your Game</h1>
+<h1>Submit Your Game</h1>
 
-  <form id="addGameForm">
-    <input type="text" id="title" name="title" placeholder="Game Title" required />
-    <textarea id="description" name="description" placeholder="Game Description" required></textarea>
+<!-- Embed your Google Form here -->
+<iframe 
+  src="https://docs.google.com/forms/d/e/1FAIpQLSeLrzanyPZvc-0rjTpE1glTSTqGtdBt_e6Z7-kVCFQdpI-tTw/viewform?embedded=true" 
+  width="100%" height="700" frameborder="0" marginheight="0" marginwidth="0">
+  Loading…
+</iframe>
 
-    <label>
-      Game File (ZIP or HTML bundle): 
-      <input type="file" id="gameFile" name="gameFile" accept=".zip,.html,.htm" required />
-    </label>
+<h1>Submitted Games Data</h1>
+<table id="sheetData">
+  <thead>
+    <tr>
+      <th>Timestamp</th>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Game URL</th>
+      <th>Screenshot URL</th>
+      <th>Cover URL</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-    <label>
-      Screenshot (PNG/JPG): 
-      <input type="file" id="screenshotFile" name="screenshotFile" accept="image/*" />
-    </label>
+<script>
+// Replace this URL with your published CSV URL from your sheet
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXXXXX/pub?output=csv';
 
-    <label>
-      Cover Image (PNG/JPG): 
-      <input type="file" id="coverFile" name="coverFile" accept="image/*" />
-    </label>
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+}
 
-    <button type="submit">Submit Game</button>
-  </form>
+function loadSheetData() {
+  fetch(CSV_URL)
+    .then(response => response.text())
+    .then(text => {
+      const rows = parseCSV(text);
+      const tbody = document.querySelector('#sheetData tbody');
+      tbody.innerHTML = ''; // clear
 
-  <p class="message" id="formMessage"></p>
+      rows.forEach((row, i) => {
+        if(i === 0) return; // skip header row from sheet
 
-  <script>
-    const form = document.getElementById('addGameForm');
-    const message = document.getElementById('formMessage');
-
-    function showMessage(text, type = '') {
-      message.textContent = text;
-      message.className = 'message ' + type;
-    }
-
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-
-      showMessage('Uploading, please wait...');
-
-      const formData = new FormData(form);
-
-      // Convert files to base64 and prepare JSON object for Apps Script
-      const filesToRead = ['gameFile', 'screenshotFile', 'coverFile'];
-      let filePromises = filesToRead.map(name => {
-        const file = formData.get(name);
-        if (!file || file.size === 0) return Promise.resolve(null);
-
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            resolve({
-              name: file.name,
-              type: file.type,
-              data: reader.result.split(',')[1]  // base64 string only
-            });
-          };
-          reader.readAsDataURL(file);
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          // If this cell looks like a URL, make it clickable link
+          if(cell.startsWith('http')) {
+            td.innerHTML = `<a href="${cell}" target="_blank" rel="noopener noreferrer">${cell}</a>`;
+          } else {
+            td.textContent = cell;
+          }
+          tr.appendChild(td);
         });
+        tbody.appendChild(tr);
       });
-
-      Promise.all(filePromises).then(files => {
-        const data = {
-          title: formData.get('title'),
-          description: formData.get('description'),
-          gameFile: files[0],
-          screenshotFile: files[1],
-          coverFile: files[2]
-        };
-
-        google.script.run
-          .withSuccessHandler(response => {
-            if (response.startsWith('Error')) {
-              showMessage(response, 'error');
-            } else {
-              showMessage('Game submitted successfully!', 'success');
-              form.reset();
-            }
-          })
-          .withFailureHandler(err => {
-            showMessage('Upload failed: ' + err.message, 'error');
-          })
-          .submitGame(data);
-      });
+    })
+    .catch(err => {
+      console.error('Error loading sheet data:', err);
     });
-  </script>
+}
+
+loadSheetData();
+</script>
+
 </body>
 </html>
