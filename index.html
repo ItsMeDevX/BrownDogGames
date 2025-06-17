@@ -519,96 +519,140 @@ authBar.appendChild(userInfo);
 </html>
 
 <!-- PayPal Button Container -->
-<div id="paypal-wrapper" style="
-  background: #e6d6f8; 
-  padding: 20px; 
-  border-radius: 10px; 
-  text-align: center;
-  max-width: 300px; 
-  margin: 40px auto;
-">
-  <div id="paypal-button-container"></div>
-</div>
+ <style>
+    body {
+      background-color: #1e1b2e;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
 
-<!-- Load PayPal SDK -->
-<script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
+    #auth-bar {
+      background-color: #2a243b;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #00000055;
+      padding: 16px;
+      margin-bottom: 30px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    button {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 20px;
+    }
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    button:hover {
+      background-color: #ff8edb;
+    }
+  </style>
+</head>
+<body>
 
-  paypal.Buttons({
-    style: {
-      shape: 'rect',
-      color: 'gold',
-      layout: 'vertical',
-      label: 'subscribe'
-    },
+  <div id="auth-bar">Checking auth...</div>
+  <button id="check-insert-btn" style="display: none;">👤 Check/Add User to Supabase</button>
 
-    createSubscription: function(data, actions) {
-      return actions.subscription.create({
-        plan_id: 'P-20H197268N8973414NBIXE2I'
-      });
-    },
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-    onApprove: async function(data, actions) {
-      const subscriptionID = data.subscriptionID;
-      alert(`✅ Subscription successful! ID: ${subscriptionID}`);
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
-      // Get current session and user
+    const authBar = document.getElementById('auth-bar');
+    const checkBtn = document.getElementById('check-insert-btn');
+
+    async function renderAuthBar() {
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (!session?.user) {
-        alert('❌ Please log in to link your subscription.');
+      authBar.innerHTML = '';
+
+      if (session?.user) {
+        const user = session.user;
+        authBar.innerHTML = `
+          Logged in as <strong>${user.email || user.user_metadata?.user_name || 'User'}</strong>
+          <br /><br />
+          <button onclick="logout()">🔓 Logout</button>
+        `;
+        checkBtn.style.display = 'inline-block';
+      } else {
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with GitHub';
+        loginBtn.onclick = async () => {
+          await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: { redirectTo: window.location.href }
+          });
+        };
+        authBar.appendChild(loginBtn);
+      }
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      location.reload();
+    }
+
+    async function checkAndInsertUser() {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.user) {
+        alert('❌ Not logged in.');
         return;
       }
 
-      // Update user with VIP status and PayPal subscription ID
-      const { error } = await supabase
+      const user = session.user;
+
+      // Check if user exists
+      const { data: existing, error: checkError } = await supabase
         .from('users')
-        .update({
-          is_vip: true,
-          vip_expires_at: null,
-          paypal_transaction_id: subscriptionID
-        })
-        .eq('id', session.user.id);
+        .select('id')
+        .eq('id', user.id);
 
-      if (error) {
-        console.error('Error updating subscription info:', error);
-        alert('❌ Failed to update subscription status. Please contact support.');
-      } else {
-        // Hide PayPal button container
-        document.getElementById('paypal-button-container').style.display = 'none';
-
-        // Show VIP badge/message
-        const vipBadge = document.createElement('div');
-        vipBadge.style.color = 'white';
-        vipBadge.style.backgroundColor = '#7b4dd1'; // darker purple
-        vipBadge.style.padding = '15px';
-        vipBadge.style.borderRadius = '8px';
-        vipBadge.style.fontWeight = 'bold';
-        vipBadge.style.marginTop = '20px';
-        vipBadge.textContent = '🌟 VIP Activated! Thank you for subscribing.';
-
-        document.getElementById('paypal-wrapper').appendChild(vipBadge);
-
-        // Optional: Redirect after a delay (uncomment if needed)
-        // setTimeout(() => {
-        //   window.location.href = '/vip-dashboard.html'; // change to your VIP page
-        // }, 3000);
+      if (checkError) {
+        console.error(checkError);
+        alert('❌ Error checking user.');
+        return;
       }
-    },
 
-    onError: function(err) {
-      console.error('PayPal Buttons error:', err);
-      alert('❌ An error occurred during subscription. Please try again.');
+      if (existing.length === 0) {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: user.id,
+            is_vip: false,
+            vip_expires_at: null,
+            paypal_transaction_id: null
+          });
+
+        if (insertError) {
+          console.error(insertError);
+          alert('❌ Error inserting user.');
+        } else {
+          alert('✅ User added to Supabase!');
+        }
+      } else {
+        alert('✅ User already exists.');
+      }
     }
-  }).render('#paypal-button-container');
-</script>
+
+    // Run on page load
+    renderAuthBar();
+
+    // Set up button
+    checkBtn.addEventListener('click', checkAndInsertUser);
+  </script>
 
   <main>
     <ul class="game-list">
