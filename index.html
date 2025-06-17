@@ -518,31 +518,10 @@ authBar.appendChild(userInfo);
 </body>
 </html>
 
-<!-- Container for subscription info + PayPal button -->
-<div id="subscription-wrapper" style="
-  max-width: 320px;
-  margin: 40px auto;
-  background-color: #6e5ea6; /* Lighter purple */
-  border-radius: 12px;
-  box-shadow: 0 0 12px #00000055;
-  padding: 20px 16px;
-  font-family: 'Rubik Mono One', sans-serif;
-  color: #fefefe;
-  text-align: center;
-  user-select: none;
-">
-  <div id="subscription-info" style="margin-bottom: 20px; font-size: 0.9rem; line-height: 1.4;">
-    <strong>Subscribe to VIP for exclusive benefits:</strong><br>
-    - Access to premium games<br>
-    - Early access to new features<br>
-    - Priority support
-  </div>
+<!-- PayPal Button Container -->
+<div id="paypal-button-container"></div>
 
-  <!-- PayPal Button Container -->
-  <div id="paypal-button-container"></div>
-</div>
-
-<!-- Load PayPal SDK with your client ID and subscription intent -->
+<!-- Load PayPal SDK -->
 <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
 <script type="module">
@@ -560,18 +539,21 @@ authBar.appendChild(userInfo);
       layout: 'vertical',
       label: 'subscribe'
     },
-    createSubscription: function(data, actions) {
+
+    createSubscription: function (data, actions) {
       return actions.subscription.create({
         plan_id: 'P-20H197268N8973414NBIXE2I'
       });
     },
-    onApprove: async function(data, actions) {
-      const subscriptionID = data.subscriptionID;
-      alert(`Subscription successful! ID: ${subscriptionID}`);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        alert('Please log in to link your subscription.');
+    onApprove: async function (data, actions) {
+      const subscriptionID = data.subscriptionID;
+      alert(`✅ Subscription successful! ID: ${subscriptionID}`);
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('Auth error:', userError);
+        alert('❌ Please log in to link your subscription.');
         return;
       }
 
@@ -582,18 +564,24 @@ authBar.appendChild(userInfo);
           vip_expires_at: null,
           paypal_transaction_id: subscriptionID
         })
-        .eq('id', session.user.id);
+        .eq('id', user.id);
 
       if (error) {
         console.error('Error updating subscription info:', error);
-        alert('Failed to update subscription status. Please contact support.');
+        alert('❌ Failed to update subscription status. Please contact support.');
       } else {
-        alert('Subscription linked to your account successfully!');
+        // Hide PayPal button and show VIP badge
+        document.getElementById('paypal-button-container').innerHTML = `
+          <div style="color: white; background: green; padding: 10px; border-radius: 5px; font-weight: bold;">
+            🌟 VIP Activated! Thank you for subscribing.
+          </div>
+        `;
       }
     },
-    onError: function(err) {
+
+    onError: function (err) {
       console.error('PayPal Buttons error:', err);
-      alert('An error occurred during subscription. Please try again.');
+      alert('❌ An error occurred during subscription. Please try again.');
     }
   }).render('#paypal-button-container');
 </script>
