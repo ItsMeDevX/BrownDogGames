@@ -517,7 +517,70 @@ authBar.appendChild(userInfo);
 
 </body>
 </html>
-  
+
+<!-- PayPal Button Container -->
+<div id="paypal-button-container"></div>
+
+<!-- Load PayPal SDK with your client ID and subscription intent -->
+<script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  // Your Supabase client setup — use same as your auth bar
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  paypal.Buttons({
+    style: {
+      shape: 'rect',
+      color: 'gold',
+      layout: 'vertical',
+      label: 'subscribe'
+    },
+    createSubscription: function(data, actions) {
+      return actions.subscription.create({
+        plan_id: 'P-20H197268N8973414NBIXE2I' // Your PayPal plan ID
+      });
+    },
+    onApprove: async function(data, actions) {
+      const subscriptionID = data.subscriptionID;
+      alert(`Subscription successful! ID: ${subscriptionID}`);
+
+      // Get current logged-in user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        alert('Please log in to link your subscription.');
+        return;
+      }
+
+      // Update subscription info in Supabase table 'users' (adjust table/columns as needed)
+      const { error } = await supabase
+        .from('users')
+        .update({
+          is_vip: true,
+          vip_expires_at: null, // Or set a timestamp based on your logic
+          paypal_transaction_id: subscriptionID
+        })
+        .eq('id', session.user.id);
+
+      if (error) {
+        console.error('Error updating subscription info:', error);
+        alert('Failed to update subscription status. Please contact support.');
+      } else {
+        alert('Subscription linked to your account successfully!');
+      }
+    },
+    onError: function(err) {
+      console.error('PayPal Buttons error:', err);
+      alert('An error occurred during subscription. Please try again.');
+    }
+  }).render('#paypal-button-container');
+</script>
+
+
   <main>
     <ul class="game-list">
       <li><a href="streaker-run.html">🩲 Streaker Run</a></li>
