@@ -518,8 +518,29 @@ authBar.appendChild(userInfo);
 </body>
 </html>
 
-<!-- PayPal Button Container -->
-<div id="paypal-button-container"></div>
+<!-- Container for subscription info + PayPal button -->
+<div id="subscription-wrapper" style="
+  max-width: 320px;
+  margin: 40px auto;
+  background-color: #2a243b;
+  border-radius: 12px;
+  box-shadow: 0 0 12px #00000055;
+  padding: 20px 16px;
+  font-family: 'Rubik Mono One', sans-serif;
+  color: #fefefe;
+  text-align: center;
+  user-select: none;
+">
+  <div id="subscription-info" style="margin-bottom: 20px; font-size: 0.9rem; line-height: 1.4;">
+    <strong>Subscribe to VIP for exclusive benefits:</strong><br>
+    - Access to premium games<br>
+    - Early access to new features<br>
+    - Priority support
+  </div>
+
+  <!-- PayPal Button Container -->
+  <div id="paypal-button-container"></div>
+</div>
 
 <!-- Load PayPal SDK with your client ID and subscription intent -->
 <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
@@ -527,7 +548,6 @@ authBar.appendChild(userInfo);
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  // Your Supabase client setup — use same as your auth bar
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -542,26 +562,24 @@ authBar.appendChild(userInfo);
     },
     createSubscription: function(data, actions) {
       return actions.subscription.create({
-        plan_id: 'P-20H197268N8973414NBIXE2I' // Your PayPal plan ID
+        plan_id: 'P-20H197268N8973414NBIXE2I'
       });
     },
     onApprove: async function(data, actions) {
       const subscriptionID = data.subscriptionID;
       alert(`Subscription successful! ID: ${subscriptionID}`);
 
-      // Get current logged-in user
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         alert('Please log in to link your subscription.');
         return;
       }
 
-      // Update subscription info in Supabase table 'users' (adjust table/columns as needed)
       const { error } = await supabase
         .from('users')
         .update({
           is_vip: true,
-          vip_expires_at: null, // Or set a timestamp based on your logic
+          vip_expires_at: null,
           paypal_transaction_id: subscriptionID
         })
         .eq('id', session.user.id);
