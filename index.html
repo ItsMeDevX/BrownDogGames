@@ -519,45 +519,35 @@ authBar.appendChild(userInfo);
 </html>
 
 <!-- PayPal Button Container -->
-  <style>
-    body, html {
-      height: 100%;
-      margin: 0;
+ <style>
+    body {
+      background: #e4d7ff; /* light purple */
       font-family: Arial, sans-serif;
-      background: #222;
-      color: #eee;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      text-align: center;
     }
     #paypal-button-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 160px;
+      margin: 30px auto;
       width: 320px;
-      background: #333;
-      border-radius: 10px;
-      box-shadow: 0 0 15px #ffbf00;
-      margin-bottom: 20px;
     }
     #vip-message {
       display: none;
-      background: green;
-      padding: 20px;
-      border-radius: 10px;
-      font-weight: bold;
-      font-size: 1.2em;
-      text-align: center;
+      margin: 30px auto;
+      padding: 15px;
       width: 320px;
-      box-shadow: 0 0 15px #0f0;
+      background-color: #6a4aff;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      box-shadow: 0 0 12px #5339d2;
     }
   </style>
 </head>
 <body>
 
-  <h1>Brown Dog Games VIP Subscription</h1>
+  <h1>Subscribe to Become a VIP!</h1>
 
   <div id="paypal-button-container"></div>
 
@@ -571,7 +561,6 @@ authBar.appendChild(userInfo);
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    // Initialize Supabase client
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -580,7 +569,7 @@ authBar.appendChild(userInfo);
     paypal.Buttons({
       style: {
         shape: 'rect',
-        color: 'gold',
+        color: 'purple',
         layout: 'vertical',
         label: 'subscribe'
       },
@@ -591,11 +580,10 @@ authBar.appendChild(userInfo);
         });
       },
 
-      onApprove: async function(data, actions) {
+      onApprove: async function(data) {
         const subscriptionID = data.subscriptionID;
         alert(`✅ Subscription successful! ID: ${subscriptionID}`);
 
-        // Get user session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session?.user) {
@@ -603,8 +591,7 @@ authBar.appendChild(userInfo);
           return;
         }
 
-        // Update user record with subscription info
-        const { error: updateError } = await supabase
+        const { error } = await supabase
           .from('users')
           .update({
             is_vip: true,
@@ -613,30 +600,28 @@ authBar.appendChild(userInfo);
           })
           .eq('id', session.user.id);
 
-        if (updateError) {
-          console.error('Error updating subscription info:', updateError);
+        if (error) {
+          console.error('Error updating subscription info:', error);
           alert('❌ Failed to update subscription status. Please contact support.');
           return;
         }
 
-        // Hide PayPal button and show VIP message
+        // Hide button and show VIP message
         document.getElementById('paypal-button-container').style.display = 'none';
-        const vipMessage = document.getElementById('vip-message');
-        vipMessage.style.display = 'block';
+        document.getElementById('vip-message').style.display = 'block';
 
-        // Redirect to VIP dashboard after 3 seconds (change URL as needed)
+        // Redirect after 3 seconds to your VIP page (change URL as needed)
         setTimeout(() => {
-          window.location.href = '/vip-dashboard.html'; // <-- change this to your VIP area
+          window.location.href = '/vip-dashboard.html'; 
         }, 3000);
       },
 
       onError(err) {
-        console.error('PayPal Buttons error:', err);
+        console.error('PayPal error:', err);
         alert('❌ An error occurred during subscription. Please try again.');
       }
     }).render('#paypal-button-container');
   </script>
-
 
   <main>
     <ul class="game-list">
