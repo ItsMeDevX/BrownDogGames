@@ -573,6 +573,17 @@ authBar.appendChild(userInfo);
       user-select: none;
     }
 
+    #refresh-vip {
+      display: none;
+      padding: 0.6rem 1rem;
+      background: #3498db;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
     #paypal-button-container > div {
       border-radius: 12px !important;
       overflow: hidden;
@@ -586,6 +597,7 @@ authBar.appendChild(userInfo);
     <h1 class="title">VIP Subscription</h1>
     <div id="paypal-button-container"></div>
     <div id="vip-message">🌟 VIP Activated! Thank you for subscribing.</div>
+    <button id="refresh-vip">🔄 Refresh VIP Status</button>
   </div>
 
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
@@ -614,11 +626,69 @@ authBar.appendChild(userInfo);
           .single();
 
         if (userError) {
-          console.error('Error fetching user VIP status:', userError);
+          console.error('Error fetching VIP status:', userError);
           return false;
         }
 
         return user?.is_vip ?? false;
+      }
+
+      async function initPayPal(session) {
+        paypal.Buttons({
+          style: {
+            shape: 'rect',
+            color: 'gold',
+            layout: 'vertical',
+            label: 'subscribe'
+          },
+
+          createSubscription(data, actions) {
+            return actions.subscription.create({
+              plan_id: 'P-20H197268N8973414NBIXE2I'
+            });
+          },
+
+          onApprove: async (data) => {
+            const subscriptionID = data.subscriptionID;
+            alert(`✅ Subscription successful! ID: ${subscriptionID}`);
+
+            const { error: updateError } = await supabase
+              .from('users')
+              .upsert({
+                id: session.user.id,
+                is_vip: true,
+                vip_expires_at: null,
+                paypal_transaction_id: subscriptionID
+              });
+
+            if (updateError) {
+              console.error('Failed to update Supabase:', updateError);
+              alert('❌ Subscription saved, but VIP not activated. Contact support.');
+              return;
+            }
+
+            document.getElementById('paypal-button-container').style.display = 'none';
+            document.getElementById('vip-message').style.display = 'block';
+            document.getElementById('refresh-vip').style.display = 'none';
+
+            setTimeout(() => {
+              window.location.href = '/vip-dashboard.html';
+            }, 3000);
+          },
+
+          onError: (err) => {
+            console.error('PayPal error:', err);
+            alert('❌ PayPal error. Please try again.');
+          }
+        }).render('#paypal-button-container');
+      }
+
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (!session?.user) {
+        alert('⚠️ You must log in before subscribing.');
+        document.getElementById('paypal-button-container').style.display = 'none';
+        return;
       }
 
       const isVIP = await checkVIPStatus();
@@ -626,66 +696,27 @@ authBar.appendChild(userInfo);
       if (isVIP) {
         document.getElementById('paypal-button-container').style.display = 'none';
         document.getElementById('vip-message').style.display = 'block';
+      } else {
+        initPayPal(session);
+        document.getElementById('refresh-vip').style.display = 'inline-block';
       }
 
-      paypal.Buttons({
-        style: {
-          shape: 'rect',
-          color: 'gold',
-          layout: 'vertical',
-          label: 'subscribe'
-        },
-
-        createSubscription(data, actions) {
-          return actions.subscription.create({
-            plan_id: 'P-20H197268N8973414NBIXE2I'
-          });
-        },
-
-        onApprove: async (data) => {
-          const subscriptionID = data.subscriptionID;
-          alert(`✅ Subscription successful! ID: ${subscriptionID}`);
-
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-          if (sessionError || !session?.user) {
-            alert('❌ Please log in to link your subscription.');
-            return;
-          }
-
-          const { error: updateError } = await supabase
-            .from('users')
-            .upsert({
-              id: session.user.id,
-              is_vip: true,
-              vip_expires_at: null,
-              paypal_transaction_id: subscriptionID
-            });
-
-          if (updateError) {
-            console.error('Error updating subscription info:', updateError);
-            alert('❌ Failed to update subscription status. Please contact support.');
-            return;
-          }
-
+      document.getElementById('refresh-vip').addEventListener('click', async () => {
+        const isNowVIP = await checkVIPStatus();
+        if (isNowVIP) {
           document.getElementById('paypal-button-container').style.display = 'none';
           document.getElementById('vip-message').style.display = 'block';
-
-          setTimeout(() => {
-            window.location.href = '/vip-dashboard.html';
-          }, 3000);
-        },
-
-        onError: (err) => {
-          console.error('PayPal Buttons error:', err);
-          alert('❌ An error occurred during subscription. Please try again.');
+          document.getElementById('refresh-vip').style.display = 'none';
+          alert('✅ VIP status confirmed!');
+        } else {
+          alert('❌ Still not VIP. If you subscribed, please log out and back in.');
         }
-      }).render('#paypal-button-container');
+      });
+
     })();
   </script>
 </body>
 </html>
-  
 
   <main>
     <ul class="game-list">
