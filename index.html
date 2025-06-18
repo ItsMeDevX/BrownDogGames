@@ -515,7 +515,6 @@ authBar.appendChild(userInfo);
   renderAuthBar();
 </script>
 
-  
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -525,29 +524,33 @@ authBar.appendChild(userInfo);
   <style>
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       background: #1e1e2f;
       color: #ffccff;
       margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       padding: 2rem;
     }
 
-    h1 {
-      margin-bottom: 2rem;
-      font-size: 2.5rem;
-      text-align: center;
-      color: #ff69b4;
-      text-shadow: 0 0 10px #ff69b4aa;
-      padding: 1rem 2rem;
+    .container {
+      background: #2a2040;
       border: 3px solid #ff69b4;
-      border-radius: 12px;
-      max-width: 600px;
+      border-radius: 16px;
+      padding: 3rem 4rem;
+      max-width: 480px;
       width: 100%;
       box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 0 20px #ff69b4aa;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin: 0 0 2rem 0;
+      color: #ff69b4;
+      text-shadow: 0 0 10px #ff69b4cc;
     }
 
     #paypal-button-container {
@@ -562,20 +565,22 @@ authBar.appendChild(userInfo);
       box-shadow: 0 0 15px #27ae6011;
       font-size: 1.2rem;
       color: white;
-      max-width: 320px;
-      text-align: center;
+      max-width: 100%;
       user-select: none;
+      margin: 0 auto;
     }
   </style>
 </head>
 <body>
 
-  <h1>Brown Dog Games VIP Subscription</h1>
+  <div class="container">
+    <h1>Brown Dog Games VIP Subscription</h1>
 
-  <div id="paypal-button-container"></div>
+    <div id="paypal-button-container"></div>
 
-  <div id="vip-message">
-    🌟 VIP Activated! Thank you for subscribing.
+    <div id="vip-message">
+      🌟 VIP Activated! Thank you for subscribing.
+    </div>
   </div>
 
   <!-- Load PayPal SDK -->
@@ -590,7 +595,6 @@ authBar.appendChild(userInfo);
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
       );
 
-      // Check VIP status on page load
       async function checkVIPStatus() {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
@@ -677,7 +681,6 @@ authBar.appendChild(userInfo);
   </script>
 </body>
 </html>
-  
 
   <main>
     <ul class="game-list">
