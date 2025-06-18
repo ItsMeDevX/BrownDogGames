@@ -516,43 +516,64 @@ authBar.appendChild(userInfo);
 </script>
 
   
-<style>
-  body {
-    font-family: 'Rubik Mono One', sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: #1e1e2f;
-    color: #ffccff;
-    margin: 0;
-    padding: 2rem;
-  }
-  h1 {
-    margin-bottom: 2rem;
-    font-size: 2.5rem;
-    text-align: center;
-    color: #ff69b4;
-    text-shadow: 0 0 10px #ff69b4aa;
-  }
-  #paypal-button-container {
-    margin-bottom: 2rem;
-  }
-  #vip-message {
-    display: none;
-    background: #2ecc71;
-    padding: 1rem 2rem;
-    border-radius: 12px;
-    box-shadow: 0 0 15px #27ae6011;
-    font-size: 1.2rem;
-    color: white;
-    max-width: 320px;
-    text-align: center;
-    user-select: none;
-  }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Brown Dog Games VIP Subscription</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
+    body {
+      background-color: #1e1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      color: #fefefe;
+      font-family: 'Rubik Mono One', sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.6;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #ff69b4;
+      font-size: 2.8rem;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+    }
+
+    #paypal-button-container {
+      margin-bottom: 2rem;
+    }
+
+    #vip-message {
+      display: none;
+      background: #2ecc71;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #27ae6011;
+      font-size: 1.2rem;
+      color: white;
+      max-width: 320px;
+      user-select: none;
+      text-align: center;
+    }
+
+    /* PayPal button container tweaks for consistent style */
+    #paypal-button-container > div {
+      border-radius: 12px !important;
+      overflow: hidden;
+      box-shadow: 0 0 15px #ff69b4aa;
+    }
+  </style>
+</head>
 <body>
 
   <h1>Brown Dog Games VIP Subscription</h1>
@@ -569,95 +590,100 @@ authBar.appendChild(userInfo);
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    (async () => {
+      const supabase = createClient(
+        'https://fwslmbzfukriibnkpzou.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+      );
 
-    // Check VIP status on page load
-    async function checkVIPStatus() {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !session?.user) {
-        console.log('User not logged in');
-        return;
-      }
-
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('id', session.user.id)
-        .single();
-
-      if (userError) {
-        console.error('Error fetching user VIP status:', userError);
-        return;
-      }
-
-      if (user?.is_vip) {
-        document.getElementById('paypal-button-container').style.display = 'none';
-        document.getElementById('vip-message').style.display = 'block';
-      }
-    }
-
-    await checkVIPStatus();
-
-    paypal.Buttons({
-      style: {
-        shape: 'rect',
-        color: 'gold',
-        layout: 'vertical',
-        label: 'subscribe'
-      },
-
-      createSubscription(data, actions) {
-        return actions.subscription.create({
-          plan_id: 'P-20H197268N8973414NBIXE2I'
-        });
-      },
-
-      onApprove: async (data) => {
-        const subscriptionID = data.subscriptionID;
-        alert(`✅ Subscription successful! ID: ${subscriptionID}`);
-
+      // Check VIP status on page load
+      async function checkVIPStatus() {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session?.user) {
-          alert('❌ Please log in to link your subscription.');
-          return;
+          console.log('User not logged in');
+          return false;
         }
 
-        const { error: updateError } = await supabase
+        const { data: user, error: userError } = await supabase
           .from('users')
-          .upsert({
-            id: session.user.id,
-            is_vip: true,
-            vip_expires_at: null,
-            paypal_transaction_id: subscriptionID
-          });
+          .select('is_vip')
+          .eq('id', session.user.id)
+          .single();
 
-        if (updateError) {
-          console.error('Error updating subscription info:', updateError);
-          alert('❌ Failed to update subscription status. Please contact support.');
-          return;
+        if (userError) {
+          console.error('Error fetching user VIP status:', userError);
+          return false;
         }
 
+        return user?.is_vip ?? false;
+      }
+
+      const isVIP = await checkVIPStatus();
+
+      if (isVIP) {
         document.getElementById('paypal-button-container').style.display = 'none';
         document.getElementById('vip-message').style.display = 'block';
-
-        setTimeout(() => {
-          window.location.href = '/vip-dashboard.html';
-        }, 3000);
-      },
-
-      onError: (err) => {
-        console.error('PayPal Buttons error:', err);
-        alert('❌ An error occurred during subscription. Please try again.');
       }
-    }).render('#paypal-button-container');
+
+      paypal.Buttons({
+        style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+
+        createSubscription(data, actions) {
+          return actions.subscription.create({
+            plan_id: 'P-20H197268N8973414NBIXE2I'
+          });
+        },
+
+        onApprove: async (data) => {
+          const subscriptionID = data.subscriptionID;
+          alert(`✅ Subscription successful! ID: ${subscriptionID}`);
+
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+          if (sessionError || !session?.user) {
+            alert('❌ Please log in to link your subscription.');
+            return;
+          }
+
+          const { error: updateError } = await supabase
+            .from('users')
+            .upsert({
+              id: session.user.id,
+              is_vip: true,
+              vip_expires_at: null,
+              paypal_transaction_id: subscriptionID
+            });
+
+          if (updateError) {
+            console.error('Error updating subscription info:', updateError);
+            alert('❌ Failed to update subscription status. Please contact support.');
+            return;
+          }
+
+          document.getElementById('paypal-button-container').style.display = 'none';
+          document.getElementById('vip-message').style.display = 'block';
+
+          setTimeout(() => {
+            window.location.href = '/vip-dashboard.html';
+          }, 3000);
+        },
+
+        onError: (err) => {
+          console.error('PayPal Buttons error:', err);
+          alert('❌ An error occurred during subscription. Please try again.');
+        }
+      }).render('#paypal-button-container');
+    })();
   </script>
 </body>
-
+</html>
+  
 
   <main>
     <ul class="game-list">
