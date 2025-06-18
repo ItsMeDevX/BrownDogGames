@@ -520,7 +520,7 @@ authBar.appendChild(userInfo);
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Brown Dog Games VIP Subscription</title>
+  <title>Brown Dog Games VIP</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
@@ -529,43 +529,46 @@ authBar.appendChild(userInfo);
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
       font-family: 'Rubik Mono One', sans-serif;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-      line-height: 1.6;
-      text-align: center;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      margin: 0;
+      padding: 20px;
     }
 
-    h1 {
+    .container {
+      background: #2a223a;
+      padding: 30px 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.3);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .title {
+      font-size: 1.4rem;
       color: #ff69b4;
-      font-size: 2.8rem;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
+      text-shadow: 1px 1px 0 #000;
     }
 
     #paypal-button-container {
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     #vip-message {
       display: none;
       background: #2ecc71;
-      padding: 1rem 2rem;
+      padding: 1rem 1.5rem;
       border-radius: 12px;
       box-shadow: 0 0 15px #27ae6011;
-      font-size: 1.2rem;
+      font-size: 1rem;
       color: white;
-      max-width: 320px;
       user-select: none;
-      text-align: center;
     }
 
-    /* PayPal button container tweaks for consistent style */
     #paypal-button-container > div {
       border-radius: 12px !important;
       overflow: hidden;
@@ -575,15 +578,12 @@ authBar.appendChild(userInfo);
 </head>
 <body>
 
-  <h1>Brown Dog Games VIP Subscription</h1>
-
-  <div id="paypal-button-container"></div>
-
-  <div id="vip-message">
-    🌟 VIP Activated! Thank you for subscribing.
+  <div class="container">
+    <div class="title">VIP Subscription</div>
+    <div id="paypal-button-container"></div>
+    <div id="vip-message">🌟 VIP Activated! Thank you for subscribing.</div>
   </div>
 
-  <!-- Load PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
   <script type="module">
@@ -595,7 +595,6 @@ authBar.appendChild(userInfo);
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
       );
 
-      // Check VIP status on page load
       async function checkVIPStatus() {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
