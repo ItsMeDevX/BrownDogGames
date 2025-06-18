@@ -734,10 +734,8 @@ authBar.appendChild(userInfo);
       }
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-        window.location.reload();
-      }
+    supabase.auth.onAuthStateChange((_event, session) => {
+      // NO page reload, just update UI smoothly
       setupUIForUser(session?.user);
     });
 
@@ -762,6 +760,7 @@ authBar.appendChild(userInfo);
   </script>
 </body>
 </html>
+
 
   <main>
     <ul class="game-list">
