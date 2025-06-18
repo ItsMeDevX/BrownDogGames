@@ -515,62 +515,66 @@ authBar.appendChild(userInfo);
   renderAuthBar();
 </script>
 
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Brown Dog Games - Dummy VIP Test</title>
-  <style>
-    body, html {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #222;
-      color: #eee;
+  
+ <style>
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background: linear-gradient(135deg, #2c1b33, #191425);
+      color: #fefefe;
       display: flex;
-      justify-content: center;
-      align-items: center;
       flex-direction: column;
-    }
-    #fake-button {
-      display: flex;
-      justify-content: center;
       align-items: center;
-      height: 60px;
-      width: 320px;
-      background: #444;
-      border-radius: 10px;
-      box-shadow: 0 0 15px #888;
-      margin-bottom: 20px;
-      font-size: 1.2em;
-      cursor: pointer;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding: 20px;
     }
+
+    .logo {
+      height: 150px;
+      margin-bottom: 20px;
+    }
+
+    #fake-button {
+      background-color: #2d1a3a;
+      color: #ffccff;
+      border: 2px solid #ff69b4;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: 0.2s;
+    }
+
+    #fake-button:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+    }
+
     #vip-message {
       display: none;
+      margin-top: 20px;
       background: green;
       padding: 20px;
       border-radius: 10px;
       font-weight: bold;
       font-size: 1.2em;
-      text-align: center;
-      width: 320px;
       box-shadow: 0 0 15px #0f0;
     }
   </style>
 </head>
 <body>
 
-  <h1>Dummy VIP Subscription Test</h1>
+  <img 
+    src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+    alt="BrownDogGames Logo" 
+    class="logo"
+  >
 
   <div id="fake-button">🔥 Fake Subscribe</div>
 
-  <div id="vip-message">
-    🌟 VIP Activated! (Dummy Mode)
-  </div>
+  <div id="vip-message">🌟 VIP Activated! (Dummy Mode)</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -581,44 +585,33 @@ authBar.appendChild(userInfo);
     );
 
     document.getElementById('fake-button').addEventListener('click', async () => {
-      const fakeSubscriptionID = 'DUMMY-SUB-' + Math.floor(Math.random() * 1000000);
+      const fakeSubscriptionID = 'DUMMY-' + Math.floor(Math.random() * 1000000);
 
-      // Get user session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
 
-      if (sessionError || !session?.user) {
-        alert('❌ Please log in to link your dummy subscription.');
+      if (error || !session?.user) {
+        alert('❌ Please log in first.');
         return;
       }
 
-      // Update user with dummy subscription data
       const { error: updateError } = await supabase
         .from('users')
         .update({
           is_vip: true,
-          vip_expires_at: null,
           paypal_transaction_id: fakeSubscriptionID
         })
         .eq('id', session.user.id);
 
       if (updateError) {
-        console.error('Error updating dummy subscription info:', updateError);
-        alert('❌ Failed to update dummy subscription. Please check console.');
+        alert('❌ Update failed.');
+        console.error(updateError);
         return;
       }
 
-      // Simulate success UI
       document.getElementById('fake-button').style.display = 'none';
       document.getElementById('vip-message').style.display = 'block';
-
-      setTimeout(() => {
-        window.location.href = '/vip-dashboard.html';
-      }, 3000);
     });
   </script>
-
-</body>
-</html>
 
   <main>
     <ul class="game-list">
