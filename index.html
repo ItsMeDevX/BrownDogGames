@@ -535,47 +535,64 @@ authBar.appendChild(userInfo);
   </button>
 </div>
 
-<!-- Simulated PayPal Success Logic -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+</head>
+<body>
 
-  // Initialize Supabase client
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+  <h1>Dummy VIP Subscription Test</h1>
 
-  // Handle fake subscription button click
-  document.getElementById('fake-paypal-success').addEventListener('click', async () => {
-    // Get current logged-in session
-    const { data: { session }, error } = await supabase.auth.getSession();
+  <div id="fake-button">🔥 Fake Subscribe</div>
 
-    if (!session?.user) {
-      alert('❌ Not logged in. Please log in first.');
-      return;
-    }
+  <div id="vip-message">
+    🌟 VIP Activated! (Dummy Mode)
+  </div>
 
-    const userId = session.user.id;
-    const fakeSubscriptionID = 'TEST_SUB_' + Math.random().toString(36).substring(2, 10);
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    // Update user row in Supabase
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        is_vip: true,
-        vip_expires_at: null,
-        paypal_transaction_id: fakeSubscriptionID
-      })
-      .eq('id', userId);
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
-    if (updateError) {
-      console.error(updateError);
-      alert('❌ Failed to update user record in Supabase.');
-    } else {
-      alert(`✅ Test Success! VIP activated with ID: ${fakeSubscriptionID}`);
-    }
-  });
-</script>
+    document.getElementById('fake-button').addEventListener('click', async () => {
+      const fakeSubscriptionID = 'DUMMY-SUB-' + Math.floor(Math.random() * 1000000);
+
+      // Get user session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.user) {
+        alert('❌ Please log in to link your dummy subscription.');
+        return;
+      }
+
+      // Update user with dummy subscription data
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          is_vip: true,
+          vip_expires_at: null,
+          paypal_transaction_id: fakeSubscriptionID
+        })
+        .eq('id', session.user.id);
+
+      if (updateError) {
+        console.error('Error updating dummy subscription info:', updateError);
+        alert('❌ Failed to update dummy subscription. Please check console.');
+        return;
+      }
+
+      // Simulate success UI
+      document.getElementById('fake-button').style.display = 'none';
+      document.getElementById('vip-message').style.display = 'block';
+
+      setTimeout(() => {
+        window.location.href = '/vip-dashboard.html';
+      }, 3000);
+    });
+  </script>
+
+</body>
+</html>
 
   <main>
     <ul class="game-list">
