@@ -516,102 +516,72 @@ authBar.appendChild(userInfo);
 </script>
 
   
- <style>
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #2c1b33, #191425);
-      color: #fefefe;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      text-align: center;
-      padding: 20px;
+<!-- Dummy VIP Subscription Test (Modular) -->
+<div id="vip-test-box" style="font-family: 'Rubik Mono One', sans-serif; text-align: center; margin: 2rem auto;">
+  <button id="fake-subscribe-btn" style="
+    background-color: #2d1a3a;
+    color: #ffccff;
+    border: 2px solid #ff69b4;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.2s;
+  ">
+    🔥 Fake Subscribe
+  </button>
+
+  <div id="vip-test-message" style="
+    display: none;
+    margin-top: 1rem;
+    background: green;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1rem;
+    color: white;
+    box-shadow: 0 0 10px #0f0;
+  ">
+    🌟 VIP Activated! (Dummy)
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  document.getElementById('fake-subscribe-btn').addEventListener('click', async () => {
+    const fakeId = 'DUMMY-' + Math.floor(Math.random() * 1000000);
+
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error || !session?.user) {
+      alert('❌ Please log in first.');
+      return;
     }
 
-    .logo {
-      height: 150px;
-      margin-bottom: 20px;
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        is_vip: true,
+        paypal_transaction_id: fakeId
+      })
+      .eq('id', session.user.id);
+
+    if (updateError) {
+      alert('❌ Failed to update dummy subscription.');
+      console.error(updateError);
+      return;
     }
 
-    #fake-button {
-      background-color: #2d1a3a;
-      color: #ffccff;
-      border: 2px solid #ff69b4;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1.2rem;
-      transition: 0.2s;
-    }
-
-    #fake-button:hover {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-    }
-
-    #vip-message {
-      display: none;
-      margin-top: 20px;
-      background: green;
-      padding: 20px;
-      border-radius: 10px;
-      font-weight: bold;
-      font-size: 1.2em;
-      box-shadow: 0 0 15px #0f0;
-    }
-  </style>
-</head>
-<body>
-
-  <img 
-    src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-    alt="BrownDogGames Logo" 
-    class="logo"
-  >
-
-  <div id="fake-button">🔥 Fake Subscribe</div>
-
-  <div id="vip-message">🌟 VIP Activated! (Dummy Mode)</div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
-
-    document.getElementById('fake-button').addEventListener('click', async () => {
-      const fakeSubscriptionID = 'DUMMY-' + Math.floor(Math.random() * 1000000);
-
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error || !session?.user) {
-        alert('❌ Please log in first.');
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          is_vip: true,
-          paypal_transaction_id: fakeSubscriptionID
-        })
-        .eq('id', session.user.id);
-
-      if (updateError) {
-        alert('❌ Update failed.');
-        console.error(updateError);
-        return;
-      }
-
-      document.getElementById('fake-button').style.display = 'none';
-      document.getElementById('vip-message').style.display = 'block';
-    });
-  </script>
+    document.getElementById('fake-subscribe-btn').style.display = 'none';
+    document.getElementById('vip-test-message').style.display = 'block';
+  });
+</script>
 
   <main>
     <ul class="game-list">
