@@ -734,7 +734,10 @@ authBar.appendChild(userInfo);
       }
     }
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        window.location.reload();
+      }
       setupUIForUser(session?.user);
     });
 
