@@ -453,7 +453,8 @@ authBar.appendChild(userInfo);
 <!-- ✅ VIP Download Section -->
 <div class="buttons">
   <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-  <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1FWKjke_q_nsr6rpnZClgYmP6TnGe5pvL" download>⬇ Download Game</a>
+  <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+  <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1FWKjke_q_nsr6rpnZClgYmP6TnGe5pvL" download style="display: none;">⬇ Download Game</a>
   <a href="index.html">← Back to Home</a>
 </div>
 
@@ -466,12 +467,13 @@ authBar.appendChild(userInfo);
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
 
-  async function protectDownloadLink() {
+  async function showDownloadIfVIP() {
     const { data } = await supabase.auth.getSession();
     const user = data?.session?.user;
     const downloadLink = document.getElementById('downloadLink');
+    const downloadMessage = document.getElementById('downloadMessage');
 
-    if (!user || !downloadLink) return;
+    if (!user || !downloadLink || !downloadMessage) return;
 
     const { data: userData, error } = await supabase
       .from('users')
@@ -480,20 +482,25 @@ authBar.appendChild(userInfo);
       .single();
 
     if (error || !userData?.is_vip) {
-      // 👇 Disable the link
-      downloadLink.removeAttribute('href');
-      downloadLink.removeAttribute('download');
-      downloadLink.style.pointerEvents = 'none';
-      downloadLink.style.opacity = '0.5';
-      downloadLink.style.cursor = 'not-allowed';
-      downloadLink.textContent = '🚫 VIP Only';
-      downloadLink.title = 'Only VIP members can download this game.';
+      downloadMessage.textContent = '🚫 VIP Only — Please subscribe to access the download.';
+      return;
     }
+
+    // Countdown timer for VIP
+    let seconds = 30;
+    const countdown = setInterval(() => {
+      downloadMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(countdown);
+      downloadLink.style.display = 'inline-block';
+      downloadMessage.style.display = 'none';
+    }, 30000);
   }
 
-  protectDownloadLink();
+  showDownloadIfVIP();
 </script>
-
 
   
 <!DOCTYPE html>
