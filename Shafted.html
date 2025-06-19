@@ -450,11 +450,50 @@ authBar.appendChild(userInfo);
 </section>
 
 
+<!-- ✅ VIP Download Section -->
 <div class="buttons">
   <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-  <a href="https://drive.google.com/uc?export=download&id=1xIRxCAit7pnnhNxm9wlp4TVm8-8SDyVV" download>⬇ Download Game</a>
+  <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1FWKjke_q_nsr6rpnZClgYmP6TnGe5pvL" download>⬇ Download Game</a>
   <a href="index.html">← Back to Home</a>
 </div>
+
+<!-- ✅ VIP Protection Script -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  async function protectDownloadLink() {
+    const { data } = await supabase.auth.getSession();
+    const user = data?.session?.user;
+    const downloadLink = document.getElementById('downloadLink');
+
+    if (!user || !downloadLink) return;
+
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('is_vip')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !userData?.is_vip) {
+      // 👇 Disable the link
+      downloadLink.removeAttribute('href');
+      downloadLink.removeAttribute('download');
+      downloadLink.style.pointerEvents = 'none';
+      downloadLink.style.opacity = '0.5';
+      downloadLink.style.cursor = 'not-allowed';
+      downloadLink.textContent = '🚫 VIP Only';
+      downloadLink.title = 'Only VIP members can download this game.';
+    }
+  }
+
+  protectDownloadLink();
+</script>
+
 
   
 <!DOCTYPE html>
