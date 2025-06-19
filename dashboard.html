@@ -609,16 +609,16 @@ authBar.appendChild(userInfo);
     <label for="coverUrl">Cover URL (optional):</label>
     <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
-
-    
-<!-- Your form (or wherever the button is placed) -->
+   
+<!-- ✅ Add Game Form -->
 <form id="addGameForm">
-  <!-- Other form inputs here -->
+  <!-- Your other form inputs go here -->
 
-  <button type="submit" id="submitBtn">Add New Game</button>
+  <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+  <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
 </form>
 
-<!-- VIP-only script -->
+<!-- ✅ VIP Protection Script -->
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -627,9 +627,13 @@ authBar.appendChild(userInfo);
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
 
-  async function protectButton() {
+  async function protectSubmitButton() {
     const { data } = await supabase.auth.getSession();
     const user = data?.session?.user;
+    const submitBtn = document.getElementById('submitBtn');
+    const submitMessage = document.getElementById('submitMessage');
+
+    if (!user || !submitBtn || !submitMessage) return;
 
     const { data: userData, error } = await supabase
       .from('users')
@@ -637,23 +641,26 @@ authBar.appendChild(userInfo);
       .eq('id', user.id)
       .single();
 
-    const submitBtn = document.getElementById('submitBtn');
-
     if (error || !userData?.is_vip) {
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'VIP Only';
-        submitBtn.style.background = '#888';
-        submitBtn.style.cursor = 'not-allowed';
-        submitBtn.title = 'You must be VIP to use this';
-      }
+      submitMessage.textContent = '🚫 VIP Only — You must be a VIP to add new games.';
+      return;
     }
+
+    // Show countdown
+    let seconds = 30;
+    const countdown = setInterval(() => {
+      submitMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(countdown);
+      submitMessage.style.display = 'none';
+      submitBtn.style.display = 'inline-block';
+    }, 30000);
   }
 
-  protectButton();
+  protectSubmitButton();
 </script>
-
-
 
   
   <p class="message" id="formMessage" aria-live="polite"></p>
