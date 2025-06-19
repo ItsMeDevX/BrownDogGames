@@ -609,9 +609,53 @@ authBar.appendChild(userInfo);
     <label for="coverUrl">Cover URL (optional):</label>
     <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
-    <button type="submit" id="submitBtn">Add New Game</button>
-  </form>
 
+    
+<!-- Your form (or wherever the button is placed) -->
+<form id="addGameForm">
+  <!-- Other form inputs here -->
+
+  <button type="submit" id="submitBtn">Add New Game</button>
+</form>
+
+<!-- VIP-only script -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  async function protectButton() {
+    const { data } = await supabase.auth.getSession();
+    const user = data?.session?.user;
+
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('is_vip')
+      .eq('id', user.id)
+      .single();
+
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (error || !userData?.is_vip) {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'VIP Only';
+        submitBtn.style.background = '#888';
+        submitBtn.style.cursor = 'not-allowed';
+        submitBtn.title = 'You must be VIP to use this';
+      }
+    }
+  }
+
+  protectButton();
+</script>
+
+
+
+  
   <p class="message" id="formMessage" aria-live="polite"></p>
 
   <script type="module">
