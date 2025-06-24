@@ -919,21 +919,17 @@ authBar.appendChild(userInfo);
 
   <div id="container">
 
-    <!-- VIP Warning Message will appear here -->
-    <!-- Inserted dynamically by script -->
+    <!-- VIP Warning Message -->
+    <div id="vip-warning" style="color:#ff4f9f; margin-bottom: 1rem; font-family: 'Rubik Mono One', monospace;"></div>
 
     <form id="form">
-      <!-- FILE UPLOAD -->
+      <!-- FILE UPLOAD ONLY -->
       <label for="file-upload" style="display:block; margin-bottom: 8px; color: #ff4f9f;">Upload a video file:</label>
       <input id="file-upload" type="file" accept="video/*" style="margin-bottom: 10px; width: 60%; max-width: 400px;" />
       <button id="upload-button" type="button" style="background:#ff4f9f; color:#1a1328; font-weight:bold; margin-left:10px; cursor:pointer;">
         Upload File
       </button>
       <div id="upload-status"></div>
-
-      <!-- EXISTING VIDEO URL FORM -->
-      <input id="video-url" type="url" placeholder="Paste video URL..." required />
-      <button type="submit">Post</button>
     </form>
 
     <div id="links">
@@ -953,17 +949,13 @@ authBar.appendChild(userInfo);
     );
 
     const form = document.getElementById('form');
-    const input = document.getElementById('video-url');
+    const fileInput = document.getElementById('file-upload');
+    const uploadButton = document.getElementById('upload-button');
+    const uploadStatus = document.getElementById('upload-status');
+    const vipWarning = document.getElementById('vip-warning');
     const linksList = document.getElementById('links-list');
 
-    // Create VIP warning message element
-    const vipWarning = document.createElement('div');
-    vipWarning.style.color = '#ff4f9f';
-    vipWarning.style.marginBottom = '1rem';
-    vipWarning.style.fontFamily = "'Rubik Mono One', monospace";
-    form.parentNode.insertBefore(vipWarning, form);
-
-    // Map game IDs to names
+    // Map game IDs to names (if needed later)
     const gameNames = {
       0: 'Unknown',
       1: 'Minecraft',
@@ -971,73 +963,28 @@ authBar.appendChild(userInfo);
       3: 'Valorant',
     };
 
-    // Detect game ID by URL contents
-    function detectGameId(url) {
-      url = url.toLowerCase();
-      if (url.includes('minecraft')) return '1';
-      if (url.includes('fortnite')) return '2';
-      if (url.includes('valorant')) return '3';
-      return '0';
-    }
-
-    // Render embedded iframe or blockquote for supported URLs
-    function renderEmbed(url) {
-      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
-
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
-      }
-
-      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) {
-        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      }
-
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) {
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-      }
-
-      return '';
-    }
-
-    // Add a video link embed block to the page
+    // Add a video link embed block to the page (for uploaded videos)
     function addLink(url, gameId = '0') {
       const div = document.createElement('div');
       div.className = 'link-embed';
 
-      const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
+      // For uploaded videos just link directly (no embed iframe)
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = url;
+      fallbackLink.target = '_blank';
+      fallbackLink.textContent = url;
+      fallbackLink.style.color = '#ff4f9f';
+      fallbackLink.style.display = 'block';
+      fallbackLink.style.marginBottom = '1rem';
+      div.appendChild(fallbackLink);
 
-        // Add label for game
-        const label = document.createElement('div');
-        label.className = 'game-label';
-        label.textContent = gameNames[gameId] || 'Unknown';
-        div.appendChild(label);
+      // Add label for game (default Unknown)
+      const label = document.createElement('div');
+      label.className = 'game-label';
+      label.textContent = gameNames[gameId] || 'Unknown';
+      div.appendChild(label);
 
-        linksList.appendChild(div);
-
-        // Twitter widget render trigger
-        if (url.includes('twitter.com/status')) {
-          setTimeout(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-            }
-          }, 100);
-        }
-      } else {
-        // If no embed HTML, just add a link text fallback
-        const fallbackLink = document.createElement('a');
-        fallbackLink.href = url;
-        fallbackLink.target = '_blank';
-        fallbackLink.textContent = url;
-        fallbackLink.style.color = '#ff4f9f';
-        fallbackLink.style.display = 'block';
-        fallbackLink.style.marginBottom = '1rem';
-        linksList.appendChild(fallbackLink);
-      }
+      linksList.appendChild(div);
     }
 
     // Get github_username from URL param (?user=someUser)
@@ -1048,15 +995,14 @@ authBar.appendChild(userInfo);
 
     const currentUser = getUserIdFromUrl();
 
-    // Check VIP status and enable/disable form accordingly
+    // Check VIP status and enable/disable upload accordingly
     async function checkVIPStatus() {
       const { data } = await supabase.auth.getSession();
       const user = data?.session?.user;
 
       if (!user) {
-        vipWarning.textContent = '🚫 Please log in to post videos.';
-        input.disabled = true;
-        form.querySelector('button[type="submit"]').disabled = true;
+        vipWarning.textContent = '🚫 Please log in to upload videos.';
+        fileInput.disabled = true;
         uploadButton.disabled = true;
         return false;
       }
@@ -1068,16 +1014,14 @@ authBar.appendChild(userInfo);
         .single();
 
       if (error || !userData?.is_vip) {
-        vipWarning.textContent = '🚫 Posting videos is VIP only — please subscribe.';
-        input.disabled = true;
-        form.querySelector('button[type="submit"]').disabled = true;
+        vipWarning.textContent = '🚫 Uploading videos is VIP only — please subscribe.';
+        fileInput.disabled = true;
         uploadButton.disabled = true;
         return false;
       }
 
       vipWarning.textContent = '';  // Clear warning if VIP
-      input.disabled = false;
-      form.querySelector('button[type="submit"]').disabled = false;
+      fileInput.disabled = false;
       uploadButton.disabled = false;
       return true;
     }
@@ -1100,27 +1044,6 @@ authBar.appendChild(userInfo);
       if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
     }
 
-    // Handle video URL submission
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      if (input.disabled) return; // Prevent if not VIP
-
-      const url = input.value.trim();
-      if (!url) return;
-
-      const gameId = detectGameId(url);
-
-      const { error } = await supabase
-        .from('game_videos')
-        .insert([{ video_url: url, game_id: gameId, github_username: currentUser }]);
-
-      if (error) {
-        console.error('Error inserting video:', error);
-      } else {
-        input.value = '';
-      }
-    });
-
     // Realtime subscription for new videos by current user
     supabase.channel('realtime:game_videos')
       .on('postgres_changes', {
@@ -1141,14 +1064,15 @@ authBar.appendChild(userInfo);
 
     // --- FILE UPLOAD HANDLER ---
 
-    const fileInput = document.getElementById('file-upload');
-    const uploadButton = document.getElementById('upload-button');
-    const uploadStatus = document.getElementById('upload-status');
-
-    // TODO: Replace this with your actual deployed Google Apps Script web app URL
-    const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+    // Your provided Google Apps Script URL
+    const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbyjSP39CsIKypGzkX9fW52QV4CcbqXxZHBskwrs2QNKbvz43T9PeGBOw0IBKEO4Ve1vwQ/exec';
 
     uploadButton.addEventListener('click', async () => {
+      if (fileInput.disabled) {
+        uploadStatus.textContent = '❌ Upload not allowed. VIP only.';
+        return;
+      }
+
       const file = fileInput.files[0];
       if (!file) {
         uploadStatus.textContent = '❌ Please select a file first.';
@@ -1178,8 +1102,15 @@ authBar.appendChild(userInfo);
             uploadStatus.textContent = 'Error: ' + result.error;
           } else if (result.url) {
             uploadStatus.innerHTML = `✅ Upload successful! <a href="${result.url}" target="_blank" style="color:#ff4f9f;">View file</a>`;
-            // Add uploaded video URL to the list:
-            addLink(result.url);
+            // Save to Supabase DB:
+            const { error } = await supabase
+              .from('game_videos')
+              .insert([{ video_url: result.url, game_id: '0', github_username: currentUser }]);
+            if (error) {
+              console.error('Error inserting uploaded video URL:', error);
+            } else {
+              addLink(result.url);
+            }
           } else {
             uploadStatus.textContent = 'Unknown error occurred.';
           }
