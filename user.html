@@ -820,6 +820,11 @@ authBar.appendChild(userInfo);
       cursor: pointer;
     }
 
+    button:disabled, input:disabled {
+      background: #65456a;
+      cursor: not-allowed;
+    }
+
     #container {
       max-width: 1000px;
       margin: auto;
@@ -893,7 +898,6 @@ authBar.appendChild(userInfo);
       color: #ff4f9f !important;
     }
 
-    /* New styles for PigeonFiles uploader section */
     #pigeon-uploader {
       margin: 40px auto;
       max-width: 600px;
@@ -945,34 +949,6 @@ authBar.appendChild(userInfo);
       border-radius: 12px;
     }
 
-    /* New styles for actual embedded Google Drive videos */
-    #drive-videos {
-      margin-top: 30px;
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-
-    .video-wrapper {
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #000;
-      background-color: #2f1a39;
-      overflow: hidden;
-      width: 480px;
-    }
-
-    .video-wrapper iframe {
-      width: 100%;
-      height: 270px;
-      border: none;
-      border-radius: 12px;
-    }
-
     @media (max-width: 600px) {
       .link-embed,
       .twitter-tweet {
@@ -990,15 +966,6 @@ authBar.appendChild(userInfo);
 
       #drive-embed iframe {
         height: 400px;
-      }
-
-      #drive-videos {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .video-wrapper {
-        width: 100%;
       }
     }
   </style>
@@ -1034,26 +1001,6 @@ authBar.appendChild(userInfo);
           allowfullscreen
         ></iframe>
       </div>
-    </div>
-
-    <!-- New section: actual embedded playable Google Drive videos -->
-    <div id="drive-videos">
-      <h3>Playable Google Drive Videos</h3>
-
-      <div class="video-wrapper">
-        <iframe 
-          src="https://drive.google.com/file/d/1a2B3cD4Efgh5IjKlmnopQrsTuvWxYz/preview" 
-          allowfullscreen
-          ></iframe>
-      </div>
-
-      <div class="video-wrapper">
-        <iframe 
-          src="https://drive.google.com/file/d/1b3XcY7ZpQlmnoRSuvTqWx4aEbCdFgHiJ/preview" 
-          allowfullscreen
-          ></iframe>
-      </div>
-
     </div>
 
   </div>
@@ -1102,20 +1049,32 @@ authBar.appendChild(userInfo);
 
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${yt[1]}`;
+        iframe.allowFullscreen = true;
+        return iframe;
       }
 
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (tw) {
-        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}`;
+        iframe.allowFullscreen = true;
+        return iframe;
       }
 
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+        const blockquote = document.createElement('blockquote');
+        blockquote.className = 'twitter-tweet';
+        blockquote.setAttribute('data-lang', 'en');
+        const a = document.createElement('a');
+        a.href = url;
+        blockquote.appendChild(a);
+        return blockquote;
       }
 
-      return '';
+      return null;
     }
 
     // Add a video link embed block to the page
@@ -1123,9 +1082,9 @@ authBar.appendChild(userInfo);
       const div = document.createElement('div');
       div.className = 'link-embed';
 
-      const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
+      const embedElem = renderEmbed(url);
+      if (embedElem) {
+        div.appendChild(embedElem);
 
         // Add label for game
         const label = document.createElement('div');
@@ -1190,8 +1149,7 @@ authBar.appendChild(userInfo);
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('github_username', currentUser)
-        .not('video_url', 'is', null)
+        .eq('userid', currentUser)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1200,54 +1158,69 @@ authBar.appendChild(userInfo);
       }
 
       linksList.innerHTML = '';
-
-      for (const v of data) {
-        addLink(v.video_url, v.game_id);
+      for (const item of data) {
+        addLink(item.video_link, item.gameid);
       }
     }
 
-    // Add a new video URL to DB
-    async function addVideo(url) {
-      if (!url) return;
+    // Listen for new videos in real time
+    function listen() {
+      supabase
+        .channel('public:game_videos')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'game_videos', filter: `userid=eq.${currentUser}` },
+          (payload) => {
+            if (payload?.new) {
+              addLink(payload.new.video_link, payload.new.gameid);
+            }
+          }
+        )
+        .subscribe();
+    }
 
+    // Post a new video
+    async function postVideo(url) {
       const gameId = detectGameId(url);
-
-      const { data, error } = await supabase
-        .from('game_videos')
-        .insert([
-          {
-            github_username: currentUser,
-            video_url: url,
-            game_id: gameId,
-          },
-        ]);
+      const { data, error } = await supabase.from('game_videos').insert({
+        userid: currentUser,
+        video_link: url,
+        gameid: gameId,
+      });
 
       if (error) {
-        console.error('Error adding video:', error);
-        return;
+        alert(`Failed to post video: ${error.message}`);
+        console.error(error);
+        return false;
       }
-
-      addLink(url, gameId);
-      input.value = '';
+      return true;
     }
 
-    form.addEventListener('submit', async e => {
+    // Handle form submit
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const canPost = await checkVIPStatus();
-      if (!canPost) return;
+      if (!input.value) return;
 
-      const url = input.value.trim();
-      if (url) {
-        await addVideo(url);
+      form.querySelector('button').disabled = true;
+      input.disabled = true;
+
+      const success = await postVideo(input.value.trim());
+
+      if (success) {
+        input.value = '';
       }
+
+      form.querySelector('button').disabled = false;
+      input.disabled = false;
     });
 
-    // On page load
-    window.addEventListener('DOMContentLoaded', async () => {
+    // Initialize
+    (async () => {
       await checkVIPStatus();
       await load();
-    });
+      listen();
+    })();
   </script>
 </body>
 </html>
