@@ -945,6 +945,34 @@ authBar.appendChild(userInfo);
       border-radius: 12px;
     }
 
+    /* New styles for actual embedded Google Drive videos */
+    #drive-videos {
+      margin-top: 30px;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .video-wrapper {
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #000;
+      background-color: #2f1a39;
+      overflow: hidden;
+      width: 480px;
+    }
+
+    .video-wrapper iframe {
+      width: 100%;
+      height: 270px;
+      border: none;
+      border-radius: 12px;
+    }
+
     @media (max-width: 600px) {
       .link-embed,
       .twitter-tweet {
@@ -962,6 +990,15 @@ authBar.appendChild(userInfo);
 
       #drive-embed iframe {
         height: 400px;
+      }
+
+      #drive-videos {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .video-wrapper {
+        width: 100%;
       }
     }
   </style>
@@ -997,6 +1034,26 @@ authBar.appendChild(userInfo);
           allowfullscreen
         ></iframe>
       </div>
+    </div>
+
+    <!-- New section: actual embedded playable Google Drive videos -->
+    <div id="drive-videos">
+      <h3>Playable Google Drive Videos</h3>
+
+      <div class="video-wrapper">
+        <iframe 
+          src="https://drive.google.com/file/d/1a2B3cD4Efgh5IjKlmnopQrsTuvWxYz/preview" 
+          allowfullscreen
+          ></iframe>
+      </div>
+
+      <div class="video-wrapper">
+        <iframe 
+          src="https://drive.google.com/file/d/1b3XcY7ZpQlmnoRSuvTqWx4aEbCdFgHiJ/preview" 
+          allowfullscreen
+          ></iframe>
+      </div>
+
     </div>
 
   </div>
@@ -1135,7 +1192,7 @@ authBar.appendChild(userInfo);
         .select('*')
         .eq('github_username', currentUser)
         .not('video_url', 'is', null)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error loading videos:', error);
@@ -1143,49 +1200,54 @@ authBar.appendChild(userInfo);
       }
 
       linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
+
+      for (const v of data) {
+        addLink(v.video_url, v.game_id);
+      }
     }
 
-    // Handle video URL submission
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      if (input.disabled) return; // Prevent if not VIP
-
-      const url = input.value.trim();
+    // Add a new video URL to DB
+    async function addVideo(url) {
       if (!url) return;
 
       const gameId = detectGameId(url);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('game_videos')
-        .insert([{ video_url: url, game_id: gameId, github_username: currentUser }]);
+        .insert([
+          {
+            github_username: currentUser,
+            video_url: url,
+            game_id: gameId,
+          },
+        ]);
 
       if (error) {
-        console.error('Error inserting video:', error);
-      } else {
-        input.value = '';
+        console.error('Error adding video:', error);
+        return;
+      }
+
+      addLink(url, gameId);
+      input.value = '';
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const canPost = await checkVIPStatus();
+      if (!canPost) return;
+
+      const url = input.value.trim();
+      if (url) {
+        await addVideo(url);
       }
     });
 
-    // Realtime subscription for new videos by current user
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'game_videos',
-        filter: `github_username=eq.${currentUser}`
-      }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || '0');
-      })
-      .subscribe();
-
-    // Init VIP check and load videos
-    (async () => {
+    // On page load
+    window.addEventListener('DOMContentLoaded', async () => {
       await checkVIPStatus();
       await load();
-    })();
-
+    });
   </script>
-
 </body>
 </html>
