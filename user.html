@@ -807,7 +807,7 @@ authBar.appendChild(userInfo);
       font-family: 'Rubik Mono One', sans-serif;
     }
 
-    input[type="url"] {
+    input {
       width: 60%;
       max-width: 400px;
     }
@@ -818,16 +818,6 @@ authBar.appendChild(userInfo);
       font-weight: bold;
       margin-left: 10px;
       cursor: pointer;
-    }
-
-    #uploadFile {
-      margin-top: 10px;
-      margin-bottom: 5px;
-    }
-
-    #uploadStatus {
-      font-size: 0.9rem;
-      color: #ff4f9f;
     }
 
     #container {
@@ -879,7 +869,7 @@ authBar.appendChild(userInfo);
 
     .link-embed iframe {
       width: 100%;
-      height: 270px;
+      height: 270px; /* 16:9 aspect for 480px width */
       border: none;
       display: block;
     }
@@ -889,13 +879,37 @@ authBar.appendChild(userInfo);
       font-size: 0.9rem;
       color: #ff4f9f;
       text-shadow: 1px 1px 0 #000;
+      font-family: 'Rubik Mono One', monospace;
+    }
+
+    .twitter-tweet {
+      width: 100% !important;
+      max-width: 480px !important;
+      margin: 0 auto !important;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #000;
+      background: #2f1a39 !important;
+      color: #ff4f9f !important;
     }
 
     @media (max-width: 600px) {
+      .link-embed,
+      .twitter-tweet {
+        max-width: 100%;
+      }
+
       .link-embed iframe {
         height: auto;
         aspect-ratio: 16 / 9;
       }
+    }
+
+    /* Upload status styling */
+    #upload-status {
+      margin-top: 10px;
+      font-family: monospace;
+      color: #ff4f9f;
     }
   </style>
 </head>
@@ -904,15 +918,22 @@ authBar.appendChild(userInfo);
   <h1>🎮 Video Links</h1>
 
   <div id="container">
-    <div id="vip-warning" style="color:#ff4f9f; font-family:'Rubik Mono One', monospace; margin-bottom:1rem;"></div>
+
+    <!-- VIP Warning Message will appear here -->
+    <!-- Inserted dynamically by script -->
 
     <form id="form">
-      <input id="video-url" type="url" placeholder="Paste or upload video URL..." required />
+      <!-- FILE UPLOAD -->
+      <label for="file-upload" style="display:block; margin-bottom: 8px; color: #ff4f9f;">Upload a video file:</label>
+      <input id="file-upload" type="file" accept="video/*" style="margin-bottom: 10px; width: 60%; max-width: 400px;" />
+      <button id="upload-button" type="button" style="background:#ff4f9f; color:#1a1328; font-weight:bold; margin-left:10px; cursor:pointer;">
+        Upload File
+      </button>
+      <div id="upload-status"></div>
+
+      <!-- EXISTING VIDEO URL FORM -->
+      <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
-      <br><br>
-      <input type="file" id="uploadFile" accept="video/*" />
-      <button type="button" onclick="uploadFileToDrive()">📤 Upload to Drive</button>
-      <p id="uploadStatus"></p>
     </form>
 
     <div id="links">
@@ -934,10 +955,23 @@ authBar.appendChild(userInfo);
     const form = document.getElementById('form');
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
-    const vipWarning = document.getElementById('vip-warning');
 
-    const gameNames = { 0: 'Unknown', 1: 'Minecraft', 2: 'Fortnite', 3: 'Valorant' };
+    // Create VIP warning message element
+    const vipWarning = document.createElement('div');
+    vipWarning.style.color = '#ff4f9f';
+    vipWarning.style.marginBottom = '1rem';
+    vipWarning.style.fontFamily = "'Rubik Mono One', monospace";
+    form.parentNode.insertBefore(vipWarning, form);
 
+    // Map game IDs to names
+    const gameNames = {
+      0: 'Unknown',
+      1: 'Minecraft',
+      2: 'Fortnite',
+      3: 'Valorant',
+    };
+
+    // Detect game ID by URL contents
     function detectGameId(url) {
       url = url.toLowerCase();
       if (url.includes('minecraft')) return '1';
@@ -946,32 +980,67 @@ authBar.appendChild(userInfo);
       return '0';
     }
 
+    // Render embedded iframe or blockquote for supported URLs
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
+
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+      if (yt) {
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+      }
+
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+      if (tw) {
+        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
+      }
+
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
-      if (url.includes('drive.google.com')) return `<iframe src="${url.replace('/view?usp=drive_link', '/preview')}" allowfullscreen></iframe>`;
+      if (twt) {
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
+      }
+
       return '';
     }
 
+    // Add a video link embed block to the page
     function addLink(url, gameId = '0') {
       const div = document.createElement('div');
       div.className = 'link-embed';
+
       const embedHTML = renderEmbed(url);
       if (embedHTML) {
         div.innerHTML = embedHTML;
+
+        // Add label for game
         const label = document.createElement('div');
         label.className = 'game-label';
         label.textContent = gameNames[gameId] || 'Unknown';
         div.appendChild(label);
+
         linksList.appendChild(div);
+
+        // Twitter widget render trigger
+        if (url.includes('twitter.com/status')) {
+          setTimeout(() => {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load(div);
+            }
+          }, 100);
+        }
+      } else {
+        // If no embed HTML, just add a link text fallback
+        const fallbackLink = document.createElement('a');
+        fallbackLink.href = url;
+        fallbackLink.target = '_blank';
+        fallbackLink.textContent = url;
+        fallbackLink.style.color = '#ff4f9f';
+        fallbackLink.style.display = 'block';
+        fallbackLink.style.marginBottom = '1rem';
+        linksList.appendChild(fallbackLink);
       }
     }
 
+    // Get github_username from URL param (?user=someUser)
     function getUserIdFromUrl() {
       const params = new URLSearchParams(window.location.search);
       return params.get('user') || 'guest';
@@ -979,6 +1048,7 @@ authBar.appendChild(userInfo);
 
     const currentUser = getUserIdFromUrl();
 
+    // Check VIP status and enable/disable form accordingly
     async function checkVIPStatus() {
       const { data } = await supabase.auth.getSession();
       const user = data?.session?.user;
@@ -986,7 +1056,8 @@ authBar.appendChild(userInfo);
       if (!user) {
         vipWarning.textContent = '🚫 Please log in to post videos.';
         input.disabled = true;
-        form.querySelector('button').disabled = true;
+        form.querySelector('button[type="submit"]').disabled = true;
+        uploadButton.disabled = true;
         return false;
       }
 
@@ -999,16 +1070,19 @@ authBar.appendChild(userInfo);
       if (error || !userData?.is_vip) {
         vipWarning.textContent = '🚫 Posting videos is VIP only — please subscribe.';
         input.disabled = true;
-        form.querySelector('button').disabled = true;
+        form.querySelector('button[type="submit"]').disabled = true;
+        uploadButton.disabled = true;
         return false;
       }
 
-      vipWarning.textContent = '';
+      vipWarning.textContent = '';  // Clear warning if VIP
       input.disabled = false;
-      form.querySelector('button').disabled = false;
+      form.querySelector('button[type="submit"]').disabled = false;
+      uploadButton.disabled = false;
       return true;
     }
 
+    // Load all videos posted by this user
     async function load() {
       const { data, error } = await supabase
         .from('game_videos')
@@ -1017,24 +1091,37 @@ authBar.appendChild(userInfo);
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
-      if (!error && data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
+      if (error) {
+        console.error('Error loading videos:', error);
+        return;
+      }
+
+      linksList.innerHTML = '';
+      if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
     }
 
+    // Handle video URL submission
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (input.disabled) return;
+      if (input.disabled) return; // Prevent if not VIP
 
       const url = input.value.trim();
       if (!url) return;
 
       const gameId = detectGameId(url);
+
       const { error } = await supabase
         .from('game_videos')
         .insert([{ video_url: url, game_id: gameId, github_username: currentUser }]);
 
-      if (!error) input.value = '';
+      if (error) {
+        console.error('Error inserting video:', error);
+      } else {
+        input.value = '';
+      }
     });
 
+    // Realtime subscription for new videos by current user
     supabase.channel('realtime:game_videos')
       .on('postgres_changes', {
         event: 'INSERT',
@@ -1046,53 +1133,64 @@ authBar.appendChild(userInfo);
       })
       .subscribe();
 
-    // Upload to Google Drive via Apps Script
-    window.uploadFileToDrive = async function () {
-      const fileInput = document.getElementById('uploadFile');
-      const status = document.getElementById('uploadStatus');
-      const urlField = document.getElementById('video-url');
+    // Init VIP check and load videos
+    (async () => {
+      await checkVIPStatus();
+      await load();
+    })();
 
-      if (!fileInput.files.length) {
-        status.textContent = 'Please select a video file.';
+    // --- FILE UPLOAD HANDLER ---
+
+    const fileInput = document.getElementById('file-upload');
+    const uploadButton = document.getElementById('upload-button');
+    const uploadStatus = document.getElementById('upload-status');
+
+    // TODO: Replace this with your actual deployed Google Apps Script web app URL
+    const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+    uploadButton.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        uploadStatus.textContent = '❌ Please select a file first.';
         return;
       }
 
-      const file = fileInput.files[0];
-      status.textContent = 'Uploading...';
-
       const reader = new FileReader();
-      reader.onload = async function (e) {
-        const base64 = e.target.result.split(',')[1];
+      reader.onload = async (e) => {
+        const base64String = e.target.result.split(',')[1]; // remove data:*/*;base64, prefix
+
+        uploadStatus.textContent = 'Uploading...';
+
         try {
-          const response = await fetch('https://script.google.com/macros/s/AKfycbyjSP39CsIKypGzkX9fW52QV4CcbqXxZHBskwrs2QNKbvz43T9PeGBOw0IBKEO4Ve1vwQ/exec', {
+          const response = await fetch(GAS_UPLOAD_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               fileName: file.name,
               fileType: file.type,
-              fileBase64: base64
-            })
+              fileBase64: base64String,
+            }),
           });
 
           const result = await response.json();
-          if (result.url) {
-            urlField.value = result.url;
-            status.textContent = '✅ Uploaded to Drive!';
+
+          if (result.error) {
+            uploadStatus.textContent = 'Error: ' + result.error;
+          } else if (result.url) {
+            uploadStatus.innerHTML = `✅ Upload successful! <a href="${result.url}" target="_blank" style="color:#ff4f9f;">View file</a>`;
+            // Add uploaded video URL to the list:
+            addLink(result.url);
           } else {
-            status.textContent = '❌ Upload failed: ' + result.error;
+            uploadStatus.textContent = 'Unknown error occurred.';
           }
         } catch (err) {
-          status.textContent = '❌ Upload error: ' + err.message;
+          uploadStatus.textContent = 'Upload failed: ' + err.message;
         }
       };
 
       reader.readAsDataURL(file);
-    };
-
-    (async () => {
-      await checkVIPStatus();
-      await load();
-    })();
+    });
   </script>
+
 </body>
 </html>
