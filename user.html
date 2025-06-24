@@ -820,11 +820,6 @@ authBar.appendChild(userInfo);
       cursor: pointer;
     }
 
-    button:disabled, input:disabled {
-      background: #65456a;
-      cursor: not-allowed;
-    }
-
     #container {
       max-width: 1000px;
       margin: auto;
@@ -898,32 +893,6 @@ authBar.appendChild(userInfo);
       color: #ff4f9f !important;
     }
 
-    #driveuploader-embed, #drive-embed {
-      margin-top: 20px;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #000;
-      overflow: hidden;
-      background-color: #2f1a39;
-      padding: 10px;
-      color: #ff4f9f;
-      font-family: 'Rubik Mono One', monospace;
-    }
-
-    #driveuploader-embed h3,
-    #drive-embed h3 {
-      margin: 0 0 10px 0;
-      text-shadow: 1px 1px 0 #000;
-    }
-
-    #driveuploader-embed iframe,
-    #drive-embed iframe {
-      width: 100%;
-      height: 400px; /* smaller height */
-      border: none;
-      border-radius: 12px;
-    }
-
     @media (max-width: 600px) {
       .link-embed,
       .twitter-tweet {
@@ -933,11 +902,6 @@ authBar.appendChild(userInfo);
       .link-embed iframe {
         height: auto;
         aspect-ratio: 16 / 9;
-      }
-
-      #driveuploader-embed iframe,
-      #drive-embed iframe {
-        height: 300px;
       }
     }
   </style>
@@ -960,23 +924,6 @@ authBar.appendChild(userInfo);
       <h2>Links</h2>
       <div id="links-list"></div>
     </div>
-
-    <div id="driveuploader-embed">
-      <h3>DriveUploader Folder Contents</h3>
-      <iframe 
-        src="https://driveuploader.com/upload/HMpFB5cG8L/"
-        allowfullscreen
-      ></iframe>
-    </div>
-
-    <div id="drive-embed">
-      <h3>Google Drive Folder Contents</h3>
-      <iframe 
-        src="https://drive.google.com/embeddedfolderview?id=1PAFrEi4jO2deY0hweuoHUq-TVQS-LuuV#grid"
-        allowfullscreen
-      ></iframe>
-    </div>
-
   </div>
 
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -1023,32 +970,20 @@ authBar.appendChild(userInfo);
 
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (yt) {
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube-nocookie.com/embed/${yt[1]}`;
-        iframe.allowFullscreen = true;
-        return iframe;
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
       }
 
       const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
       if (tw) {
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}`;
-        iframe.allowFullscreen = true;
-        return iframe;
+        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
       }
 
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
-        const blockquote = document.createElement('blockquote');
-        blockquote.className = 'twitter-tweet';
-        blockquote.setAttribute('data-lang', 'en');
-        const a = document.createElement('a');
-        a.href = url;
-        blockquote.appendChild(a);
-        return blockquote;
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
-      return null;
+      return '';
     }
 
     // Add a video link embed block to the page
@@ -1056,63 +991,125 @@ authBar.appendChild(userInfo);
       const div = document.createElement('div');
       div.className = 'link-embed';
 
-      const embedElem = renderEmbed(url);
-      if (embedElem) {
-        div.appendChild(embedElem);
+      const embedHTML = renderEmbed(url);
+      if (embedHTML) {
+        div.innerHTML = embedHTML;
 
-        // Add label for game name
+        // Add label for game
         const label = document.createElement('div');
         label.className = 'game-label';
-        label.textContent = `Game: ${gameNames[gameId] || 'Unknown'}`;
+        label.textContent = gameNames[gameId] || 'Unknown';
         div.appendChild(label);
 
         linksList.appendChild(div);
-      } else {
-        alert('Unsupported video URL!');
+
+        // Twitter widget render trigger
+        if (url.includes('twitter.com/status')) {
+          setTimeout(() => {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load(div);
+            }
+          }, 100);
+        }
       }
     }
 
-    // Load existing links from Supabase
-    async function loadLinks() {
-      const { data, error } = await supabase.from('videos').select('*').order('created_at', { ascending: true });
+    // Get github_username from URL param (?user=someUser)
+    function getUserIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('user') || 'guest';
+    }
+
+    const currentUser = getUserIdFromUrl();
+
+    // Check VIP status and enable/disable form accordingly
+    async function checkVIPStatus() {
+      const { data } = await supabase.auth.getSession();
+      const user = data?.session?.user;
+
+      if (!user) {
+        vipWarning.textContent = '🚫 Please log in to post videos.';
+        input.disabled = true;
+        form.querySelector('button').disabled = true;
+        return false;
+      }
+
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !userData?.is_vip) {
+        vipWarning.textContent = '🚫 Posting videos is VIP only — please subscribe.';
+        input.disabled = true;
+        form.querySelector('button').disabled = true;
+        return false;
+      }
+
+      vipWarning.textContent = '';  // Clear warning if VIP
+      input.disabled = false;
+      form.querySelector('button').disabled = false;
+      return true;
+    }
+
+    // Load all videos posted by this user
+    async function load() {
+      const { data, error } = await supabase
+        .from('game_videos')
+        .select('*')
+        .eq('github_username', currentUser)
+        .not('video_url', 'is', null)
+        .order('created_at', { ascending: true });
+
       if (error) {
-        console.error(error);
+        console.error('Error loading videos:', error);
         return;
       }
+
       linksList.innerHTML = '';
-      data.forEach(({ video_url, game_id }) => addLink(video_url, game_id));
+      if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
     }
 
-    // Handle form submission
+    // Handle video URL submission
     form.addEventListener('submit', async e => {
       e.preventDefault();
+      if (input.disabled) return; // Prevent if not VIP
+
       const url = input.value.trim();
       if (!url) return;
 
-      // Check if user is VIP (dummy check here, replace with your auth logic)
-      // For now, show a warning if not VIP:
-      const isVip = false; // Replace with real VIP logic
-      if (!isVip) {
-        vipWarning.textContent = 'WARNING: You are NOT a VIP user. Your video may be removed.';
-      } else {
-        vipWarning.textContent = '';
-      }
-
       const gameId = detectGameId(url);
-      addLink(url, gameId);
 
-      // Save to Supabase
-      const { error } = await supabase.from('videos').insert([{ video_url: url, game_id: gameId }]);
+      const { error } = await supabase
+        .from('game_videos')
+        .insert([{ video_url: url, game_id: gameId, github_username: currentUser }]);
+
       if (error) {
-        alert('Failed to save video URL');
-        console.error(error);
+        console.error('Error inserting video:', error);
+      } else {
+        input.value = '';
       }
-
-      input.value = '';
     });
 
-    // Initial load
-    loadLinks();
+    // Realtime subscription for new videos by current user
+    supabase.channel('realtime:game_videos')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'game_videos',
+        filter: `github_username=eq.${currentUser}`
+      }, payload => {
+        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || '0');
+      })
+      .subscribe();
+
+    // Init VIP check and load videos
+    (async () => {
+      await checkVIPStatus();
+      await load();
+    })();
+
   </script>
 
 </body>
