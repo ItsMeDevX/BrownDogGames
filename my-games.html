@@ -431,7 +431,10 @@ authBar.appendChild(userInfo);
   <title>BrownDogGames - All Games</title>
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
-    /* Your CSS here */
+    /* Reset and base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
     html, body {
       height: 100%;
       margin: 0;
@@ -442,8 +445,12 @@ authBar.appendChild(userInfo);
       justify-content: center;
       align-items: center;
       padding: 20px;
-      box-sizing: border-box;
     }
+
+    body {
+      min-height: 100vh;
+    }
+
     main {
       max-width: 600px;
       width: 100%;
@@ -451,18 +458,28 @@ authBar.appendChild(userInfo);
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+      background: #2f1a39;
+      border-radius: 16px;
+      box-shadow: 0 0 20px #ff4f9f88;
+      user-select: none;
     }
+
     .logo {
       max-width: 150px;
-      margin-bottom: 20px;
-      user-select: none;
+      width: 100%;
+      height: auto;
     }
+
     h1 {
       color: #ff4f9f;
-      margin: 0 0 30px 0;
-      font-size: 2.2em;
-      user-select: none;
+      margin: 0;
+      font-size: 2.4em;
+      line-height: 1.2;
     }
+
     ul.game-list {
       list-style: none;
       padding: 0;
@@ -470,73 +487,78 @@ authBar.appendChild(userInfo);
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 15px;
     }
-    ul.game-list a {
+
+    ul.game-list li a {
       display: block;
       padding: 15px 0;
-      background: #2f1a39;
+      background: #1b1b2e;
       border: 3px solid #ff4f9f;
       border-radius: 12px;
       color: #ff4f9f;
-      font-size: 1.4em;
+      font-size: 1.3em;
       font-weight: 600;
       text-decoration: none;
-      user-select: none;
       box-shadow: 0 0 6px #ff4f9f66;
       transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     }
-    ul.game-list a:hover,
-    ul.game-list a:focus {
+
+    ul.game-list li a:hover,
+    ul.game-list li a:focus {
       background-color: #ff4f9f22;
       transform: translateX(6px);
       box-shadow: 0 0 12px #ff4f9faa;
       outline: none;
       text-decoration: underline;
     }
+
     .btn-back-home {
-      margin-top: 40px;
-      padding: 14px 40px;
+      margin-top: 30px;
+      padding: 14px 50px;
       background: #ff4f9f;
       color: #1b1b2e;
       font-weight: bold;
       font-size: 1.3em;
       border-radius: 12px;
       text-decoration: none;
-      user-select: none;
-      box-shadow: 0 0 8px #ff4f9faa;
+      box-shadow: 0 0 10px #ff4f9faa;
       transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
       display: inline-block;
     }
+
     .btn-back-home:hover,
     .btn-back-home:focus {
       background-color: #e03e8f;
-      box-shadow: 0 0 14px #e03e8faa;
+      box-shadow: 0 0 16px #e03e8faa;
       outline: none;
     }
+
+    /* Responsive */
     @media (max-width: 480px) {
-      ul.game-list a {
-        font-size: 1.2em;
+      main {
+        max-width: 100%;
+        padding: 15px;
+        gap: 15px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+      ul.game-list li a {
+        font-size: 1.1em;
         padding: 12px 0;
       }
       .btn-back-home {
         font-size: 1.1em;
-        padding: 12px 30px;
-        margin-top: 30px;
+        padding: 12px 40px;
+        margin-top: 25px;
       }
       .logo {
         max-width: 120px;
-        margin-bottom: 15px;
       }
     }
   </style>
-
-  <!-- Your scripts here, loaded early but deferred -->
-  <script src="your-script.js" defer></script>
-  <script defer>
-    // Inline script example (runs after parsing)
-    console.log("Scripts loaded and deferred before content display.");
-  </script>
 </head>
 <body>
 
