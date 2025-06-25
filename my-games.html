@@ -444,10 +444,10 @@ authBar.appendChild(userInfo);
     main {
       max-width: 600px;
       width: 100%;
+      text-align: center;
     }
     h1 {
       color: #ff4f9f;
-      text-align: center;
       margin-bottom: 30px;
       font-size: 2em;
       user-select: none;
@@ -455,48 +455,70 @@ authBar.appendChild(userInfo);
     ul.game-list {
       list-style: none;
       padding: 0;
-      margin: 0;
+      margin: 0 0 30px 0;
       display: flex;
       flex-direction: column;
       gap: 18px;
     }
     ul.game-list li {
+      /* Remove background from li so button covers whole area */
+    }
+    ul.game-list a {
+      display: block;
+      padding: 15px 0;
       background: #2f1a39;
       border: 3px solid #ff4f9f;
       border-radius: 12px;
-      padding: 15px 20px;
-      transition: background-color 0.3s ease, transform 0.2s ease;
+      color: #ff4f9f;
+      font-size: 1.4em;
+      font-weight: 600;
+      text-decoration: none;
+      user-select: none;
       box-shadow: 0 0 6px #ff4f9f66;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     }
-    ul.game-list li:hover {
+    ul.game-list a:hover,
+    ul.game-list a:focus {
       background-color: #ff4f9f22;
       transform: translateX(6px);
       box-shadow: 0 0 12px #ff4f9faa;
-    }
-    ul.game-list a {
-      color: #ff4f9f;
-      font-size: 1.3em;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      user-select: none;
-    }
-    ul.game-list a:focus,
-    ul.game-list a:hover {
+      outline: none;
       text-decoration: underline;
+    }
+
+    /* Back home button */
+    .btn-back-home {
+      display: inline-block;
+      background: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      font-size: 1.2em;
+      padding: 12px 30px;
+      border-radius: 12px;
+      text-decoration: none;
+      user-select: none;
+      box-shadow: 0 0 8px #ff4f9faa;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-back-home:hover,
+    .btn-back-home:focus {
+      background-color: #e03e8f;
+      box-shadow: 0 0 14px #e03e8faa;
       outline: none;
     }
+
     /* Responsive */
     @media (max-width: 480px) {
       body {
         padding: 20px 10px;
       }
-      ul.game-list li {
-        padding: 12px 15px;
-      }
       ul.game-list a {
-        font-size: 1.1em;
+        font-size: 1.2em;
+        padding: 12px 0;
+      }
+      .btn-back-home {
+        font-size: 1em;
+        padding: 10px 25px;
       }
     }
   </style>
@@ -516,6 +538,8 @@ authBar.appendChild(userInfo);
       <li><a href="Shafted.html">💪 Shafted</a></li>
       <li><a href="She-Comes-First.html">🧴 She Comes First</a></li>
     </ul>
+
+    <a href="index.html" class="btn-back-home">🏠 Back Home</a>
   </main>
 
 </body>
