@@ -424,17 +424,24 @@ authBar.appendChild(userInfo);
 </script>
 
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BrownDogGames - All Games</title>
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
+    /* Global box-sizing */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    /* Centering container */
     html, body {
+      min-height: 100vh;
       margin: 0;
-      padding: 0;
-      height: 100%;
       background-color: #1b1b2e;
       color: #fefefe;
       font-family: 'Rubik Mono One', sans-serif;
@@ -442,37 +449,33 @@ authBar.appendChild(userInfo);
       justify-content: center;
       align-items: center;
       padding: 20px;
-      box-sizing: border-box;
     }
-    
+
     main {
       max-width: 600px;
       width: 100%;
-      background: #2f1a39;
-      padding: 30px 20px 40px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px #ff4f9f88;
+      max-height: 100vh;
+      overflow-y: auto;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
-      user-select: none;
     }
-    
+
+    /* Logo */
     .logo {
       max-width: 150px;
-      width: 100%;
-      height: auto;
       margin-bottom: 20px;
+      user-select: none;
     }
-    
+
     h1 {
       color: #ff4f9f;
-      margin: 0 0 30px;
-      font-size: 2.4em;
-      line-height: 1.2;
+      margin: 0 0 30px 0;
+      font-size: 2.2em;
+      user-select: none;
     }
-    
+
     ul.game-list {
       list-style: none;
       padding: 0;
@@ -481,85 +484,66 @@ authBar.appendChild(userInfo);
       display: flex;
       flex-direction: column;
       gap: 18px;
-      align-items: center; /* center the list items horizontally */
     }
-    
-    ul.game-list li {
-      width: 100%;
-      max-width: 400px; /* max width for buttons */
-    }
-    
-    ul.game-list li a {
+
+    ul.game-list a {
       display: block;
-      width: 100%;
       padding: 15px 0;
-      background: #1b1b2e;
+      background: #2f1a39;
       border: 3px solid #ff4f9f;
       border-radius: 12px;
       color: #ff4f9f;
-      font-size: 1.3em;
+      font-size: 1.4em;
       font-weight: 600;
       text-decoration: none;
+      user-select: none;
       box-shadow: 0 0 6px #ff4f9f66;
       transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-      text-align: center; /* center text inside buttons */
     }
-    
-    ul.game-list li a:hover,
-    ul.game-list li a:focus {
+
+    ul.game-list a:hover,
+    ul.game-list a:focus {
       background-color: #ff4f9f22;
       transform: translateX(6px);
       box-shadow: 0 0 12px #ff4f9faa;
       outline: none;
       text-decoration: underline;
     }
-    
+
+    /* Back home button */
     .btn-back-home {
       margin-top: 40px;
-      padding: 14px 50px;
+      padding: 14px 40px;
       background: #ff4f9f;
       color: #1b1b2e;
       font-weight: bold;
       font-size: 1.3em;
       border-radius: 12px;
       text-decoration: none;
-      box-shadow: 0 0 10px #ff4f9faa;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
       user-select: none;
+      box-shadow: 0 0 8px #ff4f9faa;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
       display: inline-block;
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
     }
-    
+
     .btn-back-home:hover,
     .btn-back-home:focus {
       background-color: #e03e8f;
-      box-shadow: 0 0 16px #e03e8faa;
+      box-shadow: 0 0 14px #e03e8faa;
       outline: none;
     }
-    
+
     /* Responsive */
     @media (max-width: 480px) {
-      main {
-        padding: 25px 15px 35px;
-      }
-      
-      h1 {
-        font-size: 1.9em;
-      }
-      
-      ul.game-list li a {
-        font-size: 1.1em;
+      ul.game-list a {
+        font-size: 1.2em;
         padding: 12px 0;
       }
-      
       .btn-back-home {
         font-size: 1.1em;
-        padding: 12px 40px;
+        padding: 12px 30px;
         margin-top: 30px;
       }
-      
       .logo {
         max-width: 120px;
         margin-bottom: 15px;
@@ -568,6 +552,7 @@ authBar.appendChild(userInfo);
   </style>
 </head>
 <body>
+
   <main>
     <img src="logo.png" alt="BrownDogGames Logo" class="logo" />
     <h1>🎮 All BrownDogGames</h1>
@@ -584,5 +569,6 @@ authBar.appendChild(userInfo);
     </ul>
     <a href="index.html" class="btn-back-home">🏠 Back Home</a>
   </main>
+
 </body>
 </html>
