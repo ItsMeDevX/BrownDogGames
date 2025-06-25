@@ -646,7 +646,7 @@ authBar.appendChild(userInfo);
       <label for="coverUrl">Cover URL (optional):</label>
       <input type="url" id="coverUrl" />
 
-      <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+      <div id="submitMessage">⏳ Checking VIP access... Please wait</div>
       <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
     </form>
   </div>
@@ -666,7 +666,7 @@ authBar.appendChild(userInfo);
         <option value="">-- Choose a game --</option>
       </select>
 
-      <button type="submit">Post Video</button>
+      <button type="submit" disabled>Post Video</button>
       <div id="vipWarning" class="message"></div>
     </form>
     <div id="links-list"></div>
@@ -719,315 +719,234 @@ authBar.appendChild(userInfo);
     const gameSelect = document.getElementById('gameSelect');
     const linksList = document.getElementById('links-list');
     const vipWarning = document.getElementById('vipWarning');
+    const formMessage = document.getElementById('formMessage');
 
+    let isVip = false;
     let currentUser = null;
-    let isVIP = false;
+    let userGames = [];
 
-    // Helper: render embedded video player for known URLs (YouTube, Vimeo, Twitch)
-    function renderEmbed(url) {
-      if (!url) return '';
-      let embedHTML = '';
-      try {
-        const u = new URL(url);
-        if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
-          // extract video ID
-          let videoID = '';
-          if (u.hostname.includes('youtu.be')) {
-            videoID = u.pathname.slice(1);
-          } else {
-            videoID = u.searchParams.get('v');
-          }
-          if (videoID) {
-            embedHTML = `<iframe src="https://www.youtube.com/embed/${videoID}" allowfullscreen></iframe>`;
-          }
-        } else if (u.hostname.includes('vimeo.com')) {
-          const vid = u.pathname.split('/').filter(Boolean).pop();
-          if (vid) {
-            embedHTML = `<iframe src="https://player.vimeo.com/video/${vid}" allowfullscreen></iframe>`;
-          }
-        } else if (u.hostname.includes('twitch.tv')) {
-          // Simple embed for twitch video URLs
-          const pathParts = u.pathname.split('/').filter(Boolean);
-          if (pathParts[0] === 'videos' && pathParts[1]) {
-            embedHTML = `<iframe src="https://player.twitch.tv/?video=${pathParts[1]}&parent=${window.location.hostname}" allowfullscreen></iframe>`;
-          } else {
-            embedHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-          }
-        } else {
-          embedHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-        }
-      } catch {
-        embedHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-      }
-      return embedHTML;
-    }
-
-    // --- VIP Check ---
-    async function checkVIP() {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('vip')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (error) {
-        submitMessage.textContent = 'Error checking VIP status.';
+    async function checkVipStatus() {
+      const user = supabase.auth.user();
+      currentUser = user;
+      if (!user) {
+        submitMessage.textContent = '⚠️ You must be logged in to submit games.';
         submitMessage.className = 'message error';
+        submitBtn.style.display = 'none';
         return false;
       }
 
-      isVIP = profile.vip;
-      if (!isVIP) {
-        submitMessage.textContent = 'You must be VIP to submit new games or videos.';
+      submitMessage.textContent = '⏳ Checking VIP access... Please wait';
+      submitMessage.className = 'message';
+      submitBtn.style.display = 'none';
+
+      const { data, error } = await supabase
+        .from('profile')
+        .select('vip')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        submitMessage.textContent = '❌ Error checking VIP status.';
         submitMessage.className = 'message error';
         submitBtn.style.display = 'none';
-        vipWarning.textContent = 'You must be VIP to post videos.';
-        vipWarning.className = 'message error';
-      } else {
+        return false;
+      }
+
+      if (data?.vip) {
+        isVip = true;
         submitMessage.textContent = '';
         submitBtn.style.display = 'block';
-        vipWarning.textContent = '';
+      } else {
+        submitMessage.textContent = '🚫 Only VIP members can submit games.';
+        submitMessage.className = 'message error';
+        submitBtn.style.display = 'none';
       }
-      return isVIP;
+
+      return isVip;
     }
 
-    // --- Load user's games ---
     async function loadGames() {
-      const { data: games, error } = await supabase
-        .from('game_submissions')
+      if (!currentUser) return;
+
+      const { data, error } = await supabase
+        .from('games')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        gamesList.textContent = 'Failed to load games: ' + error.message;
+        gamesList.innerHTML = `<li class="error">Failed to load games: ${error.message}</li>`;
         return;
       }
 
+      userGames = data || [];
+      if (userGames.length === 0) {
+        gamesList.innerHTML = '<li>No games submitted yet.</li>';
+        gameSelect.innerHTML = `<option value="">-- No games available --</option>`;
+        videoForm.querySelector('button').disabled = true;
+        return;
+      }
+
+      // Populate games list
       gamesList.innerHTML = '';
-      if (games.length === 0) {
-        gamesList.textContent = 'No games submitted yet.';
-        return;
-      }
-
-      games.forEach(game => {
+      for (const game of userGames) {
         const li = document.createElement('li');
-        li.className = 'game-info';
-
-        let coverHTML = '';
-        if (game.cover_url) {
-          coverHTML = `<img src="${game.cover_url}" alt="Cover of ${game.title}" style="max-width:150px; float:right; margin-left: 1rem; border-radius: 8px;">`;
-        }
-
         li.innerHTML = `
-          <div class="game-title">${game.title}</div>
-          ${coverHTML}
-          <div class="game-desc">${game.description}</div>
-          <div class="game-urls">
-            ${game.embed_url ? `<a href="${game.embed_url}" target="_blank" rel="noopener noreferrer">Embed URL</a>` : ''}
-            ${game.screenshot_url ? `<a href="${game.screenshot_url}" target="_blank" rel="noopener noreferrer">Screenshot</a>` : ''}
+          <div class="game-info">
+            <div class="game-title">${game.title}</div>
+            <div class="game-desc">${game.description || ''}</div>
+            <div class="game-urls">
+              ${game.embedurl ? `<a href="${game.embedurl}" target="_blank" rel="noopener noreferrer">Play</a>` : ''}
+              ${game.screenshoturl ? `<a href="${game.screenshoturl}" target="_blank" rel="noopener noreferrer">Screenshot</a>` : ''}
+              ${game.coverurl ? `<a href="${game.coverurl}" target="_blank" rel="noopener noreferrer">Cover</a>` : ''}
+            </div>
           </div>
           <button class="remove-btn" data-id="${game.id}">Remove</button>
-          <div style="clear:both;"></div>
         `;
         gamesList.appendChild(li);
-      });
 
-      // Add remove button handlers
-      document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.onclick = async () => {
-          if (!confirm('Are you sure you want to remove this game?')) return;
-
-          btn.disabled = true;
-          const gameId = btn.getAttribute('data-id');
-
-          const { error } = await supabase.from('game_submissions').delete().eq('id', gameId);
-
+        li.querySelector('.remove-btn').addEventListener('click', async () => {
+          if (!confirm(`Delete "${game.title}"? This action cannot be undone.`)) return;
+          const { error } = await supabase.from('games').delete().eq('id', game.id);
           if (error) {
-            alert('Failed to remove game: ' + error.message);
-            btn.disabled = false;
+            alert(`Failed to delete game: ${error.message}`);
           } else {
             loadGames();
-            loadGameOptions(); // refresh video dropdown if games change
+            loadVideos(); // Refresh videos tab since games changed
+            formMessage.textContent = `Deleted "${game.title}".`;
+            formMessage.className = 'message success';
           }
-        };
-      });
-    }
-
-    // --- Load games into dropdown for video submissions ---
-    async function loadGameOptions() {
-      const { data: games, error } = await supabase
-        .from('game_submissions')
-        .select('id, title')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-      if (!error) {
-        gameSelect.innerHTML = '<option value="">-- Choose a game --</option>';
-        games.forEach(game => {
-          const option = document.createElement('option');
-          option.value = game.id;
-          option.textContent = game.title;
-          gameSelect.appendChild(option);
         });
-      } else {
-        gameSelect.innerHTML = '<option value="">Failed to load games</option>';
       }
+
+      // Populate gameSelect for videos tab
+      gameSelect.innerHTML = '<option value="">-- Choose a game --</option>';
+      userGames.forEach(game => {
+        const opt = document.createElement('option');
+        opt.value = game.id;
+        opt.textContent = game.title;
+        gameSelect.appendChild(opt);
+      });
+      videoForm.querySelector('button').disabled = false;
     }
 
-    // --- Load videos ---
-    async function loadVideos() {
-      const { data: videos, error } = await supabase
-        .from('video_links')
-        .select('*')
-        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        linksList.textContent = 'Failed to load videos: ' + error.message;
+    addGameForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!isVip) {
+        alert('Only VIP users can submit games.');
         return;
       }
 
-      if (!videos || videos.length === 0) {
-        linksList.textContent = 'No videos posted yet.';
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const embedurl = document.getElementById('embedUrl').value.trim();
+      const screenshoturl = document.getElementById('screenshotUrl').value.trim() || null;
+      const coverurl = document.getElementById('coverUrl').value.trim() || null;
+
+      if (!title || !embedurl) {
+        alert('Title and Embed URL are required.');
+        return;
+      }
+
+      const { error } = await supabase.from('games').insert({
+        title,
+        description,
+        embedurl,
+        screenshoturl,
+        coverurl,
+        user_id: currentUser.id,
+        created_at: new Date()
+      });
+
+      if (error) {
+        alert(`Failed to add game: ${error.message}`);
+        return;
+      }
+
+      addGameForm.reset();
+      formMessage.textContent = `Game "${title}" added successfully!`;
+      formMessage.className = 'message success';
+
+      await loadGames();
+    });
+
+    // Videos tab functions
+    async function loadVideos() {
+      if (!currentUser) return;
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*, game_id(title)')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        linksList.innerHTML = `<div class="error">Failed to load videos: ${error.message}</div>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        linksList.innerHTML = '<p>No videos posted yet.</p>';
         return;
       }
 
       linksList.innerHTML = '';
-      for (const video of videos) {
-        // For better UX, also get game title for each video:
-        let gameTitle = '';
-        if (video.game_id) {
-          const { data: game, error: gameErr } = await supabase
-            .from('game_submissions')
-            .select('title')
-            .eq('id', video.game_id)
-            .single();
-          if (!gameErr) {
-            gameTitle = game.title;
-          }
-        }
+      data.forEach(video => {
         const div = document.createElement('div');
         div.className = 'link-embed';
         div.innerHTML = `
-          <strong>${video.title}</strong> <span class="game-label">[Game: ${gameTitle || 'N/A'}]</span><br/>
+          <strong>${video.title}</strong><br/>
           <a href="${video.video_url}" target="_blank" rel="noopener noreferrer">${video.video_url}</a><br/>
-          ${renderEmbed(video.video_url)}
+          <span class="game-label">Game: ${video.game_id?.title || 'Unknown'}</span>
         `;
         linksList.appendChild(div);
-      }
+      });
     }
 
-    // --- Add new game ---
-    addGameForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      if (!isVIP) {
-        submitMessage.textContent = 'You must be VIP to submit games.';
-        submitMessage.className = 'message error';
-        return;
-      }
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const embed_url = document.getElementById('embedUrl').value.trim();
-      const screenshot_url = document.getElementById('screenshotUrl').value.trim();
-      const cover_url = document.getElementById('coverUrl').value.trim();
-
-      submitBtn.disabled = true;
-      submitMessage.textContent = 'Submitting...';
-      submitMessage.className = 'message';
-
-      const { error } = await supabase.from('game_submissions').insert({
-        user_id: currentUser.id,
-        title,
-        description,
-        embed_url,
-        screenshot_url,
-        cover_url,
-        created_at: new Date().toISOString()
-      });
-
-      if (error) {
-        submitMessage.textContent = 'Failed to add game: ' + error.message;
-        submitMessage.className = 'message error';
-      } else {
-        submitMessage.textContent = 'Game added successfully!';
-        submitMessage.className = 'message success';
-        addGameForm.reset();
-        loadGames();
-        loadGameOptions();
-      }
-      submitBtn.disabled = false;
-    });
-
-    // --- Submit video ---
     videoForm.addEventListener('submit', async e => {
       e.preventDefault();
-      if (!isVIP) {
-        vipWarning.textContent = 'You must be VIP to post videos.';
+      if (!isVip) {
+        vipWarning.textContent = '🚫 Only VIP members can post videos.';
         vipWarning.className = 'message error';
         return;
       }
+      vipWarning.textContent = '';
 
       const title = videoTitleInput.value.trim();
       const video_url = videoInput.value.trim();
-      const game_id = gameSelect.value;
+      const selectedGameId = gameSelect.value;
 
-      if (!title || !video_url || !game_id) {
-        vipWarning.textContent = 'Please fill all fields and select a game.';
-        vipWarning.className = 'message error';
+      if (!title || !video_url || !selectedGameId) {
+        alert('Please fill all fields and select a game.');
         return;
       }
 
-      videoForm.querySelector('button').disabled = true;
-      videoInput.disabled = true;
-      videoTitleInput.disabled = true;
-      gameSelect.disabled = true;
-      vipWarning.textContent = 'Posting video...';
-      vipWarning.className = 'message';
-
-      const github_username = currentUser.user_metadata?.user_name || currentUser.email || 'unknown';
-
-      const { error } = await supabase.from('video_links').insert({
-        github_username,
-        game_id,
-        video_url,
+      const { error } = await supabase.from('videos').insert({
         title,
-        content: '',
-        created_at: new Date().toISOString()
+        video_url,
+        game_id: selectedGameId,
+        user_id: currentUser.id,
+        created_at: new Date()
       });
 
       if (error) {
-        vipWarning.textContent = 'Failed to post video: ' + error.message;
-        vipWarning.className = 'message error';
-      } else {
-        vipWarning.textContent = 'Video posted successfully!';
-        vipWarning.className = 'message success';
-        videoForm.reset();
-        loadVideos();
+        alert(`Failed to post video: ${error.message}`);
+        return;
       }
 
-      videoForm.querySelector('button').disabled = false;
-      videoInput.disabled = false;
-      videoTitleInput.disabled = false;
-      gameSelect.disabled = false;
-    });
+      videoForm.reset();
+      formMessage.textContent = 'Video posted successfully!';
+      formMessage.className = 'message success';
 
-    // --- Initialize after auth ---
-    async function initialize() {
-      await checkVIP();
-      await loadGames();
-      await loadGameOptions();
       await loadVideos();
-    }
-
-    // --- On page load: check session ---
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        window.location.href = 'login.html';
-      } else {
-        currentUser = data.session.user;
-        initialize();
-      }
     });
+
+    // Initialization
+    (async () => {
+      await checkVipStatus();
+      await loadGames();
+      await loadVideos();
+    })();
+
   </script>
 </body>
 </html>
