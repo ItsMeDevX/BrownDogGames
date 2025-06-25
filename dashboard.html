@@ -569,7 +569,6 @@ authBar.appendChild(userInfo);
       transition: background 0.3s ease;
       width: 150px;
       align-self: center;
-      display: none; /* hidden by default for VIP delay */
     }
     form#addGameForm button:hover {
       background: #ff8edb;
@@ -610,25 +609,61 @@ authBar.appendChild(userInfo);
     <label for="coverUrl">Cover URL (optional):</label>
     <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
-    <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-    <button type="submit" id="submitBtn">Add New Game</button>
-  </form>
+   
+<!-- ✅ Add Game Form -->
+<form id="addGameForm">
+  <!-- Your other form inputs go here -->
 
+  <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+  <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
+</form>
+
+<!-- ✅ VIP Protection Script -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  async function protectSubmitButton() {
+    const { data } = await supabase.auth.getSession();
+    const user = data?.session?.user;
+    const submitBtn = document.getElementById('submitBtn');
+    const submitMessage = document.getElementById('submitMessage');
+
+    if (!user || !submitBtn || !submitMessage) return;
+
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('is_vip')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !userData?.is_vip) {
+      submitMessage.textContent = '🚫 VIP Only — You must be a VIP to add new games.';
+      return;
+    }
+
+    // Show countdown
+    let seconds = 30;
+    const countdown = setInterval(() => {
+      submitMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(countdown);
+      submitMessage.style.display = 'none';
+      submitBtn.style.display = 'inline-block';
+    }, 30000);
+  }
+
+  protectSubmitButton();
+</script>
+
+  
   <p class="message" id="formMessage" aria-live="polite"></p>
-
-  <button id="terms-button" style="
-    background-color: #ff69b4;
-    color: #1e1b2e;
-    border: none;
-    padding: 0.5rem 1rem;
-    font-weight: bold;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  ">
-    Submission Terms
-  </button>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -637,40 +672,6 @@ authBar.appendChild(userInfo);
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
-
-    async function protectSubmitButton() {
-      const { data } = await supabase.auth.getSession();
-      const user = data?.session?.user;
-      const submitBtn = document.getElementById('submitBtn');
-      const submitMessage = document.getElementById('submitMessage');
-
-      if (!user || !submitBtn || !submitMessage) return;
-
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('id', user.id)
-        .single();
-
-      if (error || !userData?.is_vip) {
-        submitMessage.textContent = '🚫 VIP Only — You must be a VIP to add new games.';
-        return;
-      }
-
-      // Show countdown
-      let seconds = 30;
-      const countdown = setInterval(() => {
-        submitMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(countdown);
-        submitMessage.style.display = 'none';
-        submitBtn.style.display = 'inline-block';
-      }, 30000);
-    }
-
-    protectSubmitButton();
 
     const gamesList = document.getElementById('games-list');
     const addGameForm = document.getElementById('addGameForm');
@@ -825,13 +826,30 @@ authBar.appendChild(userInfo);
         loadGames();
       }
     })();
-
-    const termsButton = document.getElementById('terms-button');
-    termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
-    termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
-    termsButton.addEventListener('click', () => {
-      window.location.href = 'submission-terms.html';
-    });
   </script>
+
+<button id="terms-button" style="
+  background-color: #ff69b4;
+  color: #1e1b2e;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+">
+  Submission Terms
+</button>
+
+<script>
+  const termsButton = document.getElementById('terms-button');
+  termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
+  termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
+  termsButton.addEventListener('click', () => {
+    window.location.href = 'submission-terms.html';
+  });
+</script>
+  
 </body>
 </html>
