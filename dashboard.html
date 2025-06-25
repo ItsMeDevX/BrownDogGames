@@ -564,8 +564,12 @@ authBar.appendChild(userInfo);
       transition: background 0.3s ease;
       align-self: center;
     }
-    button:hover {
+    button:hover:enabled {
       background: #ff8edb;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
     }
     .message {
       margin-top: 1rem;
@@ -591,40 +595,71 @@ authBar.appendChild(userInfo);
       color: #bbb;
       margin-top: 0.5rem;
     }
+
+    /* Tabs styles */
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .tab-btn.active {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+    }
+    .tab-btn.inactive {
+      background-color: #3b2750;
+      color: #fefefe;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Your Submitted Games</h1>
-  <ul id="games-list"></ul>
+  <h1>Your Submitted Games & Videos</h1>
 
-  <form id="addGameForm">
-    <label for="title">Game Title:</label>
-    <input type="text" id="title" required />
+  <!-- Tabs -->
+  <div style="display:flex; justify-content:center; gap:1rem; margin-bottom: 2rem;">
+    <button id="tabGamesBtn" class="tab-btn active">Games</button>
+    <button id="tabVideosBtn" class="tab-btn inactive">Videos</button>
+  </div>
 
-    <label for="description">Description:</label>
-    <textarea id="description" rows="4" required></textarea>
+  <!-- Games Tab Content -->
+  <div id="tabGames" style="display: block;">
+    <ul id="games-list"></ul>
 
-    <label for="embedUrl">Embed URL:</label>
-    <input type="url" id="embedUrl" required />
+    <form id="addGameForm">
+      <label for="title">Game Title:</label>
+      <input type="text" id="title" required />
 
-    <label for="screenshotUrl">Screenshot URL (optional):</label>
-    <input type="url" id="screenshotUrl" />
+      <label for="description">Description:</label>
+      <textarea id="description" rows="4" required></textarea>
 
-    <label for="coverUrl">Cover URL (optional):</label>
-    <input type="url" id="coverUrl" />
+      <label for="embedUrl">Embed URL:</label>
+      <input type="url" id="embedUrl" required />
 
-    <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-    <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
-  </form>
+      <label for="screenshotUrl">Screenshot URL (optional):</label>
+      <input type="url" id="screenshotUrl" />
 
-  <h2>🎬 Video Links</h2>
-  <form id="videoForm">
-    <input id="video-url" type="url" placeholder="Paste video URL..." required />
-    <button type="submit">Post Video</button>
-    <div id="vipWarning" class="message"></div>
-  </form>
-  <div id="links-list"></div>
+      <label for="coverUrl">Cover URL (optional):</label>
+      <input type="url" id="coverUrl" />
+
+      <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+      <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
+    </form>
+  </div>
+
+  <!-- Videos Tab Content -->
+  <div id="tabVideos" style="display: none;">
+    <h2>🎬 Video Links</h2>
+    <form id="videoForm">
+      <input id="video-url" type="url" placeholder="Paste video URL..." required />
+      <button type="submit">Post Video</button>
+      <div id="vipWarning" class="message"></div>
+    </form>
+    <div id="links-list"></div>
+  </div>
 
   <p class="message" id="formMessage" aria-live="polite"></p>
 
@@ -636,6 +671,30 @@ authBar.appendChild(userInfo);
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
+
+    // Tabs toggling
+    const tabGamesBtn = document.getElementById('tabGamesBtn');
+    const tabVideosBtn = document.getElementById('tabVideosBtn');
+    const tabGames = document.getElementById('tabGames');
+    const tabVideos = document.getElementById('tabVideos');
+
+    tabGamesBtn.addEventListener('click', () => {
+      tabGames.style.display = 'block';
+      tabVideos.style.display = 'none';
+      tabGamesBtn.classList.add('active');
+      tabGamesBtn.classList.remove('inactive');
+      tabVideosBtn.classList.remove('active');
+      tabVideosBtn.classList.add('inactive');
+    });
+
+    tabVideosBtn.addEventListener('click', () => {
+      tabGames.style.display = 'none';
+      tabVideos.style.display = 'block';
+      tabVideosBtn.classList.add('active');
+      tabVideosBtn.classList.remove('inactive');
+      tabGamesBtn.classList.remove('active');
+      tabGamesBtn.classList.add('inactive');
+    });
 
     const gamesList = document.getElementById('games-list');
     const addGameForm = document.getElementById('addGameForm');
@@ -697,9 +756,14 @@ authBar.appendChild(userInfo);
           clearInterval(countdown);
           submitMessage.style.display = 'none';
           submitBtn.style.display = 'inline-block';
+          submitBtn.disabled = false;
+          videoForm.querySelector('button').disabled = false;
+          videoInput.disabled = false;
+          vipWarning.textContent = '';
         }, 30000);
       } else {
         submitMessage.textContent = '🚫 VIP Only — You must be a VIP to add new games.';
+        submitBtn.style.display = 'inline-block';
         submitBtn.disabled = true;
         videoForm.querySelector('button').disabled = true;
         videoInput.disabled = true;
@@ -726,9 +790,9 @@ authBar.appendChild(userInfo);
             <div class="game-title">${game.title}</div>
             <div class="game-desc">${game.description}</div>
             <div class="game-urls">
-              <a href="${game.embed_url}" target="_blank">Play</a>
-              ${game.screenshot_url ? `<a href="${game.screenshot_url}" target="_blank">Screenshot</a>` : ''}
-              ${game.cover_url ? `<a href="${game.cover_url}" target="_blank">Cover</a>` : ''}
+              <a href="${game.embed_url}" target="_blank" rel="noopener noreferrer">Play</a>
+              ${game.screenshot_url ? `<a href="${game.screenshot_url}" target="_blank" rel="noopener noreferrer">Screenshot</a>` : ''}
+              ${game.cover_url ? `<a href="${game.cover_url}" target="_blank" rel="noopener noreferrer">Cover</a>` : ''}
             </div>
           </div>
         `;
@@ -737,7 +801,7 @@ authBar.appendChild(userInfo);
         btn.textContent = 'Remove';
         btn.onclick = async () => {
           if (!confirm(`Remove "${game.title}"?`)) return;
-          await supabase.from('game_submissions').delete().eq('id', game.id).eq('user_id', currentUser.id);
+          await supabase.from('game_submissions').delete().eq('id', game.id);
           loadGames();
         };
         li.appendChild(btn);
@@ -745,44 +809,79 @@ authBar.appendChild(userInfo);
       });
     }
 
-    addGameForm.onsubmit = async e => {
+    addGameForm.addEventListener('submit', async e => {
       e.preventDefault();
       submitBtn.disabled = true;
-      const data = {
+      showMessage('Submitting game...', '');
+
+      const newGame = {
         user_id: currentUser.id,
-        github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
-        avatar_url: currentUser.user_metadata?.avatar_url || null,
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        embed_url: document.getElementById('embedUrl').value.trim(),
-        screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-        cover_url: document.getElementById('coverUrl').value.trim() || null,
-        created_at: new Date().toISOString()
+        title: addGameForm.title.value.trim(),
+        description: addGameForm.description.value.trim(),
+        embed_url: addGameForm.embedUrl.value.trim(),
+        screenshot_url: addGameForm.screenshotUrl.value.trim() || null,
+        cover_url: addGameForm.coverUrl.value.trim() || null,
       };
-      const { error } = await supabase.from('game_submissions').insert([data]);
-      showMessage(error ? 'Error adding game' : 'Game added!', error ? 'error' : 'success');
-      if (!error) {
+
+      const { error } = await supabase.from('game_submissions').insert(newGame);
+      if (error) {
+        showMessage('Failed to submit game: ' + error.message, 'error');
+      } else {
+        showMessage('Game submitted successfully!', 'success');
         addGameForm.reset();
         loadGames();
       }
       submitBtn.disabled = false;
-    };
+    });
 
-    videoForm.onsubmit = async e => {
+    // Videos handling
+    async function fetchVideos() {
+      const { data, error } = await supabase
+        .from('video_links')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+      return data || [];
+    }
+
+    async function loadVideos() {
+      const videos = await fetchVideos();
+      loadVideoLinks(videos);
+    }
+
+    videoForm.addEventListener('submit', async e => {
       e.preventDefault();
       const url = videoInput.value.trim();
-      const embedHTML = renderEmbed(url);
-      if (!embedHTML) return showMessage('Unsupported URL format', 'error');
-      const div = document.createElement('div');
-      div.className = 'link-embed';
-      div.innerHTML = embedHTML;
-      linksList.appendChild(div);
-      videoInput.value = '';
-    };
+      if (!url) return;
 
-    checkVIP().then(loadGames);
+      videoForm.querySelector('button').disabled = true;
+      videoInput.disabled = true;
+      vipWarning.textContent = 'Posting video...';
+
+      const { error } = await supabase.from('video_links').insert({ user_id: currentUser.id, url });
+      if (error) {
+        vipWarning.textContent = 'Failed to post video: ' + error.message;
+      } else {
+        vipWarning.textContent = 'Video posted successfully!';
+        videoInput.value = '';
+        loadVideos();
+      }
+      videoForm.querySelector('button').disabled = false;
+      videoInput.disabled = false;
+    });
+
+    // Initialize
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        window.location.href = 'login.html';
+      } else {
+        currentUser = data.session.user;
+        checkVIP().then(() => {
+          loadGames();
+          loadVideos();
+        });
+      }
+    });
   </script>
-
 </body>
 </html>
-
