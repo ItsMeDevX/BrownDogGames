@@ -1216,6 +1216,14 @@
       box-shadow: 0 0 8px #ff69b488;
     }
 
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      margin-top: 4px;
+    }
+
     .remove-btn {
       background-color: #ff4c4c;
       color: white;
@@ -1331,7 +1339,7 @@
 
     function showMessage(text, type = '') {
       message.textContent = text;
-      message.className = `message ${type}`;
+      message.className = message ${type};
     }
 
     async function checkAuth() {
@@ -1386,7 +1394,7 @@
         removeBtn.className = 'remove-btn';
         removeBtn.textContent = 'Remove';
         removeBtn.onclick = async () => {
-          if (!confirm(`Remove "${art.title}"?`)) return;
+          if (!confirm(Remove "${art.title}"?)) return;
           const { error } = await supabase
             .from('user_art')
             .delete()
@@ -1402,7 +1410,14 @@
         li.appendChild(title);
         li.appendChild(description);
         li.appendChild(img);
-        // Avatar is NOT appended here, but it is still saved in the DB.
+
+        if (art.avatar_url) {
+          const avatar = document.createElement('img');
+          avatar.src = art.avatar_url;
+          avatar.alt = 'User avatar';
+          avatar.className = 'avatar';
+          li.appendChild(avatar);
+        }
 
         li.appendChild(removeBtn);
         artList.appendChild(li);
