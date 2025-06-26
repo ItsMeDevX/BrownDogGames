@@ -1221,7 +1221,6 @@
       height: 48px;
       border-radius: 50%;
       border: 2px solid #ff69b4;
-      margin-top: 4px;
     }
 
     .remove-btn {
@@ -1339,7 +1338,7 @@
 
     function showMessage(text, type = '') {
       message.textContent = text;
-      message.className = 'message ' + type;
+      message.className = `message ${type}`;
     }
 
     async function checkAuth() {
@@ -1377,9 +1376,27 @@
       artPieces.forEach(art => {
         const li = document.createElement('li');
 
+        // Title + avatar container
+        const titleContainer = document.createElement('div');
+        titleContainer.style.display = 'flex';
+        titleContainer.style.alignItems = 'center';
+        titleContainer.style.gap = '10px';
+
         const title = document.createElement('div');
         title.className = 'art-title';
         title.textContent = art.title;
+
+        titleContainer.appendChild(title);
+
+        if (art.avatar_url) {
+          const avatar = document.createElement('img');
+          avatar.src = art.avatar_url;
+          avatar.alt = 'User avatar';
+          avatar.className = 'avatar';
+          titleContainer.appendChild(avatar);
+        }
+
+        li.appendChild(titleContainer);
 
         const description = document.createElement('div');
         description.className = 'art-description';
@@ -1389,6 +1406,9 @@
         img.src = art.image_url;
         img.alt = art.title;
         img.className = 'art-image';
+
+        li.appendChild(description);
+        li.appendChild(img);
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-btn';
@@ -1406,18 +1426,6 @@
             loadArt();
           }
         };
-
-        li.appendChild(title);
-        li.appendChild(description);
-        li.appendChild(img);
-
-        if (art.avatar_url) {
-          const avatar = document.createElement('img');
-          avatar.src = art.avatar_url;
-          avatar.alt = 'User avatar';
-          avatar.className = 'avatar';
-          li.appendChild(avatar);
-        }
 
         li.appendChild(removeBtn);
         artList.appendChild(li);
