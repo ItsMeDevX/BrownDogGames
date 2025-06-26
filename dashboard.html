@@ -805,100 +805,112 @@ authBar.appendChild(userInfo);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Your Submitted Videos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
+  <title>Your Submitted Videos</title>
   <style>
     body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background: #1b1b2e;
-      color: #fefefe;
+      font-family: Arial, sans-serif;
+      background: #1e1b2e;
+      color: #fff;
+      padding: 1rem;
       max-width: 700px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      margin: auto;
     }
     h1 {
-      color: #ff4f9f;
       text-align: center;
       margin-bottom: 1rem;
     }
-    ul {
-      list-style-type: none;
+    ul#videos-list {
+      list-style: none;
       padding: 0;
       margin-bottom: 2rem;
     }
-    li {
-      background: #2f1a39;
+    ul#videos-list li {
+      background: #29254b;
       margin-bottom: 1rem;
       padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 5px #ff4f9f;
-      position: relative;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .video-info {
+      max-width: 75%;
     }
     .video-title {
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       margin-bottom: 0.3rem;
     }
-    .video-content {
-      font-style: italic;
-      margin-bottom: 0.7rem;
+    .video-desc {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
     }
-    .video-url a {
+    .video-urls a {
+      margin-right: 1rem;
       color: #ff69b4;
-      text-decoration: underline;
-      word-break: break-word;
+      text-decoration: none;
+      font-weight: bold;
     }
     button.remove-btn {
-      position: absolute;
-      right: 1rem;
-      top: 1rem;
-      background: #ff4f9f;
-      color: #1b1b2e;
+      background: #ff4466;
       border: none;
-      padding: 0.3rem 0.7rem;
       border-radius: 6px;
+      color: white;
+      padding: 0.5rem 1rem;
       cursor: pointer;
       font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    button.remove-btn:hover {
+      background: #ff2a4c;
+    }
+    form {
+      background: #29254b;
+      padding: 1rem;
+      border-radius: 8px;
     }
     form label {
       display: block;
       margin-top: 1rem;
       font-weight: bold;
     }
-    form input[type="text"],
-    form input[type="url"],
-    form textarea {
+    form input, form textarea {
       width: 100%;
       padding: 0.5rem;
-      margin-top: 0.3rem;
-      border-radius: 6px;
+      margin-top: 0.25rem;
+      border-radius: 4px;
       border: none;
-      font-family: 'Rubik Mono One', monospace;
       font-size: 1rem;
-      background: #3a2254;
-      color: #fefefe;
     }
     form textarea {
       resize: vertical;
-      min-height: 80px;
     }
-    form button[type="submit"] {
-      margin-top: 1.5rem;
-      background: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
-      padding: 0.7rem 1.5rem;
+    button#submitBtn {
+      margin-top: 1rem;
+      background-color: #ff69b4;
       border: none;
+      padding: 0.75rem 1.5rem;
+      color: #1e1b2e;
+      font-weight: bold;
+      font-size: 1rem;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 1rem;
+      transition: background-color 0.2s;
     }
-    #formMessage {
+    button#submitBtn:disabled {
+      background-color: #a45580;
+      cursor: not-allowed;
+    }
+    .message {
       margin-top: 1rem;
       font-weight: bold;
-      min-height: 1.5rem;
-      color: #ff4f9f;
+    }
+    .message.error {
+      color: #ff4466;
+    }
+    .message.success {
+      color: #6aff6a;
     }
   </style>
 </head>
@@ -908,56 +920,57 @@ authBar.appendChild(userInfo);
 
   <ul id="videos-list"></ul>
 
-  <form id="addVideoForm" autocomplete="off">
+  <form id="addVideoForm">
     <label for="title">Video Title:</label>
-    <input type="text" id="title" placeholder="Enter video title" required />
+    <input type="text" id="title" placeholder="Enter your video title" required />
 
     <label for="content">Description:</label>
-    <textarea id="content" placeholder="Write a short description" required></textarea>
+    <textarea id="content" rows="4" placeholder="Brief description of your video" required></textarea>
 
     <label for="videoUrl">Video URL:</label>
-    <input type="url" id="videoUrl" placeholder="Paste video URL" required />
+    <input type="url" id="videoUrl" placeholder="URL of the video" required />
 
-    <label for="avatarUrl">Your Avatar URL (optional):</label>
-    <input type="url" id="avatarUrl" placeholder="Link to your avatar image" />
+    <label for="gameId">Game ID (optional):</label>
+    <input type="text" id="gameId" placeholder="Associated Game ID" />
 
     <button type="submit" id="submitBtn">Add New Video</button>
   </form>
 
-  <p id="formMessage" aria-live="polite"></p>
+  <p class="message" id="formMessage" aria-live="polite"></p>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
     const videosList = document.getElementById('videos-list');
     const addVideoForm = document.getElementById('addVideoForm');
     const message = document.getElementById('formMessage');
     const submitBtn = document.getElementById('submitBtn');
 
-    let currentUser = null;
+    let currentUser;
 
     function showMessage(text, type = '') {
       message.textContent = text;
-      message.style.color = type === 'error' ? '#ff5555' : '#ff4f9f';
+      message.className = `message ${type}`;
     }
 
     async function checkAuth() {
       const { data: { session }, error } = await supabase.auth.getSession();
+
       if (error || !session?.user) {
-        // Redirect to login page (adjust URL as needed)
         window.location.href = 'login.html';
         return false;
       }
+
       currentUser = session.user;
       return true;
     }
 
-    // Load current user's videos
-    async function loadVideos() {
+    async function fetchVideos() {
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
@@ -966,59 +979,81 @@ authBar.appendChild(userInfo);
 
       if (error) {
         showMessage('Failed to load videos: ' + error.message, 'error');
-        return;
+        return [];
       }
+      return data;
+    }
 
+    async function loadVideos() {
+      const videos = await fetchVideos();
       videosList.innerHTML = '';
-      if (!data || data.length === 0) {
+      if (videos.length === 0) {
         videosList.innerHTML = '<li>No videos submitted yet.</li>';
         return;
       }
-
-      data.forEach(video => {
+      videos.forEach(video => {
         const li = document.createElement('li');
 
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'video-title';
-        titleDiv.textContent = video.title || '(no title)';
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'video-info';
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'video-content';
-        contentDiv.textContent = video.content || '';
+        const title = document.createElement('div');
+        title.className = 'video-title';
+        title.textContent = video.title;
 
-        const urlDiv = document.createElement('div');
-        urlDiv.className = 'video-url';
-        const a = document.createElement('a');
-        a.href = video.video_url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.textContent = video.video_url;
-        urlDiv.appendChild(a);
+        const desc = document.createElement('div');
+        desc.className = 'video-desc';
+        desc.textContent = video.content;
 
-        li.appendChild(titleDiv);
-        li.appendChild(contentDiv);
-        li.appendChild(urlDiv);
+        const urlsDiv = document.createElement('div');
+        urlsDiv.className = 'video-urls';
+
+        const videoLink = document.createElement('a');
+        videoLink.href = video.video_url;
+        videoLink.target = '_blank';
+        videoLink.rel = 'noopener noreferrer';
+        videoLink.textContent = 'Watch Video';
+
+        urlsDiv.appendChild(videoLink);
+
+        if (video.game_id) {
+          const gameIdSpan = document.createElement('span');
+          gameIdSpan.style.marginLeft = '1rem';
+          gameIdSpan.style.fontStyle = 'italic';
+          gameIdSpan.textContent = `Game ID: ${video.game_id}`;
+          urlsDiv.appendChild(gameIdSpan);
+        }
+
+        infoDiv.appendChild(title);
+        infoDiv.appendChild(desc);
+        infoDiv.appendChild(urlsDiv);
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-btn';
         removeBtn.textContent = 'Remove';
+
         removeBtn.onclick = async () => {
           if (!confirm(`Remove "${video.title}"?`)) return;
-          const { error } = await supabase
+
+          console.log('Attempting to delete video id:', video.id);
+
+          const { data, error } = await supabase
             .from('game_videos')
             .delete()
-            .eq('id', video.id)
-            .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email);
+            .eq('id', video.id);
+
           if (error) {
+            console.error('Delete error:', error);
             showMessage('Error removing video: ' + error.message, 'error');
           } else {
+            console.log('Deleted data:', data);
             showMessage('Video removed.', 'success');
             loadVideos();
           }
         };
 
+        li.appendChild(infoDiv);
         li.appendChild(removeBtn);
-
         videosList.appendChild(li);
       });
     }
@@ -1028,26 +1063,19 @@ authBar.appendChild(userInfo);
       submitBtn.disabled = true;
       showMessage('');
 
-      const title = document.getElementById('title').value.trim();
-      const content = document.getElementById('content').value.trim();
-      const videoUrl = document.getElementById('videoUrl').value.trim();
-      const avatarUrl = document.getElementById('avatarUrl').value.trim() || null;
-
-      const githubUser = currentUser.user_metadata?.user_name || currentUser.email;
-
       const data = {
-        title,
-        content,
-        video_url: videoUrl,
-        avatar_url: avatarUrl,
-        github_username: githubUser,
-        created_at: new Date().toISOString(),
-        game_id: '0' // or you can make a select dropdown to choose game_id if you want
+        github_username: currentUser.user_metadata?.user_name || currentUser.email,
+        avatar_url: currentUser.user_metadata?.avatar_url || null,
+        title: document.getElementById('title').value.trim(),
+        content: document.getElementById('content').value.trim(),
+        video_url: document.getElementById('videoUrl').value.trim(),
+        game_id: document.getElementById('gameId').value.trim() || null,
+        created_at: new Date().toISOString()
       };
 
       const { error } = await supabase.from('game_videos').insert([data]);
       if (error) {
-        showMessage('Failed to add video: ' + error.message, 'error');
+        showMessage('Adding video failed: ' + error.message, 'error');
       } else {
         showMessage('Video added successfully!', 'success');
         addVideoForm.reset();
@@ -1063,6 +1091,5 @@ authBar.appendChild(userInfo);
       }
     })();
   </script>
-
 </body>
 </html>
