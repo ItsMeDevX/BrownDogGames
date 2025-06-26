@@ -1336,52 +1336,34 @@
     }
 
     async function checkAuth() {
-      console.log('Checking auth session...');
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Auth error:', error);
-      }
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        console.log('No session found, redirecting...');
         window.location.href = 'login.html';
         return false;
       }
       currentUser = session.user;
-      console.log('Logged in user:', currentUser);
       return true;
     }
 
-    async function fetchArt() {
-      if (!currentUser) return [];
-
-      console.log('Fetching art for user:', currentUser.user_metadata?.user_name || currentUser.email);
-
+    async function loadArt() {
       const { data, error } = await supabase
         .from('user_art')
         .select('*')
-        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
         .order('created_at', { ascending: false });
 
       if (error) {
         showMessage('Failed to load art: ' + error.message, 'error');
-        console.error('Fetch art error:', error);
-        return [];
+        return;
       }
-      return data;
-    }
 
-    async function loadArt() {
-      const artPieces = await fetchArt();
       artList.innerHTML = '';
-
-      if (artPieces.length === 0) {
+      if (!data || data.length === 0) {
         artList.innerHTML = '<li>No art submitted yet.</li>';
         return;
       }
 
-      for (const art of artPieces) {
+      data.forEach(art => {
         const li = document.createElement('li');
-
         li.innerHTML = `
           <div class="art-title">${art.title}</div>
           <div class="art-description">${art.description}</div>
@@ -1393,10 +1375,7 @@
         removeBtn.className = 'remove-btn';
         removeBtn.onclick = async () => {
           if (!confirm(`Remove "${art.title}"?`)) return;
-          const { error } = await supabase
-            .from('user_art')
-            .delete()
-            .eq('id', art.id);
+          const { error } = await supabase.from('user_art').delete().eq('id', art.id);
           if (error) {
             showMessage('Error removing art: ' + error.message, 'error');
           } else {
@@ -1407,55 +1386,49 @@
 
         li.appendChild(removeBtn);
         artList.appendChild(li);
-      }
+      });
     }
 
-    addArtForm.onsubmit = async (e) => {
+    addArtForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       submitBtn.disabled = true;
       showMessage('');
-      console.log('Submitting form...');
 
       const title = document.getElementById('title').value.trim();
       const description = document.getElementById('description').value.trim();
-      const imageUrl = document.getElementById('imageUrl').value.trim();
+      const image_url = document.getElementById('imageUrl').value.trim();
 
-      console.log({ title, description, imageUrl });
-
-      if (!title || !description || !imageUrl) {
+      if (!title || !description || !image_url) {
         showMessage('Please fill in all fields.', 'error');
         submitBtn.disabled = false;
         return;
       }
 
-      const data = {
+      const newArt = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email,
         avatar_url: currentUser.user_metadata?.avatar_url || '',
         title,
         description,
-        image_url: imageUrl,
+        image_url,
         created_at: new Date().toISOString()
       };
 
-      console.log('Inserting data:', data);
-
-      const { error } = await supabase.from('user_art').insert([data]);
-
+      const { error } = await supabase.from('user_art').insert([newArt]);
       if (error) {
-        showMessage('Adding art failed: ' + error.message, 'error');
-        console.error('Insert error:', error);
+        showMessage('Failed to add art: ' + error.message, 'error');
       } else {
         showMessage('Art added successfully!', 'success');
         addArtForm.reset();
         loadArt();
       }
       submitBtn.disabled = false;
-    };
+    });
 
-    // On load
     (async () => {
       const loggedIn = await checkAuth();
-      if (loggedIn) loadArt();
+      if (loggedIn) {
+        await loadArt();
+      }
     })();
   </script>
 
