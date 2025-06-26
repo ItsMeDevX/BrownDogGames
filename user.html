@@ -566,6 +566,8 @@
       border-radius: 8px;
       margin-bottom: 10px;
       background-color: black;
+      max-height: 200px;
+      max-width: 100%;
     }
 
     .play-link {
@@ -805,7 +807,7 @@
             const img = document.createElement('img');
             img.className = 'thumbnail';
             img.src = convertDriveLinkToThumbnail(art.image_url);
-            img.alt = art.title || 'User Art';
+            img.alt = `${art.title || 'Art'} thumbnail`;
             card.appendChild(img);
           }
 
@@ -820,7 +822,7 @@
         });
       }
 
-      // Load Videos (fixed table name to game_videos)
+      // Load Videos (FULL updated function)
       async function loadVideos() {
         const { data, error } = await supabase
           .from('game_videos')
@@ -853,7 +855,15 @@
             videoEl.className = 'video-player';
             videoEl.controls = true;
             videoEl.src = video.video_url;
+            videoEl.style.maxWidth = '100%';
+            videoEl.style.maxHeight = '200px';
+            videoEl.preload = 'metadata';
             card.appendChild(videoEl);
+          } else {
+            const noVideoMsg = document.createElement('p');
+            noVideoMsg.className = 'desc';
+            noVideoMsg.textContent = 'No video URL available.';
+            card.appendChild(noVideoMsg);
           }
 
           if (video.content) {
@@ -867,89 +877,90 @@
         });
       }
 
-      // Select game and load chat for it
+      // Select game and load chat
       async function selectGame(gameId) {
-        if (selectedGameId === gameId) return; // no change
-
         selectedGameId = gameId;
 
-        // Visually mark selected game
+        // Highlight selected game card
         document.querySelectorAll('#games .card').forEach(card => {
-          card.classList.toggle('selected', card.dataset.gameId === gameId);
+          if (card.dataset.gameId === gameId) {
+            card.classList.add('selected');
+          } else {
+            card.classList.remove('selected');
+          }
         });
 
-        // Show chat container
-        chatContainer.style.display = 'block';
-
-        // Load chat messages
-        await loadChatMessages(gameId);
-
-        // Unsubscribe from previous realtime if any
-        if (currentChatSubscription) {
-          await supabase.removeChannel(currentChatSubscription);
-          currentChatSubscription = null;
+        if (!selectedGameId) {
+          chatContainer.style.display = 'none';
+          return;
         }
 
-        // Subscribe to new chat messages for selected game
-        currentChatSubscription = supabase
-          .channel('chat:' + gameId)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `game_id=eq.${gameId}` }, payload => {
-            appendMessage(payload.new);
-          })
-          .subscribe();
+        chatContainer.style.display = 'block';
+        loadChatMessages();
+        subscribeToChat();
       }
 
-      // Load chat messages for a game
-      async function loadChatMessages(gameId) {
-        messagesDiv.innerHTML = '<p>Loading messages...</p>';
-
+      // Load chat messages for the selected game
+      async function loadChatMessages() {
+        if (!selectedGameId) return;
         const { data, error } = await supabase
-          .from('chat_messages')
+          .from('game_chat')
           .select('*')
-          .eq('game_id', gameId)
+          .eq('game_id', selectedGameId)
           .order('created_at', { ascending: true });
 
         if (error) {
-          messagesDiv.innerHTML = `<p class="no-content">❌ Error loading chat messages: ${error.message}</p>`;
+          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading chat messages: ${error.message}</div>`;
           return;
         }
 
         if (!data.length) {
-          messagesDiv.innerHTML = `<p class="no-content">No chat messages yet for this game.</p>`;
+          messagesDiv.innerHTML = `<p class="no-content">No messages yet for this game.</p>`;
           return;
         }
 
         messagesDiv.innerHTML = '';
-        data.forEach(msg => appendMessage(msg));
-      }
+        data.forEach(msg => {
+          const msgDiv = document.createElement('div');
+          msgDiv.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
+          messagesDiv.appendChild(msgDiv);
+        });
 
-      // Append a chat message to the messages div
-      function appendMessage(msg) {
-        const div = document.createElement('div');
-        const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        div.innerHTML = `<strong>${msg.username || 'Anon'}</strong> [${time}]: ${escapeHtml(msg.message)}`;
-        messagesDiv.appendChild(div);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      // Escape HTML special chars in messages
-      function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+      // Subscribe to real-time chat updates
+      function subscribeToChat() {
+        if (currentChatSubscription) {
+          supabase.removeSubscription(currentChatSubscription);
+          currentChatSubscription = null;
+        }
+        if (!selectedGameId) return;
+
+        currentChatSubscription = supabase
+          .from(`game_chat:game_id=eq.${selectedGameId}`)
+          .on('INSERT', payload => {
+            const newMsg = payload.new;
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = `<strong>${newMsg.username}:</strong> ${newMsg.message}`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          })
+          .subscribe();
       }
 
-      // Handle chat form submit
+      // Handle chat form submission
       form.addEventListener('submit', async e => {
         e.preventDefault();
+        if (!selectedGameId) return;
         const message = msgInput.value.trim();
-        if (!message || !selectedGameId) return;
+        if (!message) return;
 
-        const { error } = await supabase.from('chat_messages').insert([{
+        const { error } = await supabase.from('game_chat').insert({
           game_id: selectedGameId,
           username,
-          message
-        }]);
+          message,
+        });
 
         if (error) {
           alert('Error sending message: ' + error.message);
@@ -959,7 +970,7 @@
         msgInput.value = '';
       });
 
-      // Initialize all loads
+      // Initial load
       loadGames();
       loadArt();
       loadVideos();
