@@ -1154,3 +1154,290 @@
 
 </body>
 </html>
+
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Submitted Art</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2.8rem;
+      color: #00e1ff;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    #art-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 2rem;
+    }
+    #art-list li {
+      background-color: #2d1a3a;
+      margin-bottom: 12px;
+      padding: 1rem;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .art-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #00e1ff;
+    }
+    .art-description {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    .art-image {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 0 8px #00e1ff88;
+    }
+    .art-meta {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+    .remove-btn {
+      background-color: #ff4c4c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      align-self: flex-end;
+      transition: background-color 0.2s;
+    }
+    .remove-btn:hover {
+      background-color: #ff1a1a;
+    }
+    form#addArtForm {
+      background-color: #2d1a3a;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #00e1ff88;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    form#addArtForm label {
+      font-weight: bold;
+      color: #00e1ff;
+    }
+    form#addArtForm input,
+    form#addArtForm textarea {
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1rem;
+      background-color: #3b2750;
+      color: #fefefe;
+    }
+    form#addArtForm button {
+      background: #00e1ff;
+      color: #1e1b2e;
+      font-weight: bold;
+      padding: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      width: 150px;
+      align-self: center;
+      transition: background 0.3s ease;
+    }
+    form#addArtForm button:hover {
+      background: #66efff;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .error {
+      color: #ff8d8d;
+    }
+    .success {
+      color: #8dffa1;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Your Submitted Art</h1>
+
+  <ul id="art-list"></ul>
+
+  <form id="addArtForm">
+    <label for="title">Art Title:</label>
+    <input type="text" id="title" placeholder="Enter art title" required />
+
+    <label for="description">Description:</label>
+    <textarea id="description" rows="4" placeholder="Describe your art" required></textarea>
+
+    <label for="imageUrl">Image URL:</label>
+    <input type="url" id="imageUrl" placeholder="Link to your artwork image" required />
+
+    <label for="gameId">Game ID (optional):</label>
+    <input type="text" id="gameId" placeholder="Associated game ID" />
+
+    <button type="submit" id="submitBtn">Add New Art</button>
+  </form>
+
+  <p class="message" id="formMessage" aria-live="polite"></p>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const artList = document.getElementById('art-list');
+    const addArtForm = document.getElementById('addArtForm');
+    const message = document.getElementById('formMessage');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let currentUser;
+
+    function showMessage(text, type = '') {
+      message.textContent = text;
+      message.className = `message ${type}`;
+    }
+
+    async function checkAuth() {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session?.user) {
+        window.location.href = 'login.html';
+        return false;
+      }
+      currentUser = session.user;
+      return true;
+    }
+
+    async function fetchArt() {
+      const { data, error } = await supabase
+        .from('user_art')
+        .select('*')
+        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        showMessage('Failed to load art: ' + error.message, 'error');
+        return [];
+      }
+      return data;
+    }
+
+    async function loadArt() {
+      const artPieces = await fetchArt();
+      artList.innerHTML = '';
+      if (artPieces.length === 0) {
+        artList.innerHTML = '<li>No art submitted yet.</li>';
+        return;
+      }
+
+      artPieces.forEach(art => {
+        const li = document.createElement('li');
+
+        const title = document.createElement('div');
+        title.className = 'art-title';
+        title.textContent = art.title;
+
+        const description = document.createElement('div');
+        description.className = 'art-description';
+        description.textContent = art.description;
+
+        const img = document.createElement('img');
+        img.src = art.image_url;
+        img.alt = art.title;
+        img.className = 'art-image';
+
+        const meta = document.createElement('div');
+        meta.className = 'art-meta';
+        if (art.game_id) {
+          meta.textContent = `Game ID: ${art.game_id}`;
+        }
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.onclick = async () => {
+          if (!confirm(`Remove "${art.title}"?`)) return;
+          const { error } = await supabase
+            .from('user_art')
+            .delete()
+            .eq('id', art.id);
+          if (error) {
+            showMessage('Error removing art: ' + error.message, 'error');
+          } else {
+            showMessage('Art removed.', 'success');
+            loadArt();
+          }
+        };
+
+        li.appendChild(title);
+        li.appendChild(description);
+        li.appendChild(img);
+        if (art.game_id) li.appendChild(meta);
+        li.appendChild(removeBtn);
+
+        artList.appendChild(li);
+      });
+    }
+
+    addArtForm.onsubmit = async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      showMessage('');
+
+      const data = {
+        github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+        avatar_url: currentUser.user_metadata?.avatar_url || null,
+        title: document.getElementById('title').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        image_url: document.getElementById('imageUrl').value.trim(),
+        game_id: document.getElementById('gameId').value.trim() || '',
+        created_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase.from('user_art').insert([data]);
+      if (error) {
+        showMessage('Adding art failed: ' + error.message, 'error');
+      } else {
+        showMessage('Art added successfully!', 'success');
+        addArtForm.reset();
+        loadArt();
+      }
+      submitBtn.disabled = false;
+    };
+
+    (async () => {
+      const loggedIn = await checkAuth();
+      if (loggedIn) {
+        loadArt();
+      }
+    })();
+  </script>
+
+</body>
+</html>
