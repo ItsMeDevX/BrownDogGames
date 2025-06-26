@@ -1339,7 +1339,7 @@
 
     function showMessage(text, type = '') {
       message.textContent = text;
-      message.className = message ${type};
+      message.className = 'message ' + type;
     }
 
     async function checkAuth() {
@@ -1394,7 +1394,7 @@
         removeBtn.className = 'remove-btn';
         removeBtn.textContent = 'Remove';
         removeBtn.onclick = async () => {
-          if (!confirm(Remove "${art.title}"?)) return;
+          if (!confirm(`Remove "${art.title}"?`)) return;
           const { error } = await supabase
             .from('user_art')
             .delete()
