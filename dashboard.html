@@ -968,12 +968,6 @@ authBar.appendChild(userInfo);
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
-    const vipWarning = document.createElement('div');
-    vipWarning.style.color = '#ff4f9f';
-    vipWarning.style.marginBottom = '1rem';
-    vipWarning.style.fontFamily = "'Rubik Mono One', monospace";
-    form.parentNode.insertBefore(vipWarning, form);
-
     const gameNames = {
       0: 'Unknown',
       1: 'Minecraft',
@@ -1048,36 +1042,6 @@ authBar.appendChild(userInfo);
 
     const currentUser = getUserIdFromUrl();
 
-    async function checkVIPStatus() {
-      const { data } = await supabase.auth.getSession();
-      const user = data?.session?.user;
-
-      if (!user) {
-        vipWarning.textContent = '🚫 Please log in to post videos.';
-        input.disabled = true;
-        form.querySelector('button').disabled = true;
-        return false;
-      }
-
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('id', user.id)
-        .single();
-
-      if (error || !userData?.is_vip) {
-        vipWarning.textContent = '🚫 Posting videos is VIP only — please subscribe.';
-        input.disabled = true;
-        form.querySelector('button').disabled = true;
-        return false;
-      }
-
-      vipWarning.textContent = '';
-      input.disabled = false;
-      form.querySelector('button').disabled = false;
-      return true;
-    }
-
     async function load() {
       const { data, error } = await supabase
         .from('game_videos')
@@ -1097,8 +1061,6 @@ authBar.appendChild(userInfo);
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (input.disabled) return;
-
       const url = input.value.trim();
       if (!url) return;
 
@@ -1126,11 +1088,7 @@ authBar.appendChild(userInfo);
       })
       .subscribe();
 
-    (async () => {
-      await checkVIPStatus();
-      await load();
-    })();
-
+    load();
   </script>
 
 </body>
