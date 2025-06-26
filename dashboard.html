@@ -1216,9 +1216,12 @@
       box-shadow: 0 0 8px #ff69b488;
     }
 
-    .art-meta {
-      font-size: 0.8rem;
-      opacity: 0.7;
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      margin-top: 4px;
     }
 
     .remove-btn {
@@ -1314,9 +1317,6 @@
     <label for="imageUrl">Image URL:</label>
     <input type="url" id="imageUrl" placeholder="Link to your artwork image" required />
 
-    <label for="gameId">Game ID (optional):</label>
-    <input type="text" id="gameId" placeholder="Associated game ID" />
-
     <button type="submit" id="submitBtn">Add New Art</button>
   </form>
 
@@ -1390,12 +1390,6 @@
         img.alt = art.title;
         img.className = 'art-image';
 
-        const meta = document.createElement('div');
-        meta.className = 'art-meta';
-        if (art.game_id) {
-          meta.textContent = `Game ID: ${art.game_id}`;
-        }
-
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-btn';
         removeBtn.textContent = 'Remove';
@@ -1416,9 +1410,16 @@
         li.appendChild(title);
         li.appendChild(description);
         li.appendChild(img);
-        if (art.game_id) li.appendChild(meta);
-        li.appendChild(removeBtn);
 
+        if (art.avatar_url) {
+          const avatar = document.createElement('img');
+          avatar.src = art.avatar_url;
+          avatar.alt = 'User avatar';
+          avatar.className = 'avatar';
+          li.appendChild(avatar);
+        }
+
+        li.appendChild(removeBtn);
         artList.appendChild(li);
       });
     }
@@ -1430,11 +1431,10 @@
 
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
-        avatar_url: currentUser.user_metadata?.avatar_url || null,
+        avatar_url: currentUser.user_metadata?.avatar_url || '',
         title: document.getElementById('title').value.trim(),
         description: document.getElementById('description').value.trim(),
         image_url: document.getElementById('imageUrl').value.trim(),
-        game_id: document.getElementById('gameId').value.trim() || '',
         created_at: new Date().toISOString()
       };
 
