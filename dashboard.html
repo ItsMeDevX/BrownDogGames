@@ -1199,6 +1199,13 @@
       gap: 10px;
     }
 
+    /* New container for avatar + title */
+    .title-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .art-title {
       font-weight: bold;
       font-size: 1.2rem;
@@ -1221,6 +1228,8 @@
       height: 48px;
       border-radius: 50%;
       border: 2px solid #ff69b4;
+      margin-top: 4px;
+      object-fit: cover;
     }
 
     .remove-btn {
@@ -1378,25 +1387,24 @@
 
         // Title + avatar container
         const titleContainer = document.createElement('div');
-        titleContainer.style.display = 'flex';
-        titleContainer.style.alignItems = 'center';
-        titleContainer.style.gap = '10px';
+        titleContainer.className = 'title-container';
+
+        const avatar = document.createElement('img');
+        avatar.className = 'avatar';
+        avatar.alt = 'User avatar';
+        if (art.avatar_url) {
+          avatar.src = art.avatar_url;
+          avatar.style.display = '';
+        } else {
+          avatar.style.display = 'none'; // hide if no avatar
+        }
 
         const title = document.createElement('div');
         title.className = 'art-title';
         title.textContent = art.title;
 
+        titleContainer.appendChild(avatar);
         titleContainer.appendChild(title);
-
-        if (art.avatar_url) {
-          const avatar = document.createElement('img');
-          avatar.src = art.avatar_url;
-          avatar.alt = 'User avatar';
-          avatar.className = 'avatar';
-          titleContainer.appendChild(avatar);
-        }
-
-        li.appendChild(titleContainer);
 
         const description = document.createElement('div');
         description.className = 'art-description';
@@ -1406,9 +1414,6 @@
         img.src = art.image_url;
         img.alt = art.title;
         img.className = 'art-image';
-
-        li.appendChild(description);
-        li.appendChild(img);
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-btn';
@@ -1427,6 +1432,9 @@
           }
         };
 
+        li.appendChild(titleContainer);
+        li.appendChild(description);
+        li.appendChild(img);
         li.appendChild(removeBtn);
         artList.appendChild(li);
       });
