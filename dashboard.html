@@ -805,287 +805,263 @@ authBar.appendChild(userInfo);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video Wall</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Submitted Videos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
+      background: #1b1b2e;
       color: #fefefe;
-      margin: 0;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      text-align: center;
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
     }
-
     h1 {
-      font-size: 2rem;
       color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1.5rem;
-    }
-
-    form {
+      text-align: center;
       margin-bottom: 1rem;
     }
-
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    input {
-      width: 60%;
-      max-width: 400px;
-    }
-
-    button {
-      background: #ff4f9f;
-      color: #1a1328;
-      font-weight: bold;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    #container {
-      max-width: 1000px;
-      margin: auto;
-      text-align: left;
-    }
-
-    #links {
-      margin: 20px 0;
-      padding: 15px;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      color: #ff4f9f;
-      font-family: monospace;
-    }
-
-    #links h2 {
-      margin-top: 0;
-      text-align: center;
-      text-shadow: 1px 1px 0 #000;
-    }
-
-    #links-list {
-      min-height: 300px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      overflow-y: auto;
-    }
-
-    .link-embed {
-      width: 100%;
-      max-width: 480px;
-      background: #3a2254;
-      border-radius: 12px;
-      border: 1px solid #ff4f9f;
-      box-shadow: 0 0 6px #000;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+    ul {
+      list-style-type: none;
       padding: 0;
+      margin-bottom: 2rem;
+    }
+    li {
+      background: #2f1a39;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 5px #ff4f9f;
       position: relative;
     }
-
-    .link-embed iframe {
-      width: 100%;
-      height: 270px; /* 16:9 aspect for 480px width */
+    .video-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 0.3rem;
+    }
+    .video-content {
+      font-style: italic;
+      margin-bottom: 0.7rem;
+    }
+    .video-url a {
+      color: #ff69b4;
+      text-decoration: underline;
+      word-break: break-word;
+    }
+    button.remove-btn {
+      position: absolute;
+      right: 1rem;
+      top: 1rem;
+      background: #ff4f9f;
+      color: #1b1b2e;
       border: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    form label {
       display: block;
+      margin-top: 1rem;
+      font-weight: bold;
     }
-
-    .game-label {
-      margin: 6px 0 12px;
-      font-size: 0.9rem;
-      color: #ff4f9f;
-      text-shadow: 1px 1px 0 #000;
+    form input[type="text"],
+    form input[type="url"],
+    form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+      border-radius: 6px;
+      border: none;
       font-family: 'Rubik Mono One', monospace;
+      font-size: 1rem;
+      background: #3a2254;
+      color: #fefefe;
     }
-
-    .twitter-tweet {
-      width: 100% !important;
-      max-width: 480px !important;
-      margin: 0 auto !important;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #000;
-      background: #2f1a39 !important;
-      color: #ff4f9f !important;
+    form textarea {
+      resize: vertical;
+      min-height: 80px;
     }
-
-    @media (max-width: 600px) {
-      .link-embed,
-      .twitter-tweet {
-        max-width: 100%;
-      }
-
-      .link-embed iframe {
-        height: auto;
-        aspect-ratio: 16 / 9;
-      }
+    form button[type="submit"] {
+      margin-top: 1.5rem;
+      background: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    #formMessage {
+      margin-top: 1rem;
+      font-weight: bold;
+      min-height: 1.5rem;
+      color: #ff4f9f;
     }
   </style>
 </head>
 <body>
 
-  <h1>🎮 Video Links</h1>
+  <h1>Your Submitted Videos</h1>
 
-  <div id="container">
+  <ul id="videos-list"></ul>
 
-    <form id="form">
-      <input id="video-url" type="url" placeholder="Paste video URL..." required />
-      <button type="submit">Post</button>
-    </form>
+  <form id="addVideoForm" autocomplete="off">
+    <label for="title">Video Title:</label>
+    <input type="text" id="title" placeholder="Enter video title" required />
 
-    <div id="links">
-      <h2>Links</h2>
-      <div id="links-list"></div>
-    </div>
-  </div>
+    <label for="content">Description:</label>
+    <textarea id="content" placeholder="Write a short description" required></textarea>
 
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <label for="videoUrl">Video URL:</label>
+    <input type="url" id="videoUrl" placeholder="Paste video URL" required />
+
+    <label for="avatarUrl">Your Avatar URL (optional):</label>
+    <input type="url" id="avatarUrl" placeholder="Link to your avatar image" />
+
+    <button type="submit" id="submitBtn">Add New Video</button>
+  </form>
+
+  <p id="formMessage" aria-live="polite"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const form = document.getElementById('form');
-    const input = document.getElementById('video-url');
-    const linksList = document.getElementById('links-list');
+    const videosList = document.getElementById('videos-list');
+    const addVideoForm = document.getElementById('addVideoForm');
+    const message = document.getElementById('formMessage');
+    const submitBtn = document.getElementById('submitBtn');
 
-    // Map game IDs to names
-    const gameNames = {
-      0: 'Unknown',
-      1: 'Minecraft',
-      2: 'Fortnite',
-      3: 'Valorant',
-    };
+    let currentUser = null;
 
-    // Detect game ID by URL contents
-    function detectGameId(url) {
-      url = url.toLowerCase();
-      if (url.includes('minecraft')) return '1';
-      if (url.includes('fortnite')) return '2';
-      if (url.includes('valorant')) return '3';
-      return '0';
+    function showMessage(text, type = '') {
+      message.textContent = text;
+      message.style.color = type === 'error' ? '#ff5555' : '#ff4f9f';
     }
 
-    // Render embedded iframe or blockquote for supported URLs
-    function renderEmbed(url) {
-      url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
-
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (yt) {
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}" allowfullscreen></iframe>`;
+    async function checkAuth() {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session?.user) {
+        // Redirect to login page (adjust URL as needed)
+        window.location.href = 'login.html';
+        return false;
       }
-
-      const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
-      if (tw) {
-        return `<iframe src="https://player.twitch.tv/?video=${tw[1]}&parent=${location.hostname}" allowfullscreen></iframe>`;
-      }
-
-      const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
-      if (twt) {
-        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
-      }
-
-      return '';
+      currentUser = session.user;
+      return true;
     }
 
-    // Add a video link embed block to the page
-    function addLink(url, gameId = '0') {
-      const div = document.createElement('div');
-      div.className = 'link-embed';
-
-      const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
-
-        // Add label for game
-        const label = document.createElement('div');
-        label.className = 'game-label';
-        label.textContent = gameNames[gameId] || 'Unknown';
-        div.appendChild(label);
-
-        linksList.appendChild(div);
-
-        // Twitter widget render trigger
-        if (url.includes('twitter.com/status')) {
-          setTimeout(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-            }
-          }, 100);
-        }
-      }
-    }
-
-    // Load all videos
-    async function load() {
+    // Load current user's videos
+    async function loadVideos() {
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .not('video_url', 'is', null)
-        .order('created_at', { ascending: true });
+        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
+        .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading videos:', error);
+        showMessage('Failed to load videos: ' + error.message, 'error');
         return;
       }
 
-      linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
+      videosList.innerHTML = '';
+      if (!data || data.length === 0) {
+        videosList.innerHTML = '<li>No videos submitted yet.</li>';
+        return;
+      }
+
+      data.forEach(video => {
+        const li = document.createElement('li');
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'video-title';
+        titleDiv.textContent = video.title || '(no title)';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'video-content';
+        contentDiv.textContent = video.content || '';
+
+        const urlDiv = document.createElement('div');
+        urlDiv.className = 'video-url';
+        const a = document.createElement('a');
+        a.href = video.video_url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = video.video_url;
+        urlDiv.appendChild(a);
+
+        li.appendChild(titleDiv);
+        li.appendChild(contentDiv);
+        li.appendChild(urlDiv);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.onclick = async () => {
+          if (!confirm(`Remove "${video.title}"?`)) return;
+          const { error } = await supabase
+            .from('game_videos')
+            .delete()
+            .eq('id', video.id)
+            .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email);
+          if (error) {
+            showMessage('Error removing video: ' + error.message, 'error');
+          } else {
+            showMessage('Video removed.', 'success');
+            loadVideos();
+          }
+        };
+
+        li.appendChild(removeBtn);
+
+        videosList.appendChild(li);
+      });
     }
 
-    // Handle video URL submission
-    form.addEventListener('submit', async e => {
+    addVideoForm.onsubmit = async (e) => {
       e.preventDefault();
+      submitBtn.disabled = true;
+      showMessage('');
 
-      const url = input.value.trim();
-      if (!url) return;
+      const title = document.getElementById('title').value.trim();
+      const content = document.getElementById('content').value.trim();
+      const videoUrl = document.getElementById('videoUrl').value.trim();
+      const avatarUrl = document.getElementById('avatarUrl').value.trim() || null;
 
-      const gameId = detectGameId(url);
+      const githubUser = currentUser.user_metadata?.user_name || currentUser.email;
 
-      const { error } = await supabase
-        .from('game_videos')
-        .insert([{ video_url: url, game_id: gameId }]);
+      const data = {
+        title,
+        content,
+        video_url: videoUrl,
+        avatar_url: avatarUrl,
+        github_username: githubUser,
+        created_at: new Date().toISOString(),
+        game_id: '0' // or you can make a select dropdown to choose game_id if you want
+      };
 
+      const { error } = await supabase.from('game_videos').insert([data]);
       if (error) {
-        console.error('Error inserting video:', error);
+        showMessage('Failed to add video: ' + error.message, 'error');
       } else {
-        input.value = '';
+        showMessage('Video added successfully!', 'success');
+        addVideoForm.reset();
+        loadVideos();
       }
-    });
+      submitBtn.disabled = false;
+    };
 
-    // Realtime subscription for new videos
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'game_videos',
-      }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || '0');
-      })
-      .subscribe();
-
-    // Initial load
-    load();
-
+    (async () => {
+      const loggedIn = await checkAuth();
+      if (loggedIn) {
+        loadVideos();
+      }
+    })();
   </script>
 
 </body>
