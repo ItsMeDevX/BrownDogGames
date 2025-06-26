@@ -798,6 +798,7 @@ authBar.appendChild(userInfo);
   </script>
 </body>
 </html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -814,6 +815,10 @@ authBar.appendChild(userInfo);
       padding: 20px;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
 
     h1 {
@@ -825,6 +830,12 @@ authBar.appendChild(userInfo);
 
     form {
       margin-bottom: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      max-width: 600px;
+      width: 100%;
     }
 
     input, button {
@@ -836,22 +847,23 @@ authBar.appendChild(userInfo);
     }
 
     input {
-      width: 60%;
-      max-width: 400px;
+      flex: 1 1 auto;
+      min-width: 250px;
     }
 
     button {
       background: #ff4f9f;
       color: #1a1328;
       font-weight: bold;
-      margin-left: 10px;
       cursor: pointer;
+      flex: 0 0 auto;
+      min-width: 100px;
     }
 
     #container {
       max-width: 1000px;
-      margin: auto;
-      text-align: left;
+      width: 100%;
+      text-align: center;
     }
 
     #links {
@@ -866,7 +878,6 @@ authBar.appendChild(userInfo);
 
     #links h2 {
       margin-top: 0;
-      text-align: center;
       text-shadow: 1px 1px 0 #000;
     }
 
@@ -897,7 +908,7 @@ authBar.appendChild(userInfo);
 
     .link-embed iframe {
       width: 100%;
-      height: 270px; /* 16:9 aspect for 480px width */
+      height: 270px; /* 16:9 aspect */
       border: none;
       display: block;
     }
@@ -931,6 +942,16 @@ authBar.appendChild(userInfo);
         height: auto;
         aspect-ratio: 16 / 9;
       }
+
+      form {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      input, button {
+        width: 100%;
+        min-width: unset;
+      }
     }
   </style>
 </head>
@@ -939,9 +960,6 @@ authBar.appendChild(userInfo);
   <h1>🎮 Video Links</h1>
 
   <div id="container">
-
-    <!-- VIP Warning Message will appear here -->
-    <!-- Inserted dynamically by script -->
 
     <form id="form">
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
@@ -967,13 +985,6 @@ authBar.appendChild(userInfo);
     const form = document.getElementById('form');
     const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
-
-    // Create VIP warning message element
-    const vipWarning = document.createElement('div');
-    vipWarning.style.color = '#ff4f9f';
-    vipWarning.style.marginBottom = '1rem';
-    vipWarning.style.fontFamily = "'Rubik Mono One', monospace";
-    form.parentNode.insertBefore(vipWarning, form);
 
     // Map game IDs to names
     const gameNames = {
@@ -1059,37 +1070,6 @@ authBar.appendChild(userInfo);
 
     const currentUser = getUserIdFromUrl();
 
-    // Check VIP status and enable/disable form accordingly
-    async function checkVIPStatus() {
-      const { data } = await supabase.auth.getSession();
-      const user = data?.session?.user;
-
-      if (!user) {
-        vipWarning.textContent = '🚫 Please log in to post videos.';
-        input.disabled = true;
-        form.querySelector('button').disabled = true;
-        return false;
-      }
-
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('id', user.id)
-        .single();
-
-      if (error || !userData?.is_vip) {
-        vipWarning.textContent = '🚫 Posting videos is VIP only — please subscribe.';
-        input.disabled = true;
-        form.querySelector('button').disabled = true;
-        return false;
-      }
-
-      vipWarning.textContent = '';  // Clear warning if VIP
-      input.disabled = false;
-      form.querySelector('button').disabled = false;
-      return true;
-    }
-
     // Load all videos posted by this user
     async function load() {
       const { data, error } = await supabase
@@ -1111,7 +1091,6 @@ authBar.appendChild(userInfo);
     // Handle video URL submission
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (input.disabled) return; // Prevent if not VIP
 
       const url = input.value.trim();
       if (!url) return;
@@ -1141,11 +1120,8 @@ authBar.appendChild(userInfo);
       })
       .subscribe();
 
-    // Init VIP check and load videos
-    (async () => {
-      await checkVIPStatus();
-      await load();
-    })();
+    // Initial load
+    load();
 
   </script>
 
