@@ -290,6 +290,10 @@
   #user-info div {
     font-size: 0.9rem;
   }
+  /* Buttons container for user action buttons */
+  #auth-bar > button {
+    margin-right: 8px;
+  }
 </style>
 
 <script type="module">
@@ -329,7 +333,7 @@
     });
     authBar.appendChild(userGamesBtn);
 
-    // User Video button — added just like User Games button
+    // User Video button
     const userVideoBtn = document.createElement('button');
     userVideoBtn.textContent = 'User Video';
     userVideoBtn.style.backgroundColor = '#ff69b4';
@@ -348,6 +352,26 @@
       window.location.href = 'user-videos.html';
     });
     authBar.appendChild(userVideoBtn);
+
+    // User Art button (new)
+    const userArtBtn = document.createElement('button');
+    userArtBtn.textContent = 'User Art';
+    userArtBtn.style.backgroundColor = '#ff69b4';
+    userArtBtn.style.color = '#1e1b2e';
+    userArtBtn.style.border = 'none';
+    userArtBtn.style.padding = '0.5rem 1rem';
+    userArtBtn.style.fontWeight = 'bold';
+    userArtBtn.style.fontSize = '0.9rem';
+    userArtBtn.style.borderRadius = '8px';
+    userArtBtn.style.cursor = 'pointer';
+    userArtBtn.style.marginLeft = '8px';
+    userArtBtn.style.transition = 'background-color 0.2s';
+    userArtBtn.addEventListener('mouseover', () => userArtBtn.style.backgroundColor = '#ff8edb');
+    userArtBtn.addEventListener('mouseout', () => userArtBtn.style.backgroundColor = '#ff69b4');
+    userArtBtn.addEventListener('click', () => {
+      window.location.href = 'user-art.html';
+    });
+    authBar.appendChild(userArtBtn);
 
     if (session?.user) {
       const { user_metadata } = session.user;
@@ -464,17 +488,18 @@
       loginBtn.style.transition = 'background-color 0.2s';
       loginBtn.addEventListener('mouseover', () => loginBtn.style.backgroundColor = '#ff8edb');
       loginBtn.addEventListener('mouseout', () => loginBtn.style.backgroundColor = '#ff69b4');
-      loginBtn.addEventListener('click', async () => {
-        await supabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo: window.location.href }
-        });
+      loginBtn.addEventListener('click', () => {
+        supabase.auth.signInWithOAuth({ provider: 'github' });
       });
       authBar.appendChild(loginBtn);
     }
   }
 
   renderAuthBar();
+
+  supabase.auth.onAuthStateChange(() => {
+    renderAuthBar();
+  });
 </script>
 
 
