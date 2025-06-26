@@ -805,8 +805,8 @@ authBar.appendChild(userInfo);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video Wall</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Wall with Full Game Videos Table</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -830,25 +830,32 @@ authBar.appendChild(userInfo);
       margin-bottom: 1rem;
     }
 
-    input, button {
+    input, textarea, button {
       padding: 10px;
       font-size: 16px;
       border-radius: 6px;
       border: none;
-      font-family: 'Rubik Mono One', sans-serif;
+      font-family: 'Rubik Mono One', monospace;
     }
 
-    input {
+    input, textarea {
       width: 60%;
       max-width: 400px;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
     }
 
     button {
       background: #ff4f9f;
       color: #1a1328;
       font-weight: bold;
-      margin-left: 10px;
       cursor: pointer;
+      border: none;
+      width: 150px;
     }
 
     #container {
@@ -894,15 +901,40 @@ authBar.appendChild(userInfo);
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 0;
+      padding: 10px;
       position: relative;
     }
 
     .link-embed iframe {
       width: 100%;
-      height: 300px;
+      height: 270px; /* 16:9 aspect for 480px width */
       border: none;
       display: block;
+      border-radius: 8px;
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-bottom: 8px;
+      object-fit: cover;
+      border: 2px solid #ff4f9f;
+    }
+
+    .title {
+      font-size: 1.2rem;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+      margin: 6px 0 4px;
+    }
+
+    .content {
+      padding: 8px;
+      color: #ccc;
+      font-size: 0.9rem;
+      text-align: center;
+      min-height: 40px;
     }
 
     .game-label {
@@ -934,6 +966,11 @@ authBar.appendChild(userInfo);
         height: auto;
         aspect-ratio: 16 / 9;
       }
+
+      input, textarea {
+        width: 90%;
+        max-width: none;
+      }
     }
   </style>
 </head>
@@ -942,9 +979,14 @@ authBar.appendChild(userInfo);
   <h1>🎮 Video Links</h1>
 
   <div id="container">
+    <!-- VIP Warning Message -->
+    <div id="vip-warning" style="color: #ff4f9f; margin-bottom: 1rem; font-family: 'Rubik Mono One', monospace;"></div>
 
     <form id="form">
-      <input id="video-url" type="url" placeholder="Paste video URL..." required />
+      <input id="video-url" type="url" placeholder="Video URL (required)" required />
+      <input id="title" type="text" placeholder="Title (optional)" />
+      <input id="avatar-url" type="url" placeholder="Avatar Image URL (optional)" />
+      <textarea id="content" placeholder="Description (optional)"></textarea>
       <button type="submit">Post</button>
     </form>
 
@@ -965,25 +1007,31 @@ authBar.appendChild(userInfo);
     );
 
     const form = document.getElementById('form');
-    const input = document.getElementById('video-url');
+    const inputUrl = document.getElementById('video-url');
+    const inputTitle = document.getElementById('title');
+    const inputContent = document.getElementById('content');
+    const inputAvatar = document.getElementById('avatar-url');
     const linksList = document.getElementById('links-list');
+    const vipWarning = document.getElementById('vip-warning');
 
+    // Game ID mapping
     const gameNames = {
-      0: 'Unknown',
-      1: 'Minecraft',
-      2: 'Fortnite',
-      3: 'Valorant',
+      '0': 'Unknown',
+      '1': 'Minecraft',
+      '2': 'Fortnite',
+      '3': 'Valorant',
     };
 
+    // Detect gameId from URL
     function detectGameId(url) {
       url = url.toLowerCase();
       if (url.includes('minecraft')) return '1';
       if (url.includes('fortnite')) return '2';
       if (url.includes('valorant')) return '3';
-      if (url.includes('drive.google.com')) return '0';
       return '0';
     }
 
+    // Render video embed or twitter blockquote
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
@@ -1002,46 +1050,81 @@ authBar.appendChild(userInfo);
         return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
-      const gd = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-      if (gd) {
-        return `<iframe src="https://drive.google.com/file/d/${gd[1]}/preview" allow="autoplay" allowfullscreen></iframe>`;
-      }
-
       return '';
     }
 
-    function addLink(url, gameId = '0') {
+    // Add a video block with all details
+    function addLink(url, gameId = '0', title = '', content = '', avatar_url = '') {
       const div = document.createElement('div');
       div.className = 'link-embed';
 
       const embedHTML = renderEmbed(url);
-      if (embedHTML) {
-        div.innerHTML = embedHTML;
+      if (!embedHTML) return;
 
-        const label = document.createElement('div');
-        label.className = 'game-label';
-        label.textContent = gameNames[gameId] || 'Unknown';
-        div.appendChild(label);
+      div.innerHTML = `
+        ${avatar_url ? `<img src="${avatar_url}" alt="avatar" class="avatar" />` : ''}
+        ${title ? `<div class="title">${title}</div>` : ''}
+        ${embedHTML}
+        ${content ? `<div class="content">${content}</div>` : ''}
+        <div class="game-label">${gameNames[gameId] || 'Unknown'}</div>
+      `;
 
-        linksList.appendChild(div);
+      linksList.appendChild(div);
 
-        if (url.includes('twitter.com/status')) {
-          setTimeout(() => {
-            if (window.twttr && window.twttr.widgets) {
-              window.twttr.widgets.load(div);
-            }
-          }, 100);
-        }
+      // Trigger Twitter widget render for embedded tweets
+      if (url.includes('twitter.com/status')) {
+        setTimeout(() => {
+          if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load(div);
+          }
+        }, 100);
       }
     }
 
+    // Get current user from URL param (?user=someUser), fallback to guest
     function getUserIdFromUrl() {
       const params = new URLSearchParams(window.location.search);
       return params.get('user') || 'guest';
     }
-
     const currentUser = getUserIdFromUrl();
 
+    // Check VIP status (disable form if not VIP)
+    async function checkVIPStatus() {
+      const { data } = await supabase.auth.getSession();
+      const user = data?.session?.user;
+
+      if (!user) {
+        vipWarning.textContent = '🚫 Please log in to post videos.';
+        disableForm(true);
+        return false;
+      }
+
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !userData?.is_vip) {
+        vipWarning.textContent = '🚫 Posting videos is VIP only — please subscribe.';
+        disableForm(true);
+        return false;
+      }
+
+      vipWarning.textContent = '';
+      disableForm(false);
+      return true;
+    }
+
+    function disableForm(disabled) {
+      inputUrl.disabled = disabled;
+      inputTitle.disabled = disabled;
+      inputContent.disabled = disabled;
+      inputAvatar.disabled = disabled;
+      form.querySelector('button').disabled = disabled;
+    }
+
+    // Load all videos posted by current user
     async function load() {
       const { data, error } = await supabase
         .from('game_videos')
@@ -1056,27 +1139,43 @@ authBar.appendChild(userInfo);
       }
 
       linksList.innerHTML = '';
-      if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
+      data.forEach(video => 
+        addLink(video.video_url, video.game_id, video.title, video.content, video.avatar_url)
+      );
     }
 
+    // Submit new video data
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const url = input.value.trim();
+      if (inputUrl.disabled) return;
+
+      const url = inputUrl.value.trim();
       if (!url) return;
 
+      const title = inputTitle.value.trim();
+      const content = inputContent.value.trim();
+      const avatar_url = inputAvatar.value.trim();
       const gameId = detectGameId(url);
 
       const { error } = await supabase
         .from('game_videos')
-        .insert([{ video_url: url, game_id: gameId, github_username: currentUser }]);
+        .insert([{
+          video_url: url,
+          game_id: gameId,
+          github_username: currentUser,
+          title,
+          content,
+          avatar_url,
+        }]);
 
       if (error) {
-        console.error('Error inserting video:', error);
+        console.error('Insert error:', error);
       } else {
-        input.value = '';
+        form.reset();
       }
     });
 
+    // Real-time updates for current user videos
     supabase.channel('realtime:game_videos')
       .on('postgres_changes', {
         event: 'INSERT',
@@ -1084,12 +1183,19 @@ authBar.appendChild(userInfo);
         table: 'game_videos',
         filter: `github_username=eq.${currentUser}`
       }, payload => {
-        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || '0');
+        const v = payload.new;
+        if (v.video_url) {
+          addLink(v.video_url, v.game_id, v.title, v.content, v.avatar_url);
+        }
       })
       .subscribe();
 
-    load();
-  </script>
+    // Init VIP check and load videos on page load
+    (async () => {
+      await checkVIPStatus();
+      await load();
+    })();
 
+  </script>
 </body>
 </html>
