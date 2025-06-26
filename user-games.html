@@ -384,12 +384,14 @@ authBar.appendChild(userInfo);
       letter-spacing: 0.1em;
       box-shadow: 0 0 12px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
     }
 
     .back-link:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
       box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
+      text-decoration: none;
     }
 
     #userList {
@@ -456,6 +458,7 @@ authBar.appendChild(userInfo);
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
+    // Your Supabase credentials (replace with your actual keys)
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -463,13 +466,23 @@ authBar.appendChild(userInfo);
 
     const userListEl = document.getElementById('userList');
 
-    // Helper: Convert Google Drive links to direct image links
+    // Converts a Google Drive share link into a direct image URL
     function convertDriveLink(url) {
-      const match = url?.match(/\/file\/d\/([^/]+)\//);
+      if (!url) return url;
+
+      // Match "/file/d/FILE_ID/" style links
+      let match = url.match(/\/file\/d\/([^\/]+)\//);
       if (match) {
         return `https://drive.google.com/uc?export=view&id=${match[1]}`;
       }
-      return url;
+
+      // Match "open?id=FILE_ID" style links
+      match = url.match(/open\?id=([^&]+)/);
+      if (match) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+
+      return url; // fallback - not a recognized Drive link
     }
 
     async function loadUsers() {
@@ -483,20 +496,17 @@ authBar.appendChild(userInfo);
         return;
       }
 
-      const usersMap = new Map();
-      data.forEach(entry => {
-        if (entry.github_user && !usersMap.has(entry.github_user)) {
-          usersMap.set(entry.github_user, {
-            avatar_url: entry.avatar_url,
-            cover_url: entry.cover_url,
-          });
-        }
-      });
-
-      if (usersMap.size === 0) {
+      if (!data.length) {
         userListEl.textContent = 'No users found.';
         return;
       }
+
+      const usersMap = new Map();
+      data.forEach(({ github_user, avatar_url, cover_url }) => {
+        if (github_user && !usersMap.has(github_user)) {
+          usersMap.set(github_user, { avatar_url, cover_url });
+        }
+      });
 
       userListEl.textContent = '';
       const fragment = document.createDocumentFragment();
@@ -506,34 +516,30 @@ authBar.appendChild(userInfo);
         a.className = 'user-btn';
         a.href = `user.html?user=${encodeURIComponent(user)}`;
 
-        // Avatar
+        // Avatar image, convert if Google Drive link
         if (images.avatar_url) {
           const avatarImg = document.createElement('img');
-          const avatarSrc = convertDriveLink(images.avatar_url);
-          avatarImg.src = avatarSrc;
+          avatarImg.src = convertDriveLink(images.avatar_url);
           avatarImg.alt = `${user}'s avatar`;
           avatarImg.className = 'avatar-img';
           a.appendChild(avatarImg);
         }
 
-        // Username
+        // Username text
         const usernameSpan = document.createElement('span');
         usernameSpan.className = 'username-text';
         usernameSpan.textContent = user;
         a.appendChild(usernameSpan);
 
-        // Cover
+        // Cover image, try supabase storage public URL first, else convert Google Drive link
         if (images.cover_url) {
           let coverSrc = images.cover_url;
 
-          // Try Supabase public URL if it's a storage path
-          const { publicUrl } = supabase
-            .storage
-            .from('covers')
-            .getPublicUrl(images.cover_url);
+          // Try supabase public url for covers (if stored in Supabase storage)
+          const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(images.cover_url);
 
-          if (publicUrl && !coverSrc.startsWith('http')) {
-            coverSrc = publicUrl;
+          if (publicUrlData && !images.cover_url.startsWith('http')) {
+            coverSrc = publicUrlData.publicUrl || coverSrc;
           } else {
             coverSrc = convertDriveLink(coverSrc);
           }
