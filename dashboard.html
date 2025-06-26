@@ -640,6 +640,16 @@ authBar.appendChild(userInfo);
       gap: 0.5rem;
       margin-bottom: 1rem;
     }
+    #video-title {
+      flex-basis: 40%;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1rem;
+      background-color: #3b2750;
+      color: #fefefe;
+    }
     #video-url {
       flex-grow: 1;
       padding: 0.7rem;
@@ -671,6 +681,7 @@ authBar.appendChild(userInfo);
       border-radius: 12px;
       margin-bottom: 1rem;
       color: #ffc0cb;
+      position: relative;
     }
     .link-embed iframe {
       width: 100%;
@@ -686,6 +697,23 @@ authBar.appendChild(userInfo);
       font-weight: bold;
       color: #ff69b4;
       margin-bottom: 0.3rem;
+    }
+    .link-embed .remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #ff4c4c;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.8rem;
+      transition: background-color 0.2s;
+    }
+    .link-embed .remove-btn:hover {
+      background-color: #ff1a1a;
     }
   </style>
 </head>
@@ -711,228 +739,269 @@ authBar.appendChild(userInfo);
     <label for="coverUrl">Cover URL (optional):</label>
     <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
-    <p id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</p>
-    <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
+    <button type="submit" id="submitBtn">Add Game</button>
+    <p id="submitMessage" aria-live="polite"></p>
   </form>
-
-  <p class="message" id="formMessage" aria-live="polite"></p>
-
-  <button id="terms-button" title="Read the submission terms">Submission Terms</button>
 
   <hr />
 
-  <h1>🎮 Video Links</h1>
+  <h2>Post a YouTube Video Link</h2>
 
   <div id="container">
     <form id="form" novalidate>
+      <input id="video-title" type="text" placeholder="Video title..." required />
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
     </form>
 
-    <div id="links">
-      <h2>Links</h2>
-      <div id="links-list"></div>
-    </div>
+    <div id="links-list"></div>
   </div>
 
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <button id="terms-button" type="button" aria-label="View terms and conditions">Terms & Conditions</button>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+  const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';  // Replace with your Supabase project URL
+  const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';                 // Replace with your Supabase anon key
 
-    const gamesList = document.getElementById('games-list');
-    const addGameForm = document.getElementById('addGameForm');
-    const formMessage = document.getElementById('formMessage');
-    const submitBtn = document.getElementById('submitBtn');
-    const submitMessage = document.getElementById('submitMessage');
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUser;
+  const gamesList = document.getElementById('games-list');
+  const addGameForm = document.getElementById('addGameForm');
+  const submitMessage = document.getElementById('submitMessage');
+  const submitBtn = document.getElementById('submitBtn');
 
-    function showMessage(text, type = '') {
-      formMessage.textContent = text;
-      formMessage.className = `message ${type}`;
+  const videoForm = document.getElementById('form');
+  const videoTitleInput = document.getElementById('video-title');
+  const videoUrlInput = document.getElementById('video-url');
+  const linksList = document.getElementById('links-list');
+
+  // Utility to escape HTML for safety
+  function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>"']/g, function (match) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[match];
+    });
+  }
+
+  // Check user auth
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert('You are not logged in. Redirecting to login page...');
+      window.location.href = '/login'; // Replace with your login page URL
+      return false;
+    }
+    return true;
+  }
+
+  // Fetch and display games submitted by user
+  async function fetchGames() {
+    const { data, error } = await supabase
+      .from('game_submissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      gamesList.innerHTML = `<li class="error">Failed to load games: ${escapeHTML(error.message)}</li>`;
+      return;
     }
 
-    async function checkAuth() {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session?.user) {
-        window.location.href = 'login.html';
-        return false;
-      }
-      currentUser = session.user;
-      return true;
+    if (!data.length) {
+      gamesList.innerHTML = '<li>No games submitted yet.</li>';
+      return;
     }
 
-    async function fetchGames() {
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-      if (error) {
-        showMessage('Failed to load games. Try again later.', 'error');
-        return;
-      }
-      gamesList.innerHTML = '';
-      if (data.length === 0) {
-        gamesList.innerHTML = '<p style="text-align:center; opacity:0.6;">No games submitted yet.</p>';
-        return;
-      }
-      data.forEach(game => {
-        const li = document.createElement('li');
-        li.classList.add('game-item');
-        li.setAttribute('data-id', game.id);
+    gamesList.innerHTML = '';
 
-        li.innerHTML = `
-          <div class="game-info">
-            <div class="game-title">${escapeHTML(game.title)}</div>
-            <div class="game-desc">${escapeHTML(game.description)}</div>
-            <div class="game-urls">
-              <a href="${escapeHTML(game.embed_url)}" target="_blank" rel="noopener noreferrer">Play</a>
-              ${game.screenshot_url ? `<a href="${escapeHTML(game.screenshot_url)}" target="_blank" rel="noopener noreferrer">Screenshot</a>` : ''}
-              ${game.cover_url ? `<a href="${escapeHTML(game.cover_url)}" target="_blank" rel="noopener noreferrer">Cover</a>` : ''}
-            </div>
+    data.forEach(game => {
+      const li = document.createElement('li');
+      li.className = 'game-item';
+
+      li.innerHTML = `
+        <div class="game-info">
+          <div class="game-title">${escapeHTML(game.title)}</div>
+          <div class="game-desc">${escapeHTML(game.description)}</div>
+          <div class="game-urls">
+            <a href="${escapeHTML(game.embed_url)}" target="_blank" rel="noopener noreferrer">Embed URL</a>
+            ${game.screenshot_url ? `<a href="${escapeHTML(game.screenshot_url)}" target="_blank" rel="noopener noreferrer">Screenshot</a>` : ''}
+            ${game.cover_url ? `<a href="${escapeHTML(game.cover_url)}" target="_blank" rel="noopener noreferrer">Cover</a>` : ''}
           </div>
-          <button class="remove-btn" aria-label="Remove game titled ${escapeHTML(game.title)}">Remove</button>
-        `;
+        </div>
+        <button class="remove-btn" aria-label="Delete game titled ${escapeHTML(game.title)}" data-id="${game.id}">Delete</button>
+      `;
 
-        const removeBtn = li.querySelector('.remove-btn');
-        removeBtn.addEventListener('click', () => removeGame(game.id));
+      li.querySelector('.remove-btn').addEventListener('click', () => deleteGame(game.id));
 
-        gamesList.appendChild(li);
-      });
+      gamesList.appendChild(li);
+    });
+  }
+
+  // Delete a game submission
+  async function deleteGame(id) {
+    if (!confirm('Delete this game?')) return;
+
+    const { error } = await supabase.from('game_submissions').delete().eq('id', id);
+    if (error) {
+      alert('Failed to delete game: ' + error.message);
+      return;
+    }
+    fetchGames();
+  }
+
+  // Handle add game form submit
+  addGameForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    submitMessage.textContent = '';
+    submitBtn.disabled = true;
+
+    const title = addGameForm.title.value.trim();
+    const description = addGameForm.description.value.trim();
+    const embed_url = addGameForm.embedUrl.value.trim();
+    const screenshot_url = addGameForm.screenshotUrl.value.trim() || null;
+    const cover_url = addGameForm.coverUrl.value.trim() || null;
+
+    if (!title || !description || !embed_url) {
+      submitMessage.textContent = 'Please fill in all required fields.';
+      submitMessage.className = 'message error';
+      submitBtn.disabled = false;
+      return;
     }
 
-    async function removeGame(id) {
-      if (!confirm('Are you sure you want to remove this game?')) return;
-      const { error } = await supabase
-        .from('game_submissions')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', currentUser.id);
-      if (error) {
-        alert('Failed to remove game. Try again later.');
-        return;
-      }
+    const { error } = await supabase.from('game_submissions').insert({
+      title, description, embed_url, screenshot_url, cover_url, created_at: new Date().toISOString()
+    });
+
+    if (error) {
+      submitMessage.textContent = 'Failed to submit game: ' + error.message;
+      submitMessage.className = 'message error';
+    } else {
+      submitMessage.textContent = 'Game submitted successfully!';
+      submitMessage.className = 'message success';
+      addGameForm.reset();
       fetchGames();
     }
 
-    function escapeHTML(str) {
-      if (!str) return '';
-      return str.replace(/[&<>"']/g, function (match) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }[match];
-      });
+    submitBtn.disabled = false;
+  });
+
+  // Extract YouTube video ID from URL
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    const regex = /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  }
+
+  // Fetch and display video links with titles and embedded players
+  async function fetchVideoLinks() {
+    const { data, error } = await supabase
+      .from('video_links')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      linksList.innerHTML = `<div class="error">Failed to load videos: ${escapeHTML(error.message)}</div>`;
+      return;
     }
 
-    addGameForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      submitBtn.disabled = true;
-      showMessage('');
-
-      const title = addGameForm.title.value.trim();
-      const description = addGameForm.description.value.trim();
-      const embedUrl = addGameForm.embedUrl.value.trim();
-      const screenshotUrl = addGameForm.screenshotUrl.value.trim();
-      const coverUrl = addGameForm.coverUrl.value.trim();
-
-      if (!title || !description || !embedUrl) {
-        showMessage('Please fill in all required fields.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-
-      try {
-        const { error } = await supabase.from('game_submissions').insert({
-          user_id: currentUser.id,
-          title,
-          description,
-          embed_url: embedUrl,
-          screenshot_url: screenshotUrl || null,
-          cover_url: coverUrl || null,
-          created_at: new Date().toISOString()
-        });
-        if (error) throw error;
-        addGameForm.reset();
-        showMessage('Game added successfully!', 'success');
-        fetchGames();
-      } catch (err) {
-        showMessage('Failed to add game. Please try again.', 'error');
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-
-    // VIP access simulation (30 second delay)
-    let vipTimer = 30;
-    const vipInterval = setInterval(() => {
-      vipTimer--;
-      if (vipTimer > 0) {
-        submitMessage.textContent = `⏳ Checking VIP access... Please wait ${vipTimer} second${vipTimer > 1 ? 's' : ''}`;
-      } else {
-        submitMessage.textContent = '';
-        submitBtn.style.display = 'block';
-        clearInterval(vipInterval);
-      }
-    }, 1000);
-
-    // Video links section logic
-    const videoForm = document.getElementById('form');
-    const videoUrlInput = document.getElementById('video-url');
-    const linksList = document.getElementById('links-list');
-
-    videoForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const url = videoUrlInput.value.trim();
-      if (!url) return;
-
-      const videoId = extractYouTubeId(url);
-      if (!videoId) {
-        alert('Please enter a valid YouTube URL.');
-        return;
-      }
-
-      addVideoLink(url, videoId);
-      videoUrlInput.value = '';
-    });
-
-    function extractYouTubeId(url) {
-      const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w\-]+)/;
-      const match = url.match(regex);
-      return match ? match[1] : null;
+    if (!data.length) {
+      linksList.innerHTML = '<div>No videos posted yet.</div>';
+      return;
     }
 
-    function addVideoLink(url, videoId) {
+    linksList.innerHTML = '';
+
+    data.forEach(video => {
+      const videoId = extractYouTubeId(video.video_url);
+      if (!videoId) return;
+
       const div = document.createElement('div');
       div.className = 'link-embed';
       div.innerHTML = `
-        <div class="game-label">Video Embed</div>
-        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+        <div class="game-label">${escapeHTML(video.title)}</div>
+        <iframe
+          src="https://www.youtube.com/embed/${videoId}"
+          allowfullscreen
+          allow="autoplay; encrypted-media; picture-in-picture"
+          title="${escapeHTML(video.title)}"
+        ></iframe>
+        <button class="remove-btn" aria-label="Delete video titled ${escapeHTML(video.title)}" data-id="${video.id}">Delete</button>
       `;
-      linksList.prepend(div);
+
+      div.querySelector('.remove-btn').addEventListener('click', () => deleteVideo(video.id));
+
+      linksList.appendChild(div);
+    });
+  }
+
+  // Delete a video link
+  async function deleteVideo(id) {
+    if (!confirm('Delete this video?')) return;
+
+    const { error } = await supabase.from('video_links').delete().eq('id', id);
+    if (error) {
+      alert('Failed to delete video: ' + error.message);
+      return;
+    }
+    fetchVideoLinks();
+  }
+
+  // Handle video link form submit
+  videoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const title = videoTitleInput.value.trim();
+    const url = videoUrlInput.value.trim();
+
+    if (!title || !url) {
+      alert('Please enter both a title and a URL.');
+      return;
     }
 
-    // Terms button (optional behavior)
-    document.getElementById('terms-button').addEventListener('click', () => {
-      alert('Submission terms:\n- Only your own games.\n- No offensive content.\n- You agree to our terms of service.');
+    const videoId = extractYouTubeId(url);
+    if (!videoId) {
+      alert('Please enter a valid YouTube URL.');
+      return;
+    }
+
+    const { error } = await supabase.from('video_links').insert({
+      title,
+      video_url: url,
+      created_at: new Date().toISOString()
     });
 
-    // Initialization
-    (async () => {
-      if (!(await checkAuth())) return;
-      fetchGames();
-    })();
-  </script>
+    if (error) {
+      alert('Failed to add video: ' + error.message);
+      return;
+    }
+
+    videoTitleInput.value = '';
+    videoUrlInput.value = '';
+
+    fetchVideoLinks();
+  });
+
+  // Initialize: check auth, then fetch data
+  (async () => {
+    if (!(await checkAuth())) return;
+    fetchGames();
+    fetchVideoLinks();
+  })();
+
+  // Terms & Conditions button
+  document.getElementById('terms-button').addEventListener('click', () => {
+    alert(`By submitting games or video links, you agree to the BrownDogGames terms and conditions.`);
+  });
+</script>
 
 </body>
 </html>
