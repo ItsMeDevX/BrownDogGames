@@ -1199,12 +1199,6 @@
       gap: 10px;
     }
 
-    .title-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     .art-title {
       font-weight: bold;
       font-size: 1.2rem;
@@ -1228,7 +1222,6 @@
       border-radius: 50%;
       border: 2px solid #ff69b4;
       margin-top: 4px;
-      object-fit: cover;
     }
 
     .remove-btn {
@@ -1346,7 +1339,7 @@
 
     function showMessage(text, type = '') {
       message.textContent = text;
-      message.className = `message ${type}`;
+      message.className = message ${type};
     }
 
     async function checkAuth() {
@@ -1360,12 +1353,10 @@
     }
 
     async function fetchArt() {
-      // Temporarily fetch all art to debug
       const { data, error } = await supabase
         .from('user_art')
         .select('*')
-        // Uncomment to filter by current user once confirmed working:
-        //.eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
+        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1386,41 +1377,24 @@
       artPieces.forEach(art => {
         const li = document.createElement('li');
 
-        // Title + avatar container
-        const titleContainer = document.createElement('div');
-        titleContainer.className = 'title-container';
-
-        const avatar = document.createElement('img');
-        avatar.className = 'avatar';
-        avatar.alt = 'User avatar';
-        if (art.avatar_url) {
-          avatar.src = art.avatar_url;
-          avatar.style.display = '';
-        } else {
-          avatar.style.display = 'none'; // hide if no avatar
-        }
-
         const title = document.createElement('div');
         title.className = 'art-title';
-        title.textContent = art.title || '(no title)';
-
-        titleContainer.appendChild(avatar);
-        titleContainer.appendChild(title);
+        title.textContent = art.title;
 
         const description = document.createElement('div');
         description.className = 'art-description';
-        description.textContent = art.description || '(no description)';
+        description.textContent = art.description;
 
         const img = document.createElement('img');
         img.src = art.image_url;
-        img.alt = art.title || 'Art image';
+        img.alt = art.title;
         img.className = 'art-image';
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-btn';
         removeBtn.textContent = 'Remove';
         removeBtn.onclick = async () => {
-          if (!confirm(`Remove "${art.title}"?`)) return;
+          if (!confirm(Remove "${art.title}"?)) return;
           const { error } = await supabase
             .from('user_art')
             .delete()
@@ -1433,9 +1407,18 @@
           }
         };
 
-        li.appendChild(titleContainer);
+        li.appendChild(title);
         li.appendChild(description);
         li.appendChild(img);
+
+        if (art.avatar_url) {
+          const avatar = document.createElement('img');
+          avatar.src = art.avatar_url;
+          avatar.alt = 'User avatar';
+          avatar.className = 'avatar';
+          li.appendChild(avatar);
+        }
+
         li.appendChild(removeBtn);
         artList.appendChild(li);
       });
@@ -1446,24 +1429,12 @@
       submitBtn.disabled = true;
       showMessage('');
 
-      const titleValue = document.getElementById('title').value.trim();
-      const descriptionValue = document.getElementById('description').value.trim();
-      const imageUrlValue = document.getElementById('imageUrl').value.trim();
-
-      console.log('Submit data:', { titleValue, descriptionValue, imageUrlValue });
-
-      if (!titleValue || !descriptionValue || !imageUrlValue) {
-        showMessage('Please fill in all fields.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
         avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title: titleValue,
-        description: descriptionValue,
-        image_url: imageUrlValue,
+        title: document.getElementById('title').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        image_url: document.getElementById('imageUrl').value.trim(),
         created_at: new Date().toISOString()
       };
 
