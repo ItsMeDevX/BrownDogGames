@@ -1336,17 +1336,25 @@
     }
 
     async function checkAuth() {
+      console.log('Checking auth session...');
       const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session?.user) {
+      if (error) {
+        console.error('Auth error:', error);
+      }
+      if (!session?.user) {
+        console.log('No session found, redirecting...');
         window.location.href = 'login.html';
         return false;
       }
       currentUser = session.user;
+      console.log('Logged in user:', currentUser);
       return true;
     }
 
     async function fetchArt() {
       if (!currentUser) return [];
+
+      console.log('Fetching art for user:', currentUser.user_metadata?.user_name || currentUser.email);
 
       const { data, error } = await supabase
         .from('user_art')
@@ -1356,6 +1364,7 @@
 
       if (error) {
         showMessage('Failed to load art: ' + error.message, 'error');
+        console.error('Fetch art error:', error);
         return [];
       }
       return data;
@@ -1405,10 +1414,13 @@
       e.preventDefault();
       submitBtn.disabled = true;
       showMessage('');
+      console.log('Submitting form...');
 
       const title = document.getElementById('title').value.trim();
       const description = document.getElementById('description').value.trim();
       const imageUrl = document.getElementById('imageUrl').value.trim();
+
+      console.log({ title, description, imageUrl });
 
       if (!title || !description || !imageUrl) {
         showMessage('Please fill in all fields.', 'error');
@@ -1425,10 +1437,13 @@
         created_at: new Date().toISOString()
       };
 
+      console.log('Inserting data:', data);
+
       const { error } = await supabase.from('user_art').insert([data]);
 
       if (error) {
         showMessage('Adding art failed: ' + error.message, 'error');
+        console.error('Insert error:', error);
       } else {
         showMessage('Art added successfully!', 'success');
         addArtForm.reset();
