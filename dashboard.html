@@ -460,388 +460,29 @@ authBar.appendChild(userInfo);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Games Dashboard - BrownDogGames</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1e1b2e;
-      color: #fefefe;
-      min-height: 100vh;
-      padding: 20px;
-      background-image: linear-gradient(135deg, #2c1b33, #191425);
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    h1 {
-      font-size: 2.8rem;
-      color: #ff69b4;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-    #games-list {
-      list-style: none;
-      padding: 0;
-      margin-bottom: 2rem;
-    }
-    #games-list li {
-      background-color: #2d1a3a;
-      margin-bottom: 12px;
-      padding: 1rem;
-      border-radius: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .game-info {
-      flex-grow: 1;
-      overflow-wrap: anywhere;
-    }
-    .game-title {
-      font-weight: bold;
-      font-size: 1.2rem;
-      margin-bottom: 6px;
-      color: #ff69b4;
-    }
-    .game-desc {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      margin-bottom: 4px;
-    }
-    .game-urls a {
-      color: #ffc0cb;
-      font-size: 0.9rem;
-      margin-right: 12px;
-      text-decoration: underline;
-    }
-    .remove-btn {
-      background-color: #ff4c4c;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.2s;
-      flex-shrink: 0;
-    }
-    .remove-btn:hover {
-      background-color: #ff1a1a;
-    }
-    form#addGameForm {
-      background-color: #2d1a3a;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px #ff69b4aa;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    form#addGameForm label {
-      font-weight: bold;
-      color: #ffc0cb;
-    }
-    form#addGameForm input[type="text"],
-    form#addGameForm input[type="url"],
-    form#addGameForm textarea {
-      width: 100%;
-      padding: 0.7rem;
-      border-radius: 8px;
-      border: none;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-size: 1rem;
-      background-color: #3b2750;
-      color: #fefefe;
-      resize: vertical;
-    }
-    form#addGameForm button {
-      background: #ff69b4;
-      color: #1e1b2e;
-      font-weight: bold;
-      padding: 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: background 0.3s ease;
-      width: 150px;
-      align-self: center;
-    }
-    form#addGameForm button:hover {
-      background: #ff8edb;
-    }
-    .message {
-      margin-top: 1rem;
-      font-weight: bold;
-      text-align: center;
-      font-size: 1.2rem;
-    }
-    .error {
-      color: #ff8d8d;
-    }
-    .success {
-      color: #8dffa1;
-    }
-  </style>
-</head>
-<body>
-  <h1>Your Submitted Games</h1>
-
-  <ul id="games-list"></ul>
-
-  <form id="addGameForm">
-    <label for="title">Game Title:</label>
-    <input type="text" id="title" placeholder="Enter your game title" required />
-
-    <label for="description">Description:</label>
-    <textarea id="description" rows="4" placeholder="Brief description of your game" required></textarea>
-
-    <label for="embedUrl">Embed URL:</label>
-    <input type="url" id="embedUrl" placeholder="URL to embed your game" required />
-
-    <label for="screenshotUrl">Screenshot URL (optional):</label>
-    <input type="url" id="screenshotUrl" placeholder="Link to a screenshot" />
-
-    <label for="coverUrl">Cover URL (optional):</label>
-    <input type="url" id="coverUrl" placeholder="Link to a cover image" />
-
-    <div id="submitMessage" style="display: none;"></div>
-    <button type="submit" id="submitBtn">Add New Game</button>
-  </form>
-
-  <p class="message" id="formMessage" aria-live="polite"></p>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
-
-    const gamesList = document.getElementById('games-list');
-    const addGameForm = document.getElementById('addGameForm');
-    const message = document.getElementById('formMessage');
-    const submitBtn = document.getElementById('submitBtn');
-
-    let currentUser;
-
-    function showMessage(text, type = '') {
-      message.textContent = text;
-      message.className = `message ${type}`;
-    }
-
-    async function checkAuth() {
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error || !session?.user) {
-        window.location.href = 'login.html';
-        return false;
-      }
-
-      currentUser = session.user;
-      return true;
-    }
-
-    async function fetchGames() {
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        showMessage('Failed to load games: ' + error.message, 'error');
-        return [];
-      }
-      return data;
-    }
-
-    async function loadGames() {
-      const games = await fetchGames();
-      gamesList.innerHTML = '';
-      if (games.length === 0) {
-        gamesList.innerHTML = '<li>No games submitted yet.</li>';
-        return;
-      }
-      games.forEach(game => {
-        const li = document.createElement('li');
-
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'game-info';
-
-        const title = document.createElement('div');
-        title.className = 'game-title';
-        title.textContent = game.title;
-
-        const desc = document.createElement('div');
-        desc.className = 'game-desc';
-        desc.textContent = game.description;
-
-        const urlsDiv = document.createElement('div');
-        urlsDiv.className = 'game-urls';
-
-        const embedLink = document.createElement('a');
-        embedLink.href = game.embed_url;
-        embedLink.target = '_blank';
-        embedLink.rel = 'noopener noreferrer';
-        embedLink.textContent = 'Play';
-        urlsDiv.appendChild(embedLink);
-
-        if (game.screenshot_url) {
-          const screenshotLink = document.createElement('a');
-          screenshotLink.href = game.screenshot_url;
-          screenshotLink.target = '_blank';
-          screenshotLink.rel = 'noopener noreferrer';
-          screenshotLink.textContent = 'Screenshot';
-          urlsDiv.appendChild(screenshotLink);
-        }
-
-        if (game.cover_url) {
-          const coverLink = document.createElement('a');
-          coverLink.href = game.cover_url;
-          coverLink.target = '_blank';
-          coverLink.rel = 'noopener noreferrer';
-          coverLink.textContent = 'Cover';
-          urlsDiv.appendChild(coverLink);
-        }
-
-        infoDiv.appendChild(title);
-        infoDiv.appendChild(desc);
-        infoDiv.appendChild(urlsDiv);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.onclick = async () => {
-          if (!confirm(`Remove "${game.title}"?`)) return;
-          const { error } = await supabase
-            .from('game_submissions')
-            .delete()
-            .eq('id', game.id)
-            .eq('user_id', currentUser.id);
-
-          if (error) {
-            showMessage('Error removing game: ' + error.message, 'error');
-          } else {
-            showMessage('Game removed.', 'success');
-            loadGames();
-          }
-        };
-
-        li.appendChild(infoDiv);
-        li.appendChild(removeBtn);
-        gamesList.appendChild(li);
-      });
-    }
-
-    addGameForm.onsubmit = async (e) => {
-      e.preventDefault();
-      submitBtn.disabled = true;
-      showMessage('');
-
-      const data = {
-        user_id: currentUser.id,
-        github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
-        avatar_url: currentUser.user_metadata?.avatar_url || null,
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        embed_url: document.getElementById('embedUrl').value.trim(),
-        screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-        cover_url: document.getElementById('coverUrl').value.trim() || null,
-        created_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase.from('game_submissions').insert([data]);
-      if (error) {
-        showMessage('Adding game failed: ' + error.message, 'error');
-      } else {
-        showMessage('Game added successfully!', 'success');
-        addGameForm.reset();
-        loadGames();
-      }
-      submitBtn.disabled = false;
-    };
-
-    (async () => {
-      const loggedIn = await checkAuth();
-      if (loggedIn) {
-        loadGames();
-      }
-    })();
-  </script>
-
-  <button id="terms-button" style="
-    background-color: #ff69b4;
-    color: #1e1b2e;
-    border: none;
-    padding: 0.5rem 1rem;
-    font-weight: bold;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  ">
-    Submission Terms
-  </button>
-
-  <script>
-    const termsButton = document.getElementById('terms-button');
-    termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
-    termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
-    termsButton.addEventListener('click', () => {
-      window.location.href = 'submission-terms.html';
-    });
-  </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
   <title>Video Wall</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      background: linear-gradient(135deg, #361c3e, #1a1328);
+      background-color: #1b1b2e;
       color: #fefefe;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
+      margin: 0;
       padding: 20px;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      text-align: center;
     }
 
     h1 {
       font-size: 2rem;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1rem;
-    }
-
-    #container {
-      width: 100%;
-      max-width: 1000px;
+      margin-bottom: 1.5rem;
     }
 
     form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
 
     input, button {
@@ -852,38 +493,48 @@ authBar.appendChild(userInfo);
       font-family: 'Rubik Mono One', sans-serif;
     }
 
-    input[type="url"],
-    input[type="text"] {
-      width: 90%;
-      max-width: 500px;
+    input {
+      width: 60%;
+      max-width: 400px;
     }
 
     button {
       background: #ff4f9f;
       color: #1a1328;
-      cursor: pointer;
       font-weight: bold;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    #container {
+      max-width: 1000px;
+      margin: auto;
+      text-align: left;
     }
 
     #links {
+      margin: 20px 0;
+      padding: 15px;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
-      padding: 15px;
-      background: #2f1a39;
-      text-align: center;
+      background-color: #2f1a39;
+      color: #ff4f9f;
+      font-family: monospace;
     }
 
     #links h2 {
       margin-top: 0;
-      color: #ff4f9f;
+      text-align: center;
+      text-shadow: 1px 1px 0 #000;
     }
 
     #links-list {
+      min-height: 300px;
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
       gap: 20px;
-      margin-top: 20px;
+      justify-content: center;
+      overflow-y: auto;
     }
 
     .link-embed {
@@ -892,45 +543,46 @@ authBar.appendChild(userInfo);
       background: #3a2254;
       border-radius: 12px;
       border: 1px solid #ff4f9f;
+      box-shadow: 0 0 6px #000;
       overflow: hidden;
-      box-shadow: 0 0 10px #000;
-      padding-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      position: relative;
     }
 
     .link-embed iframe {
       width: 100%;
-      height: 270px;
+      height: 270px; /* 16:9 aspect for 480px width */
       border: none;
+      display: block;
     }
 
-    .video-title {
-      padding: 8px;
+    .game-label {
+      margin: 6px 0 12px;
       font-size: 0.9rem;
-      color: #fff;
-      background: #1a1328;
+      color: #ff4f9f;
+      text-shadow: 1px 1px 0 #000;
+      font-family: 'Rubik Mono One', monospace;
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .user-info img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+    .twitter-tweet {
+      width: 100% !important;
+      max-width: 480px !important;
+      margin: 0 auto !important;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #000;
+      background: #2f1a39 !important;
+      color: #ff4f9f !important;
     }
 
     @media (max-width: 600px) {
-      form {
-        width: 100%;
-      }
-
-      input, button {
-        width: 90%;
+      .link-embed,
+      .twitter-tweet {
+        max-width: 100%;
       }
 
       .link-embed iframe {
@@ -941,13 +593,16 @@ authBar.appendChild(userInfo);
   </style>
 </head>
 <body>
-  <h1>🎮 Submit a Video</h1>
+
+  <h1>🎮 Video Links</h1>
 
   <div id="container">
+
+    <!-- VIP Warning Message will appear here -->
+    <!-- Inserted dynamically by script -->
+
     <form id="form">
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
-      <input id="video-title" type="text" placeholder="Enter title..." required />
-      <input id="avatar-url" type="url" placeholder="Your GitHub Avatar URL..." required />
       <button type="submit">Post</button>
     </form>
 
@@ -956,6 +611,8 @@ authBar.appendChild(userInfo);
       <div id="links-list"></div>
     </div>
   </div>
+
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -966,11 +623,34 @@ authBar.appendChild(userInfo);
     );
 
     const form = document.getElementById('form');
-    const inputUrl = document.getElementById('video-url');
-    const inputTitle = document.getElementById('video-title');
-    const inputAvatar = document.getElementById('avatar-url');
+    const input = document.getElementById('video-url');
     const linksList = document.getElementById('links-list');
 
+    // Create VIP warning message element
+    const vipWarning = document.createElement('div');
+    vipWarning.style.color = '#ff4f9f';
+    vipWarning.style.marginBottom = '1rem';
+    vipWarning.style.fontFamily = "'Rubik Mono One', monospace";
+    form.parentNode.insertBefore(vipWarning, form);
+
+    // Map game IDs to names
+    const gameNames = {
+      0: 'Unknown',
+      1: 'Minecraft',
+      2: 'Fortnite',
+      3: 'Valorant',
+    };
+
+    // Detect game ID by URL contents
+    function detectGameId(url) {
+      url = url.toLowerCase();
+      if (url.includes('minecraft')) return '1';
+      if (url.includes('fortnite')) return '2';
+      if (url.includes('valorant')) return '3';
+      return '0';
+    }
+
+    // Render embedded iframe or blockquote for supported URLs
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
@@ -986,55 +666,85 @@ authBar.appendChild(userInfo);
 
       const twt = url.match(/https?:\/\/(www\.)?twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/);
       if (twt) {
-        return `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote>`;
-      }
-
-      const drive = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-      if (drive) {
-        return `<iframe src="https://drive.google.com/file/d/${drive[1]}/preview" allowfullscreen></iframe>`;
+        return `<blockquote class="twitter-tweet" data-lang="en"><a href="${url}"></a></blockquote>`;
       }
 
       return '';
     }
 
-    function addLink(url, title, avatar_url) {
+    // Add a video link embed block to the page
+    function addLink(url, gameId = '0') {
       const div = document.createElement('div');
       div.className = 'link-embed';
 
       const embedHTML = renderEmbed(url);
-      if (!embedHTML) return;
+      if (embedHTML) {
+        div.innerHTML = embedHTML;
 
-      div.innerHTML = embedHTML;
+        // Add label for game
+        const label = document.createElement('div');
+        label.className = 'game-label';
+        label.textContent = gameNames[gameId] || 'Unknown';
+        div.appendChild(label);
 
-      if (title) {
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'video-title';
-        titleDiv.textContent = title;
-        div.appendChild(titleDiv);
-      }
+        linksList.appendChild(div);
 
-      if (avatar_url) {
-        const userInfo = document.createElement('div');
-        userInfo.className = 'user-info';
-        userInfo.innerHTML = `<img src="${avatar_url}" alt="Avatar" />`;
-        div.appendChild(userInfo);
-      }
-
-      linksList.appendChild(div);
-
-      if (url.includes('twitter.com/status')) {
-        setTimeout(() => {
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load(div);
-          }
-        }, 100);
+        // Twitter widget render trigger
+        if (url.includes('twitter.com/status')) {
+          setTimeout(() => {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load(div);
+            }
+          }, 100);
+        }
       }
     }
 
+    // Get github_username from URL param (?user=someUser)
+    function getUserIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('user') || 'guest';
+    }
+
+    const currentUser = getUserIdFromUrl();
+
+    // Check VIP status and enable/disable form accordingly
+    async function checkVIPStatus() {
+      const { data } = await supabase.auth.getSession();
+      const user = data?.session?.user;
+
+      if (!user) {
+        vipWarning.textContent = '🚫 Please log in to post videos.';
+        input.disabled = true;
+        form.querySelector('button').disabled = true;
+        return false;
+      }
+
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !userData?.is_vip) {
+        vipWarning.textContent = '🚫 Posting videos is VIP only — please subscribe.';
+        input.disabled = true;
+        form.querySelector('button').disabled = true;
+        return false;
+      }
+
+      vipWarning.textContent = '';  // Clear warning if VIP
+      input.disabled = false;
+      form.querySelector('button').disabled = false;
+      return true;
+    }
+
+    // Load all videos posted by this user
     async function load() {
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
+        .eq('github_username', currentUser)
         .not('video_url', 'is', null)
         .order('created_at', { ascending: true });
 
@@ -1044,46 +754,49 @@ authBar.appendChild(userInfo);
       }
 
       linksList.innerHTML = '';
-      data.forEach(video => {
-        addLink(video.video_url, video.title, video.avatar_url);
-      });
+      if (data) data.forEach(video => addLink(video.video_url, video.game_id || '0'));
     }
 
+    // Handle video URL submission
     form.addEventListener('submit', async e => {
       e.preventDefault();
+      if (input.disabled) return; // Prevent if not VIP
 
-      const url = inputUrl.value.trim();
-      const title = inputTitle.value.trim();
-      const avatar = inputAvatar.value.trim();
-      if (!url || !title || !avatar) return;
+      const url = input.value.trim();
+      if (!url) return;
+
+      const gameId = detectGameId(url);
 
       const { error } = await supabase
         .from('game_videos')
-        .insert([{ video_url: url, title, avatar_url: avatar }]);
+        .insert([{ video_url: url, game_id: gameId, github_username: currentUser }]);
 
       if (error) {
         console.error('Error inserting video:', error);
       } else {
-        inputUrl.value = '';
-        inputTitle.value = '';
-        inputAvatar.value = '';
+        input.value = '';
       }
     });
 
+    // Realtime subscription for new videos by current user
     supabase.channel('realtime:game_videos')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'game_videos'
+        table: 'game_videos',
+        filter: `github_username=eq.${currentUser}`
       }, payload => {
-        const v = payload.new;
-        if (v.video_url) addLink(v.video_url, v.title, v.avatar_url);
+        if (payload.new.video_url) addLink(payload.new.video_url, payload.new.game_id || '0');
       })
       .subscribe();
 
-    load();
+    // Init VIP check and load videos
+    (async () => {
+      await checkVIPStatus();
+      await load();
+    })();
+
   </script>
 
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
