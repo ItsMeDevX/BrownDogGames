@@ -1297,19 +1297,17 @@
 
   <h1>Your Submitted Art</h1>
 
-  <ul id="art-list">
-    <li>Loading art...</li>
-  </ul>
+  <ul id="art-list"></ul>
 
-  <form id="addArtForm" novalidate>
+  <form id="addArtForm">
     <label for="title">Art Title:</label>
-    <input type="text" id="title" placeholder="Enter art title" required />
+    <input type="text" id="title" name="title" placeholder="Enter art title" required />
 
     <label for="description">Description:</label>
-    <textarea id="description" rows="4" placeholder="Describe your art" required></textarea>
+    <textarea id="description" name="description" rows="4" placeholder="Describe your art" required></textarea>
 
     <label for="imageUrl">Image URL:</label>
-    <input type="url" id="imageUrl" placeholder="Link to your artwork image" required />
+    <input type="url" id="imageUrl" name="imageUrl" placeholder="Link to your artwork image" required />
 
     <button type="submit" id="submitBtn">Add New Art</button>
   </form>
@@ -1319,20 +1317,20 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'YOUR_PUBLIC_ANON_KEY_HERE'; // Don't expose secrets in production
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const artList = document.getElementById('art-list');
     const addArtForm = document.getElementById('addArtForm');
-    const formMessage = document.getElementById('formMessage');
+    const message = document.getElementById('formMessage');
     const submitBtn = document.getElementById('submitBtn');
-    let currentUser = null;
 
-    function showMessage(msg, type = '') {
-      formMessage.textContent = msg;
-      formMessage.className = `message ${type}`;
+    let currentUser;
+
+    function showMessage(text, type = '') {
+      message.textContent = text;
+      message.className = `message ${type}`;
     }
 
     async function checkAuth() {
@@ -1368,18 +1366,25 @@
         return;
       }
 
-      for (const art of artPieces) {
+      artPieces.forEach(art => {
         const li = document.createElement('li');
 
-        li.innerHTML = `
-          <div class="art-title">${art.title}</div>
-          <div class="art-description">${art.description}</div>
-          <img src="${art.image_url}" alt="${art.title}" class="art-image" />
-        `;
+        const title = document.createElement('div');
+        title.className = 'art-title';
+        title.textContent = art.title;
+
+        const description = document.createElement('div');
+        description.className = 'art-description';
+        description.textContent = art.description;
+
+        const img = document.createElement('img');
+        img.src = art.image_url;
+        img.alt = art.title;
+        img.className = 'art-image';
 
         const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
         removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remove';
         removeBtn.onclick = async () => {
           if (!confirm(`Remove "${art.title}"?`)) return;
           const { error } = await supabase
@@ -1394,9 +1399,12 @@
           }
         };
 
+        li.appendChild(title);
+        li.appendChild(description);
+        li.appendChild(img);
         li.appendChild(removeBtn);
         artList.appendChild(li);
-      }
+      });
     }
 
     addArtForm.onsubmit = async (e) => {
@@ -1404,16 +1412,29 @@
       submitBtn.disabled = true;
       showMessage('');
 
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const imageUrl = document.getElementById('imageUrl').value.trim();
+
+      if (!title || !description || !imageUrl) {
+        showMessage('All fields are required.', 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+
       const data = {
-        github_username: currentUser.user_metadata?.user_name || currentUser.email,
+        github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
         avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        image_url: document.getElementById('imageUrl').value.trim(),
+        title,
+        description,
+        image_url: imageUrl,
         created_at: new Date().toISOString()
       };
 
-      const { error } = await supabase.from('user_art').insert([data]);
+      console.log('Submitting:', data);
+
+      const { data: inserted, error } = await supabase.from('user_art').insert([data]).select();
+      console.log('Inserted:', inserted);
 
       if (error) {
         showMessage('Adding art failed: ' + error.message, 'error');
@@ -1425,10 +1446,11 @@
       submitBtn.disabled = false;
     };
 
-    // On load
     (async () => {
       const loggedIn = await checkAuth();
-      if (loggedIn) loadArt();
+      if (loggedIn) {
+        loadArt();
+      }
     })();
   </script>
 
