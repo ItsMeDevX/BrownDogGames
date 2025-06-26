@@ -1301,13 +1301,13 @@
 
   <form id="addArtForm">
     <label for="title">Art Title:</label>
-    <input type="text" id="title" name="title" placeholder="Enter art title" required />
+    <input type="text" id="title" placeholder="Enter art title" required />
 
     <label for="description">Description:</label>
-    <textarea id="description" name="description" rows="4" placeholder="Describe your art" required></textarea>
+    <textarea id="description" rows="4" placeholder="Describe your art" required></textarea>
 
     <label for="imageUrl">Image URL:</label>
-    <input type="url" id="imageUrl" name="imageUrl" placeholder="Link to your artwork image" required />
+    <input type="url" id="imageUrl" placeholder="Link to your artwork image" required />
 
     <button type="submit" id="submitBtn">Add New Art</button>
   </form>
@@ -1318,7 +1318,8 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'YOUR_PUBLIC_ANON_KEY_HERE'; // Don't expose secrets in production
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const artList = document.getElementById('art-list');
@@ -1330,7 +1331,7 @@
 
     function showMessage(text, type = '') {
       message.textContent = text;
-      message.className = `message ${type}`;
+      message.className = message ${type};
     }
 
     async function checkAuth() {
@@ -1360,7 +1361,6 @@
     async function loadArt() {
       const artPieces = await fetchArt();
       artList.innerHTML = '';
-
       if (artPieces.length === 0) {
         artList.innerHTML = '<li>No art submitted yet.</li>';
         return;
@@ -1386,7 +1386,7 @@
         removeBtn.className = 'remove-btn';
         removeBtn.textContent = 'Remove';
         removeBtn.onclick = async () => {
-          if (!confirm(`Remove "${art.title}"?`)) return;
+          if (!confirm(Remove "${art.title}"?)) return;
           const { error } = await supabase
             .from('user_art')
             .delete()
@@ -1402,6 +1402,8 @@
         li.appendChild(title);
         li.appendChild(description);
         li.appendChild(img);
+        // Avatar is NOT appended here, but it is still saved in the DB.
+
         li.appendChild(removeBtn);
         artList.appendChild(li);
       });
@@ -1412,30 +1414,16 @@
       submitBtn.disabled = true;
       showMessage('');
 
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const imageUrl = document.getElementById('imageUrl').value.trim();
-
-      if (!title || !description || !imageUrl) {
-        showMessage('All fields are required.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
         avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title,
-        description,
-        image_url: imageUrl,
+        title: document.getElementById('title').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        image_url: document.getElementById('imageUrl').value.trim(),
         created_at: new Date().toISOString()
       };
 
-      console.log('Submitting:', data);
-
-      const { data: inserted, error } = await supabase.from('user_art').insert([data]).select();
-      console.log('Inserted:', inserted);
-
+      const { error } = await supabase.from('user_art').insert([data]);
       if (error) {
         showMessage('Adding art failed: ' + error.message, 'error');
       } else {
@@ -1455,4 +1443,4 @@
   </script>
 
 </body>
-</html>
+</html> 
