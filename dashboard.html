@@ -1208,6 +1208,7 @@
     .art-description {
       font-size: 0.9rem;
       opacity: 0.8;
+      white-space: pre-wrap;
     }
 
     .art-image {
@@ -1259,6 +1260,12 @@
       color: #fefefe;
     }
 
+    form#addArtForm input:focus,
+    form#addArtForm textarea:focus {
+      outline: 2px solid #ff69b4;
+      outline-offset: 2px;
+    }
+
     form#addArtForm button {
       background: #ff69b4;
       color: #1e1b2e;
@@ -1273,7 +1280,12 @@
       transition: background 0.3s ease;
     }
 
-    form#addArtForm button:hover {
+    form#addArtForm button:disabled {
+      background: #ff69b4aa;
+      cursor: not-allowed;
+    }
+
+    form#addArtForm button:hover:not(:disabled) {
       background: #ff8edb;
     }
 
@@ -1282,6 +1294,7 @@
       font-weight: bold;
       text-align: center;
       font-size: 1.2rem;
+      min-height: 1.5rem;
     }
 
     .error {
@@ -1297,19 +1310,19 @@
 
   <h1>Your Submitted Art</h1>
 
-  <ul id="art-list">
+  <ul id="art-list" aria-live="polite" aria-busy="true">
     <li>Loading art...</li>
   </ul>
 
   <form id="addArtForm" novalidate>
     <label for="title">Art Title:</label>
-    <input type="text" id="title" placeholder="Enter art title" required />
+    <input type="text" id="title" placeholder="Enter art title" required autocomplete="off" />
 
     <label for="description">Description:</label>
     <textarea id="description" rows="4" placeholder="Describe your art" required></textarea>
 
     <label for="imageUrl">Image URL:</label>
-    <input type="url" id="imageUrl" placeholder="Link to your artwork image" required />
+    <input type="url" id="imageUrl" placeholder="Link to your artwork image" required autocomplete="off" />
 
     <button type="submit" id="submitBtn">Add New Art</button>
   </form>
@@ -1330,11 +1343,13 @@
     const submitBtn = document.getElementById('submitBtn');
     let currentUser = null;
 
+    // Utility to show messages (success/error)
     function showMessage(msg, type = '') {
       formMessage.textContent = msg;
-      formMessage.className = message ${type};
+      formMessage.className = `message ${type}`;
     }
 
+    // Check if user is authenticated, redirect if not
     async function checkAuth() {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error || !session?.user) {
@@ -1345,19 +1360,24 @@
       return true;
     }
 
+    // Fetch art from supabase
     async function fetchArt() {
+      artList.setAttribute('aria-busy', 'true');
       const { data, error } = await supabase
         .from('user_art')
         .select('*')
         .order('created_at', { ascending: false });
 
+      artList.removeAttribute('aria-busy');
+
       if (error) {
         showMessage('Failed to load art: ' + error.message, 'error');
         return [];
       }
-      return data;
+      return data || [];
     }
 
+    // Load art into the UI
     async function loadArt() {
       const artPieces = await fetchArt();
       artList.innerHTML = '';
@@ -1370,45 +1390,79 @@
       for (const art of artPieces) {
         const li = document.createElement('li');
 
-        li.innerHTML = 
-          <div class="art-title">${art.title}</div>
-          <div class="art-description">${art.description}</div>
-          <img src="${art.image_url}" alt="${art.title}" class="art-image" />
-        ;
+        // Escape user content for security - here simply textContent to avoid XSS in description/title
+        const safeTitle = document.createElement('div');
+        safeTitle.className = 'art-title';
+        safeTitle.textContent = art.title;
+
+        const safeDescription = document.createElement('div');
+        safeDescription.className = 'art-description';
+        safeDescription.textContent = art.description;
+
+        const img = document.createElement('img');
+        img.className = 'art-image';
+        img.src = art.image_url;
+        img.alt = art.title || 'Artwork image';
 
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'Remove';
         removeBtn.className = 'remove-btn';
-        removeBtn.onclick = async () => {
-          if (!confirm(Remove "${art.title}"?)) return;
+        removeBtn.type = 'button';
+
+        removeBtn.addEventListener('click', async () => {
+          if (!confirm(`Remove "${art.title}"?`)) return;
+
           const { error } = await supabase
             .from('user_art')
             .delete()
             .eq('id', art.id);
+
           if (error) {
             showMessage('Error removing art: ' + error.message, 'error');
           } else {
             showMessage('Art removed.', 'success');
             loadArt();
           }
-        };
+        });
 
+        li.appendChild(safeTitle);
+        li.appendChild(safeDescription);
+        li.appendChild(img);
         li.appendChild(removeBtn);
         artList.appendChild(li);
       }
     }
 
-    addArtForm.onsubmit = async (e) => {
+    // Form submit handler
+    addArtForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Defensive check: user must be loaded
+      if (!currentUser) {
+        showMessage('User not authenticated. Please login again.', 'error');
+        return;
+      }
+
       submitBtn.disabled = true;
       showMessage('');
 
+      // Gather and trim form data
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const image_url = document.getElementById('imageUrl').value.trim();
+
+      if (!title || !description || !image_url) {
+        showMessage('All fields are required.', 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+
       const data = {
-        github_username: currentUser.user_metadata?.user_name || currentUser.email,
+        github_username: currentUser.user_metadata?.user_name || currentUser.email || 'anonymous',
         avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        image_url: document.getElementById('imageUrl').value.trim(),
+        title,
+        description,
+        image_url,
         created_at: new Date().toISOString()
       };
 
@@ -1421,10 +1475,11 @@
         addArtForm.reset();
         loadArt();
       }
-      submitBtn.disabled = false;
-    };
 
-    // On load
+      submitBtn.disabled = false;
+    });
+
+    // On page load: check auth and load art
     (async () => {
       const loggedIn = await checkAuth();
       if (loggedIn) loadArt();
@@ -1432,4 +1487,4 @@
   </script>
 
 </body>
-</html> 
+</html>
