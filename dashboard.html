@@ -1346,9 +1346,12 @@
     }
 
     async function fetchArt() {
+      if (!currentUser) return [];
+
       const { data, error } = await supabase
         .from('user_art')
         .select('*')
+        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1403,12 +1406,22 @@
       submitBtn.disabled = true;
       showMessage('');
 
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const imageUrl = document.getElementById('imageUrl').value.trim();
+
+      if (!title || !description || !imageUrl) {
+        showMessage('Please fill in all fields.', 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email,
         avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        image_url: document.getElementById('imageUrl').value.trim(),
+        title,
+        description,
+        image_url: imageUrl,
         created_at: new Date().toISOString()
       };
 
