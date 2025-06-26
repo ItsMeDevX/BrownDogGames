@@ -359,7 +359,6 @@ authBar.appendChild(userInfo);
       max-width: 900px;
       margin: auto;
       text-align: center;
-      user-select: none;
     }
 
     h1 {
@@ -367,7 +366,6 @@ authBar.appendChild(userInfo);
       color: #ff69b4;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 2rem;
-      user-select: text;
       letter-spacing: 0.1em;
     }
 
@@ -381,17 +379,14 @@ authBar.appendChild(userInfo);
       border: 2px solid #ff69b4;
       padding: 0.65rem 1.4rem;
       border-radius: 16px;
-      letter-spacing: 0.1em;
       box-shadow: 0 0 12px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
     }
 
     .back-link:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
-      box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
-      text-decoration: none;
+      box-shadow: 0 0 25px #ff8bd8ff;
     }
 
     #userList {
@@ -410,7 +405,6 @@ authBar.appendChild(userInfo);
       box-shadow: 0 0 15px #ff69b4cc, inset 0 0 10px #ff69b4bb;
       color: #ffc0cb;
       text-decoration: none;
-      transition: transform 0.25s ease, box-shadow 0.3s ease;
     }
 
     .user-btn:hover {
@@ -465,6 +459,12 @@ authBar.appendChild(userInfo);
 
     const userListEl = document.getElementById('userList');
 
+    function convertGoogleDriveLink(url) {
+      if (!url) return url;
+      const match = url.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,})/);
+      return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+    }
+
     async function loadUsers() {
       const { data, error } = await supabase
         .from('game_submissions')
@@ -502,7 +502,7 @@ authBar.appendChild(userInfo);
         // Avatar
         if (images.avatar_url) {
           const avatarImg = document.createElement('img');
-          avatarImg.src = images.avatar_url;
+          avatarImg.src = convertGoogleDriveLink(images.avatar_url);
           avatarImg.alt = `${user}'s avatar`;
           avatarImg.className = 'avatar-img';
           a.appendChild(avatarImg);
@@ -516,13 +516,20 @@ authBar.appendChild(userInfo);
 
         // Cover
         if (images.cover_url) {
-          const { publicUrl } = supabase
-            .storage
-            .from('covers')
-            .getPublicUrl(images.cover_url);
+          let coverSrc = images.cover_url;
+
+          if (!coverSrc.includes('http')) {
+            const { publicUrl } = supabase
+              .storage
+              .from('covers')
+              .getPublicUrl(coverSrc);
+            coverSrc = publicUrl;
+          } else {
+            coverSrc = convertGoogleDriveLink(coverSrc);
+          }
 
           const coverImg = document.createElement('img');
-          coverImg.src = publicUrl || images.cover_url;
+          coverImg.src = coverSrc;
           coverImg.alt = `${user}'s cover`;
           coverImg.className = 'cover-img';
           a.appendChild(coverImg);
