@@ -979,7 +979,6 @@ authBar.appendChild(userInfo);
   <h1>🎮 Video Links</h1>
 
   <div id="container">
-    <!-- VIP warning removed -->
 
     <form id="form">
       <input id="video-url" type="url" placeholder="Video URL (required)" required />
@@ -1012,7 +1011,6 @@ authBar.appendChild(userInfo);
     const inputAvatar = document.getElementById('avatar-url');
     const linksList = document.getElementById('links-list');
 
-    // Game ID mapping
     const gameNames = {
       '0': 'Unknown',
       '1': 'Minecraft',
@@ -1020,7 +1018,6 @@ authBar.appendChild(userInfo);
       '3': 'Valorant',
     };
 
-    // Detect gameId from URL
     function detectGameId(url) {
       url = url.toLowerCase();
       if (url.includes('minecraft')) return '1';
@@ -1029,7 +1026,6 @@ authBar.appendChild(userInfo);
       return '0';
     }
 
-    // Render video embed or twitter blockquote
     function renderEmbed(url) {
       url = url.replace(/^https?:\/\/(?:www\.)?x\.com\//, 'https://twitter.com/');
 
@@ -1051,7 +1047,6 @@ authBar.appendChild(userInfo);
       return '';
     }
 
-    // Add a video block with all details
     function addLink(url, gameId = '0', title = '', content = '', avatar_url = '') {
       const div = document.createElement('div');
       div.className = 'link-embed';
@@ -1063,99 +1058,75 @@ authBar.appendChild(userInfo);
         ${avatar_url ? `<img src="${avatar_url}" alt="avatar" class="avatar" />` : ''}
         ${title ? `<div class="title">${title}</div>` : ''}
         ${embedHTML}
-        ${content ? `<div class="content">${content}</div>` : ''}
         <div class="game-label">${gameNames[gameId] || 'Unknown'}</div>
+        ${content ? `<div class="content">${content}</div>` : ''}
       `;
 
       linksList.appendChild(div);
 
-      // Trigger Twitter widget render for embedded tweets
-      if (url.includes('twitter.com/status')) {
-        setTimeout(() => {
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load(div);
-          }
-        }, 100);
+      if (url.includes('twitter.com')) {
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load(div);
+        }
       }
     }
 
-    // Get current user from URL param (?user=someUser), fallback to guest
-    function getUserIdFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('user') || 'guest';
-    }
-    const currentUser = getUserIdFromUrl();
-
-    // Load all videos posted by current user
-    async function load() {
+    async function loadLinks() {
+      linksList.innerHTML = '<p>Loading...</p>';
       const { data, error } = await supabase
-        .from('game_videos')
+        .from('full_game_videos')
         .select('*')
-        .eq('github_username', currentUser)
-        .not('video_url', 'is', null)
-        .order('created_at', { ascending: true });
+        .order('id', { ascending: false });
 
       if (error) {
-        console.error('Error loading videos:', error);
+        linksList.innerHTML = `<p style="color:red;">Error loading videos: ${error.message}</p>`;
         return;
       }
 
       linksList.innerHTML = '';
-      data.forEach(video => 
-        addLink(video.video_url, video.game_id, video.title, video.content, video.avatar_url)
-      );
+      data.forEach((item) => {
+        addLink(item.url, item.game_id, item.title, item.content, item.avatar_url);
+      });
     }
 
-    // Submit new video data
-    form.addEventListener('submit', async e => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const url = inputUrl.value.trim();
       if (!url) return;
 
       const title = inputTitle.value.trim();
       const content = inputContent.value.trim();
       const avatar_url = inputAvatar.value.trim();
-      const gameId = detectGameId(url);
+      const game_id = detectGameId(url);
 
-      const { error } = await supabase
-        .from('game_videos')
-        .insert([{
-          video_url: url,
-          game_id: gameId,
-          github_username: currentUser,
+      // Insert into Supabase
+      const { error } = await supabase.from('full_game_videos').insert([
+        {
+          url,
+          game_id,
           title,
           content,
           avatar_url,
-        }]);
+        },
+      ]);
 
       if (error) {
-        console.error('Insert error:', error);
-      } else {
-        form.reset();
+        alert('Error adding video: ' + error.message);
+        return;
       }
+
+      // Clear inputs
+      inputUrl.value = '';
+      inputTitle.value = '';
+      inputContent.value = '';
+      inputAvatar.value = '';
+
+      // Reload list
+      await loadLinks();
     });
 
-    // Real-time updates for current user videos
-    supabase.channel('realtime:game_videos')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'game_videos',
-        filter: `github_username=eq.${currentUser}`
-      }, payload => {
-        const v = payload.new;
-        if (v.video_url) {
-          addLink(v.video_url, v.game_id, v.title, v.content, v.avatar_url);
-        }
-      })
-      .subscribe();
-
-    // Init: just load videos on page load (no VIP check)
-    (async () => {
-      await load();
-    })();
-
+    // Initial load
+    loadLinks();
   </script>
 </body>
 </html>
