@@ -840,7 +840,7 @@
         }
 
         videosContainer.innerHTML = '';
-        data.forEach((video) => {
+        data.forEach((video, index) => {
           const card = document.createElement('article');
           card.className = 'card';
 
@@ -850,25 +850,18 @@
           card.appendChild(title);
 
           if (video.video_url) {
-            const videoEl = document.createElement('video');
-            videoEl.className = 'video-player';
-            videoEl.controls = true;
-            videoEl.src = video.video_url;
-            videoEl.style.maxWidth = '100%';
-            videoEl.style.maxHeight = '200px';
-            videoEl.preload = 'metadata';
-            card.appendChild(videoEl);
-          } else {
-            const noVideoMsg = document.createElement('p');
-            noVideoMsg.className = 'desc';
-            noVideoMsg.textContent = 'No video URL available.';
-            card.appendChild(noVideoMsg);
+            const videoElem = document.createElement('video');
+            videoElem.className = 'video-player';
+            videoElem.controls = true;
+            videoElem.src = video.video_url;
+            videoElem.type = 'video/mp4';
+            card.appendChild(videoElem);
           }
 
-          if (video.content) {
+          if (video.description) {
             const desc = document.createElement('p');
             desc.className = 'desc';
-            desc.textContent = video.content;
+            desc.textContent = video.description;
             card.appendChild(desc);
           }
 
@@ -876,30 +869,26 @@
         });
       }
 
-      // Select game and load chat
-      async function selectGame(gameId) {
+      // Chat logic
+      function selectGame(gameId) {
+        if (selectedGameId === gameId) return;
+
+        // Deselect old game card
+        const oldSelected = document.querySelector('.card.selected');
+        if (oldSelected) oldSelected.classList.remove('selected');
+
+        // Select new game card
+        const newSelected = [...gamesContainer.children].find(card => card.dataset.gameId === gameId);
+        if (newSelected) newSelected.classList.add('selected');
+
         selectedGameId = gameId;
-
-        // Highlight selected game card
-        document.querySelectorAll('#games .card').forEach(card => {
-          if (card.dataset.gameId === gameId) {
-            card.classList.add('selected');
-          } else {
-            card.classList.remove('selected');
-          }
-        });
-
-        if (!selectedGameId) {
-          chatContainer.style.display = 'none';
-          return;
-        }
-
         chatContainer.style.display = 'block';
-        loadChatMessages();
+        messagesDiv.innerHTML = '<p>Loading messages...</p>';
         subscribeToChat();
+        loadChatMessages();
       }
 
-      // Load chat messages for the selected game
+      // Load chat history messages for selected game
       async function loadChatMessages() {
         if (!selectedGameId) return;
         const { data, error } = await supabase
@@ -909,29 +898,29 @@
           .order('created_at', { ascending: true });
 
         if (error) {
-          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading chat messages: ${error.message}</div>`;
-          return;
-        }
-
-        if (!data.length) {
-          messagesDiv.innerHTML = `<p class="no-content">No messages yet for this game.</p>`;
+          messagesDiv.innerHTML = `<div class="no-content">Error loading chat: ${error.message}</div>`;
           return;
         }
 
         messagesDiv.innerHTML = '';
+        if (data.length === 0) {
+          messagesDiv.innerHTML = '<p>No messages yet. Say hi!</p>';
+          return;
+        }
+
         data.forEach(msg => {
           const msgDiv = document.createElement('div');
           msgDiv.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
           messagesDiv.appendChild(msgDiv);
         });
-
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      // Subscribe to real-time chat updates
+      // Subscribe to real-time chat updates for selected game
       function subscribeToChat() {
+        // Unsubscribe previous
         if (currentChatSubscription) {
-          supabase.removeSubscription(currentChatSubscription);
+          currentChatSubscription.unsubscribe();
           currentChatSubscription = null;
         }
         if (!selectedGameId) return;
@@ -948,18 +937,18 @@
           .subscribe();
       }
 
-      // Handle chat form submission
-      form.addEventListener('submit', async e => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!selectedGameId) return;
         const message = msgInput.value.trim();
-        if (!message) return;
+        if (!message || !selectedGameId) return;
 
-        const { error } = await supabase.from('game_chat').insert({
-          game_id: selectedGameId,
-          username,
-          message,
-        });
+        const { error } = await supabase.from('game_chat').insert([
+          {
+            username: username,
+            game_id: selectedGameId,
+            message: message,
+          }
+        ]);
 
         if (error) {
           alert('Error sending message: ' + error.message);
@@ -969,12 +958,11 @@
         msgInput.value = '';
       });
 
-      // Initial load
+      // Load all data on start
       loadGames();
       loadArt();
       loadVideos();
     }
   </script>
-
 </body>
 </html>
