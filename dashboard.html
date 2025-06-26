@@ -593,7 +593,6 @@ authBar.appendChild(userInfo);
   <ul id="games-list"></ul>
 
   <form id="addGameForm">
-    <!-- GitHub username removed, auto from auth -->
     <label for="title">Game Title:</label>
     <input type="text" id="title" placeholder="Enter your game title" required />
 
@@ -609,60 +608,10 @@ authBar.appendChild(userInfo);
     <label for="coverUrl">Cover URL (optional):</label>
     <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
-   
-<!-- ✅ Add Game Form -->
-<form id="addGameForm">
-  <!-- Your other form inputs go here -->
+    <div id="submitMessage" style="display: none;"></div>
+    <button type="submit" id="submitBtn">Add New Game</button>
+  </form>
 
-  <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-  <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
-</form>
-
-<!-- ✅ VIP Protection Script -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  async function protectSubmitButton() {
-    const { data } = await supabase.auth.getSession();
-    const user = data?.session?.user;
-    const submitBtn = document.getElementById('submitBtn');
-    const submitMessage = document.getElementById('submitMessage');
-
-    if (!user || !submitBtn || !submitMessage) return;
-
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('is_vip')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !userData?.is_vip) {
-      submitMessage.textContent = '🚫 VIP Only — You must be a VIP to add new games.';
-      return;
-    }
-
-    // Show countdown
-    let seconds = 30;
-    const countdown = setInterval(() => {
-      submitMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
-    }, 1000);
-
-    setTimeout(() => {
-      clearInterval(countdown);
-      submitMessage.style.display = 'none';
-      submitBtn.style.display = 'inline-block';
-    }, 30000);
-  }
-
-  protectSubmitButton();
-</script>
-
-  
   <p class="message" id="formMessage" aria-live="polite"></p>
 
   <script type="module">
@@ -689,8 +638,7 @@ authBar.appendChild(userInfo);
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error || !session?.user) {
-        // Not logged in: redirect to login page or show login button
-        window.location.href = 'login.html'; // or your login page
+        window.location.href = 'login.html';
         return false;
       }
 
@@ -699,7 +647,6 @@ authBar.appendChild(userInfo);
     }
 
     async function fetchGames() {
-      // Only fetch games owned by current user
       const { data, error } = await supabase
         .from('game_submissions')
         .select('*')
@@ -742,7 +689,6 @@ authBar.appendChild(userInfo);
         embedLink.target = '_blank';
         embedLink.rel = 'noopener noreferrer';
         embedLink.textContent = 'Play';
-
         urlsDiv.appendChild(embedLink);
 
         if (game.screenshot_url) {
@@ -776,7 +722,7 @@ authBar.appendChild(userInfo);
             .from('game_submissions')
             .delete()
             .eq('id', game.id)
-            .eq('user_id', currentUser.id); // Double check ownership
+            .eq('user_id', currentUser.id);
 
           if (error) {
             showMessage('Error removing game: ' + error.message, 'error');
@@ -828,28 +774,27 @@ authBar.appendChild(userInfo);
     })();
   </script>
 
-<button id="terms-button" style="
-  background-color: #ff69b4;
-  color: #1e1b2e;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-weight: bold;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-">
-  Submission Terms
-</button>
+  <button id="terms-button" style="
+    background-color: #ff69b4;
+    color: #1e1b2e;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  ">
+    Submission Terms
+  </button>
 
-<script>
-  const termsButton = document.getElementById('terms-button');
-  termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
-  termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
-  termsButton.addEventListener('click', () => {
-    window.location.href = 'submission-terms.html';
-  });
-</script>
-  
+  <script>
+    const termsButton = document.getElementById('terms-button');
+    termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
+    termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
+    termsButton.addEventListener('click', () => {
+      window.location.href = 'submission-terms.html';
+    });
+  </script>
 </body>
 </html>
