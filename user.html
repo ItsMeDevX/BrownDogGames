@@ -528,6 +528,7 @@
       width: 100%;
       box-sizing: border-box;
       transition: border-color 0.3s ease;
+      cursor: pointer;
     }
 
     .card:hover {
@@ -582,6 +583,8 @@
       background-color: #2f1a39;
       padding: 20px;
       box-sizing: border-box;
+      margin-top: 20px;
+      display: none; /* will be shown if user specified */
     }
     #messages {
       max-height: 400px;
@@ -625,6 +628,7 @@
       background-color: #2f1a39;
       padding: 1rem;
       border-radius: 10px;
+      grid-column: 1 / -1;
     }
   </style>
 </head>
@@ -648,8 +652,8 @@
     <div id="videos" class="content-container">Loading videos...</div>
   </section>
 
-  <div id="chat-container" style="display:none;">
-    <h2>Game Chat</h2>
+  <div id="chat-container">
+    <h2>Chat About This User's Content</h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
@@ -679,14 +683,12 @@
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
-    let selectedGameId = null;
-    let currentChatSubscription = null;
-
     if (!username) {
       pageTitle.textContent = 'User not specified';
       gamesContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
       artContainer.innerHTML = '';
       videosContainer.innerHTML = '';
+      chatContainer.style.display = 'none';
     } else {
       pageTitle.textContent = `${username}'s Content`;
 
@@ -722,7 +724,6 @@
         data.forEach((game, index) => {
           const card = document.createElement('article');
           card.className = 'card';
-          card.dataset.gameId = game.id || game.title || `game-${index}`;
 
           const title = document.createElement('h3');
           title.className = 'title';
@@ -754,14 +755,8 @@
             card.appendChild(link);
           }
 
-          card.addEventListener('click', () => {
-            selectGame(card.dataset.gameId);
-          });
-
           gamesContainer.appendChild(card);
         });
-
-        selectGame(data[0].id || data[0].title || 'default-game');
       }
 
       // Load Art
@@ -792,19 +787,19 @@
           title.textContent = art.title || 'Untitled Art';
           card.appendChild(title);
 
-          if (art.image_url) {
-            const img = document.createElement('img');
-            img.className = 'thumbnail';
-            img.src = convertDriveLinkToThumbnail(art.image_url);
-            img.alt = art.title || 'Art image';
-            card.appendChild(img);
-          }
-
           if (art.description) {
             const desc = document.createElement('p');
             desc.className = 'desc';
             desc.textContent = art.description;
             card.appendChild(desc);
+          }
+
+          if (art.image_url) {
+            const img = document.createElement('img');
+            img.className = 'thumbnail';
+            img.src = convertDriveLinkToThumbnail(art.image_url);
+            img.alt = `${art.title || 'Art'} image`;
+            card.appendChild(img);
           }
 
           artContainer.appendChild(card);
@@ -814,7 +809,7 @@
       // Load Videos
       async function loadVideos() {
         const { data, error } = await supabase
-          .from('game_videos')
+          .from('user_videos')
           .select('*')
           .eq('github_username', username)
           .order('created_at', { ascending: false });
@@ -839,57 +834,46 @@
           title.textContent = video.title || 'Untitled Video';
           card.appendChild(title);
 
+          if (video.description) {
+            const desc = document.createElement('p');
+            desc.className = 'desc';
+            desc.textContent = video.description;
+            card.appendChild(desc);
+          }
+
           if (video.video_url) {
             const videoEl = document.createElement('video');
             videoEl.className = 'video-player';
-            videoEl.controls = true;
             videoEl.src = video.video_url;
+            videoEl.controls = true;
             card.appendChild(videoEl);
-          }
-
-          if (video.content) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = video.content;
-            card.appendChild(desc);
           }
 
           videosContainer.appendChild(card);
         });
       }
 
-      async function selectGame(gameId) {
-        if (selectedGameId === gameId) return; // Already selected
+      // Chat Functions: Global chat for this user, regardless of game
 
-        selectedGameId = gameId;
-        chatContainer.style.display = 'block';
+      chatContainer.style.display = 'block';
 
-        // Highlight selected card
-        document.querySelectorAll('#games .card').forEach(card => {
-          card.classList.toggle('selected', card.dataset.gameId === gameId);
-        });
-
-        await loadMessages();
-
-        if (currentChatSubscription) {
-          supabase.removeChannel(currentChatSubscription);
-          currentChatSubscription = null;
-        }
-
-        currentChatSubscription = supabase.channel('messages-' + gameId)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${gameId}` }, payload => {
-            appendMessage(payload.new);
-          })
-          .subscribe();
+      function appendMessage(message) {
+        if (!message || message.github_username !== username) return;
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>${message.github_username || 'Guest'}:</strong> ${message.content}`;
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
+      let currentChatSubscription = null;
+
       async function loadMessages() {
-        if (!selectedGameId) return;
+        if (!username) return;
 
         const { data, error } = await supabase
           .from('messages')
           .select('*')
-          .eq('game_id', selectedGameId)
+          .eq('github_username', username)
           .order('created_at', { ascending: true });
 
         if (error) {
@@ -909,34 +893,28 @@
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      function appendMessage(message) {
-        if (!message || message.game_id !== selectedGameId) return;
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>${message.github_username || 'Guest'}:</strong> ${message.content}`;
-        messagesDiv.appendChild(div);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      if (currentChatSubscription) {
+        supabase.removeChannel(currentChatSubscription);
+        currentChatSubscription = null;
       }
 
-      async function getUserGitHubUsername() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const { user_metadata } = session.user;
-          return user_metadata.full_name || 'GitHub User';
-        }
-        return 'Guest';
-      }
+      currentChatSubscription = supabase.channel('messages-' + username)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `github_username=eq.${username}` }, payload => {
+          appendMessage(payload.new);
+        })
+        .subscribe();
 
       form.addEventListener('submit', async e => {
         e.preventDefault();
         const msg = msgInput.value.trim();
-        if (!msg || !selectedGameId) return;
-        const user = await getUserGitHubUsername();
+        if (!msg) return;
 
         const { error } = await supabase.from('messages').insert({
           content: msg,
-          game_id: selectedGameId,
-          github_username: user
+          github_username: username,
+          game_id: null
         });
+
         if (error) {
           alert('Error sending message: ' + error.message);
           return;
@@ -945,11 +923,13 @@
         msgInput.value = '';
       });
 
-      // Load all content
+      // Initial load calls
       loadGames();
       loadArt();
       loadVideos();
+      loadMessages();
     }
   </script>
+
 </body>
 </html>
