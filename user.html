@@ -611,6 +611,18 @@ authBar.appendChild(userInfo);
     } else {
       pageTitle.textContent = `${username}'s Games`;
 
+      // Helper to convert Google Drive URLs to thumbnail URLs
+      function convertDriveLinkToThumbnail(url) {
+        if (!url) return url;
+        // Match /file/d/FILE_ID/ or open?id=FILE_ID pattern
+        const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+        const fileId = match ? match[1] : null;
+        if (fileId) {
+          return `https://drive.google.com/thumbnail?id=${fileId}`;
+        }
+        return url; // return original if no match
+      }
+
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -649,7 +661,7 @@ authBar.appendChild(userInfo);
           if (game.screenshot_url) {
             const img = document.createElement('img');
             img.className = 'game-screenshot';
-            img.src = game.screenshot_url;
+            img.src = convertDriveLinkToThumbnail(game.screenshot_url);
             img.alt = `${game.title || 'Game'} screenshot`;
             card.appendChild(img);
           }
@@ -769,6 +781,9 @@ authBar.appendChild(userInfo);
       loadGames();
     }
   </script>
+
+</body>
+</html>
   
 <!DOCTYPE html>
 <html lang="en">
