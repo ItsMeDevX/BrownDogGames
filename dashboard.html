@@ -1332,7 +1332,7 @@
 
     function showMessage(msg, type = '') {
       formMessage.textContent = msg;
-      formMessage.className = message ${type};
+      formMessage.className = `message ${type}`;
     }
 
     async function checkAuth() {
@@ -1349,6 +1349,7 @@
       const { data, error } = await supabase
         .from('user_art')
         .select('*')
+        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1370,17 +1371,17 @@
       for (const art of artPieces) {
         const li = document.createElement('li');
 
-        li.innerHTML = 
+        li.innerHTML = `
           <div class="art-title">${art.title}</div>
           <div class="art-description">${art.description}</div>
           <img src="${art.image_url}" alt="${art.title}" class="art-image" />
-        ;
+        `;
 
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'Remove';
         removeBtn.className = 'remove-btn';
         removeBtn.onclick = async () => {
-          if (!confirm(Remove "${art.title}"?)) return;
+          if (!confirm(`Remove "${art.title}"?`)) return;
           const { error } = await supabase
             .from('user_art')
             .delete()
