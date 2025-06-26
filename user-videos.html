@@ -345,7 +345,7 @@ authBar.appendChild(userInfo);
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All User Game Pages</title>
+  <title>All User Video Submissions</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
 
@@ -423,8 +423,14 @@ authBar.appendChild(userInfo);
       height: 48px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #ff69b4;
       background: #1e1b2e;
+      color: #1e1b2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: 2px solid #ff69b4;
       margin-bottom: 0.5rem;
     }
 
@@ -451,9 +457,9 @@ authBar.appendChild(userInfo);
 
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
 
-  <h1>All User Game Pages</h1>
+  <h1>All User Video Submissions</h1>
 
-  <div id="userList">Loading users...</div>
+  <div id="userList">Loading videos...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -465,86 +471,71 @@ authBar.appendChild(userInfo);
 
     const userListEl = document.getElementById('userList');
 
-    // Convert Google Drive link to thumbnail URL using the file ID
-    function convertDriveLinkToThumbnail(url) {
-      if (!url) return url;
-      const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-      const fileId = match ? match[1] : null;
-      if (fileId) {
-        return `https://drive.google.com/thumbnail?id=${fileId}`;
+    function getThumbnailFromUrl(url) {
+      if (!url) return null;
+
+      // YouTube
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
       }
-      return url;
+
+      // Google Drive
+      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      if (gdMatch) {
+        return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
+      }
+
+      return null;
     }
 
     async function loadUsers() {
       const { data, error } = await supabase
-        .from('game_submissions')
-        .select('github_user, avatar_url, cover_url')
-        .order('github_user', { ascending: true });
+        .from('game_videos')
+        .select('github_username, video_url, title')
+        .order('github_username', { ascending: true });
 
       if (error) {
-        userListEl.textContent = `Error loading users: ${error.message}`;
+        userListEl.textContent = `Error loading videos: ${error.message}`;
         return;
       }
 
       if (!data.length) {
-        userListEl.textContent = 'No users found.';
+        userListEl.textContent = 'No video submissions found.';
         return;
       }
 
-      // Deduplicate users by github_user
       const usersMap = new Map();
-      data.forEach(({ github_user, avatar_url, cover_url }) => {
-        if (github_user && !usersMap.has(github_user)) {
-          usersMap.set(github_user, { avatar_url, cover_url });
+      data.forEach(({ github_username, video_url, title }) => {
+        if (github_username && !usersMap.has(github_username)) {
+          usersMap.set(github_username, { video_url, title });
         }
       });
 
       userListEl.textContent = '';
       const fragment = document.createDocumentFragment();
 
-      for (const [user, images] of usersMap.entries()) {
+      for (const [user, info] of usersMap.entries()) {
         const a = document.createElement('a');
         a.className = 'user-btn';
         a.href = `user.html?user=${encodeURIComponent(user)}`;
 
-        // Avatar image (convert Google Drive links to thumbnail)
-        if (images.avatar_url) {
-          const avatarImg = document.createElement('img');
-          avatarImg.src = convertDriveLinkToThumbnail(images.avatar_url);
-          avatarImg.alt = `${user}'s avatar`;
-          avatarImg.className = 'avatar-img';
-          a.appendChild(avatarImg);
-        }
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar-img';
+        avatar.textContent = user.charAt(0).toUpperCase();
+        a.appendChild(avatar);
 
-        // Username text
         const usernameSpan = document.createElement('span');
         usernameSpan.className = 'username-text';
         usernameSpan.textContent = user;
         a.appendChild(usernameSpan);
 
-        // Cover image (handle Google Drive and Supabase storage)
-        if (images.cover_url) {
-          let coverSrc = images.cover_url;
-
-          // Check if this is a Supabase storage path (no http prefix)
-          if (!coverSrc.startsWith('http')) {
-            // Try getting public URL from Supabase storage 'covers' bucket
-            const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(coverSrc);
-            if (publicUrlData && publicUrlData.publicUrl) {
-              coverSrc = publicUrlData.publicUrl;
-            }
-          } else {
-            // Convert Google Drive URLs to thumbnails
-            coverSrc = convertDriveLinkToThumbnail(coverSrc);
-          }
-
-          const coverImg = document.createElement('img');
-          coverImg.src = coverSrc;
-          coverImg.alt = `${user}'s cover`;
-          coverImg.className = 'cover-img';
-          a.appendChild(coverImg);
-        }
+        const thumb = getThumbnailFromUrl(info.video_url) || 'https://via.placeholder.com/180x100.png?text=Video';
+        const thumbnail = document.createElement('img');
+        thumbnail.src = thumb;
+        thumbnail.alt = `${user}'s video thumbnail`;
+        thumbnail.className = 'cover-img';
+        a.appendChild(thumbnail);
 
         fragment.appendChild(a);
       }
