@@ -391,7 +391,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All User Video Submissions</title>
+  <title>All User Art Submissions</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
 
@@ -503,9 +503,9 @@
 
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
 
-  <h1>All User Video Submissions</h1>
+  <h1>All User Art Submissions</h1>
 
-  <div id="userList">Loading videos...</div>
+  <div id="userList">Loading art submissions...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -517,44 +517,26 @@
 
     const userListEl = document.getElementById('userList');
 
-    function getThumbnailFromUrl(url) {
-      if (!url) return null;
-
-      // YouTube
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
-      if (ytMatch) {
-        return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
-      }
-
-      // Google Drive
-      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-      if (gdMatch) {
-        return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
-      }
-
-      return null;
-    }
-
     async function loadUsers() {
       const { data, error } = await supabase
-        .from('game_videos')
-        .select('github_username, video_url, title')
+        .from('user_art')
+        .select('github_username, image_url, title, avatar_url')
         .order('github_username', { ascending: true });
 
       if (error) {
-        userListEl.textContent = `Error loading videos: ${error.message}`;
+        userListEl.textContent = `Error loading art submissions: ${error.message}`;
         return;
       }
 
       if (!data.length) {
-        userListEl.textContent = 'No video submissions found.';
+        userListEl.textContent = 'No art submissions found.';
         return;
       }
 
       const usersMap = new Map();
-      data.forEach(({ github_username, video_url, title }) => {
+      data.forEach(({ github_username, image_url, title, avatar_url }) => {
         if (github_username && !usersMap.has(github_username)) {
-          usersMap.set(github_username, { video_url, title });
+          usersMap.set(github_username, { image_url, title, avatar_url });
         }
       });
 
@@ -568,7 +550,19 @@
 
         const avatar = document.createElement('div');
         avatar.className = 'avatar-img';
-        avatar.textContent = user.charAt(0).toUpperCase();
+
+        // Use avatar_url if present, else show first letter
+        if (info.avatar_url) {
+          const img = document.createElement('img');
+          img.src = info.avatar_url;
+          img.alt = `${user}'s avatar`;
+          img.style.width = '48px';
+          img.style.height = '48px';
+          img.style.borderRadius = '50%';
+          avatar.appendChild(img);
+        } else {
+          avatar.textContent = user.charAt(0).toUpperCase();
+        }
         a.appendChild(avatar);
 
         const usernameSpan = document.createElement('span');
@@ -576,12 +570,11 @@
         usernameSpan.textContent = user;
         a.appendChild(usernameSpan);
 
-        const thumb = getThumbnailFromUrl(info.video_url) || 'https://via.placeholder.com/180x100.png?text=Video';
-        const thumbnail = document.createElement('img');
-        thumbnail.src = thumb;
-        thumbnail.alt = `${user}'s video thumbnail`;
-        thumbnail.className = 'cover-img';
-        a.appendChild(thumbnail);
+        const img = document.createElement('img');
+        img.src = info.image_url || 'https://via.placeholder.com/180x100.png?text=No+Image';
+        img.alt = `${user}'s artwork titled "${info.title}"`;
+        img.className = 'cover-img';
+        a.appendChild(img);
 
         fragment.appendChild(a);
       }
