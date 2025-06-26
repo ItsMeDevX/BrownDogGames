@@ -809,7 +809,6 @@ authBar.appendChild(userInfo);
   <title>Your Submitted Videos</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
     body {
       font-family: 'Rubik Mono One', sans-serif;
       background-color: #1e1b2e;
@@ -820,7 +819,6 @@ authBar.appendChild(userInfo);
       max-width: 700px;
       margin: 0 auto;
     }
-
     h1 {
       font-size: 2.8rem;
       color: #ff69b4;
@@ -828,14 +826,12 @@ authBar.appendChild(userInfo);
       margin-bottom: 1rem;
       text-align: center;
     }
-
-    #games-list {
+    #videos-list {
       list-style: none;
       padding: 0;
       margin-bottom: 2rem;
     }
-
-    #games-list li {
+    #videos-list li {
       background-color: #2d1a3a;
       margin-bottom: 12px;
       padding: 1rem;
@@ -845,32 +841,27 @@ authBar.appendChild(userInfo);
       align-items: center;
       gap: 12px;
     }
-
-    .game-info {
+    .video-info {
       flex-grow: 1;
       overflow-wrap: anywhere;
     }
-
-    .game-title {
+    .video-title {
       font-weight: bold;
       font-size: 1.2rem;
       margin-bottom: 6px;
       color: #ff69b4;
     }
-
-    .game-desc {
+    .video-content {
       font-size: 0.9rem;
       opacity: 0.8;
       margin-bottom: 4px;
     }
-
-    .game-urls a {
+    .video-urls a {
       color: #ffc0cb;
       font-size: 0.9rem;
       margin-right: 12px;
       text-decoration: underline;
     }
-
     .remove-btn {
       background-color: #ff4c4c;
       color: white;
@@ -882,12 +873,10 @@ authBar.appendChild(userInfo);
       transition: background-color 0.2s;
       flex-shrink: 0;
     }
-
     .remove-btn:hover {
       background-color: #ff1a1a;
     }
-
-    form#addGameForm {
+    form#addVideoForm {
       background-color: #2d1a3a;
       padding: 1.5rem;
       border-radius: 12px;
@@ -896,15 +885,13 @@ authBar.appendChild(userInfo);
       flex-direction: column;
       gap: 1rem;
     }
-
-    form#addGameForm label {
+    form#addVideoForm label {
       font-weight: bold;
       color: #ffc0cb;
     }
-
-    form#addGameForm input[type="text"],
-    form#addGameForm input[type="url"],
-    form#addGameForm textarea {
+    form#addVideoForm input[type="text"],
+    form#addVideoForm input[type="url"],
+    form#addVideoForm textarea {
       width: 100%;
       padding: 0.7rem;
       border-radius: 8px;
@@ -915,8 +902,7 @@ authBar.appendChild(userInfo);
       color: #fefefe;
       resize: vertical;
     }
-
-    form#addGameForm button {
+    form#addVideoForm button {
       background: #ff69b4;
       color: #1e1b2e;
       font-weight: bold;
@@ -929,44 +915,41 @@ authBar.appendChild(userInfo);
       width: 150px;
       align-self: center;
     }
-
-    form#addGameForm button:hover {
+    form#addVideoForm button:hover {
       background: #ff8edb;
     }
-
     .message {
       margin-top: 1rem;
       font-weight: bold;
       text-align: center;
       font-size: 1.2rem;
     }
-
     .error {
       color: #ff8d8d;
     }
-
     .success {
       color: #8dffa1;
     }
   </style>
 </head>
 <body>
+
   <h1>Your Submitted Videos</h1>
 
-  <ul id="games-list"></ul>
+  <ul id="videos-list"></ul>
 
-  <form id="addGameForm">
+  <form id="addVideoForm">
     <label for="title">Video Title:</label>
-    <input type="text" id="title" placeholder="Enter your video title" required />
+    <input type="text" id="title" placeholder="Enter video title" required />
 
-    <label for="content">Description:</label>
+    <label for="content">Description / Content:</label>
     <textarea id="content" rows="4" placeholder="Brief description of your video" required></textarea>
 
     <label for="videoUrl">Video URL:</label>
-    <input type="url" id="videoUrl" placeholder="URL to your video" required />
+    <input type="url" id="videoUrl" placeholder="URL of the video" required />
 
-    <label for="gameId">Game ID (optional):</label>
-    <input type="text" id="gameId" placeholder="Related game ID" />
+    <label for="gameId">Game ID:</label>
+    <input type="text" id="gameId" placeholder="Associated game ID (optional)" />
 
     <button type="submit" id="submitBtn">Add New Video</button>
   </form>
@@ -976,13 +959,13 @@ authBar.appendChild(userInfo);
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'; // replace with your supabase url
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // replace with your anon key
 
-    const gamesList = document.getElementById('games-list');
-    const addGameForm = document.getElementById('addGameForm');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const videosList = document.getElementById('videos-list');
+    const addVideoForm = document.getElementById('addVideoForm');
     const message = document.getElementById('formMessage');
     const submitBtn = document.getElementById('submitBtn');
 
@@ -997,7 +980,7 @@ authBar.appendChild(userInfo);
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error || !session?.user) {
-        window.location.href = 'login.html';
+        window.location.href = 'login.html'; // Redirect if not logged in
         return false;
       }
 
@@ -1009,7 +992,7 @@ authBar.appendChild(userInfo);
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('github_username', currentUser.user_metadata?.user_name)
+        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1021,27 +1004,27 @@ authBar.appendChild(userInfo);
 
     async function loadVideos() {
       const videos = await fetchVideos();
-      gamesList.innerHTML = '';
+      videosList.innerHTML = '';
       if (videos.length === 0) {
-        gamesList.innerHTML = '<li>No videos submitted yet.</li>';
+        videosList.innerHTML = '<li>No videos submitted yet.</li>';
         return;
       }
       videos.forEach(video => {
         const li = document.createElement('li');
 
         const infoDiv = document.createElement('div');
-        infoDiv.className = 'game-info';
+        infoDiv.className = 'video-info';
 
         const title = document.createElement('div');
-        title.className = 'game-title';
+        title.className = 'video-title';
         title.textContent = video.title;
 
-        const desc = document.createElement('div');
-        desc.className = 'game-desc';
-        desc.textContent = video.content;
+        const content = document.createElement('div');
+        content.className = 'video-content';
+        content.textContent = video.content;
 
         const urlsDiv = document.createElement('div');
-        urlsDiv.className = 'game-urls';
+        urlsDiv.className = 'video-urls';
 
         const videoLink = document.createElement('a');
         videoLink.href = video.video_url;
@@ -1053,14 +1036,14 @@ authBar.appendChild(userInfo);
 
         if (video.game_id) {
           const gameIdSpan = document.createElement('span');
-          gameIdSpan.style.color = '#ffc0cb';
           gameIdSpan.style.marginLeft = '12px';
-          gameIdSpan.textContent = `(Game ID: ${video.game_id})`;
+          gameIdSpan.style.opacity = '0.7';
+          gameIdSpan.textContent = `Game ID: ${video.game_id}`;
           urlsDiv.appendChild(gameIdSpan);
         }
 
         infoDiv.appendChild(title);
-        infoDiv.appendChild(desc);
+        infoDiv.appendChild(content);
         infoDiv.appendChild(urlsDiv);
 
         const removeBtn = document.createElement('button');
@@ -1072,8 +1055,7 @@ authBar.appendChild(userInfo);
           const { error } = await supabase
             .from('game_videos')
             .delete()
-            .eq('id', video.id)
-            .eq('github_username', currentUser.user_metadata?.user_name);
+            .eq('id', video.id);
 
           if (error) {
             showMessage('Error removing video: ' + error.message, 'error');
@@ -1085,22 +1067,23 @@ authBar.appendChild(userInfo);
 
         li.appendChild(infoDiv);
         li.appendChild(removeBtn);
-        gamesList.appendChild(li);
+        videosList.appendChild(li);
       });
     }
 
-    addGameForm.onsubmit = async (e) => {
+    addVideoForm.onsubmit = async (e) => {
       e.preventDefault();
       submitBtn.disabled = true;
       showMessage('');
 
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+        avatar_url: currentUser.user_metadata?.avatar_url || null,
         title: document.getElementById('title').value.trim(),
         content: document.getElementById('content').value.trim(),
         video_url: document.getElementById('videoUrl').value.trim(),
         game_id: document.getElementById('gameId').value.trim() || '',
-        created_at: new Date().toISOString(),
+        created_at: new Date().toISOString()
       };
 
       const { error } = await supabase.from('game_videos').insert([data]);
@@ -1108,7 +1091,7 @@ authBar.appendChild(userInfo);
         showMessage('Adding video failed: ' + error.message, 'error');
       } else {
         showMessage('Video added successfully!', 'success');
-        addGameForm.reset();
+        addVideoForm.reset();
         loadVideos();
       }
       submitBtn.disabled = false;
@@ -1121,5 +1104,6 @@ authBar.appendChild(userInfo);
       }
     })();
   </script>
+
 </body>
 </html>
