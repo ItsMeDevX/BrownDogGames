@@ -461,104 +461,147 @@ authBar.appendChild(userInfo);
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Games & Videos</title>
+  <title>Your Games Dashboard - BrownDogGames</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
-      background: #1e1b2e;
-      color: #fff;
-      margin: 1rem;
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      max-width: 700px;
+      margin: 0 auto;
     }
-    h1, h2 {
+    h1 {
+      font-size: 2.8rem;
       color: #ff69b4;
-    }
-    label {
-      display: block;
-      margin-top: 0.5rem;
-    }
-    input, textarea, button {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.25rem;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 1rem;
-      transition: background-color 0.3s;
-    }
-    button:hover:not(:disabled) {
-      background-color: #ff8edb;
-    }
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-    .message {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-    .message.error {
-      color: #ff4f4f;
-    }
-    .message.success {
-      color: #4fff7f;
-    }
-    #games-list li, #links-list > div {
+      text-shadow: 2px 2px 0 #000;
       margin-bottom: 1rem;
-      padding: 0.5rem;
-      background: #2e2b44;
-      border-radius: 8px;
+      text-align: center;
+    }
+    h2 {
+      color: #ff69b4;
+      text-shadow: 1px 1px 0 #000;
+      margin-bottom: 1rem;
+    }
+    #games-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 2rem;
+    }
+    #games-list li {
+      background-color: #2d1a3a;
+      margin-bottom: 12px;
+      padding: 1rem;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
     }
     .game-info {
-      margin-bottom: 0.5rem;
+      flex-grow: 1;
+      overflow-wrap: anywhere;
     }
     .game-title {
       font-weight: bold;
       font-size: 1.2rem;
+      margin-bottom: 6px;
       color: #ff69b4;
     }
     .game-desc {
-      margin: 0.2rem 0 0.5rem 0;
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 4px;
     }
     .game-urls a {
-      margin-right: 1rem;
-      color: #ff69b4;
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      margin-right: 12px;
       text-decoration: underline;
     }
     .remove-btn {
-      background: #ff4f9f;
+      background-color: #ff4c4c;
+      color: white;
       border: none;
-      padding: 0.3rem 0.7rem;
-      border-radius: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-weight: bold;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
     }
     .remove-btn:hover {
-      background: #ff2d7a;
+      background-color: #ff1a1a;
     }
-    .link-embed {
-      position: relative;
+    form#addGameForm {
+      background-color: #2d1a3a;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #ff69b4aa;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
-    .game-label {
-      margin-top: 0.3rem;
-      font-size: 0.9rem;
-      color: #ff69b4;
-      font-family: 'Rubik Mono One', monospace;
+    form#addGameForm label {
+      font-weight: bold;
+      color: #ffc0cb;
     }
-    iframe {
+    form#addGameForm input[type="text"],
+    form#addGameForm input[type="url"],
+    form#addGameForm textarea {
       width: 100%;
-      max-width: 560px;
-      height: 315px;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1rem;
+      background-color: #3b2750;
+      color: #fefefe;
+      resize: vertical;
+    }
+    form#addGameForm button {
+      background: #ff69b4;
+      color: #1e1b2e;
+      font-weight: bold;
+      padding: 1rem;
       border: none;
       border-radius: 8px;
-      margin-top: 0.3rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.3s ease;
+      width: 150px;
+      align-self: center;
+    }
+    form#addGameForm button:hover:not(:disabled) {
+      background: #ff8edb;
+    }
+    form#addGameForm button:disabled {
+      background: #444;
+      cursor: not-allowed;
+    }
+    #submitMessage {
+      color: #ffc0cb;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .error {
+      color: #ff8d8d;
+    }
+    .success {
+      color: #8dffa1;
     }
     #terms-button {
       background-color: #ff69b4;
@@ -571,7 +614,78 @@ authBar.appendChild(userInfo);
       cursor: pointer;
       transition: background-color 0.2s;
       margin-top: 2rem;
-      display: inline-block;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      width: max-content;
+      text-align: center;
+    }
+    #terms-button:hover {
+      background-color: #ff8edb;
+    }
+    hr {
+      margin: 3rem 0;
+      border-color: #ff69b4;
+    }
+
+    /* Video Links Section */
+    #container {
+      background-color: #2d1a3a;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #ff69b4aa;
+    }
+    #form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    #video-url {
+      flex-grow: 1;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1rem;
+      background-color: #3b2750;
+      color: #fefefe;
+    }
+    #form button {
+      background: #ff69b4;
+      color: #1e1b2e;
+      font-weight: bold;
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+      flex-shrink: 0;
+    }
+    #form button:hover {
+      background: #ff8edb;
+    }
+    #links-list > div {
+      background-color: #3b2750;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      color: #ffc0cb;
+    }
+    .link-embed iframe {
+      width: 100%;
+      max-width: 560px;
+      height: 315px;
+      border: none;
+      border-radius: 12px;
+      margin-top: 0.3rem;
+      display: block;
+    }
+    .game-label {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #ff69b4;
+      margin-bottom: 0.3rem;
     }
   </style>
 </head>
@@ -581,7 +695,7 @@ authBar.appendChild(userInfo);
 
   <ul id="games-list"></ul>
 
-  <form id="addGameForm">
+  <form id="addGameForm" novalidate>
     <label for="title">Game Title:</label>
     <input type="text" id="title" placeholder="Enter your game title" required />
 
@@ -597,7 +711,7 @@ authBar.appendChild(userInfo);
     <label for="coverUrl">Cover URL (optional):</label>
     <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
-    <div id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+    <p id="submitMessage">⏳ Checking VIP access... Please wait 30 seconds</p>
     <button type="submit" id="submitBtn" style="display: none;">Add New Game</button>
   </form>
 
@@ -605,12 +719,12 @@ authBar.appendChild(userInfo);
 
   <button id="terms-button" title="Read the submission terms">Submission Terms</button>
 
-  <hr style="margin: 3rem 0; border-color: #ff69b4;" />
+  <hr />
 
   <h1>🎮 Video Links</h1>
 
   <div id="container">
-    <form id="form">
+    <form id="form" novalidate>
       <input id="video-url" type="url" placeholder="Paste video URL..." required />
       <button type="submit">Post</button>
     </form>
@@ -631,7 +745,6 @@ authBar.appendChild(userInfo);
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
-    // GAME SUBMISSION SECTION
     const gamesList = document.getElementById('games-list');
     const addGameForm = document.getElementById('addGameForm');
     const formMessage = document.getElementById('formMessage');
@@ -662,281 +775,163 @@ authBar.appendChild(userInfo);
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
       if (error) {
-        showMessage('Failed to load games: ' + error.message, 'error');
-        return [];
-      }
-      return data;
-    }
-
-    async function loadGames() {
-      const games = await fetchGames();
-      gamesList.innerHTML = '';
-      if (games.length === 0) {
-        gamesList.innerHTML = '<li>No games submitted yet.</li>';
+        showMessage('Failed to load games. Try again later.', 'error');
         return;
       }
-      games.forEach(game => {
+      gamesList.innerHTML = '';
+      if (data.length === 0) {
+        gamesList.innerHTML = '<p style="text-align:center; opacity:0.6;">No games submitted yet.</p>';
+        return;
+      }
+      data.forEach(game => {
         const li = document.createElement('li');
+        li.classList.add('game-item');
+        li.setAttribute('data-id', game.id);
 
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'game-info';
+        li.innerHTML = `
+          <div class="game-info">
+            <div class="game-title">${escapeHTML(game.title)}</div>
+            <div class="game-desc">${escapeHTML(game.description)}</div>
+            <div class="game-urls">
+              <a href="${escapeHTML(game.embed_url)}" target="_blank" rel="noopener noreferrer">Play</a>
+              ${game.screenshot_url ? `<a href="${escapeHTML(game.screenshot_url)}" target="_blank" rel="noopener noreferrer">Screenshot</a>` : ''}
+              ${game.cover_url ? `<a href="${escapeHTML(game.cover_url)}" target="_blank" rel="noopener noreferrer">Cover</a>` : ''}
+            </div>
+          </div>
+          <button class="remove-btn" aria-label="Remove game titled ${escapeHTML(game.title)}">Remove</button>
+        `;
 
-        const title = document.createElement('div');
-        title.className = 'game-title';
-        title.textContent = game.title;
-
-        const desc = document.createElement('div');
-        desc.className = 'game-desc';
-        desc.textContent = game.description;
-
-        const urlsDiv = document.createElement('div');
-        urlsDiv.className = 'game-urls';
-
-        const embedLink = document.createElement('a');
-        embedLink.href = game.embed_url;
-        embedLink.target = '_blank';
-        embedLink.rel = 'noopener noreferrer';
-        embedLink.textContent = 'Play';
-
-        urlsDiv.appendChild(embedLink);
-
-        if (game.screenshot_url) {
-          const screenshotLink = document.createElement('a');
-          screenshotLink.href = game.screenshot_url;
-          screenshotLink.target = '_blank';
-          screenshotLink.rel = 'noopener noreferrer';
-          screenshotLink.textContent = 'Screenshot';
-          urlsDiv.appendChild(screenshotLink);
-        }
-
-        if (game.cover_url) {
-          const coverLink = document.createElement('a');
-          coverLink.href = game.cover_url;
-          coverLink.target = '_blank';
-          coverLink.rel = 'noopener noreferrer';
-          coverLink.textContent = 'Cover';
-          urlsDiv.appendChild(coverLink);
-        }
-
-        infoDiv.appendChild(title);
-        infoDiv.appendChild(desc);
-        infoDiv.appendChild(urlsDiv);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.onclick = async () => {
-          if (!confirm(`Remove "${game.title}"?`)) return;
-          const { error } = await supabase
-            .from('game_submissions')
-            .delete()
-            .eq('id', game.id);
-          if (error) {
-            alert('Error deleting game: ' + error.message);
-            return;
-          }
-          loadGames();
-        };
-
-        li.appendChild(infoDiv);
-        li.appendChild(removeBtn);
+        const removeBtn = li.querySelector('.remove-btn');
+        removeBtn.addEventListener('click', () => removeGame(game.id));
 
         gamesList.appendChild(li);
       });
     }
 
-    async function checkVIP() {
-      if (!currentUser) return false;
-      const { data, error } = await supabase
+    async function removeGame(id) {
+      if (!confirm('Are you sure you want to remove this game?')) return;
+      const { error } = await supabase
         .from('game_submissions')
-        .select('user_id')
-        .eq('user_id', currentUser.id)
-        .limit(1);
-      if (error) return false;
-      // If user has any submission, treat as VIP (adjust your VIP logic)
-      return data.length > 0;
-    }
-
-    async function showVIPCountdown() {
-      let seconds = 30;
-      submitMessage.style.display = 'block';
-      submitBtn.style.display = 'none';
-      submitMessage.textContent = `⏳ Verifying VIP... ${seconds}s remaining`;
-
-      const countdown = setInterval(() => {
-        seconds--;
-        submitMessage.textContent = `⏳ Verifying VIP... ${seconds}s remaining`;
-      }, 1000);
-
-      await new Promise(resolve => setTimeout(resolve, 30000));
-
-      clearInterval(countdown);
-      submitMessage.style.display = 'none';
-      submitBtn.style.display = 'inline-block';
-    }
-
-    addGameForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      formMessage.textContent = '';
-
-      if (!await checkAuth()) return;
-
-      const isVIP = await checkVIP();
-      if (!isVIP) {
-        showMessage('⛔ You must be a VIP member to add games.', 'error');
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUser.id);
+      if (error) {
+        alert('Failed to remove game. Try again later.');
         return;
       }
+      fetchGames();
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, function (match) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[match];
+      });
+    }
+
+    addGameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      showMessage('');
 
       const title = addGameForm.title.value.trim();
       const description = addGameForm.description.value.trim();
-      const embed_url = addGameForm.embedUrl.value.trim();
-      const screenshot_url = addGameForm.screenshotUrl.value.trim() || null;
-      const cover_url = addGameForm.coverUrl.value.trim() || null;
+      const embedUrl = addGameForm.embedUrl.value.trim();
+      const screenshotUrl = addGameForm.screenshotUrl.value.trim();
+      const coverUrl = addGameForm.coverUrl.value.trim();
 
-      if (!title || !description || !embed_url) {
-        showMessage('Please fill all required fields.', 'error');
+      if (!title || !description || !embedUrl) {
+        showMessage('Please fill in all required fields.', 'error');
+        submitBtn.disabled = false;
         return;
       }
 
-      const { error } = await supabase.from('game_submissions').insert({
-        user_id: currentUser.id,
-        title,
-        description,
-        embed_url,
-        screenshot_url,
-        cover_url,
-        created_at: new Date().toISOString(),
-      });
-
-      if (error) {
-        showMessage('Failed to submit game: ' + error.message, 'error');
-        return;
+      try {
+        const { error } = await supabase.from('game_submissions').insert({
+          user_id: currentUser.id,
+          title,
+          description,
+          embed_url: embedUrl,
+          screenshot_url: screenshotUrl || null,
+          cover_url: coverUrl || null,
+          created_at: new Date().toISOString()
+        });
+        if (error) throw error;
+        addGameForm.reset();
+        showMessage('Game added successfully!', 'success');
+        fetchGames();
+      } catch (err) {
+        showMessage('Failed to add game. Please try again.', 'error');
+      } finally {
+        submitBtn.disabled = false;
       }
-
-      addGameForm.reset();
-      showMessage('Game added successfully!', 'success');
-      loadGames();
     });
 
-    // Initialize
-    (async () => {
-      if (!await checkAuth()) return;
-      await showVIPCountdown();
-      await loadGames();
-    })();
+    // VIP access simulation (30 second delay)
+    let vipTimer = 30;
+    const vipInterval = setInterval(() => {
+      vipTimer--;
+      if (vipTimer > 0) {
+        submitMessage.textContent = `⏳ Checking VIP access... Please wait ${vipTimer} second${vipTimer > 1 ? 's' : ''}`;
+      } else {
+        submitMessage.textContent = '';
+        submitBtn.style.display = 'block';
+        clearInterval(vipInterval);
+      }
+    }, 1000);
 
-    // VIDEO LINKS SECTION
-    const linksList = document.getElementById('links-list');
-    const form = document.getElementById('form');
+    // Video links section logic
+    const videoForm = document.getElementById('form');
     const videoUrlInput = document.getElementById('video-url');
+    const linksList = document.getElementById('links-list');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const githubUsername = urlParams.get('user') || 'anonymous';
-
-    function renderEmbed(url) {
-      if (url.includes('youtube.com') || url.includes('youtu.be')) {
-        const videoIdMatch = url.match(/(?:youtu\.be\/|v=)([^&]+)/);
-        const videoId = videoIdMatch ? videoIdMatch[1] : null;
-        if (!videoId) return '';
-        return `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
-      }
-      if (url.includes('twitch.tv')) {
-        return `<iframe src="${url.replace('https://', 'https://player.')}&parent=${window.location.hostname}" allowfullscreen></iframe>`;
-      }
-      if (url.includes('twitter.com')) {
-        return `<blockquote class="twitter-video"><a href="${url}"></a></blockquote>`;
-      }
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-    }
-
-    function detectGameId(url) {
-      const u = url.toLowerCase();
-      if (u.includes('minecraft')) return '1';
-      if (u.includes('fortnite')) return '2';
-      if (u.includes('valorant')) return '3';
-      return '0';
-    }
-
-    async function fetchVideos() {
-      const { data, error } = await supabase
-        .from('videos')
-        .select('*')
-        .eq('github_username', githubUsername)
-        .order('created_at', { ascending: false });
-      if (error) {
-        linksList.innerHTML = `<p class="message error">Failed to load videos: ${error.message}</p>`;
-        return [];
-      }
-      return data;
-    }
-
-    async function loadVideos() {
-      const videos = await fetchVideos();
-      linksList.innerHTML = '';
-      if (videos.length === 0) {
-        linksList.innerHTML = '<p>No videos posted yet.</p>';
-        return;
-      }
-      videos.forEach(video => {
-        const div = document.createElement('div');
-        div.className = 'link-embed';
-
-        const label = document.createElement('div');
-        label.className = 'game-label';
-        label.textContent = video.game_name;
-
-        div.innerHTML = renderEmbed(video.url);
-
-        div.prepend(label);
-
-        linksList.appendChild(div);
-      });
-    }
-
-    form.addEventListener('submit', async e => {
+    videoForm.addEventListener('submit', (e) => {
       e.preventDefault();
-
-      if (!await checkAuth()) return;
-
-      // VIP check for video posting
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_vip')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (!profile?.is_vip) {
-        alert('Only VIP users can post videos.');
-        return;
-      }
-
       const url = videoUrlInput.value.trim();
       if (!url) return;
 
-      const game_id = detectGameId(url);
-
-      const { error } = await supabase.from('videos').insert({
-        url,
-        game_id,
-        github_username: githubUsername,
-        game_name: game_id === '1' ? 'Minecraft' : game_id === '2' ? 'Fortnite' : game_id === '3' ? 'Valorant' : 'Unknown',
-        created_at: new Date().toISOString(),
-      });
-
-      if (error) {
-        alert('Failed to add video: ' + error.message);
+      const videoId = extractYouTubeId(url);
+      if (!videoId) {
+        alert('Please enter a valid YouTube URL.');
         return;
       }
 
+      addVideoLink(url, videoId);
       videoUrlInput.value = '';
-      loadVideos();
     });
 
-    (async () => {
-      if (!await checkAuth()) return;
-      await loadVideos();
-    })();
+    function extractYouTubeId(url) {
+      const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w\-]+)/;
+      const match = url.match(regex);
+      return match ? match[1] : null;
+    }
 
+    function addVideoLink(url, videoId) {
+      const div = document.createElement('div');
+      div.className = 'link-embed';
+      div.innerHTML = `
+        <div class="game-label">Video Embed</div>
+        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+      `;
+      linksList.prepend(div);
+    }
+
+    // Terms button (optional behavior)
+    document.getElementById('terms-button').addEventListener('click', () => {
+      alert('Submission terms:\n- Only your own games.\n- No offensive content.\n- You agree to our terms of service.');
+    });
+
+    // Initialization
+    (async () => {
+      if (!(await checkAuth())) return;
+      fetchGames();
+    })();
   </script>
 
 </body>
