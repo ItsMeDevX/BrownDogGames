@@ -465,6 +465,14 @@ authBar.appendChild(userInfo);
 
     const userListEl = document.getElementById('userList');
 
+    function convertGoogleDriveLink(url) {
+      const match = url?.match(/(?:\/file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+      return url;
+    }
+
     async function loadUsers() {
       const { data, error } = await supabase
         .from('game_submissions')
@@ -499,10 +507,13 @@ authBar.appendChild(userInfo);
         a.className = 'user-btn';
         a.href = `user.html?user=${encodeURIComponent(user)}`;
 
+        const avatarUrl = convertGoogleDriveLink(images.avatar_url);
+        const coverUrl = convertGoogleDriveLink(images.cover_url);
+
         // Avatar
-        if (images.avatar_url) {
+        if (avatarUrl) {
           const avatarImg = document.createElement('img');
-          avatarImg.src = images.avatar_url;
+          avatarImg.src = avatarUrl;
           avatarImg.alt = `${user}'s avatar`;
           avatarImg.className = 'avatar-img';
           a.appendChild(avatarImg);
@@ -515,14 +526,17 @@ authBar.appendChild(userInfo);
         a.appendChild(usernameSpan);
 
         // Cover
-        if (images.cover_url) {
-          const { publicUrl } = supabase
-            .storage
-            .from('covers')
-            .getPublicUrl(images.cover_url);
+        if (coverUrl) {
+          let coverImgSrc = coverUrl;
+
+          // If it's from Supabase storage, use public URL
+          if (!coverUrl.includes('drive.google.com')) {
+            const { publicUrl } = supabase.storage.from('covers').getPublicUrl(coverUrl);
+            if (publicUrl) coverImgSrc = publicUrl;
+          }
 
           const coverImg = document.createElement('img');
-          coverImg.src = publicUrl || images.cover_url;
+          coverImg.src = coverImgSrc;
           coverImg.alt = `${user}'s cover`;
           coverImg.className = 'cover-img';
           a.appendChild(coverImg);
