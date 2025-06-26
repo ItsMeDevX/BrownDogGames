@@ -384,14 +384,12 @@ authBar.appendChild(userInfo);
       letter-spacing: 0.1em;
       box-shadow: 0 0 12px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
     }
 
     .back-link:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
       box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
-      text-decoration: none;
     }
 
     #userList {
@@ -467,11 +465,12 @@ authBar.appendChild(userInfo);
 
     function convertGoogleDriveLink(url) {
       if (!url) return url;
-      const match = url.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
-      if (match) {
-        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-      }
-      return url;
+
+      const match1 = url.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
+      const match2 = url.match(/id=([a-zA-Z0-9_-]{25,})/);
+
+      const fileId = match1?.[1] || match2?.[1];
+      return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
     }
 
     async function loadUsers() {
@@ -489,8 +488,8 @@ authBar.appendChild(userInfo);
       data.forEach(entry => {
         if (entry.github_user && !usersMap.has(entry.github_user)) {
           usersMap.set(entry.github_user, {
-            avatar_url: entry.avatar_url,
-            cover_url: entry.cover_url,
+            avatar_url: convertGoogleDriveLink(entry.avatar_url),
+            cover_url: convertGoogleDriveLink(entry.cover_url),
           });
         }
       });
@@ -511,7 +510,7 @@ authBar.appendChild(userInfo);
         // Avatar
         if (images.avatar_url) {
           const avatarImg = document.createElement('img');
-          avatarImg.src = convertGoogleDriveLink(images.avatar_url);
+          avatarImg.src = images.avatar_url;
           avatarImg.alt = `${user}'s avatar`;
           avatarImg.className = 'avatar-img';
           a.appendChild(avatarImg);
@@ -525,9 +524,8 @@ authBar.appendChild(userInfo);
 
         // Cover
         if (images.cover_url) {
-          let coverSrc = convertGoogleDriveLink(images.cover_url);
           const coverImg = document.createElement('img');
-          coverImg.src = coverSrc;
+          coverImg.src = images.cover_url;
           coverImg.alt = `${user}'s cover`;
           coverImg.className = 'cover-img';
           a.appendChild(coverImg);
