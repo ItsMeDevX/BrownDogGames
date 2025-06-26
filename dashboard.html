@@ -1199,7 +1199,6 @@
       gap: 10px;
     }
 
-    /* New container for avatar + title */
     .title-container {
       display: flex;
       align-items: center;
@@ -1361,10 +1360,12 @@
     }
 
     async function fetchArt() {
+      // Temporarily fetch all art to debug
       const { data, error } = await supabase
         .from('user_art')
         .select('*')
-        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
+        // Uncomment to filter by current user once confirmed working:
+        //.eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1401,18 +1402,18 @@
 
         const title = document.createElement('div');
         title.className = 'art-title';
-        title.textContent = art.title;
+        title.textContent = art.title || '(no title)';
 
         titleContainer.appendChild(avatar);
         titleContainer.appendChild(title);
 
         const description = document.createElement('div');
         description.className = 'art-description';
-        description.textContent = art.description;
+        description.textContent = art.description || '(no description)';
 
         const img = document.createElement('img');
         img.src = art.image_url;
-        img.alt = art.title;
+        img.alt = art.title || 'Art image';
         img.className = 'art-image';
 
         const removeBtn = document.createElement('button');
@@ -1445,12 +1446,24 @@
       submitBtn.disabled = true;
       showMessage('');
 
+      const titleValue = document.getElementById('title').value.trim();
+      const descriptionValue = document.getElementById('description').value.trim();
+      const imageUrlValue = document.getElementById('imageUrl').value.trim();
+
+      console.log('Submit data:', { titleValue, descriptionValue, imageUrlValue });
+
+      if (!titleValue || !descriptionValue || !imageUrlValue) {
+        showMessage('Please fill in all fields.', 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
         avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        image_url: document.getElementById('imageUrl').value.trim(),
+        title: titleValue,
+        description: descriptionValue,
+        image_url: imageUrlValue,
         created_at: new Date().toISOString()
       };
 
