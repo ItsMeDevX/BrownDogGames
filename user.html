@@ -532,20 +532,10 @@
       width: 100%;
       box-sizing: border-box;
       transition: border-color 0.3s ease;
-      cursor: pointer;
+      cursor: default;
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    .card:hover {
-      border-color: #ff82ba;
-      box-shadow: 0 0 10px #ff82ba;
-    }
-
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
     }
 
     .title {
@@ -579,19 +569,16 @@
       max-width: 100%;
     }
 
-    .play-link {
-      display: inline-block;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      padding: 8px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.2s ease;
-      cursor: pointer;
-      margin-top: auto; /* push to bottom */
+    .no-content {
+      font-size: 1.1rem;
+      text-align: center;
+      color: #ddd;
+      margin-top: 2rem;
+      font-style: italic;
+      background-color: #2f1a39;
+      padding: 1rem;
+      border-radius: 10px;
     }
-    .play-link:hover { background-color: #ff82ba; }
 
     #chat-container {
       max-width: 800px;
@@ -641,17 +628,6 @@
       transition: background-color 0.2s ease;
     }
     button:hover { background-color: #ff82ba; }
-
-    .no-content {
-      font-size: 1.1rem;
-      text-align: center;
-      color: #ddd;
-      margin-top: 2rem;
-      font-style: italic;
-      background-color: #2f1a39;
-      padding: 1rem;
-      border-radius: 10px;
-    }
   </style>
 </head>
 <body>
@@ -659,21 +635,19 @@
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
-  <section class="content-section" id="games-section">
-    <h2>Games</h2>
-    <div id="games" class="content-container">Loading games...</div>
-  </section>
-
+  <!-- Art Section -->
   <section class="content-section" id="art-section">
     <h2>Art</h2>
     <div id="art" class="content-container">Loading art...</div>
   </section>
 
+  <!-- Videos Section -->
   <section class="content-section" id="videos-section">
     <h2>Videos</h2>
     <div id="videos" class="content-container">Loading videos...</div>
   </section>
 
+  <!-- Chat Container -->
   <div id="chat-container">
     <h2>Game Chat</h2>
     <div id="messages"><p>Loading messages...</p></div>
@@ -692,7 +666,6 @@
     );
 
     const pageTitle = document.getElementById('pageTitle');
-    const gamesContainer = document.getElementById('games');
     const artContainer = document.getElementById('art');
     const videosContainer = document.getElementById('videos');
     const chatContainer = document.getElementById('chat-container');
@@ -703,14 +676,13 @@
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
 
-    let selectedGameId = null;
     let currentChatSubscription = null;
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
-      gamesContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
-      artContainer.innerHTML = '';
+      artContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
       videosContainer.innerHTML = '';
+      chatContainer.style.display = 'none';
     } else {
       pageTitle.textContent = `${username}'s Content`;
 
@@ -724,72 +696,11 @@
         return url;
       }
 
-      async function loadGames() {
-        const { data, error } = await supabase
-          .from('game_submissions')
-          .select('*')
-          .eq('github_user', username)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-          return;
-        }
-
-        if (!data.length) {
-          gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-          return;
-        }
-
-        gamesContainer.innerHTML = '';
-        data.forEach((game, index) => {
-          const card = document.createElement('article');
-          card.className = 'card';
-          card.dataset.gameId = game.id || `game-${index}`;
-
-          const title = document.createElement('h3');
-          title.className = 'title';
-          title.textContent = game.title || 'Untitled Game';
-          card.appendChild(title);
-
-          if (game.description) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = game.description;
-            card.appendChild(desc);
-          }
-
-          if (game.screenshot_url) {
-            const img = document.createElement('img');
-            img.className = 'thumbnail';
-            img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-            img.alt = `Screenshot of ${game.title}`;
-            card.appendChild(img);
-          }
-
-          if (game.game_link) {
-            const playLink = document.createElement('a');
-            playLink.className = 'play-link';
-            playLink.href = game.game_link;
-            playLink.target = '_blank';
-            playLink.rel = 'noopener noreferrer';
-            playLink.textContent = 'Play Game';
-            card.appendChild(playLink);
-          }
-
-          card.addEventListener('click', () => {
-            selectGame(game.id);
-          });
-
-          gamesContainer.appendChild(card);
-        });
-      }
-
       async function loadArt() {
         const { data, error } = await supabase
-          .from('art_submissions')
+          .from('user_art')
           .select('*')
-          .eq('github_user', username)
+          .eq('github_username', username)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -803,7 +714,7 @@
         }
 
         artContainer.innerHTML = '';
-        data.forEach((art, index) => {
+        data.forEach(art => {
           const card = document.createElement('article');
           card.className = 'card';
 
@@ -819,13 +730,12 @@
             card.appendChild(desc);
           }
 
-          if (art.artwork_url) {
+          if (art.image_url) {
             const img = document.createElement('img');
             img.className = 'thumbnail';
 
-            // Fix: Use the raw URL if convertDriveLinkToThumbnail returns the same URL (i.e., no fileId found)
-            const thumbUrl = convertDriveLinkToThumbnail(art.artwork_url);
-            img.src = thumbUrl || art.artwork_url;
+            const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+            img.src = thumbUrl || art.image_url;
             img.alt = `Artwork: ${art.title}`;
             card.appendChild(img);
           }
@@ -836,9 +746,9 @@
 
       async function loadVideos() {
         const { data, error } = await supabase
-          .from('video_submissions')
+          .from('game_videos')
           .select('*')
-          .eq('github_user', username)
+          .eq('github_username', username)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -852,7 +762,7 @@
         }
 
         videosContainer.innerHTML = '';
-        data.forEach((video, index) => {
+        data.forEach(video => {
           const card = document.createElement('article');
           card.className = 'card';
 
@@ -861,10 +771,10 @@
           title.textContent = video.title || 'Untitled Video';
           card.appendChild(title);
 
-          if (video.description) {
+          if (video.content) {
             const desc = document.createElement('p');
             desc.className = 'desc';
-            desc.textContent = video.description;
+            desc.textContent = video.content;
             card.appendChild(desc);
           }
 
@@ -873,14 +783,6 @@
             videoElem.className = 'video-player';
             videoElem.controls = true;
             videoElem.src = video.video_url;
-            // Remove invalid alt attribute for video element
-            // videoElem.alt = `Video: ${video.title}`; // <-- REMOVE
-
-            // Provide fallback text for browsers that do not support the video tag
-            const fallbackText = document.createElement('p');
-            fallbackText.textContent = 'Your browser does not support the video tag.';
-            videoElem.appendChild(fallbackText);
-
             card.appendChild(videoElem);
           }
 
@@ -888,39 +790,16 @@
         });
       }
 
-      async function selectGame(gameId) {
-        selectedGameId = gameId;
-
-        // Highlight selected game card
-        document.querySelectorAll('#games .card').forEach(card => {
-          if (card.dataset.gameId === gameId) {
-            card.classList.add('selected');
-          } else {
-            card.classList.remove('selected');
-          }
-        });
-
-        if (!selectedGameId) {
-          chatContainer.style.display = 'none';
-          if (currentChatSubscription) {
-            supabase.removeSubscription(currentChatSubscription);
-            currentChatSubscription = null;
-          }
+      async function loadChatMessages(gameId) {
+        if (!gameId) {
+          messagesDiv.innerHTML = `<p class="no-content">No game selected for chat.</p>`;
           return;
         }
-
-        chatContainer.style.display = 'flex';
-        await loadChatMessages();
-        subscribeToChat();
-      }
-
-      async function loadChatMessages() {
-        if (!selectedGameId) return;
 
         const { data, error } = await supabase
           .from('messages')
           .select('*')
-          .eq('game_id', selectedGameId)
+          .eq('game_id', gameId)
           .order('created_at', { ascending: true });
 
         if (error) {
@@ -943,17 +822,21 @@
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      function subscribeToChat() {
+      function subscribeToChat(gameId) {
         if (currentChatSubscription) {
-          supabase.removeSubscription(currentChatSubscription);
+          supabase.removeChannel(currentChatSubscription);
           currentChatSubscription = null;
         }
-        if (!selectedGameId) return;
+        if (!gameId) return;
 
-        // Fix: Supabase real-time subscription updated syntax for v2
         currentChatSubscription = supabase
-          .channel(`public:messages_game_id=eq.${selectedGameId}`)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${selectedGameId}` }, payload => {
+          .channel('public:messages:game_id=eq.' + gameId)
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `game_id=eq.${gameId}`
+          }, (payload) => {
             const newMsg = payload.new;
             const msgDiv = document.createElement('div');
             msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`;
@@ -963,16 +846,31 @@
           .subscribe();
       }
 
+      // We don't have a games table, so no chat for now.
+      // But you can add game_id in URL to enable chat section:
+      const gameId = urlParams.get('game_id');
+      if (gameId) {
+        chatContainer.style.display = 'flex';
+        loadChatMessages(gameId);
+        subscribeToChat(gameId);
+      } else {
+        chatContainer.style.display = 'none';
+      }
+
       form.addEventListener('submit', async e => {
         e.preventDefault();
-        if (!selectedGameId) return;
-        const message = msgInput.value.trim();
-        if (!message) return;
+        if (!msgInput.value.trim()) return;
+
+        if (!gameId) {
+          alert('No game selected for chat.');
+          return;
+        }
 
         const { error } = await supabase.from('messages').insert({
-          game_id: selectedGameId,
+          content: msgInput.value.trim(),
           github_username: username,
-          content: message,
+          game_id: gameId,
+          created_at: new Date().toISOString(),
         });
 
         if (error) {
@@ -983,8 +881,6 @@
         msgInput.value = '';
       });
 
-      // Load all content initially
-      loadGames();
       loadArt();
       loadVideos();
     }
