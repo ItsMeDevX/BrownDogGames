@@ -1004,14 +1004,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Increment VIP View</title>
+  <title>Show Some Love</title>
 </head>
 <body>
   <!-- Your existing auth bar container -->
   <div id="auth-bar" style="max-width:320px;margin:20px auto;padding:10px 16px;background:#2a243b;color:#fefefe;border-radius:12px;font-family:sans-serif;"></div>
 
-  <h1>Increment VIP Page View</h1>
-  <button id="increment-btn">Increment VIP View</button>
+  <h1>Show Some Love</h1>
+  <button id="like-btn">Like this Page</button>
   <p id="status"></p>
 
   <script type="module">
@@ -1021,7 +1021,7 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // Replace with your anon/public key
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // --- RENDER A SIMPLE AUTH BAR (simulate your existing one) ---
+    // --- Render simple auth bar ---
     async function renderAuthBar() {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -1033,7 +1033,6 @@
         return;
       }
 
-      // Display the username somewhere visible
       const username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
 
       const userDiv = document.createElement('div');
@@ -1044,8 +1043,18 @@
 
     renderAuthBar();
 
-    document.getElementById('increment-btn').addEventListener('click', async () => {
-      const status = document.getElementById('status');
+    const likeBtn = document.getElementById('like-btn');
+    const status = document.getElementById('status');
+
+    // Track if user already liked (can be improved by backend check)
+    let liked = false;
+
+    likeBtn.addEventListener('click', async () => {
+      if (liked) {
+        status.textContent = 'You have already liked this page!';
+        return;
+      }
+
       status.textContent = 'Checking user...';
 
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -1055,18 +1064,18 @@
         return;
       }
 
-      // Grab username from auth bar (or fallback to user metadata)
       const authBarUserDiv = document.getElementById('user-info');
       let username = authBarUserDiv ? authBarUserDiv.textContent.replace('Logged in as: ', '') : null;
       if (!username || username === 'unknown') {
         username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
       }
 
-      status.textContent = 'Incrementing VIP view...';
+      status.textContent = 'Liking page...';
 
       try {
         const now = new Date().toISOString();
 
+        // Call your RPC function (assuming it increments likes)
         const { data, error: rpcError } = await supabase.rpc('increment_vip_page_view', {
           in_user_id: user.id,
           in_username: username,
@@ -1074,11 +1083,13 @@
         });
 
         if (rpcError) {
-          status.textContent = `Error incrementing VIP view: ${rpcError.message}`;
+          status.textContent = `Error liking page: ${rpcError.message}`;
           return;
         }
 
-        status.textContent = `VIP view count updated! Current count: ${data}`;
+        status.textContent = `Page liked! Total likes: ${data}`;
+        liked = true;
+        likeBtn.disabled = true;
       } catch (err) {
         console.error(err);
         status.textContent = 'Unexpected error occurred. Check console.';
