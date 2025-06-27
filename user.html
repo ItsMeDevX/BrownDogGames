@@ -660,273 +660,205 @@
     </form>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+ <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('user') || '';
-    const selectedGameId = username;
+  const pageTitle = document.getElementById('pageTitle');
+  const gamesContainer = document.getElementById('games');
+  const chatContainer = document.getElementById('chat-container');
+  const messagesDiv = document.getElementById('messages');
+  const form = document.getElementById('chat-form');
+  const msgInput = document.getElementById('msg-input');
 
-    const pageTitle = document.getElementById('pageTitle');
-    const chatUsername = document.getElementById('chat-username');
-    const gamesContainer = document.getElementById('games');
-    const artContainer = document.getElementById('art');
-    const videosContainer = document.getElementById('videos');
-    const chatContainer = document.getElementById('chat-container');
-    const messagesDiv = document.getElementById('messages');
-    const form = document.getElementById('chat-form');
-    const msgInput = document.getElementById('msg-input');
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get('user') || '';
 
-    let currentChatSubscription = null;
+  let selectedGameId = null;
+  let currentChatSubscription = null;
 
-    if (!username) {
-      pageTitle.textContent = 'User not specified';
-      gamesContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
-      artContainer.innerHTML = '';
-      videosContainer.innerHTML = '';
-      chatContainer.style.display = 'none';
-    } else {
-      pageTitle.textContent = `${username}'s Content`;
-      chatUsername.textContent = username;
+  if (!username) {
+    pageTitle.textContent = 'User not specified';
+    gamesContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
+  } else {
+    pageTitle.textContent = `${username}'s Content`;
 
-      function convertDriveLinkToThumbnail(url) {
-        if (!url) return url;
-        const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-        const fileId = match ? match[1] : null;
-        if (fileId) {
-          return `https://drive.google.com/thumbnail?id=${fileId}`;
-        }
-        return url;
+    async function loadGames() {
+      const { data, error } = await supabase
+        .from('game_submissions')
+        .select('*')
+        .eq('github_user', username)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
+        return;
       }
 
-      async function loadGames() {
-        const { data, error } = await supabase
-          .from('game_submissions')
-          .select('*')
-          .eq('github_user', username)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-          return;
-        }
-
-        if (!data.length) {
-          gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-          return;
-        }
-
-        gamesContainer.innerHTML = '';
-        data.forEach((game) => {
-          const card = document.createElement('article');
-          card.className = 'card';
-
-          const title = document.createElement('h3');
-          title.className = 'title';
-          title.textContent = game.title || 'Untitled Game';
-          card.appendChild(title);
-
-          if (game.description) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = game.description;
-            card.appendChild(desc);
-          }
-
-          if (game.screenshot_url) {
-            const img = document.createElement('img');
-            img.className = 'thumbnail';
-            img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-            img.alt = `${game.title || 'Game'} screenshot`;
-            card.appendChild(img);
-          }
-
-          if (game.embed_url) {
-            const link = document.createElement('a');
-            link.href = game.embed_url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.textContent = '▶️ Play Game';
-            link.className = 'play-link';
-            card.appendChild(link);
-          }
-
-          gamesContainer.appendChild(card);
-        });
+      if (!data.length) {
+        gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+        return;
       }
 
-      async function loadArt() {
-        const { data, error } = await supabase
-          .from('user_art')
-          .select('*')
-          .eq('github_username', username)
-          .order('created_at', { ascending: false });
+      gamesContainer.innerHTML = '';
+      data.forEach((game, index) => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.dataset.gameId = game.id || game.title || `game-${index}`;
 
-        if (error) {
-          artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
-          return;
+        const title = document.createElement('h3');
+        title.className = 'title';
+        title.textContent = game.title || 'Untitled Game';
+        card.appendChild(title);
+
+        if (game.description) {
+          const desc = document.createElement('p');
+          desc.className = 'desc';
+          desc.textContent = game.description;
+          card.appendChild(desc);
         }
 
-        if (!data.length) {
-          artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
-          return;
+        if (game.screenshot_url) {
+          const img = document.createElement('img');
+          img.className = 'thumbnail';
+          img.src = convertDriveLinkToThumbnail(game.screenshot_url);
+          img.alt = `${game.title || 'Game'} screenshot`;
+          card.appendChild(img);
         }
 
-        artContainer.innerHTML = '';
-        data.forEach((art) => {
-          const card = document.createElement('article');
-          card.className = 'card';
-
-          const title = document.createElement('h3');
-          title.className = 'title';
-          title.textContent = art.title || 'Untitled Art';
-          card.appendChild(title);
-
-          if (art.image_url) {
-            const img = document.createElement('img');
-            img.className = 'thumbnail';
-            img.src = convertDriveLinkToThumbnail(art.image_url);
-            img.alt = `${art.title || 'Art'} thumbnail`;
-            card.appendChild(img);
-          }
-
-          if (art.description) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = art.description;
-            card.appendChild(desc);
-          }
-
-          artContainer.appendChild(card);
-        });
-      }
-
-      async function loadVideos() {
-        const { data, error } = await supabase
-          .from('game_videos')
-          .select('*')
-          .eq('github_username', username)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
-          return;
+        if (game.embed_url) {
+          const link = document.createElement('a');
+          link.href = game.embed_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = '▶️ Play Game';
+          link.className = 'play-link';
+          card.appendChild(link);
         }
 
-        if (!data.length) {
-          videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
-          return;
-        }
-
-        videosContainer.innerHTML = '';
-        data.forEach((video) => {
-          const card = document.createElement('article');
-          card.className = 'card';
-
-          const title = document.createElement('h3');
-          title.className = 'title';
-          title.textContent = video.title || 'Untitled Video';
-          card.appendChild(title);
-
-          if (video.video_url) {
-            const videoEl = document.createElement('video');
-            videoEl.className = 'video-player';
-            videoEl.controls = true;
-            videoEl.src = video.video_url;
-            videoEl.preload = 'metadata';
-            card.appendChild(videoEl);
-          }
-
-          if (video.content) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = video.content;
-            card.appendChild(desc);
-          }
-
-          videosContainer.appendChild(card);
-        });
-      }
-
-      async function loadChatMessages() {
-        const { data, error } = await supabase
-          .from('game_chat')
-          .select('*')
-          .eq('game_id', selectedGameId)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
-          return;
-        }
-
-        if (!data.length) {
-          messagesDiv.innerHTML = `<p class="no-content">No messages yet.</p>`;
-          return;
-        }
-
-        messagesDiv.innerHTML = '';
-        data.forEach(msg => {
-          const div = document.createElement('div');
-          div.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
-          messagesDiv.appendChild(div);
+        card.addEventListener('click', () => {
+          selectGame(card.dataset.gameId);
         });
 
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      }
-
-      function subscribeToChat() {
-        if (currentChatSubscription) {
-          supabase.removeChannel(currentChatSubscription);
-        }
-
-        currentChatSubscription = supabase
-          .channel(`chat-${selectedGameId}`)
-          .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'game_chat',
-            filter: `game_id=eq.${selectedGameId}`
-          }, payload => {
-            const newMsg = payload.new;
-            const div = document.createElement('div');
-            div.innerHTML = `<strong>${newMsg.username}:</strong> ${newMsg.message}`;
-            messagesDiv.appendChild(div);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-          })
-          .subscribe();
-      }
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const message = msgInput.value.trim();
-        if (!message) return;
-
-        const { error } = await supabase.from('game_chat').insert({
-          game_id: selectedGameId,
-          username,
-          message
-        });
-
-        if (error) {
-          alert('Error sending message: ' + error.message);
-        }
-
-        msgInput.value = '';
+        gamesContainer.appendChild(card);
       });
 
-      // Load all on page start
-      loadGames();
-      loadArt();
-      loadVideos();
+      if (data.length > 0) {
+        selectGame(data[0].id || data[0].title || 'default-game');
+      }
+    }
+
+    function convertDriveLinkToThumbnail(url) {
+      if (!url) return url;
+      const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      const fileId = match ? match[1] : null;
+      return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : url;
+    }
+
+    // SELECT GAME + CHAT
+    async function selectGame(gameId) {
+      selectedGameId = gameId;
+
+      document.querySelectorAll('#games .card').forEach(card => {
+        card.classList.toggle('selected', card.dataset.gameId === gameId);
+      });
+
+      if (!selectedGameId) {
+        chatContainer.style.display = 'none';
+        return;
+      }
+
+      chatContainer.style.display = 'block';
       loadChatMessages();
       subscribeToChat();
     }
-  </script>
+
+    async function loadChatMessages() {
+      if (!selectedGameId) return;
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('game_id', selectedGameId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
+        return;
+      }
+
+      if (!data.length) {
+        messagesDiv.innerHTML = `<p class="no-content">No messages yet for this game.</p>`;
+        return;
+      }
+
+      messagesDiv.innerHTML = '';
+      data.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
+        messagesDiv.appendChild(msgDiv);
+      });
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function subscribeToChat() {
+      if (currentChatSubscription) {
+        supabase.removeChannel(currentChatSubscription);
+        currentChatSubscription = null;
+      }
+
+      currentChatSubscription = supabase
+        .channel('chat-messages')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `game_id=eq.${selectedGameId}`
+          },
+          (payload) => {
+            const msg = payload.new;
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          }
+        )
+        .subscribe();
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!selectedGameId) return;
+
+      const message = msgInput.value.trim();
+      if (!message) return;
+
+      const { error } = await supabase.from('messages').insert({
+        game_id: selectedGameId,
+        github_username: username,
+        content: message,
+      });
+
+      if (error) {
+        alert('Error sending message: ' + error.message);
+        return;
+      }
+
+      msgInput.value = '';
+    });
+
+    // Load content
+    loadGames();
+    // Presumably you already defined loadArt and loadVideos
+    loadArt?.();
+    loadVideos?.();
+  }
+</script>
 </body>
 </html>
