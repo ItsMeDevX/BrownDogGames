@@ -1017,24 +1017,26 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your actual anon key
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const likeBtn = document.getElementById('like-btn');
     const status = document.getElementById('status');
     const authBar = document.getElementById('auth-bar');
+    const heading = document.getElementById('heading');
 
+    // Get the page owner from URL query param 'user'
     const urlParams = new URLSearchParams(window.location.search);
-    const pageOwner = urlParams.get('username');
+    const pageOwner = urlParams.get('user');
 
     if (!pageOwner) {
       document.title = 'Error';
-      document.getElementById('heading').textContent = '❌ No username in URL.';
+      heading.textContent = '❌ No username in URL.';
       likeBtn.style.display = 'none';
       status.textContent = '';
     } else {
       document.title = `Show Love to ${pageOwner}`;
-      document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
+      heading.textContent = `Show Some Love to ${pageOwner} ❤️`;
     }
 
     async function renderAuthBar() {
@@ -1055,17 +1057,19 @@
     }
 
     async function checkIfLiked(userId) {
+      if (!pageOwner) return false;
       const { data, error } = await supabase
-        .from('vip_page_views')
+        .from('vip_page_views')   // use your table here (you said vip_page_views)
         .select('user_id')
         .eq('user_id', userId)
         .eq('username', pageOwner)
         .single();
 
-      return !error && data;
+      return !error && data != null;
     }
 
     async function getLikeCount() {
+      if (!pageOwner) return 0;
       const { count, error } = await supabase
         .from('vip_page_views')
         .select('*', { count: 'exact', head: true })
@@ -1075,6 +1079,7 @@
     }
 
     async function updateLikeStatus(user) {
+      if (!pageOwner) return;
       const alreadyLiked = await checkIfLiked(user.id);
       const count = await getLikeCount();
 
@@ -1094,6 +1099,11 @@
         return;
       }
 
+      if (!pageOwner) {
+        status.textContent = '❌ No page owner specified.';
+        return;
+      }
+
       const alreadyLiked = await checkIfLiked(user.id);
       if (alreadyLiked) {
         status.textContent = `❤️ You've already liked ${pageOwner}'s page.`;
@@ -1102,14 +1112,8 @@
       }
 
       const { error: insertError } = await supabase
-        .from('vip_page_views')
-        .insert([{
-          user_id: user.id,
-          username: pageOwner,
-          view_count: 1,
-          first_viewed_at: new Date().toISOString(),
-          last_viewed_at: new Date().toISOString()
-        }]);
+        .from('vip_page_views')  // insert to your vip_page_views table
+        .insert([{ user_id: user.id, username: pageOwner, view_count: 1, first_viewed_at: new Date().toISOString(), last_viewed_at: new Date().toISOString() }]);
 
       if (insertError) {
         status.textContent = '❌ Error liking page.';
@@ -1125,9 +1129,10 @@
     (async () => {
       const user = await renderAuthBar();
       if (user && pageOwner) {
-        updateLikeStatus(user);
+        await updateLikeStatus(user);
       }
     })();
+
   </script>
 </body>
 </html>
