@@ -803,22 +803,26 @@
       });
     }
 
-    async function loadVipPageViews() {
-      const { data, error } = await supabase
-        .from('vip_page_views')
-        .select('view_count')
-        .eq('username', currentUser.user_metadata?.user_name || currentUser.email)
-        .single();
+   async function loadVipPageViews() {
+  const username = currentUser.user_metadata?.user_name || currentUser.email;
 
-      const vipViewCountEl = document.getElementById('vipViewCount');
+  const { data, error } = await supabase
+    .from('vip_page_views')
+    .select('view_count')
+    .eq('username', username);
 
-      if (error || !data) {
-        vipViewCountEl.textContent = 'VIP Page Views: 0';
-        return;
-      }
+  const vipViewCountEl = document.getElementById('vipViewCount');
 
-      vipViewCountEl.textContent = `VIP Page Views: ${data.view_count}`;
-    }
+  if (error || !data) {
+    vipViewCountEl.textContent = 'VIP Page Views: 0';
+    return;
+  }
+
+  // Sum all view_counts across matching rows
+  const totalViews = data.reduce((sum, row) => sum + (row.view_count || 0), 0);
+
+  vipViewCountEl.textContent = `VIP Page Views: ${totalViews}`;
+}
 
     addGameForm.onsubmit = async (e) => {
       e.preventDefault();
