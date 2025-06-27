@@ -1023,23 +1023,18 @@
     const likeBtn = document.getElementById('like-btn');
     const status = document.getElementById('status');
     const authBar = document.getElementById('auth-bar');
-    const heading = document.getElementById('heading');
 
-    // Get pageOwner from filename (like chat example)
-    const pathname = window.location.pathname;
-    const fileName = pathname.substring(pathname.lastIndexOf('/') + 1);
-    const pageOwner = fileName.replace('.html', '');
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageOwner = urlParams.get('username');
 
     if (!pageOwner) {
       document.title = 'Error';
-      heading.textContent = '❌ No username found in filename.';
+      document.getElementById('heading').textContent = '❌ No username in URL.';
       likeBtn.style.display = 'none';
       status.textContent = '';
-      authBar.textContent = '';
-      throw new Error('No username in filename');
     } else {
       document.title = `Show Love to ${pageOwner}`;
-      heading.textContent = `Show Some Love to ${pageOwner} ❤️`;
+      document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
     }
 
     async function renderAuthBar() {
@@ -1061,10 +1056,10 @@
 
     async function checkIfLiked(userId) {
       const { data, error } = await supabase
-        .from('page_likes')
-        .select('liker_id')
-        .eq('liker_id', userId)
-        .eq('page_owner_username', pageOwner)
+        .from('vip_page_views')
+        .select('user_id')
+        .eq('user_id', userId)
+        .eq('username', pageOwner)
         .single();
 
       return !error && data;
@@ -1072,9 +1067,9 @@
 
     async function getLikeCount() {
       const { count, error } = await supabase
-        .from('page_likes')
+        .from('vip_page_views')
         .select('*', { count: 'exact', head: true })
-        .eq('page_owner_username', pageOwner);
+        .eq('username', pageOwner);
 
       return count || 0;
     }
@@ -1087,7 +1082,6 @@
         likeBtn.disabled = true;
         status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
       } else {
-        likeBtn.disabled = false;
         status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
       }
     }
@@ -1108,8 +1102,14 @@
       }
 
       const { error: insertError } = await supabase
-        .from('page_likes')
-        .insert([{ liker_id: user.id, page_owner_username: pageOwner }]);
+        .from('vip_page_views')
+        .insert([{
+          user_id: user.id,
+          username: pageOwner,
+          view_count: 1,
+          first_viewed_at: new Date().toISOString(),
+          last_viewed_at: new Date().toISOString()
+        }]);
 
       if (insertError) {
         status.textContent = '❌ Error liking page.';
@@ -1122,10 +1122,12 @@
       status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
     });
 
-    const user = await renderAuthBar();
-    if (user && pageOwner) {
-      updateLikeStatus(user);
-    }
+    (async () => {
+      const user = await renderAuthBar();
+      if (user && pageOwner) {
+        updateLikeStatus(user);
+      }
+    })();
   </script>
 </body>
 </html>
