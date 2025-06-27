@@ -999,3 +999,66 @@
 
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VIP View Increment</title>
+</head>
+<body>
+  <h1>Increment VIP Page View</h1>
+  <button id="increment-btn">Increment VIP View</button>
+  <p id="status"></p>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // Initialize Supabase client - replace with your own keys
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // replace with your anon/public key
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const btn = document.getElementById('increment-btn');
+    const status = document.getElementById('status');
+
+    btn.addEventListener('click', async () => {
+      status.textContent = 'Checking login...';
+
+      // Get current logged-in user
+      const user = supabase.auth.user();
+
+      if (!user) {
+        status.textContent = 'You must be logged in to increment VIP view.';
+        return;
+      }
+
+      status.textContent = 'Incrementing VIP view...';
+
+      try {
+        const now = new Date().toISOString();
+
+        // Call your RPC function with user ID and username (assuming username is stored in user metadata)
+        const { data, error } = await supabase.rpc('increment_vip_page_view', {
+          in_user_id: user.id,
+          in_username: user.user_metadata.username || 'unknown',
+          in_now: now,
+        });
+
+        if (error) {
+          status.textContent = 'Error incrementing VIP view: ' + error.message;
+          console.error(error);
+          return;
+        }
+
+        // data is the updated view count (BIGINT)
+        status.textContent = `VIP view count updated! Current count: ${data}`;
+
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        status.textContent = 'Unexpected error occurred. Check console.';
+      }
+    });
+  </script>
+</body>
+</html>
