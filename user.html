@@ -1004,9 +1004,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>VIP View Increment</title>
+  <title>Increment VIP View</title>
 </head>
 <body>
+  <!-- Your existing auth bar container -->
+  <div id="auth-bar" style="max-width:320px;margin:20px auto;padding:10px 16px;background:#2a243b;color:#fefefe;border-radius:12px;font-family:sans-serif;"></div>
+
   <h1>Increment VIP Page View</h1>
   <button id="increment-btn">Increment VIP View</button>
   <p id="status"></p>
@@ -1014,47 +1017,70 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Initialize Supabase client (use your own keys)
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // Replace with your anon/public key
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const btn = document.getElementById('increment-btn');
-    const status = document.getElementById('status');
+    // --- RENDER A SIMPLE AUTH BAR (simulate your existing one) ---
+    async function renderAuthBar() {
+      const { data: { user } } = await supabase.auth.getUser();
 
-    btn.addEventListener('click', async () => {
-      status.textContent = 'Checking login...';
+      const authBar = document.getElementById('auth-bar');
+      authBar.innerHTML = '';
 
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !userData || !userData.user) {
-        status.textContent = 'You must be logged in to increment VIP view.';
+      if (!user) {
+        authBar.textContent = 'Not logged in';
         return;
       }
 
-      const user = userData.user;
+      // Display the username somewhere visible
+      const username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
+
+      const userDiv = document.createElement('div');
+      userDiv.id = 'user-info';
+      userDiv.textContent = `Logged in as: ${username}`;
+      authBar.appendChild(userDiv);
+    }
+
+    renderAuthBar();
+
+    document.getElementById('increment-btn').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      status.textContent = 'Checking user...';
+
+      const { data: { user }, error } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        status.textContent = 'User not logged in.';
+        return;
+      }
+
+      // Grab username from auth bar (or fallback to user metadata)
+      const authBarUserDiv = document.getElementById('user-info');
+      let username = authBarUserDiv ? authBarUserDiv.textContent.replace('Logged in as: ', '') : null;
+      if (!username || username === 'unknown') {
+        username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
+      }
 
       status.textContent = 'Incrementing VIP view...';
 
       try {
         const now = new Date().toISOString();
 
-        const { data, error } = await supabase.rpc('increment_vip_page_view', {
+        const { data, error: rpcError } = await supabase.rpc('increment_vip_page_view', {
           in_user_id: user.id,
-          in_username: user.user_metadata?.username || 'unknown',
+          in_username: username,
           in_now: now,
         });
 
-        if (error) {
-          status.textContent = 'Error incrementing VIP view: ' + error.message;
-          console.error(error);
+        if (rpcError) {
+          status.textContent = `Error incrementing VIP view: ${rpcError.message}`;
           return;
         }
 
         status.textContent = `VIP view count updated! Current count: ${data}`;
-
       } catch (err) {
-        console.error('Unexpected error:', err);
+        console.error(err);
         status.textContent = 'Unexpected error occurred. Check console.';
       }
     });
