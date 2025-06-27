@@ -674,7 +674,8 @@
     const msgInput = document.getElementById('msg-input');
 
     const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('user') || '';
+    const usernameRaw = urlParams.get('user');
+    const username = usernameRaw ? usernameRaw.toLowerCase() : '';
 
     let currentChatSubscription = null;
 
@@ -697,6 +698,7 @@
       }
 
       async function loadArt() {
+        artContainer.innerHTML = 'Loading art...';
         const { data, error } = await supabase
           .from('user_art')
           .select('*')
@@ -745,6 +747,7 @@
       }
 
       async function loadVideos() {
+        videosContainer.innerHTML = 'Loading videos...';
         const { data, error } = await supabase
           .from('game_videos')
           .select('*')
@@ -846,8 +849,6 @@
           .subscribe();
       }
 
-      // We don't have a games table, so no chat for now.
-      // But you can add game_id in URL to enable chat section:
       const gameId = urlParams.get('game_id');
       if (gameId) {
         chatContainer.style.display = 'flex';
@@ -867,17 +868,15 @@
         }
 
         const { error } = await supabase.from('messages').insert({
-          content: msgInput.value.trim(),
-          github_username: username,
           game_id: gameId,
-          created_at: new Date().toISOString(),
+          github_username: username,
+          content: msgInput.value.trim()
         });
 
         if (error) {
           alert('Error sending message: ' + error.message);
           return;
         }
-
         msgInput.value = '';
       });
 
