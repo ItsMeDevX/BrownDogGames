@@ -892,13 +892,36 @@
         });
       }
 
-     // --- CHAT ---
+    // --- CHAT ---
+
+// Get references to DOM elements (make sure these exist in your HTML)
+const messagesDiv = document.getElementById('messages');
+const chatContainer = document.getElementById('chat-container');
+const form = document.getElementById('chat-form');
+const msgInput = document.getElementById('msg-input');
+
+// Your logged-in GitHub username (make sure this is set somewhere in your app)
+const username = 'your_github_username_here';
+
+// Holds the current Supabase realtime subscription channel
+let currentChatSubscription = null;
+
+// Extract and sanitize game_id from the current page URL path
+function getGameIdFromPage() {
+  let id = window.location.pathname.slice(1); // Remove leading '/'
+  if (!id) id = 'default-game'; // fallback if path is empty
+  // Replace any unsafe characters with underscore (optional)
+  return id.replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+let selectedGameId = getGameIdFromPage();
 
 function clearChat() {
   messagesDiv.innerHTML = '';
 }
 
 function subscribeToChat() {
+  // Remove previous subscription if any
   if (currentChatSubscription) {
     supabase.removeChannel(currentChatSubscription);
     currentChatSubscription = null;
@@ -912,6 +935,7 @@ function subscribeToChat() {
 
   chatContainer.style.display = 'flex';
 
+  // Subscribe to new messages for this game_id
   currentChatSubscription = supabase
     .channel(`messages-game-${selectedGameId}`)
     .on(
@@ -920,7 +944,7 @@ function subscribeToChat() {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `game_id=eq.'${selectedGameId}'` // <-- Note the quotes around selectedGameId
+        filter: `game_id=eq.${selectedGameId}`, // no quotes around selectedGameId here
       },
       (payload) => {
         const newMsg = payload.new;
@@ -963,10 +987,10 @@ async function loadMessages() {
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
+// Optional: if you want to select game cards manually on your page
 function selectGame(gameId) {
   selectedGameId = gameId;
 
-  // highlight the selected game card
   document.querySelectorAll('#games .card').forEach(card => {
     if (card.dataset.gameId === gameId) {
       card.classList.add('selected');
@@ -977,6 +1001,38 @@ function selectGame(gameId) {
 
   loadMessages();
   subscribeToChat();
+}
+
+// Handle chat form submission
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!selectedGameId) {
+    alert('Please select a game first to chat.');
+    return;
+  }
+
+  const content = msgInput.value.trim();
+  if (!content) return;
+
+  const { error } = await supabase.from('messages').insert([
+    {
+      github_username: username,
+      content,
+      game_id: selectedGameId,
+    },
+  ]);
+
+  if (error) {
+    alert('Error sending message: ' + error.message);
+  } else {
+    msgInput.value = '';
+  }
+});
+
+// Initialize chat interface on page load
+loadMessages();
+subscribeToChat();
 }
 
 form.addEventListener('submit', async (e) => {
