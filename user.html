@@ -654,7 +654,9 @@
   </style>
 </head>
 <body>
+<p id="view-count" style="font-weight:bold; color:#ff82ba; margin-bottom: 20px;">Views: Loading...</p>
 
+  
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
@@ -707,31 +709,34 @@
 async function incrementVipPageView() {
   if (!username) return;
 
-  // Get user id by username
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('id')
-    .eq('username', username)
-    .single();
+  try {
+    // Get user id by username
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single();
 
-  if (userError || !userData) {
-    console.error('User not found for VIP increment:', userError);
-    return;
-  }
+    if (userError || !userData) {
+      console.error('User not found for VIP increment:', userError);
+      return;
+    }
 
-  const now = new Date().toISOString();
+    const now = new Date().toISOString();
 
-  // Call RPC to increment the view count
-  const { data: rpcData, error: rpcError } = await supabase.rpc('increment_vip_page_view', {
-    in_user_id: userData.id,
-    in_username: username,
-    in_now: now
-  });
+    // Call RPC to increment the view count
+    const { error: rpcError } = await supabase.rpc('increment_vip_page_view', {
+      in_user_id: userData.id,
+      in_username: username,
+      in_now: now,
+    });
 
-  if (rpcError) {
-    console.error('Error incrementing VIP page views:', rpcError);
-  } else {
-    // After increment, fetch the updated view count
+    if (rpcError) {
+      console.error('Error incrementing VIP page views:', rpcError);
+      return;
+    }
+
+    // Fetch the updated view count
     const { data: viewData, error: viewError } = await supabase
       .from('vip_page_views')
       .select('view_count')
@@ -748,6 +753,8 @@ async function incrementVipPageView() {
     if (viewCountEl) {
       viewCountEl.textContent = `Views: ${viewData.view_count}`;
     }
+  } catch (err) {
+    console.error('Unexpected error in incrementVipPageView:', err);
   }
 }
 
