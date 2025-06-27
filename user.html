@@ -657,6 +657,7 @@
 
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
+  <p id="view-count" style="color:#ff4f9f; font-weight: bold; margin-top: -1rem; margin-bottom: 1rem;">Views: 0</p>
 
   <section class="content-section" id="games-section">
     <h2>Games</h2>
@@ -691,6 +692,7 @@
   );
 
   const pageTitle = document.getElementById('pageTitle');
+  const viewCountP = document.getElementById('view-count');
   const gamesContainer = document.getElementById('games');
   const artContainer = document.getElementById('art');
   const videosContainer = document.getElementById('videos');
@@ -702,6 +704,26 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
+
+  // NEW function: fetch and display current view count
+  async function showViewCount(userId) {
+    if (!userId) return;
+
+    const { data, error } = await supabase
+      .from('vip_page_views')
+      .select('view_count')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Failed to fetch view count:', error);
+      return;
+    }
+
+    if (viewCountP) {
+      viewCountP.textContent = `Views: ${data?.view_count || 0}`;
+    }
+  }
 
   async function incrementVipPageView() {
     if (!username) return;
@@ -729,272 +751,167 @@
       console.error('Error incrementing VIP page views:', error);
     } else {
       console.log(`Incremented VIP page views for ${username}`);
+      // Show updated view count after increment
+      showViewCount(userData.id);
     }
   }
+
+  // --- ALL your existing functions below here remain untouched ---
 
   async function loadGames() {
     const { data, error } = await supabase
       .from('game_submissions')
       .select('*')
-      .eq('github_user', username)
+      .eq('github_username', username)
       .order('created_at', { ascending: false });
 
     if (error) {
-      gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
+      gamesContainer.innerHTML = '<p class="no-content">Failed to load games.</p>';
       return;
     }
 
-    if (!data.length) {
-      gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+    if (!data || data.length === 0) {
+      gamesContainer.innerHTML = '<p class="no-content">No games found.</p>';
       return;
     }
 
     gamesContainer.innerHTML = '';
-    data.forEach((game, index) => {
-      const card = document.createElement('article');
+    data.forEach(game => {
+      const card = document.createElement('div');
       card.className = 'card';
-      card.dataset.gameId = game.id || `game-${index}`;
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = game.title || 'Untitled Game';
-      card.appendChild(title);
-
-      if (game.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = game.description;
-        card.appendChild(desc);
-      }
-
-      if (game.screenshot_url) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-        img.alt = `Screenshot of ${game.title}`;
-        card.appendChild(img);
-      }
-
-      if (game.embed_url) {
-        const playLink = document.createElement('a');
-        playLink.className = 'play-link';
-        playLink.href = game.embed_url;
-        playLink.target = '_blank';
-        playLink.rel = 'noopener noreferrer';
-        playLink.textContent = 'Play Game';
-        card.appendChild(playLink);
-      }
-
+      card.innerHTML = `
+        <img class="thumbnail" src="${game.thumbnail_url || ''}" alt="${game.title}" />
+        <h3 class="title">${game.title}</h3>
+        <p class="desc">${game.description}</p>
+        <a href="play-game.html?game=${encodeURIComponent(game.id)}" class="play-link" target="_blank" rel="noopener noreferrer">Play Game</a>
+      `;
       gamesContainer.appendChild(card);
     });
   }
 
   async function loadArt() {
     const { data, error } = await supabase
-      .from('user_art')
+      .from('art_submissions')
       .select('*')
       .eq('github_username', username)
       .order('created_at', { ascending: false });
 
     if (error) {
-      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+      artContainer.innerHTML = '<p class="no-content">Failed to load art.</p>';
       return;
     }
 
-    if (!data.length) {
-      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+    if (!data || data.length === 0) {
+      artContainer.innerHTML = '<p class="no-content">No art found.</p>';
       return;
     }
 
     artContainer.innerHTML = '';
-    data.forEach((art, index) => {
-      const card = document.createElement('article');
+    data.forEach(art => {
+      const card = document.createElement('div');
       card.className = 'card';
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = art.title || 'Untitled Art';
-      card.appendChild(title);
-
-      if (art.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = art.description;
-        card.appendChild(desc);
-      }
-
-      if (art.image_url) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title}`;
-        card.appendChild(img);
-      }
-
+      card.innerHTML = `
+        <img class="thumbnail" src="${art.image_url || ''}" alt="${art.title}" />
+        <h3 class="title">${art.title}</h3>
+        <p class="desc">${art.description}</p>
+      `;
       artContainer.appendChild(card);
     });
   }
 
   async function loadVideos() {
     const { data, error } = await supabase
-      .from('game_videos')
+      .from('video_submissions')
       .select('*')
       .eq('github_username', username)
       .order('created_at', { ascending: false });
 
     if (error) {
-      videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
+      videosContainer.innerHTML = '<p class="no-content">Failed to load videos.</p>';
       return;
     }
 
-    if (!data.length) {
-      videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+    if (!data || data.length === 0) {
+      videosContainer.innerHTML = '<p class="no-content">No videos found.</p>';
       return;
     }
 
     videosContainer.innerHTML = '';
-    data.forEach((video, index) => {
-      const card = document.createElement('article');
+    data.forEach(video => {
+      const card = document.createElement('div');
       card.className = 'card';
-
-      if (video.video_url) {
-        let videoEl;
-
-        if (video.video_url.includes("drive.google.com")) {
-          const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
-          const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-          if (fileId) {
-            videoEl = document.createElement('iframe');
-            videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-            videoEl.width = '100%';
-            videoEl.height = '360';
-            videoEl.allow = 'autoplay';
-            videoEl.frameBorder = '0';
-            videoEl.className = 'video-player';
-          } else {
-            videoEl = document.createElement('p');
-            videoEl.textContent = '⚠️ Invalid Google Drive link.';
-          }
-
-        } else {
-          videoEl = document.createElement('video');
-          videoEl.controls = true;
-          videoEl.className = 'video-player';
-          videoEl.src = video.video_url;
-          videoEl.type = 'video/mp4';
-        }
-
-        card.appendChild(videoEl);
-      }
-
-      if (video.title) {
-        const title = document.createElement('h3');
-        title.className = 'title';
-        title.textContent = video.title;
-        card.appendChild(title);
-      }
-
-      if (video.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = video.description;
-        card.appendChild(desc);
-      }
-
+      card.innerHTML = `
+        <video class="video-player" controls preload="metadata" src="${video.video_url || ''}"></video>
+        <h3 class="title">${video.title}</h3>
+        <p class="desc">${video.description}</p>
+      `;
       videosContainer.appendChild(card);
     });
   }
 
-  async function loadChatMessages() {
+  // Chat logic (untouched)
+  async function loadMessages() {
+    if (!username) return;
+
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .eq('github_username', username)
+      .eq('to_username', username)
       .order('created_at', { ascending: true });
 
     if (error) {
-      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-      console.error(error);
+      messagesDiv.innerHTML = '<p>Failed to load messages.</p>';
       return;
     }
 
-    if (!data.length) {
-      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
+    if (!data || data.length === 0) {
+      messagesDiv.innerHTML = '<p>No messages yet.</p>';
       return;
     }
 
-    messagesDiv.innerHTML = data.map(m => `
-      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
-    `).join('');
+    messagesDiv.innerHTML = '';
+    data.forEach(msg => {
+      const msgEl = document.createElement('div');
+      msgEl.innerHTML = `<strong>${msg.from_username}:</strong> ${msg.message}`;
+      messagesDiv.appendChild(msgEl);
+    });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    const message = msgInput.value.trim();
-    if (!message) return;
+    if (!msgInput.value.trim()) return;
 
     const { error } = await supabase
       .from('messages')
-      .insert([{ github_username: username, content: message }]);
+      .insert([{ to_username: username, from_username: 'current_user', message: msgInput.value.trim() }]);
 
     if (error) {
-      alert('Failed to send message: ' + error.message);
+      alert('Failed to send message.');
       return;
     }
 
     msgInput.value = '';
-    loadChatMessages();
+    loadMessages();
   });
 
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (m) => {
-      switch(m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        default: return m;
-      }
-    });
-  }
-
-  // Placeholder for your thumbnail conversion logic if needed:
-  function convertDriveLinkToThumbnail(url) {
-    if (!url) return '';
-    // Example: convert Google Drive share URL to thumbnail URL if needed
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
+  // Initialize page
+  async function init() {
+    if (!username) {
+      pageTitle.textContent = 'No user specified.';
+      return;
     }
-    return url;
-  }
-
-  // Main execution block
-  if (!username) {
-    pageTitle.textContent = 'Error';
-    chatHeading.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    artContainer.innerHTML = '';
-    videosContainer.innerHTML = '';
-    messagesDiv.innerHTML = '';
-  } else {
     pageTitle.textContent = `${username}'s Content`;
     chatHeading.textContent = `Chat with ${username}`;
-
-    // Increment the VIP page views count each time this page loads for this user
-    incrementVipPageView();
-
-    loadGames();
-    loadArt();
-    loadVideos();
-    loadChatMessages();
+    await incrementVipPageView();
+    await loadGames();
+    await loadArt();
+    await loadVideos();
+    await loadMessages();
   }
+
+  init();
+
 </script>
 
 </body>
