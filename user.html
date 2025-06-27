@@ -491,6 +491,8 @@
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin: 1rem 0;
+      width: 100%;
+      max-width: 800px;
     }
     .back-link {
       align-self: flex-start;
@@ -503,6 +505,8 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       margin-bottom: 1rem;
+      max-width: 800px;
+      display: inline-block;
     }
     .back-link:hover { background-color: #ff82ba; }
 
@@ -517,6 +521,7 @@
       gap: 20px;
       justify-items: center;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      width: 100%;
     }
 
     .card {
@@ -528,6 +533,9 @@
       box-sizing: border-box;
       transition: border-color 0.3s ease;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .card:hover {
@@ -543,12 +551,14 @@
     .title {
       margin-top: 0;
       margin-bottom: 0.5rem;
+      text-align: center;
     }
 
     .desc {
       color: #ddd;
       margin: 0.5rem 0 1rem 0;
       min-height: 3rem;
+      text-align: center;
     }
 
     .thumbnail {
@@ -579,6 +589,7 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
+      margin-top: auto; /* push to bottom */
     }
     .play-link:hover { background-color: #ff82ba; }
 
@@ -591,11 +602,17 @@
       padding: 20px;
       box-sizing: border-box;
       margin-top: 20px;
+      display: none; /* hidden initially */
+      flex-direction: column;
+      height: 450px;
+      overflow: hidden;
+      display: flex;
     }
     #messages {
-      max-height: 400px;
+      flex: 1;
       overflow-y: auto;
       margin-bottom: 20px;
+      padding-right: 10px;
     }
     #messages div { margin-bottom: 12px; }
     #messages strong { color: #ff82ba; }
@@ -657,7 +674,7 @@
     <div id="videos" class="content-container">Loading videos...</div>
   </section>
 
-  <div id="chat-container" style="display:none;">
+  <div id="chat-container">
     <h2>Game Chat</h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
@@ -707,7 +724,6 @@
         return url;
       }
 
-      // Load Games
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -729,7 +745,7 @@
         data.forEach((game, index) => {
           const card = document.createElement('article');
           card.className = 'card';
-          card.dataset.gameId = game.id || game.title || `game-${index}`;
+          card.dataset.gameId = game.id || `game-${index}`;
 
           const title = document.createElement('h3');
           title.className = 'title';
@@ -769,7 +785,6 @@
         });
       }
 
-      // Load Art
       async function loadArt() {
         const { data, error } = await supabase
           .from('art_submissions')
@@ -816,7 +831,6 @@
         });
       }
 
-      // Load Videos
       async function loadVideos() {
         const { data, error } = await supabase
           .from('video_submissions')
@@ -864,7 +878,6 @@
         });
       }
 
-      // Select game for chat and highlight
       async function selectGame(gameId) {
         selectedGameId = gameId;
 
@@ -882,17 +895,16 @@
           return;
         }
 
-        chatContainer.style.display = 'block';
+        chatContainer.style.display = 'flex';
         await loadChatMessages();
         subscribeToChat();
       }
 
-      // Load chat messages for the selected game
       async function loadChatMessages() {
         if (!selectedGameId) return;
 
         const { data, error } = await supabase
-          .from('messages')                // Use your actual messages table
+          .from('messages')
           .select('*')
           .eq('game_id', selectedGameId)
           .order('created_at', { ascending: true });
@@ -917,7 +929,6 @@
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      // Subscribe to real-time chat updates
       function subscribeToChat() {
         if (currentChatSubscription) {
           supabase.removeSubscription(currentChatSubscription);
@@ -926,7 +937,7 @@
         if (!selectedGameId) return;
 
         currentChatSubscription = supabase
-          .from(`messages:game_id=eq.${selectedGameId}`)   // Listen for new messages on selected game
+          .from(`messages:game_id=eq.${selectedGameId}`)
           .on('INSERT', payload => {
             const newMsg = payload.new;
             const msgDiv = document.createElement('div');
@@ -937,7 +948,6 @@
           .subscribe();
       }
 
-      // Handle chat form submission
       form.addEventListener('submit', async e => {
         e.preventDefault();
         if (!selectedGameId) return;
@@ -958,7 +968,7 @@
         msgInput.value = '';
       });
 
-      // Load all content
+      // Load all content initially
       loadGames();
       loadArt();
       loadVideos();
