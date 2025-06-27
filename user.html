@@ -473,143 +473,130 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>User Content - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrownDogGames - User Content</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     * { box-sizing: border-box; }
     body {
       font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      background: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
-      margin: 0; padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
+      margin: 0; padding: 1em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       min-height: 100vh;
     }
-    h1, h2 {
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin: 1rem 0;
-      width: 100%;
-      max-width: 800px;
-    }
-    .back-link {
+    a.back-link {
       align-self: flex-start;
-      background-color: #ff4f9f;
+      margin-bottom: 1rem;
+      background: #ff4f9f;
       color: #1b1b2e;
-      text-decoration: none;
-      font-size: 0.9rem;
       padding: 10px 16px;
       border-radius: 999px;
       font-weight: bold;
+      text-decoration: none;
       transition: background-color 0.2s ease;
-      margin-bottom: 1rem;
-      max-width: 800px;
-      display: inline-block;
     }
-    .back-link:hover { background-color: #ff82ba; }
-
-    .content-section {
+    a.back-link:hover {
+      background: #ff82ba;
+    }
+    h1, h2 {
+      margin: 0.5em 0;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+    }
+    section {
       max-width: 800px;
       width: 100%;
       margin-bottom: 40px;
     }
-
     .content-container {
       display: grid;
       gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      width: 100%;
     }
-
-    .card {
-      background-color: #2f1a39;
+    article.card {
       border: 2px solid #ff4f9f;
+      background: #2f1a39;
       border-radius: 12px;
       padding: 16px;
-      width: 100%;
       box-sizing: border-box;
-      transition: border-color 0.3s ease;
       cursor: default;
+      width: 100%;
+      max-width: 260px;
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    .title {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
       text-align: center;
     }
-
-    .desc {
+    h3.title {
+      margin: 0 0 0.3em 0;
+    }
+    p.desc {
       color: #ddd;
-      margin: 0.5rem 0 1rem 0;
-      min-height: 3rem;
-      text-align: center;
+      min-height: 3em;
     }
-
-    .thumbnail {
+    img.thumbnail {
       width: 100%;
       max-height: 150px;
       object-fit: cover;
       border-radius: 8px;
       margin-bottom: 10px;
-      display: block;
     }
-
-    .video-player {
+    video.video-player {
       width: 100%;
+      max-height: 200px;
       border-radius: 8px;
       margin-bottom: 10px;
-      background-color: black;
-      max-height: 200px;
-      max-width: 100%;
+      background: black;
     }
-
     .no-content {
-      font-size: 1.1rem;
       text-align: center;
       color: #ddd;
-      margin-top: 2rem;
       font-style: italic;
-      background-color: #2f1a39;
-      padding: 1rem;
+      background: #2f1a39;
+      padding: 1em;
       border-radius: 10px;
     }
-
     #chat-container {
       max-width: 800px;
       width: 100%;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
-      background-color: #2f1a39;
+      background: #2f1a39;
       padding: 20px;
       box-sizing: border-box;
       margin-top: 20px;
-      display: none; /* hidden initially */
+      display: none;
       flex-direction: column;
       height: 450px;
       overflow: hidden;
       display: flex;
     }
     #messages {
-      flex: 1;
+      flex-grow: 1;
       overflow-y: auto;
       margin-bottom: 20px;
       padding-right: 10px;
     }
-    #messages div { margin-bottom: 12px; }
-    #messages strong { color: #ff82ba; }
-
+    #messages div {
+      margin-bottom: 12px;
+    }
+    #messages strong {
+      color: #ff82ba;
+    }
     #chat-form {
       display: flex;
       gap: 10px;
     }
     #msg-input {
-      flex: 1;
+      flex-grow: 1;
       padding: 10px;
       font-size: 16px;
       border-radius: 8px;
@@ -618,7 +605,7 @@
       color: #fff;
     }
     button {
-      background-color: #ff4f9f;
+      background: #ff4f9f;
       color: #1b1b2e;
       font-weight: bold;
       border: none;
@@ -627,32 +614,36 @@
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
-    button:hover { background-color: #ff82ba; }
+    button:hover {
+      background: #ff82ba;
+    }
   </style>
 </head>
 <body>
-
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
-  <!-- Art Section -->
-  <section class="content-section" id="art-section">
+  <section id="art-section">
     <h2>Art</h2>
     <div id="art" class="content-container">Loading art...</div>
   </section>
 
-  <!-- Videos Section -->
-  <section class="content-section" id="videos-section">
+  <section id="videos-section">
     <h2>Videos</h2>
     <div id="videos" class="content-container">Loading videos...</div>
   </section>
 
-  <!-- Chat Container -->
   <div id="chat-container">
     <h2>Game Chat</h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
-      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
+      <input
+        type="text"
+        id="msg-input"
+        placeholder="Type a message..."
+        required
+        autocomplete="off"
+      />
       <button type="submit">Send</button>
     </form>
   </div>
@@ -675,18 +666,18 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const usernameRaw = urlParams.get('user');
-    const username = usernameRaw ? usernameRaw.toLowerCase() : '';
-
-    let currentChatSubscription = null;
+    const username = usernameRaw ? usernameRaw.toLowerCase() : null;
+    const gameId = urlParams.get('game_id');
 
     if (!username) {
-      pageTitle.textContent = 'User not specified';
-      artContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
+      pageTitle.textContent = 'No user specified';
+      artContainer.innerHTML = '<p class="no-content">Please specify a user in the URL (e.g., ?user=username)</p>';
       videosContainer.innerHTML = '';
       chatContainer.style.display = 'none';
     } else {
       pageTitle.textContent = `${username}'s Content`;
 
+      // Google Drive Thumbnail helper
       function convertDriveLinkToThumbnail(url) {
         if (!url) return url;
         const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
@@ -698,7 +689,7 @@
       }
 
       async function loadArt() {
-        artContainer.innerHTML = 'Loading art...';
+        artContainer.textContent = 'Loading art...';
         const { data, error } = await supabase
           .from('user_art')
           .select('*')
@@ -706,15 +697,13 @@
           .order('created_at', { ascending: false });
 
         if (error) {
-          artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+          artContainer.innerHTML = `<p class="no-content">Error loading art: ${error.message}</p>`;
           return;
         }
-
-        if (!data.length) {
-          artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+        if (!data || data.length === 0) {
+          artContainer.innerHTML = `<p class="no-content">No art found for ${username}.</p>`;
           return;
         }
-
         artContainer.innerHTML = '';
         data.forEach(art => {
           const card = document.createElement('article');
@@ -735,10 +724,8 @@
           if (art.image_url) {
             const img = document.createElement('img');
             img.className = 'thumbnail';
-
-            const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-            img.src = thumbUrl || art.image_url;
-            img.alt = `Artwork: ${art.title}`;
+            img.src = convertDriveLinkToThumbnail(art.image_url);
+            img.alt = `Art: ${art.title}`;
             card.appendChild(img);
           }
 
@@ -747,7 +734,7 @@
       }
 
       async function loadVideos() {
-        videosContainer.innerHTML = 'Loading videos...';
+        videosContainer.textContent = 'Loading videos...';
         const { data, error } = await supabase
           .from('game_videos')
           .select('*')
@@ -755,15 +742,13 @@
           .order('created_at', { ascending: false });
 
         if (error) {
-          videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
+          videosContainer.innerHTML = `<p class="no-content">Error loading videos: ${error.message}</p>`;
           return;
         }
-
-        if (!data.length) {
-          videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+        if (!data || data.length === 0) {
+          videosContainer.innerHTML = `<p class="no-content">No videos found for ${username}.</p>`;
           return;
         }
-
         videosContainer.innerHTML = '';
         data.forEach(video => {
           const card = document.createElement('article');
@@ -782,23 +767,25 @@
           }
 
           if (video.video_url) {
-            const videoElem = document.createElement('video');
-            videoElem.className = 'video-player';
-            videoElem.controls = true;
-            videoElem.src = video.video_url;
-            card.appendChild(videoElem);
+            const vid = document.createElement('video');
+            vid.className = 'video-player';
+            vid.controls = true;
+            vid.src = video.video_url;
+            card.appendChild(vid);
           }
 
           videosContainer.appendChild(card);
         });
       }
 
-      async function loadChatMessages(gameId) {
+      async function loadChat() {
         if (!gameId) {
-          messagesDiv.innerHTML = `<p class="no-content">No game selected for chat.</p>`;
+          chatContainer.style.display = 'none';
           return;
         }
+        chatContainer.style.display = 'flex';
 
+        // Load existing messages
         const { data, error } = await supabase
           .from('messages')
           .select('*')
@@ -806,34 +793,24 @@
           .order('created_at', { ascending: true });
 
         if (error) {
-          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading chat messages: ${error.message}</div>`;
+          messagesDiv.innerHTML = `<p class="no-content">Error loading messages: ${error.message}</p>`;
           return;
         }
-
-        if (!data.length) {
+        if (!data || data.length === 0) {
           messagesDiv.innerHTML = `<p class="no-content">No messages yet for this game.</p>`;
-          return;
+        } else {
+          messagesDiv.innerHTML = '';
+          data.forEach(msg => {
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
+            messagesDiv.appendChild(msgDiv);
+          });
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        messagesDiv.innerHTML = '';
-        data.forEach(msg => {
-          const msgDiv = document.createElement('div');
-          msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
-          messagesDiv.appendChild(msgDiv);
-        });
-
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      }
-
-      function subscribeToChat(gameId) {
-        if (currentChatSubscription) {
-          supabase.removeChannel(currentChatSubscription);
-          currentChatSubscription = null;
-        }
-        if (!gameId) return;
-
-        currentChatSubscription = supabase
-          .channel('public:messages:game_id=eq.' + gameId)
+        // Subscribe to realtime new messages
+        const channel = supabase
+          .channel(`game_messages_${gameId}`)
           .on('postgres_changes', {
             event: 'INSERT',
             schema: 'public',
@@ -847,41 +824,28 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
           })
           .subscribe();
-      }
+        
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const content = msgInput.value.trim();
+          if (!content) return;
 
-      const gameId = urlParams.get('game_id');
-      if (gameId) {
-        chatContainer.style.display = 'flex';
-        loadChatMessages(gameId);
-        subscribeToChat(gameId);
-      } else {
-        chatContainer.style.display = 'none';
-      }
-
-      form.addEventListener('submit', async e => {
-        e.preventDefault();
-        if (!msgInput.value.trim()) return;
-
-        if (!gameId) {
-          alert('No game selected for chat.');
-          return;
-        }
-
-        const { error } = await supabase.from('messages').insert({
-          game_id: gameId,
-          github_username: username,
-          content: msgInput.value.trim()
+          const { error } = await supabase.from('messages').insert({
+            game_id: gameId,
+            github_username: username,
+            content,
+          });
+          if (error) {
+            alert('Failed to send message: ' + error.message);
+            return;
+          }
+          msgInput.value = '';
         });
-
-        if (error) {
-          alert('Error sending message: ' + error.message);
-          return;
-        }
-        msgInput.value = '';
-      });
+      }
 
       loadArt();
       loadVideos();
+      loadChat();
     }
   </script>
 </body>
