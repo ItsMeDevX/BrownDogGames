@@ -1025,13 +1025,15 @@
     btn.addEventListener('click', async () => {
       status.textContent = 'Checking login...';
 
-      // Get current logged-in user
-      const user = supabase.auth.user();
+      // Get current logged-in user (v2 method)
+      const { data: userData, error: userError } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (userError || !userData) {
         status.textContent = 'You must be logged in to increment VIP view.';
         return;
       }
+
+      const user = userData;
 
       status.textContent = 'Incrementing VIP view...';
 
@@ -1041,7 +1043,7 @@
         // Call your RPC function with user ID and username (assuming username is stored in user metadata)
         const { data, error } = await supabase.rpc('increment_vip_page_view', {
           in_user_id: user.id,
-          in_username: user.user_metadata.username || 'unknown',
+          in_username: user.user_metadata?.username || 'unknown',
           in_now: now,
         });
 
