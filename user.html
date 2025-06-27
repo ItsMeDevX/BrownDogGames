@@ -1014,9 +1014,9 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Initialize Supabase client - replace with your own keys
+    // Initialize Supabase client (use your own keys)
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // replace with your anon/public key
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const btn = document.getElementById('increment-btn');
@@ -1025,22 +1025,20 @@
     btn.addEventListener('click', async () => {
       status.textContent = 'Checking login...';
 
-      // Get current logged-in user (v2 method)
       const { data: userData, error: userError } = await supabase.auth.getUser();
 
-      if (userError || !userData) {
+      if (userError || !userData || !userData.user) {
         status.textContent = 'You must be logged in to increment VIP view.';
         return;
       }
 
-      const user = userData;
+      const user = userData.user;
 
       status.textContent = 'Incrementing VIP view...';
 
       try {
         const now = new Date().toISOString();
 
-        // Call your RPC function with user ID and username (assuming username is stored in user metadata)
         const { data, error } = await supabase.rpc('increment_vip_page_view', {
           in_user_id: user.id,
           in_username: user.user_metadata?.username || 'unknown',
@@ -1053,7 +1051,6 @@
           return;
         }
 
-        // data is the updated view count (BIGINT)
         status.textContent = `VIP view count updated! Current count: ${data}`;
 
       } catch (err) {
