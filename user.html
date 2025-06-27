@@ -655,13 +655,6 @@
 </head>
 <body>
 
-  <div id="view-count">Views: 0</div>
-
-<!-- Form to manually increment VIP page views -->
-<form id="vip-view-form">
-  <button type="submit">Increment VIP Page View</button>
-</form>
-  
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
@@ -710,47 +703,9 @@
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
 
-  
-const vipViewForm = document.getElementById('vip-view-form');
+  async function incrementVipPageView() {
+    if (!username) return;
 
-chatHeading.textContent = `Chat with ${username}`;
-
-async function loadCurrentViewCount() {
-  if (!username) return;
-
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('id')
-    .eq('username', username)
-    .single();
-
-  if (userError || !userData) return;
-
-  const { data: viewData, error: viewError } = await supabase
-    .from('vip_page_views')
-    .select('view_count')
-    .eq('user_id', userData.id)
-    .single();
-
-  if (!viewError && viewData) {
-    const viewCountEl = document.getElementById('view-count');
-    if (viewCountEl) {
-      viewCountEl.textContent = `Views: ${viewData.view_count}`;
-    }
-  }
-}
-
-loadCurrentViewCount();
-
-vipViewForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  if (!username) {
-    alert('No username found!');
-    return;
-  }
-
-  try {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
@@ -759,39 +714,24 @@ vipViewForm.addEventListener('submit', async (e) => {
 
     if (userError || !userData) {
       console.error('User not found for VIP increment:', userError);
-      alert('User not found!');
       return;
     }
 
     const now = new Date().toISOString();
 
-    const { data, error: rpcError } = await supabase.rpc('increment_vip_page_view', {
+    const { data, error } = await supabase.rpc('increment_vip_page_view', {
       in_user_id: userData.id,
       in_username: username,
-      in_now: now,
+      in_now: now
     });
 
-    if (rpcError) {
-      console.error('Error incrementing VIP page views:', rpcError);
-      alert('Failed to increment VIP views');
-      return;
+    if (error) {
+      console.error('Error incrementing VIP page views:', error);
+    } else {
+      console.log(`Incremented VIP page views for ${username}`);
     }
-
-    // data is usually an array with one element holding the count
-    const updatedCount = Array.isArray(data) ? data[0] : data;
-
-    const viewCountEl = document.getElementById('view-count');
-    if (viewCountEl) {
-      viewCountEl.textContent = `Views: ${updatedCount}`;
-    }
-
-  } catch (err) {
-    console.error('Unexpected error in incrementVipPageView:', err);
-    alert('An unexpected error occurred');
   }
-});
 
-  
   async function loadGames() {
     const { data, error } = await supabase
       .from('game_submissions')
