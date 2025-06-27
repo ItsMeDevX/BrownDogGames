@@ -822,7 +822,10 @@
           if (art.artwork_url) {
             const img = document.createElement('img');
             img.className = 'thumbnail';
-            img.src = convertDriveLinkToThumbnail(art.artwork_url);
+
+            // Fix: Use the raw URL if convertDriveLinkToThumbnail returns the same URL (i.e., no fileId found)
+            const thumbUrl = convertDriveLinkToThumbnail(art.artwork_url);
+            img.src = thumbUrl || art.artwork_url;
             img.alt = `Artwork: ${art.title}`;
             card.appendChild(img);
           }
@@ -870,7 +873,14 @@
             videoElem.className = 'video-player';
             videoElem.controls = true;
             videoElem.src = video.video_url;
-            videoElem.alt = `Video: ${video.title}`;
+            // Remove invalid alt attribute for video element
+            // videoElem.alt = `Video: ${video.title}`; // <-- REMOVE
+
+            // Provide fallback text for browsers that do not support the video tag
+            const fallbackText = document.createElement('p');
+            fallbackText.textContent = 'Your browser does not support the video tag.';
+            videoElem.appendChild(fallbackText);
+
             card.appendChild(videoElem);
           }
 
@@ -892,6 +902,10 @@
 
         if (!selectedGameId) {
           chatContainer.style.display = 'none';
+          if (currentChatSubscription) {
+            supabase.removeSubscription(currentChatSubscription);
+            currentChatSubscription = null;
+          }
           return;
         }
 
@@ -936,9 +950,10 @@
         }
         if (!selectedGameId) return;
 
+        // Fix: Supabase real-time subscription updated syntax for v2
         currentChatSubscription = supabase
-          .from(`messages:game_id=eq.${selectedGameId}`)
-          .on('INSERT', payload => {
+          .channel(`public:messages_game_id=eq.${selectedGameId}`)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${selectedGameId}` }, payload => {
             const newMsg = payload.new;
             const msgDiv = document.createElement('div');
             msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`;
