@@ -654,8 +654,13 @@
   </style>
 </head>
 <body>
-<p id="view-count" style="font-weight:bold; color:#ff82ba; margin-bottom: 20px;">Views: Loading...</p>
 
+  <div id="view-count">Views: 0</div>
+
+<!-- Form to manually increment VIP page views -->
+<form id="vip-view-form">
+  <button type="submit">Increment VIP Page View</button>
+</form>
   
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
@@ -706,8 +711,15 @@
   const username = urlParams.get('user') || '';
 
   
-async function incrementVipPageView() {
-  if (!username) return;
+const vipViewForm = document.getElementById('vip-view-form');
+
+vipViewForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!username) {
+    alert('No username found!');
+    return;
+  }
 
   try {
     // 1. Get user id by username
@@ -719,6 +731,7 @@ async function incrementVipPageView() {
 
     if (userError || !userData) {
       console.error('User not found for VIP increment:', userError);
+      alert('User not found!');
       return;
     }
 
@@ -733,6 +746,7 @@ async function incrementVipPageView() {
 
     if (rpcError) {
       console.error('Error incrementing VIP page views:', rpcError);
+      alert('Failed to increment VIP views');
       return;
     }
 
@@ -745,18 +759,22 @@ async function incrementVipPageView() {
 
     if (viewError || !viewData) {
       console.error('Error fetching VIP page views count:', viewError);
+      alert('Failed to get updated view count');
       return;
     }
 
-    // 4. Update the text on the page
+    // 4. Update the displayed view count
     const viewCountEl = document.getElementById('view-count');
     if (viewCountEl) {
       viewCountEl.textContent = `Views: ${viewData.view_count}`;
     }
+
   } catch (err) {
     console.error('Unexpected error in incrementVipPageView:', err);
+    alert('An unexpected error occurred');
   }
-}
+});
+
 
 
   async function loadGames() {
