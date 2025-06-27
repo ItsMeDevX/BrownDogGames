@@ -892,121 +892,122 @@
         });
       }
 
-      // --- CHAT ---
+     // --- CHAT ---
 
-      function clearChat() {
-        messagesDiv.innerHTML = '';
-      }
+function clearChat() {
+  messagesDiv.innerHTML = '';
+}
 
-      function subscribeToChat() {
-        if (currentChatSubscription) {
-          supabase.removeChannel(currentChatSubscription);
-          currentChatSubscription = null;
-        }
-        if (!selectedGameId) {
-          chatContainer.style.display = 'none';
-          clearChat();
-          return;
-        }
+function subscribeToChat() {
+  if (currentChatSubscription) {
+    supabase.removeChannel(currentChatSubscription);
+    currentChatSubscription = null;
+  }
 
-        chatContainer.style.display = 'flex';
+  if (!selectedGameId) {
+    chatContainer.style.display = 'none';
+    clearChat();
+    return;
+  }
 
-        currentChatSubscription = supabase
-          .channel('public:messages')
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'messages',
-              filter: `game_id=eq.${selectedGameId}`
-            },
-            (payload) => {
-              const newMsg = payload.new;
-              const msgDiv = document.createElement('div');
-              msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`;
-              messagesDiv.appendChild(msgDiv);
-              messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            }
-          )
-          .subscribe();
-      }
+  chatContainer.style.display = 'flex';
 
-      async function loadMessages() {
-        if (!selectedGameId) return;
-
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('game_id', selectedGameId)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
-          return;
-        }
-
-        messagesDiv.innerHTML = '';
-
-        if (!data.length) {
-          messagesDiv.innerHTML = `<p class="no-content">No chat messages yet. Be the first to say something!</p>`;
-          return;
-        }
-
-        data.forEach((msg) => {
-          const msgDiv = document.createElement('div');
-          msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
-          messagesDiv.appendChild(msgDiv);
-        });
-
+  currentChatSubscription = supabase
+    .channel(`messages-game-${selectedGameId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `game_id=eq.'${selectedGameId}'` // <-- Note the quotes around selectedGameId
+      },
+      (payload) => {
+        const newMsg = payload.new;
+        const msgDiv = document.createElement('div');
+        msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`;
+        messagesDiv.appendChild(msgDiv);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
+    )
+    .subscribe();
+}
 
-      function selectGame(gameId) {
-        selectedGameId = gameId;
+async function loadMessages() {
+  if (!selectedGameId) return;
 
-        // highlight the selected game card
-        document.querySelectorAll('#games .card').forEach(card => {
-          if (card.dataset.gameId === gameId) {
-            card.classList.add('selected');
-          } else {
-            card.classList.remove('selected');
-          }
-        });
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('game_id', selectedGameId)
+    .order('created_at', { ascending: true });
 
-        loadMessages();
-        subscribeToChat();
-      }
+  if (error) {
+    messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
+    return;
+  }
 
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!selectedGameId) {
-          alert('Please select a game first to chat.');
-          return;
-        }
-        const content = msgInput.value.trim();
-        if (!content) return;
+  messagesDiv.innerHTML = '';
 
-        const { error } = await supabase.from('messages').insert([
-          {
-            github_username: username,
-            content,
-            game_id: selectedGameId
-          }
-        ]);
+  if (!data.length) {
+    messagesDiv.innerHTML = `<p class="no-content">No chat messages yet. Be the first to say something!</p>`;
+    return;
+  }
 
-        if (error) {
-          alert('Error sending message: ' + error.message);
-        } else {
-          msgInput.value = '';
-        }
-      });
+  data.forEach((msg) => {
+    const msgDiv = document.createElement('div');
+    msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
+    messagesDiv.appendChild(msgDiv);
+  });
 
-      // Load everything
-      loadGames();
-      loadArt();
-      loadVideos();
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function selectGame(gameId) {
+  selectedGameId = gameId;
+
+  // highlight the selected game card
+  document.querySelectorAll('#games .card').forEach(card => {
+    if (card.dataset.gameId === gameId) {
+      card.classList.add('selected');
+    } else {
+      card.classList.remove('selected');
     }
+  });
+
+  loadMessages();
+  subscribeToChat();
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!selectedGameId) {
+    alert('Please select a game first to chat.');
+    return;
+  }
+  const content = msgInput.value.trim();
+  if (!content) return;
+
+  const { error } = await supabase.from('messages').insert([
+    {
+      github_username: username,
+      content,
+      game_id: selectedGameId // make sure this is a string matching your table
+    }
+  ]);
+
+  if (error) {
+    alert('Error sending message: ' + error.message);
+  } else {
+    msgInput.value = '';
+  }
+});
+
+// Load initial data
+loadGames();
+loadArt();
+loadVideos()
+  ; }
   </script>
 </body>
 </html>
