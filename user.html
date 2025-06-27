@@ -833,57 +833,79 @@
         });
       }
 
-      // --- VIDEOS ---
+    // --- VIDEOS ---
+async function loadVideos() {
+  const { data, error } = await supabase
+    .from('game_videos')
+    .select('*')
+    .eq('github_username', username)
+    .order('created_at', { ascending: false });
 
-      async function loadVideos() {
-        const { data, error } = await supabase
-          .from('game_videos')
-          .select('*')
-          .eq('github_username', username)
-          .order('created_at', { ascending: false });
+  if (error) {
+    videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
+    return;
+  }
 
-        if (error) {
-          videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
-          return;
+  if (!data.length) {
+    videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+    return;
+  }
+
+  videosContainer.innerHTML = '';
+  data.forEach((video, index) => {
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    if (video.video_url) {
+      let videoEl;
+
+      if (video.video_url.includes("drive.google.com")) {
+        // Extract Google Drive file ID
+        const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
+        const fileId = fileIdMatch ? fileIdMatch[1] : null;
+
+        if (fileId) {
+          videoEl = document.createElement('iframe');
+          videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
+          videoEl.width = '100%';
+          videoEl.height = '360';
+          videoEl.allow = 'autoplay';
+          videoEl.frameBorder = '0';
+          videoEl.className = 'video-player';
+        } else {
+          videoEl = document.createElement('p');
+          videoEl.textContent = '⚠️ Invalid Google Drive link.';
         }
 
-        if (!data.length) {
-          videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
-          return;
-        }
-
-        videosContainer.innerHTML = '';
-        data.forEach((video, index) => {
-          const card = document.createElement('article');
-          card.className = 'card';
-
-          if (video.video_url) {
-            // Show video player
-            const videoEl = document.createElement('video');
-            videoEl.controls = true;
-            videoEl.className = 'video-player';
-            videoEl.src = video.video_url;
-            videoEl.type = 'video/mp4';
-            card.appendChild(videoEl);
-          }
-
-          if (video.title) {
-            const title = document.createElement('h3');
-            title.className = 'title';
-            title.textContent = video.title;
-            card.appendChild(title);
-          }
-
-          if (video.description) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = video.description;
-            card.appendChild(desc);
-          }
-
-          videosContainer.appendChild(card);
-        });
+      } else {
+        // Regular video link
+        videoEl = document.createElement('video');
+        videoEl.controls = true;
+        videoEl.className = 'video-player';
+        videoEl.src = video.video_url;
+        videoEl.type = 'video/mp4';
       }
+
+      card.appendChild(videoEl);
+    }
+
+    if (video.title) {
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = video.title;
+      card.appendChild(title);
+    }
+
+    if (video.description) {
+      const desc = document.createElement('p');
+      desc.className = 'desc';
+      desc.textContent = video.description;
+      card.appendChild(desc);
+    }
+
+    videosContainer.appendChild(card);
+  });
+}
 
       // --- CHAT ---
 
