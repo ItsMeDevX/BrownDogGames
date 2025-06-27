@@ -476,6 +476,7 @@
   <title>User Content - BrownDogGames</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    /* ... Your CSS remains the same ... */
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     * { box-sizing: border-box; }
     body {
@@ -678,8 +679,8 @@
     <h2>Game Chat</h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
-      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
-      <button type="submit">Send</button>
+      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" disabled />
+      <button type="submit" disabled>Send</button>
     </form>
   </div>
 
@@ -699,6 +700,7 @@
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
     const msgInput = document.getElementById('msg-input');
+    const sendButton = form.querySelector('button');
 
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('user') || '';
@@ -747,7 +749,7 @@
         data.forEach((game, index) => {
           const card = document.createElement('article');
           card.className = 'card';
-          card.dataset.gameId = game.id || `game-${index}`;
+          card.dataset.gameId = game.id?.toString() || `game-${index}`;
 
           const title = document.createElement('h3');
           title.className = 'title';
@@ -780,7 +782,7 @@
           }
 
           card.addEventListener('click', () => {
-            selectGame(game.id);
+            selectGame(card.dataset.gameId);
           });
 
           gamesContainer.appendChild(card);
@@ -826,11 +828,8 @@
           if (art.image_url) {
             const img = document.createElement('img');
             img.className = 'thumbnail';
-
-            // Use thumbnail helper or original image url
-            const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-            img.src = thumbUrl || art.image_url;
-            img.alt = `Artwork: ${art.title}`;
+            img.src = convertDriveLinkToThumbnail(art.image_url);
+            img.alt = `Image of ${art.title}`;
             card.appendChild(img);
           }
 
@@ -842,7 +841,7 @@
 
       async function loadVideos() {
         const { data, error } = await supabase
-          .from('game_videos')
+          .from('user_videos')
           .select('*')
           .eq('github_username', username)
           .order('created_at', { ascending: false });
@@ -867,151 +866,150 @@
           title.textContent = video.title || 'Untitled Video';
           card.appendChild(title);
 
-          if (video.content) {
+          if (video.description) {
             const desc = document.createElement('p');
             desc.className = 'desc';
-            desc.textContent = video.content;
+            desc.textContent = video.description;
             card.appendChild(desc);
           }
 
           if (video.video_url) {
-            const videoElem = document.createElement('video');
-            videoElem.className = 'video-player';
-            videoElem.controls = true;
-            videoElem.src = video.video_url;
-
-            // fallback text for unsupported browsers
-            const fallbackText = document.createElement('p');
-            fallbackText.textContent = 'Your browser does not support the video tag.';
-            videoElem.appendChild(fallbackText);
-
-            card.appendChild(videoElem);
+            const videoPlayer = document.createElement('video');
+            videoPlayer.className = 'video-player';
+            videoPlayer.src = video.video_url;
+            videoPlayer.controls = true;
+            videoPlayer.preload = 'metadata';
+            card.appendChild(videoPlayer);
           }
 
           videosContainer.appendChild(card);
         });
       }
 
-// --- CHAT ---
-// Assumes these variables already exist globally:
-// const messagesDiv, chatContainer, form, msgInput, username, supabase
+      // --- CHAT FUNCTIONS ---
 
-function clearChat() {
-  messagesDiv.innerHTML = '';
-}
+      function clearChat() {
+        messagesDiv.innerHTML = '';
+      }
 
-function subscribeToChat() {
-  if (currentChatSubscription) {
-    supabase.removeChannel(currentChatSubscription);
-    currentChatSubscription = null;
-  }
+      async function subscribeToChat() {
+        if (currentChatSubscription) {
+          await supabase.removeChannel(currentChatSubscription);
+          currentChatSubscription = null;
+        }
 
-  if (!selectedGameId) {
-    chatContainer.style.display = 'none';
-    clearChat();
-    return;
-  }
+        if (!selectedGameId) {
+          chatContainer.style.display = 'none';
+          clearChat();
+          msgInput.disabled = true;
+          sendButton.disabled = true;
+          return;
+        }
 
-  chatContainer.style.display = 'flex';
+        chatContainer.style.display = 'flex';
+        msgInput.disabled = false;
+        sendButton.disabled = false;
 
-  currentChatSubscription = supabase
-    .channel(`messages-game-${selectedGameId}`) // ✅ template literal syntax
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `game_id=eq.${selectedGameId}` // ✅ quotes removed — this must be plain string
-      },
-      (payload) => {
-        const newMsg = payload.new;
-        const msgDiv = document.createElement('div');
-        msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`; // ✅ wrapped in backticks
-        messagesDiv.appendChild(msgDiv);
+        currentChatSubscription = supabase
+          .channel(`messages-game-${selectedGameId}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'messages',
+              filter: `game_id=eq.${selectedGameId}`
+            },
+            (payload) => {
+              const newMsg = payload.new;
+              const msgDiv = document.createElement('div');
+              msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`;
+              messagesDiv.appendChild(msgDiv);
+              messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+          );
+
+        await currentChatSubscription.subscribe();
+      }
+
+      async function loadMessages() {
+        if (!selectedGameId) return;
+
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('game_id', selectedGameId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
+          return;
+        }
+
+        messagesDiv.innerHTML = '';
+
+        if (!data.length) {
+          messagesDiv.innerHTML = `<p class="no-content">No chat messages yet. Be the first to say something!</p>`;
+          return;
+        }
+
+        data.forEach((msg) => {
+          const msgDiv = document.createElement('div');
+          msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
+          messagesDiv.appendChild(msgDiv);
+        });
+
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
-    )
-    .subscribe();
-}
 
-async function loadMessages() {
-  if (!selectedGameId) return;
+      async function selectGame(gameId) {
+        selectedGameId = String(gameId);
 
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .eq('game_id', selectedGameId)
-    .order('created_at', { ascending: true });
+        // Highlight selected game
+        document.querySelectorAll('#games .card').forEach(card => {
+          card.classList.toggle('selected', card.dataset.gameId === selectedGameId);
+        });
 
-  if (error) {
-    messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`; // ✅ fixed quotes
-    return;
-  }
+        await loadMessages();
+        await subscribeToChat();
+      }
 
-  messagesDiv.innerHTML = '';
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-  if (!data.length) {
-    messagesDiv.innerHTML = `<p class="no-content">No chat messages yet. Be the first to say something!</p>`;
-    return;
-  }
+        if (!selectedGameId) {
+          alert('Please select a game first to chat.');
+          return;
+        }
 
-  data.forEach((msg) => {
-    const msgDiv = document.createElement('div');
-    msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
-    messagesDiv.appendChild(msgDiv);
-  });
+        const content = msgInput.value.trim();
+        if (!content) return;
 
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+        const { error } = await supabase.from('messages').insert([
+          {
+            github_username: username,
+            content,
+            game_id: selectedGameId
+          }
+        ]);
 
-function selectGame(gameId) {
-  selectedGameId = gameId;
+        if (error) {
+          alert('Error sending message: ' + error.message);
+        } else {
+          msgInput.value = '';
+        }
+      });
 
-  // Optional: visually mark selected game
-  document.querySelectorAll('#games .card').forEach(card => {
-    card.classList.toggle('selected', card.dataset.gameId === gameId);
-  });
+      // Load all content initially
+      loadGames();
+      loadArt();
+      loadVideos();
 
-  loadMessages();
-  subscribeToChat();
-}
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  if (!selectedGameId) {
-    alert('Please select a game first to chat.');
-    return;
-  }
-
-  const content = msgInput.value.trim();
-  if (!content) return;
-
-  const { error } = await supabase.from('messages').insert([
-    {
-      github_username: username,
-      content,
-      game_id: selectedGameId
+      // Hide chat initially (no game selected)
+      chatContainer.style.display = 'none';
+      msgInput.disabled = true;
+      sendButton.disabled = true;
     }
-  ]);
-
-  if (error) {
-    alert('Error sending message: ' + error.message);
-  } else {
-    msgInput.value = '';
-  }
-});
-
-// Optionally load other game content
-if (typeof loadGames === 'function') loadGames();
-if (typeof loadArt === 'function') loadArt();
-if (typeof loadVideos === 'function') loadVideos();
-
-// Load chat on page load
-loadMessages();
-subscribeToChat();
-  });
-</script>
+  </script>
 </body>
 </html>
