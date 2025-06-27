@@ -723,64 +723,64 @@
         return url;
       }
 
-      // --- GAMES ---
+     // --- GAMES ---
 
-      async function loadGames() {
-        const { data, error } = await supabase
-          .from('game_submissions')
-          .select('*')
-          .eq('github_user', username)
-          .order('created_at', { ascending: false });
+async function loadGames() {
+  const { data, error } = await supabase
+    .from('game_submissions')
+    .select('*')
+    .eq('github_user', username)
+    .order('created_at', { ascending: false });
 
-        if (error) {
-          gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-          return;
-        }
+  if (error) {
+    gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
+    return;
+  }
 
-        if (!data.length) {
-          gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-          return;
-        }
+  if (!data.length) {
+    gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+    return;
+  }
 
-        gamesContainer.innerHTML = '';
-        data.forEach((game, index) => {
-          const card = document.createElement('article');
-          card.className = 'card';
-          card.dataset.gameId = game.id || `game-${index}`;
+  gamesContainer.innerHTML = '';
+  data.forEach((game, index) => {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.dataset.gameId = game.id || `game-${index}`;
 
-          const title = document.createElement('h3');
-          title.className = 'title';
-          title.textContent = game.title || 'Untitled Game';
-          card.appendChild(title);
+    const title = document.createElement('h3');
+    title.className = 'title';
+    title.textContent = game.title || 'Untitled Game';
+    card.appendChild(title);
 
-          if (game.description) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = game.description;
-            card.appendChild(desc);
-          }
+    if (game.description) {
+      const desc = document.createElement('p');
+      desc.className = 'desc';
+      desc.textContent = game.description;
+      card.appendChild(desc);
+    }
 
-          if (game.screenshot_url) {
-            const img = document.createElement('img');
-            img.className = 'thumbnail';
-            img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-            img.alt = `Screenshot of ${game.title}`;
-            card.appendChild(img);
-          }
+    if (game.screenshot_url) {
+      const img = document.createElement('img');
+      img.className = 'thumbnail';
+      img.src = convertDriveLinkToThumbnail(game.screenshot_url);
+      img.alt = `Screenshot of ${game.title}`;
+      card.appendChild(img);
+    }
 
-          if (game.game_link) {
-            const playLink = document.createElement('a');
-            playLink.className = 'play-link';
-            playLink.href = game.game_link;
-            playLink.target = '_blank';
-            playLink.rel = 'noopener noreferrer';
-            playLink.textContent = 'Play Game';
-            card.appendChild(playLink);
-          }
+    if (game.embed_url) {
+      const playLink = document.createElement('a');
+      playLink.className = 'play-link';
+      playLink.href = game.embed_url;
+      playLink.target = '_blank';
+      playLink.rel = 'noopener noreferrer';
+      playLink.textContent = 'Play Game';
+      card.appendChild(playLink);
+    }
 
-          gamesContainer.appendChild(card);
-        });
-      }
+    gamesContainer.appendChild(card);
+  });
+}
 
       // --- ART ---
 
