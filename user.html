@@ -892,152 +892,140 @@
         });
       }
 
-// --- CHAT ---
+<!-- JS: Chat Logic -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Ensure Supabase is defined
+    if (typeof supabase === 'undefined') {
+      console.error('❌ Supabase is not initialized.');
+      return;
+    }
 
-// Get references to DOM elements (make sure these exist in your HTML)
-const messagesDiv = document.getElementById('messages');
-const chatContainer = document.getElementById('chat-container');
-const form = document.getElementById('chat-form');
-const msgInput = document.getElementById('msg-input');
+    const messagesDiv = document.getElementById('messages');
+    const chatContainer = document.getElementById('chat-container');
+    const form = document.getElementById('chat-form');
+    const msgInput = document.getElementById('msg-input');
 
-// Your logged-in GitHub username (set this from your auth system)
-const username = 'your_github_username_here';
+    if (!messagesDiv || !chatContainer || !form || !msgInput) {
+      console.warn('⚠️ Chat elements missing in DOM.');
+      return;
+    }
 
-// Holds the current Supabase realtime subscription channel
-let currentChatSubscription = null;
+    const username = 'your_github_username_here'; // Replace dynamically from your auth system
+    let currentChatSubscription = null;
 
-// Extract and sanitize game_id from the current page URL path
-function getGameIdFromPage() {
-  let id = window.location.pathname.slice(1); // Remove leading '/'
-  if (!id) id = 'default-game'; // fallback if path is empty
-  return id.replace(/[^a-zA-Z0-9_-]/g, '_');
-}
+    function getGameIdFromPage() {
+      let id = window.location.pathname.slice(1);
+      if (!id) id = 'default-game';
+      return id.replace(/[^a-zA-Z0-9_-]/g, '_');
+    }
 
-let selectedGameId = getGameIdFromPage();
+    let selectedGameId = getGameIdFromPage();
 
-function clearChat() {
-  messagesDiv.innerHTML = '';
-}
+    function clearChat() {
+      messagesDiv.innerHTML = '';
+    }
 
-function subscribeToChat() {
-  // Remove previous subscription if any
-  if (currentChatSubscription) {
-    supabase.removeChannel(currentChatSubscription);
-    currentChatSubscription = null;
-  }
-
-  if (!selectedGameId) {
-    chatContainer.style.display = 'none';
-    clearChat();
-    return;
-  }
-
-  chatContainer.style.display = 'flex';
-
-  // Subscribe to new messages for this game_id
-  currentChatSubscription = supabase
-    .channel(`messages-game-${selectedGameId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `game_id=eq.${selectedGameId}`,
-      },
-      (payload) => {
-        const newMsg = payload.new;
-        const msgDiv = document.createElement('div');
-        msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`;
-        messagesDiv.appendChild(msgDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    function subscribeToChat() {
+      if (currentChatSubscription) {
+        supabase.removeChannel(currentChatSubscription);
+        currentChatSubscription = null;
       }
-    )
-    .subscribe();
-}
 
-async function loadMessages() {
-  if (!selectedGameId) return;
+      if (!selectedGameId) {
+        chatContainer.style.display = 'none';
+        clearChat();
+        return;
+      }
 
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .eq('game_id', selectedGameId)
-    .order('created_at', { ascending: true });
+      chatContainer.style.display = 'flex';
 
-  if (error) {
-    messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
-    return;
-  }
-
-  messagesDiv.innerHTML = '';
-
-  if (!data.length) {
-    messagesDiv.innerHTML = `<p class="no-content">No chat messages yet. Be the first to say something!</p>`;
-    return;
-  }
-
-  data.forEach((msg) => {
-    const msgDiv = document.createElement('div');
-    msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
-    messagesDiv.appendChild(msgDiv);
-  });
-
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-// Optional: game card click handler (only needed if you use game selection UI)
-function selectGame(gameId) {
-  selectedGameId = gameId;
-
-  document.querySelectorAll('#games .card').forEach(card => {
-    if (card.dataset.gameId === gameId) {
-      card.classList.add('selected');
-    } else {
-      card.classList.remove('selected');
+      currentChatSubscription = supabase
+        .channel(`messages-game-${selectedGameId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `game_id=eq.${selectedGameId}`,
+          },
+          (payload) => {
+            const newMsg = payload.new;
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = `<strong>${newMsg.github_username}:</strong> ${newMsg.content}`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          }
+        )
+        .subscribe();
     }
-  });
 
-  loadMessages();
-  subscribeToChat();
-}
+    async function loadMessages() {
+      if (!selectedGameId) return;
 
-// Handle chat form submission
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('game_id', selectedGameId)
+        .order('created_at', { ascending: true });
 
-  if (!selectedGameId) {
-    alert('Please select a game first to chat.');
-    return;
-  }
+      if (error) {
+        messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
+        return;
+      }
 
-  const content = msgInput.value.trim();
-  if (!content) return;
+      messagesDiv.innerHTML = '';
 
-  const { error } = await supabase.from('messages').insert([
-    {
-      github_username: username,
-      content,
-      game_id: selectedGameId
+      if (!data.length) {
+        messagesDiv.innerHTML = `<p class="no-content">No chat messages yet. Be the first to say something!</p>`;
+        return;
+      }
+
+      data.forEach((msg) => {
+        const msgDiv = document.createElement('div');
+        msgDiv.innerHTML = `<strong>${msg.github_username}:</strong> ${msg.content}`;
+        messagesDiv.appendChild(msgDiv);
+      });
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
-  ]);
 
-  if (error) {
-    alert('Error sending message: ' + error.message);
-  } else {
-    msgInput.value = '';
-  }
-});
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-// Initialize chat on page load
-loadMessages();
-subscribeToChat();
+      if (!selectedGameId) {
+        alert('Please select a game first to chat.');
+        return;
+      }
 
-// Optional: only if you use these features elsewhere on the page
-if (typeof loadGames === 'function') loadGames();
-if (typeof loadArt === 'function') loadArt();
-if (typeof loadVideos === 'function') loadVideos();
+      const content = msgInput.value.trim();
+      if (!content) return;
 
-  </script>
+      const { error } = await supabase.from('messages').insert([
+        {
+          github_username: username,
+          content,
+          game_id: selectedGameId,
+        },
+      ]);
+
+      if (error) {
+        alert('Error sending message: ' + error.message);
+      } else {
+        msgInput.value = '';
+      }
+    });
+
+    // Load initial chat and subscribe
+    loadMessages();
+    subscribeToChat();
+
+    // Optional external functions
+    if (typeof loadGames === 'function') loadGames();
+    if (typeof loadArt === 'function') loadArt();
+    if (typeof loadVideos === 'function') loadVideos();
+  });
+</script>
 </body>
 </html>
