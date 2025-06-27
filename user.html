@@ -1004,13 +1004,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Show Some Love ❤️</title>
+  <title id="page-title">Show Some Love ❤️</title>
 </head>
 <body>
-  <!-- Your existing auth bar container -->
   <div id="auth-bar" style="max-width:320px;margin:20px auto;padding:10px 16px;background:#2a243b;color:#fefefe;border-radius:12px;font-family:sans-serif;"></div>
 
-  <h1>Show Some Love ❤️</h1>
+  <h1 id="heading">Show Some Love ❤️</h1>
   <button id="like-btn">👍 Like this Page</button>
   <p id="status"></p>
 
@@ -1018,17 +1017,33 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabaseKey = 'YOUR_PUBLIC_ANON_KEY';
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const likeBtn = document.getElementById('like-btn');
+    const status = document.getElementById('status');
+    const authBar = document.getElementById('auth-bar');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageOwner = urlParams.get('username');
+
+    if (!pageOwner) {
+      document.title = 'Error';
+      document.getElementById('heading').textContent = '❌ No username in URL.';
+      likeBtn.style.display = 'none';
+      status.textContent = '';
+    } else {
+      document.title = `Show Love to ${pageOwner}`;
+      document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
+    }
 
     async function renderAuthBar() {
       const { data: { user } } = await supabase.auth.getUser();
-      const authBar = document.getElementById('auth-bar');
-      authBar.innerHTML = '';
 
+      authBar.innerHTML = '';
       if (!user) {
         authBar.textContent = 'Not logged in';
-        return;
+        return null;
       }
 
       const username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
@@ -1036,77 +1051,76 @@
       userDiv.id = 'user-info';
       userDiv.textContent = `Logged in as: ${username}`;
       authBar.appendChild(userDiv);
+      return user;
     }
 
-    renderAuthBar();
+    async function checkIfLiked(userId) {
+      const { data, error } = await supabase
+        .from('page_likes')
+        .select('liker_id')
+        .eq('liker_id', userId)
+        .eq('page_owner_username', pageOwner)
+        .single();
 
-    const likeBtn = document.getElementById('like-btn');
-    const status = document.getElementById('status');
-
-    // Check localStorage on page load to disable button if already liked
-    async function checkIfLiked() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-
-      const likedKey = `liked_${user.id}`;
-      return localStorage.getItem(likedKey) === 'true';
+      return !error && data;
     }
 
-    async function initialize() {
-      const alreadyLiked = await checkIfLiked();
+    async function getLikeCount() {
+      const { count, error } = await supabase
+        .from('page_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('page_owner_username', pageOwner);
+
+      return count || 0;
+    }
+
+    async function updateLikeStatus(user) {
+      const alreadyLiked = await checkIfLiked(user.id);
+      const count = await getLikeCount();
+
       if (alreadyLiked) {
         likeBtn.disabled = true;
-        status.textContent = '❤️ You have already liked this page!';
+        status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
+      } else {
+        status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
       }
     }
-
-    initialize();
 
     likeBtn.addEventListener('click', async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error || !user) {
-        status.textContent = '❌ You need to be logged in to like this page.';
+        status.textContent = '❌ You must be logged in to like this page.';
         return;
       }
 
-      const likedKey = `liked_${user.id}`;
-      if (localStorage.getItem(likedKey) === 'true') {
-        status.textContent = '❤️ You have already liked this page!';
+      const alreadyLiked = await checkIfLiked(user.id);
+      if (alreadyLiked) {
+        status.textContent = `❤️ You've already liked ${pageOwner}'s page.`;
         likeBtn.disabled = true;
         return;
       }
 
-      status.textContent = '❤️ Liking the page...';
+      const { error: insertError } = await supabase
+        .from('page_likes')
+        .insert([{ liker_id: user.id, page_owner_username: pageOwner }]);
 
-      const authBarUserDiv = document.getElementById('user-info');
-      let username = authBarUserDiv ? authBarUserDiv.textContent.replace('Logged in as: ', '') : null;
-      if (!username || username === 'unknown') {
-        username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
+      if (insertError) {
+        status.textContent = '❌ Error liking page.';
+        console.error(insertError);
+        return;
       }
 
-      try {
-        const now = new Date().toISOString();
-
-        const { data, error: rpcError } = await supabase.rpc('increment_vip_page_view', {
-          in_user_id: user.id,
-          in_username: username,
-          in_now: now,
-        });
-
-        if (rpcError) {
-          status.textContent = `❌ Error liking page: ${rpcError.message}`;
-          return;
-        }
-
-        localStorage.setItem(likedKey, 'true');
-        status.textContent = `🎉 Thanks! Total likes: ${data}`;
-        likeBtn.disabled = true;
-      } catch (err) {
-        console.error(err);
-        status.textContent = '❌ Unexpected error occurred. Check console.';
-      }
+      const count = await getLikeCount();
+      likeBtn.disabled = true;
+      status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
     });
+
+    const user = await renderAuthBar();
+    if (user && pageOwner) {
+      updateLikeStatus(user);
+    }
   </script>
 </body>
 </html>
+
