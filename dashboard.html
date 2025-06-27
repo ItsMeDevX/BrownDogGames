@@ -1284,6 +1284,8 @@
       color: #8dffa1;
     }
   </style>
+<head>
+  <title>Your Art Submission</title>
 </head>
 <body>
 
@@ -1293,7 +1295,7 @@
     <li>Loading art...</li>
   </ul>
 
-  <form id="addArtForm" novalidate>
+  <form id="addArtForm">
     <label for="title">Art Title:</label>
     <input type="text" id="title" placeholder="Enter art title" required />
 
@@ -1396,12 +1398,33 @@
       submitBtn.disabled = true;
       showMessage('');
 
+      const titleValue = document.getElementById('title').value.trim();
+      const descriptionValue = document.getElementById('description').value.trim();
+      const imageUrlValue = document.getElementById('imageUrl').value.trim();
+
+      // Manual validation (redundant but safer)
+      if (!titleValue) {
+        showMessage('Please enter a title.', 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+      if (!descriptionValue) {
+        showMessage('Please enter a description.', 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+      if (!imageUrlValue) {
+        showMessage('Please enter an image URL.', 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email,
         avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        image_url: document.getElementById('imageUrl').value.trim(),
+        title: titleValue,
+        description: descriptionValue,
+        image_url: imageUrlValue,
         created_at: new Date().toISOString()
       };
 
