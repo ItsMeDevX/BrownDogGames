@@ -636,22 +636,22 @@
 </head>
 <body>
 
-  <div style="display: flex; justify-content: space-between; align-items: center; max-width: 700px; margin: 0 auto 1rem;">
-    <p id="vipViewCount" style="color: #ff69b4; font-weight: bold; font-size: 1.1rem; margin: 0;">Loading VIP Views...</p>
-    <button id="terms-button" style="
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      border: none;
-      padding: 0.5rem 1rem;
-      font-weight: bold;
-      font-size: 0.9rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    ">
-      Submission Terms
-    </button>
-  </div>
+<div style="display: flex; justify-content: space-between; align-items: center; max-width: 700px; margin: 0 auto 1rem;">
+  <p id="vipLikeCount" style="color: #ff69b4; font-weight: bold; font-size: 1.1rem; margin: 0;">Loading VIP Likes...</p>
+  <button id="terms-button" style="
+    background-color: #ff69b4;
+    color: #1e1b2e;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  ">
+    Submission Terms
+  </button>
+</div>
 
   <h1>Your Submitted Games</h1>
 
@@ -803,26 +803,26 @@
       });
     }
 
-   async function loadVipPageViews() {
+async function loadVipPageLikes() {
   const username = currentUser.user_metadata?.user_name || currentUser.email;
 
   const { data, error } = await supabase
-    .from('vip_page_views')
-    .select('view_count')
+    .from('vip_page_views')  // Assuming your likes are stored here
+    .select('view_count')    // Rename this column to 'like_count' in DB ideally, or just treat as likes
     .eq('username', username);
 
-  const vipViewCountEl = document.getElementById('vipViewCount');
+  const vipLikeCountEl = document.getElementById('vipLikeCount');
 
   if (error || !data) {
-    vipViewCountEl.textContent = 'VIP Page Views: 0';
+    vipLikeCountEl.textContent = 'VIP Likes: 0';
     return;
   }
 
-  // Sum all view_counts across matching rows
-  const totalViews = data.reduce((sum, row) => sum + (row.view_count || 0), 0);
+  const totalLikes = data.reduce((sum, row) => sum + (row.view_count || 0), 0);
 
-  vipViewCountEl.textContent = `VIP Page Views: ${totalViews}`;
+  vipLikeCountEl.textContent = `VIP Likes: ${totalLikes}`;
 }
+
 
     addGameForm.onsubmit = async (e) => {
       e.preventDefault();
