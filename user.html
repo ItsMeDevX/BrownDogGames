@@ -682,7 +682,7 @@
     </form>
   </section>
 
- <script type="module">
+<script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const supabase = createClient(
@@ -703,12 +703,24 @@
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
 
-  // --- New function to increment VIP page views ---
   async function incrementVipPageView() {
+    if (!username) return;
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single();
+
+    if (userError || !userData) {
+      console.error('User not found for VIP increment:', userError);
+      return;
+    }
+
     const now = new Date().toISOString();
 
-    // Call the stored procedure in Supabase to safely upsert and increment view count
     const { data, error } = await supabase.rpc('increment_vip_page_view', {
+      in_user_id: userData.id,
       in_username: username,
       in_now: now
     });
@@ -719,19 +731,6 @@
       console.log(`Incremented VIP page views for ${username}`);
     }
   }
-
-  // Utility function to convert Google Drive links to thumbnails
-  function convertDriveLinkToThumbnail(url) {
-    if (!url) return url;
-    const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-    const fileId = match ? match[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
-    }
-    return url;
-  }
-
-  // --- Content loading functions ---
 
   async function loadGames() {
     const { data, error } = await supabase
@@ -959,8 +958,21 @@
         case '>': return '&gt;';
         case '"': return '&quot;';
         case "'": return '&#39;';
+        default: return m;
       }
     });
+  }
+
+  // Placeholder for your thumbnail conversion logic if needed:
+  function convertDriveLinkToThumbnail(url) {
+    if (!url) return '';
+    // Example: convert Google Drive share URL to thumbnail URL if needed
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      return `https://drive.google.com/thumbnail?id=${fileId}`;
+    }
+    return url;
   }
 
   // Main execution block
