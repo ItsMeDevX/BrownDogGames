@@ -527,17 +527,11 @@
       width: 100%;
       box-sizing: border-box;
       transition: border-color 0.3s ease;
-      cursor: pointer;
     }
 
     .card:hover {
       border-color: #ff82ba;
       box-shadow: 0 0 10px #ff82ba;
-    }
-
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
     }
 
     .title {
@@ -657,8 +651,8 @@
     <div id="videos" class="content-container">Loading videos...</div>
   </section>
 
-  <div id="chat-container" style="display:none;">
-    <h2>Game Chat</h2>
+  <div id="chat-container">
+    <h2>Community Chat for <span id="chat-username"></span></h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
@@ -674,7 +668,12 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('user') || '';
+    const selectedGameId = username;
+
     const pageTitle = document.getElementById('pageTitle');
+    const chatUsername = document.getElementById('chat-username');
     const gamesContainer = document.getElementById('games');
     const artContainer = document.getElementById('art');
     const videosContainer = document.getElementById('videos');
@@ -683,10 +682,6 @@
     const form = document.getElementById('chat-form');
     const msgInput = document.getElementById('msg-input');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('user') || '';
-
-    let selectedGameId = null;
     let currentChatSubscription = null;
 
     if (!username) {
@@ -694,8 +689,10 @@
       gamesContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
       artContainer.innerHTML = '';
       videosContainer.innerHTML = '';
+      chatContainer.style.display = 'none';
     } else {
       pageTitle.textContent = `${username}'s Content`;
+      chatUsername.textContent = username;
 
       function convertDriveLinkToThumbnail(url) {
         if (!url) return url;
@@ -707,7 +704,6 @@
         return url;
       }
 
-      // Load Games
       async function loadGames() {
         const { data, error } = await supabase
           .from('game_submissions')
@@ -726,10 +722,9 @@
         }
 
         gamesContainer.innerHTML = '';
-        data.forEach((game, index) => {
+        data.forEach((game) => {
           const card = document.createElement('article');
           card.className = 'card';
-          card.dataset.gameId = game.id || game.title || `game-${index}`;
 
           const title = document.createElement('h3');
           title.className = 'title';
@@ -761,20 +756,10 @@
             card.appendChild(link);
           }
 
-          card.addEventListener('click', () => {
-            selectGame(card.dataset.gameId);
-          });
-
           gamesContainer.appendChild(card);
         });
-
-        // Automatically select the first game if any
-        if(data.length > 0) {
-          selectGame(data[0].id || data[0].title || 'default-game');
-        }
       }
 
-      // Load Art
       async function loadArt() {
         const { data, error } = await supabase
           .from('user_art')
@@ -793,7 +778,7 @@
         }
 
         artContainer.innerHTML = '';
-        data.forEach((art, index) => {
+        data.forEach((art) => {
           const card = document.createElement('article');
           card.className = 'card';
 
@@ -821,7 +806,6 @@
         });
       }
 
-      // Load Videos (FULL updated function)
       async function loadVideos() {
         const { data, error } = await supabase
           .from('game_videos')
@@ -854,15 +838,8 @@
             videoEl.className = 'video-player';
             videoEl.controls = true;
             videoEl.src = video.video_url;
-            videoEl.style.maxWidth = '100%';
-            videoEl.style.maxHeight = '200px';
             videoEl.preload = 'metadata';
             card.appendChild(videoEl);
-          } else {
-            const noVideoMsg = document.createElement('p');
-            noVideoMsg.className = 'desc';
-            noVideoMsg.textContent = 'No video URL available.';
-            card.appendChild(noVideoMsg);
           }
 
           if (video.content) {
@@ -876,32 +853,7 @@
         });
       }
 
-      // Select game and load chat
-      async function selectGame(gameId) {
-        selectedGameId = gameId;
-
-        // Highlight selected game card
-        document.querySelectorAll('#games .card').forEach(card => {
-          if (card.dataset.gameId === gameId) {
-            card.classList.add('selected');
-          } else {
-            card.classList.remove('selected');
-          }
-        });
-
-        if (!selectedGameId) {
-          chatContainer.style.display = 'none';
-          return;
-        }
-
-        chatContainer.style.display = 'block';
-        loadChatMessages();
-        subscribeToChat();
-      }
-
-      // Load chat messages for the selected game
       async function loadChatMessages() {
-        if (!selectedGameId) return;
         const { data, error } = await supabase
           .from('game_chat')
           .select('*')
@@ -909,72 +861,72 @@
           .order('created_at', { ascending: true });
 
         if (error) {
-          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading chat messages: ${error.message}</div>`;
+          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading messages: ${error.message}</div>`;
           return;
         }
 
         if (!data.length) {
-          messagesDiv.innerHTML = `<p class="no-content">No messages yet for this game.</p>`;
+          messagesDiv.innerHTML = `<p class="no-content">No messages yet.</p>`;
           return;
         }
 
         messagesDiv.innerHTML = '';
         data.forEach(msg => {
-          const msgDiv = document.createElement('div');
-          msgDiv.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
-          messagesDiv.appendChild(msgDiv);
+          const div = document.createElement('div');
+          div.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
+          messagesDiv.appendChild(div);
         });
 
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      // Subscribe to real-time chat updates
       function subscribeToChat() {
         if (currentChatSubscription) {
-          supabase.removeSubscription(currentChatSubscription);
-          currentChatSubscription = null;
+          supabase.removeChannel(currentChatSubscription);
         }
-        if (!selectedGameId) return;
 
         currentChatSubscription = supabase
-          .from(`game_chat:game_id=eq.${selectedGameId}`)
-          .on('INSERT', payload => {
+          .channel(`chat-${selectedGameId}`)
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'game_chat',
+            filter: `game_id=eq.${selectedGameId}`
+          }, payload => {
             const newMsg = payload.new;
-            const msgDiv = document.createElement('div');
-            msgDiv.innerHTML = `<strong>${newMsg.username}:</strong> ${newMsg.message}`;
-            messagesDiv.appendChild(msgDiv);
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>${newMsg.username}:</strong> ${newMsg.message}`;
+            messagesDiv.appendChild(div);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
           })
           .subscribe();
       }
 
-      // Handle chat form submission
-      form.addEventListener('submit', async e => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!selectedGameId) return;
         const message = msgInput.value.trim();
         if (!message) return;
 
         const { error } = await supabase.from('game_chat').insert({
           game_id: selectedGameId,
           username,
-          message,
+          message
         });
 
         if (error) {
           alert('Error sending message: ' + error.message);
-          return;
         }
 
         msgInput.value = '';
       });
 
-      // Initial load
+      // Load all on page start
       loadGames();
       loadArt();
       loadVideos();
+      loadChatMessages();
+      subscribeToChat();
     }
   </script>
-
 </body>
 </html>
