@@ -855,9 +855,10 @@
 
     // Load content
     loadGames();
-    // Presumably you already defined loadArt and loadVideos
-    loadArt?.();
-    loadVideos?.();
+
+    // Safely call loadArt and loadVideos if they exist
+    if (typeof loadArt === 'function') loadArt();
+    if (typeof loadVideos === 'function') loadVideos();
   }
 </script>
 </body>
