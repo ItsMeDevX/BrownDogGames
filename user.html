@@ -1004,11 +1004,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title id="page-title">Show Some Love ❤️</title>
+  <title>Show Some Love ❤️</title>
 </head>
 <body>
-  <div id="auth-bar" style="max-width:320px;margin:20px auto;padding:10px 16px;background:#2a243b;color:#fefefe;border-radius:12px;font-family:sans-serif;"></div>
-
   <h1 id="heading">Show Some Love ❤️</h1>
   <button id="like-btn">👍 Like this Page</button>
   <p id="status"></p>
@@ -1017,120 +1015,98 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // Replace with your actual anon key
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const likeBtn = document.getElementById('like-btn');
     const status = document.getElementById('status');
-    const authBar = document.getElementById('auth-bar');
-    const heading = document.getElementById('heading');
 
+    // Get pageOwner from URL ?user=xxx
     const urlParams = new URLSearchParams(window.location.search);
     const pageOwner = urlParams.get('user');
 
     if (!pageOwner) {
       document.title = 'Error';
-      heading.textContent = '❌ No username in URL.';
+      document.getElementById('heading').textContent = '❌ No username in URL.';
       likeBtn.style.display = 'none';
       status.textContent = '';
     } else {
       document.title = `Show Love to ${pageOwner}`;
-      heading.textContent = `Show Some Love to ${pageOwner} ❤️`;
+      document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
     }
 
-    async function renderAuthBar() {
+    async function getUser() {
       const { data: { user }, error } = await supabase.auth.getUser();
-
-      authBar.innerHTML = '';
-      if (!user || error) {
-        authBar.textContent = 'Not logged in';
-        return null;
-      }
-
-      const username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
-      const userDiv = document.createElement('div');
-      userDiv.id = 'user-info';
-      userDiv.textContent = `Logged in as: ${username}`;
-      authBar.appendChild(userDiv);
+      if (error || !user) return null;
       return user;
     }
 
-    async function checkIfLiked(userId) {
-      if (!pageOwner) return false;
-
+    async function hasLiked(userId) {
+      if (!userId || !pageOwner) return false;
       const { data, error } = await supabase
         .from('vip_page_views')
         .select('user_id')
         .eq('user_id', userId)
         .eq('username', pageOwner)
         .maybeSingle();
-
       return !!data;
     }
 
     async function getLikeCount() {
       if (!pageOwner) return 0;
-
       const { count, error } = await supabase
         .from('vip_page_views')
         .select('*', { count: 'exact', head: true })
         .eq('username', pageOwner);
-
       return count || 0;
     }
 
-    async function updateLikeStatus(user) {
-      if (!pageOwner) return;
+    async function updateStatus() {
+      const user = await getUser();
+      if (!user) {
+        status.textContent = '❌ Please log in to like this page.';
+        likeBtn.disabled = true;
+        return;
+      }
 
-      const alreadyLiked = await checkIfLiked(user.id);
+      const liked = await hasLiked(user.id);
       const count = await getLikeCount();
 
-      if (alreadyLiked) {
-        likeBtn.disabled = true;
+      if (liked) {
         status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
+        likeBtn.disabled = true;
       } else {
         status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
+        likeBtn.disabled = false;
       }
     }
 
     likeBtn.addEventListener('click', async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-
-      if (error || !user) {
+      const user = await getUser();
+      if (!user) {
         status.textContent = '❌ You must be logged in to like this page.';
         return;
       }
-
-      if (!pageOwner) {
-        status.textContent = '❌ No page owner specified.';
-        return;
-      }
-
-      const alreadyLiked = await checkIfLiked(user.id);
-      if (alreadyLiked) {
+      const liked = await hasLiked(user.id);
+      if (liked) {
         status.textContent = `❤️ You've already liked ${pageOwner}'s page.`;
         likeBtn.disabled = true;
         return;
       }
-
       const now = new Date().toISOString();
 
-      const { error: insertError } = await supabase
+      const { error } = await supabase
         .from('vip_page_views')
-        .upsert([
-          {
-            user_id: user.id,
-            username: pageOwner,
-            view_count: 1,
-            first_viewed_at: now,
-            last_viewed_at: now
-          }
-        ], {
-          onConflict: ['user_id', 'username']
-        });
+        .insert([{
+          user_id: user.id,
+          username: pageOwner,
+          view_count: 1,
+          first_viewed_at: now,
+          last_viewed_at: now,
+        }]);
 
-      if (insertError) {
-        console.error('Insert error:', insertError);
+      if (error) {
+        console.error('Insert error:', error);
         status.textContent = '❌ Error liking page. Please try again.';
         return;
       }
@@ -1140,12 +1116,8 @@
       status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
     });
 
-    (async () => {
-      const user = await renderAuthBar();
-      if (user && pageOwner) {
-        await updateLikeStatus(user);
-      }
-    })();
+    // Initialize
+    updateStatus();
 
   </script>
 </body>
