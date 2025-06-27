@@ -1296,19 +1296,19 @@
   </ul>
 
   <form id="addArtForm">
-    <label for="title">Art Title:</label>
-    <input type="text" id="title" placeholder="Enter art title" required />
+    <label for="artTitle">Art Title:</label>
+    <input type="text" id="artTitle" placeholder="Enter art title" required />
 
-    <label for="description">Description:</label>
-    <textarea id="description" rows="4" placeholder="Describe your art" required></textarea>
+    <label for="artDescription">Description:</label>
+    <textarea id="artDescription" rows="4" placeholder="Describe your art" required></textarea>
 
-    <label for="imageUrl">Image URL:</label>
-    <input type="url" id="imageUrl" placeholder="Link to your artwork image" required />
+    <label for="artImageUrl">Image URL:</label>
+    <input type="url" id="artImageUrl" placeholder="Link to your artwork image" required />
 
-    <button type="submit" id="submitBtn">Add New Art</button>
+    <button type="submit" id="artSubmitBtn">Add New Art</button>
   </form>
 
-  <p class="message" id="formMessage" aria-live="polite"></p>
+  <p class="message" id="artFormMessage" aria-live="polite"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -1320,8 +1320,8 @@
 
     const artList = document.getElementById('art-list');
     const addArtForm = document.getElementById('addArtForm');
-    const formMessage = document.getElementById('formMessage');
-    const submitBtn = document.getElementById('submitBtn');
+    const formMessage = document.getElementById('artFormMessage');
+    const submitBtn = document.getElementById('artSubmitBtn');
     let currentUser = null;
 
     function showMessage(msg, type = '') {
@@ -1398,11 +1398,10 @@
       submitBtn.disabled = true;
       showMessage('');
 
-      const titleValue = document.getElementById('title').value.trim();
-      const descriptionValue = document.getElementById('description').value.trim();
-      const imageUrlValue = document.getElementById('imageUrl').value.trim();
+      const titleValue = document.getElementById('artTitle').value.trim();
+      const descriptionValue = document.getElementById('artDescription').value.trim();
+      const imageUrlValue = document.getElementById('artImageUrl').value.trim();
 
-      // Manual validation (redundant but safer)
       if (!titleValue) {
         showMessage('Please enter a title.', 'error');
         submitBtn.disabled = false;
@@ -1428,9 +1427,11 @@
         created_at: new Date().toISOString()
       };
 
-      const { error } = await supabase.from('user_art').insert([data]);
+      console.log('Inserting art:', data);
 
+      const { error } = await supabase.from('user_art').insert([data]);
       if (error) {
+        console.error('Insert error:', error);
         showMessage('Adding art failed: ' + error.message, 'error');
       } else {
         showMessage('Art added successfully!', 'success');
@@ -1440,7 +1441,6 @@
       submitBtn.disabled = false;
     };
 
-    // On load
     (async () => {
       const loggedIn = await checkAuth();
       if (loggedIn) loadArt();
