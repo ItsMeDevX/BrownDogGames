@@ -1017,7 +1017,7 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // Replace with your actual anon key
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // Replace this
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const likeBtn = document.getElementById('like-btn');
@@ -1025,7 +1025,6 @@
     const authBar = document.getElementById('auth-bar');
     const heading = document.getElementById('heading');
 
-    // Get the page owner from URL query param 'user'
     const urlParams = new URLSearchParams(window.location.search);
     const pageOwner = urlParams.get('user');
 
@@ -1040,36 +1039,34 @@
     }
 
     async function renderAuthBar() {
-      const { data: { user } } = await supabase.auth.getUser();
-
+      const { data, error } = await supabase.auth.getUser();
+      const user = data?.user;
       authBar.innerHTML = '';
+
       if (!user) {
-        authBar.textContent = 'Not logged in';
+        authBar.textContent = '❌ Not logged in';
         return null;
       }
 
       const username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
       const userDiv = document.createElement('div');
-      userDiv.id = 'user-info';
-      userDiv.textContent = `Logged in as: ${username}`;
+      userDiv.textContent = `✅ Logged in as: ${username}`;
       authBar.appendChild(userDiv);
       return user;
     }
 
     async function checkIfLiked(userId) {
-      if (!pageOwner) return false;
       const { data, error } = await supabase
-        .from('vip_page_views')   // use your table here (you said vip_page_views)
+        .from('vip_page_views')
         .select('user_id')
         .eq('user_id', userId)
         .eq('username', pageOwner)
-        .single();
+        .maybeSingle();
 
-      return !error && data != null;
+      return !!data;
     }
 
     async function getLikeCount() {
-      if (!pageOwner) return 0;
       const { count, error } = await supabase
         .from('vip_page_views')
         .select('*', { count: 'exact', head: true })
@@ -1079,7 +1076,6 @@
     }
 
     async function updateLikeStatus(user) {
-      if (!pageOwner) return;
       const alreadyLiked = await checkIfLiked(user.id);
       const count = await getLikeCount();
 
@@ -1092,15 +1088,11 @@
     }
 
     likeBtn.addEventListener('click', async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
+      const user = data?.user;
 
       if (error || !user) {
         status.textContent = '❌ You must be logged in to like this page.';
-        return;
-      }
-
-      if (!pageOwner) {
-        status.textContent = '❌ No page owner specified.';
         return;
       }
 
@@ -1111,13 +1103,21 @@
         return;
       }
 
+      const insertData = {
+        user_id: user.id,
+        username: pageOwner,
+        view_count: 1,
+        first_viewed_at: new Date().toISOString(),
+        last_viewed_at: new Date().toISOString()
+      };
+
       const { error: insertError } = await supabase
-        .from('vip_page_views')  // insert to your vip_page_views table
-        .insert([{ user_id: user.id, username: pageOwner, view_count: 1, first_viewed_at: new Date().toISOString(), last_viewed_at: new Date().toISOString() }]);
+        .from('vip_page_views')
+        .insert([insertData]);
 
       if (insertError) {
-        status.textContent = '❌ Error liking page.';
-        console.error(insertError);
+        console.error('Insert error:', insertError);
+        status.textContent = '❌ Error liking page: ' + insertError.message;
         return;
       }
 
@@ -1132,7 +1132,6 @@
         await updateLikeStatus(user);
       }
     })();
-
   </script>
 </body>
 </html>
