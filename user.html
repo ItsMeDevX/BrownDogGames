@@ -1017,7 +1017,7 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // Replace this
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your actual anon key
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const likeBtn = document.getElementById('like-btn');
@@ -1039,23 +1039,25 @@
     }
 
     async function renderAuthBar() {
-      const { data, error } = await supabase.auth.getUser();
-      const user = data?.user;
-      authBar.innerHTML = '';
+      const { data: { user }, error } = await supabase.auth.getUser();
 
-      if (!user) {
-        authBar.textContent = '❌ Not logged in';
+      authBar.innerHTML = '';
+      if (!user || error) {
+        authBar.textContent = 'Not logged in';
         return null;
       }
 
       const username = user.user_metadata.full_name || user.user_metadata.user_name || 'unknown';
       const userDiv = document.createElement('div');
-      userDiv.textContent = `✅ Logged in as: ${username}`;
+      userDiv.id = 'user-info';
+      userDiv.textContent = `Logged in as: ${username}`;
       authBar.appendChild(userDiv);
       return user;
     }
 
     async function checkIfLiked(userId) {
+      if (!pageOwner) return false;
+
       const { data, error } = await supabase
         .from('vip_page_views')
         .select('user_id')
@@ -1067,6 +1069,8 @@
     }
 
     async function getLikeCount() {
+      if (!pageOwner) return 0;
+
       const { count, error } = await supabase
         .from('vip_page_views')
         .select('*', { count: 'exact', head: true })
@@ -1076,6 +1080,8 @@
     }
 
     async function updateLikeStatus(user) {
+      if (!pageOwner) return;
+
       const alreadyLiked = await checkIfLiked(user.id);
       const count = await getLikeCount();
 
@@ -1088,11 +1094,15 @@
     }
 
     likeBtn.addEventListener('click', async () => {
-      const { data, error } = await supabase.auth.getUser();
-      const user = data?.user;
+      const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error || !user) {
         status.textContent = '❌ You must be logged in to like this page.';
+        return;
+      }
+
+      if (!pageOwner) {
+        status.textContent = '❌ No page owner specified.';
         return;
       }
 
@@ -1103,21 +1113,25 @@
         return;
       }
 
-      const insertData = {
-        user_id: user.id,
-        username: pageOwner,
-        view_count: 1,
-        first_viewed_at: new Date().toISOString(),
-        last_viewed_at: new Date().toISOString()
-      };
+      const now = new Date().toISOString();
 
       const { error: insertError } = await supabase
         .from('vip_page_views')
-        .insert([insertData]);
+        .upsert([
+          {
+            user_id: user.id,
+            username: pageOwner,
+            view_count: 1,
+            first_viewed_at: now,
+            last_viewed_at: now
+          }
+        ], {
+          onConflict: ['user_id', 'username']
+        });
 
       if (insertError) {
         console.error('Insert error:', insertError);
-        status.textContent = '❌ Error liking page: ' + insertError.message;
+        status.textContent = '❌ Error liking page. Please try again.';
         return;
       }
 
@@ -1132,6 +1146,7 @@
         await updateLikeStatus(user);
       }
     })();
+
   </script>
 </body>
 </html>
