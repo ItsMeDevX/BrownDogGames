@@ -812,7 +812,7 @@
       }
 
       currentChatSubscription = supabase
-        .channel('chat-messages')
+        .channel(`chat-messages-${selectedGameId}`)
         .on(
           'postgres_changes',
           {
@@ -829,7 +829,13 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
           }
         )
-        .subscribe();
+        .subscribe()
+        .then(() => {
+          // Successfully subscribed
+        })
+        .catch(error => {
+          console.error('Subscription error:', error);
+        });
     }
 
     form.addEventListener('submit', async (e) => {
@@ -861,5 +867,6 @@
     if (typeof loadVideos === 'function') loadVideos();
   }
 </script>
+
 </body>
 </html>
