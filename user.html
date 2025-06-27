@@ -691,18 +691,18 @@
 
     if (!username) {
       pageTitle.textContent = 'User not specified';
-      gamesContainer.innerHTML = `<div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>`;
+      gamesContainer.innerHTML = <div class="no-content">🚫 No user provided in the URL.<br>Please go back and select a user.</div>;
       artContainer.innerHTML = '';
       videosContainer.innerHTML = '';
     } else {
-      pageTitle.textContent = `${username}'s Content`;
+      pageTitle.textContent = ${username}'s Content;
 
       function convertDriveLinkToThumbnail(url) {
         if (!url) return url;
         const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
         const fileId = match ? match[1] : null;
         if (fileId) {
-          return `https://drive.google.com/thumbnail?id=${fileId}`;
+          return https://drive.google.com/thumbnail?id=${fileId};
         }
         return url;
       }
@@ -716,12 +716,12 @@
           .order('created_at', { ascending: false });
 
         if (error) {
-          gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
+          gamesContainer.innerHTML = <div class="no-content">❌ Error loading games: ${error.message}</div>;
           return;
         }
 
         if (!data.length) {
-          gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+          gamesContainer.innerHTML = <p class="no-content">No games submitted by ${username} yet.</p>;
           return;
         }
 
@@ -729,7 +729,7 @@
         data.forEach((game, index) => {
           const card = document.createElement('article');
           card.className = 'card';
-          card.dataset.gameId = game.id || game.title || `game-${index}`;
+          card.dataset.gameId = game.id || game.title || game-${index};
 
           const title = document.createElement('h3');
           title.className = 'title';
@@ -747,38 +747,48 @@
             const img = document.createElement('img');
             img.className = 'thumbnail';
             img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-            img.alt = game.title || 'Game screenshot';
+            img.alt = ${game.title || 'Game'} screenshot;
             card.appendChild(img);
           }
 
-          const playLink = document.createElement('a');
-          playLink.href = `game.html?id=${encodeURIComponent(game.id || game.title)}`;
-          playLink.target = '_blank';
-          playLink.className = 'play-link';
-          playLink.textContent = 'Play Game';
-          card.appendChild(playLink);
+          if (game.embed_url) {
+            const link = document.createElement('a');
+            link.href = game.embed_url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = '▶️ Play Game';
+            link.className = 'play-link';
+            card.appendChild(link);
+          }
 
-          card.addEventListener('click', () => selectGame(game.id || game.title));
+          card.addEventListener('click', () => {
+            selectGame(card.dataset.gameId);
+          });
 
           gamesContainer.appendChild(card);
         });
+
+        // Automatically select the first game if any
+        if(data.length > 0) {
+          selectGame(data[0].id || data[0].title || 'default-game');
+        }
       }
 
       // Load Art
       async function loadArt() {
         const { data, error } = await supabase
-          .from('art_submissions')
+          .from('user_art')
           .select('*')
-          .eq('github_user', username)
+          .eq('github_username', username)
           .order('created_at', { ascending: false });
 
         if (error) {
-          artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+          artContainer.innerHTML = <div class="no-content">❌ Error loading art: ${error.message}</div>;
           return;
         }
 
         if (!data.length) {
-          artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+          artContainer.innerHTML = <p class="no-content">No art submitted by ${username} yet.</p>;
           return;
         }
 
@@ -787,11 +797,17 @@
           const card = document.createElement('article');
           card.className = 'card';
 
-          if (art.title) {
-            const title = document.createElement('h3');
-            title.className = 'title';
-            title.textContent = art.title;
-            card.appendChild(title);
+          const title = document.createElement('h3');
+          title.className = 'title';
+          title.textContent = art.title || 'Untitled Art';
+          card.appendChild(title);
+
+          if (art.image_url) {
+            const img = document.createElement('img');
+            img.className = 'thumbnail';
+            img.src = convertDriveLinkToThumbnail(art.image_url);
+            img.alt = ${art.title || 'Art'} thumbnail;
+            card.appendChild(img);
           }
 
           if (art.description) {
@@ -801,61 +817,59 @@
             card.appendChild(desc);
           }
 
-          if (art.image_url) {
-            const img = document.createElement('img');
-            img.className = 'thumbnail';
-            img.src = convertDriveLinkToThumbnail(art.image_url);
-            img.alt = art.title || 'Art image';
-            card.appendChild(img);
-          }
-
           artContainer.appendChild(card);
         });
       }
 
-      // Load Videos
+      // Load Videos (FULL updated function)
       async function loadVideos() {
         const { data, error } = await supabase
-          .from('video_submissions')
+          .from('game_videos')
           .select('*')
-          .eq('github_user', username)
+          .eq('github_username', username)
           .order('created_at', { ascending: false });
 
         if (error) {
-          videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
+          videosContainer.innerHTML = <div class="no-content">❌ Error loading videos: ${error.message}</div>;
           return;
         }
 
         if (!data.length) {
-          videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+          videosContainer.innerHTML = <p class="no-content">No videos submitted by ${username} yet.</p>;
           return;
         }
 
         videosContainer.innerHTML = '';
-        data.forEach((video, index) => {
+        data.forEach((video) => {
           const card = document.createElement('article');
           card.className = 'card';
 
-          if (video.title) {
-            const title = document.createElement('h3');
-            title.className = 'title';
-            title.textContent = video.title;
-            card.appendChild(title);
-          }
-
-          if (video.description) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = video.description;
-            card.appendChild(desc);
-          }
+          const title = document.createElement('h3');
+          title.className = 'title';
+          title.textContent = video.title || 'Untitled Video';
+          card.appendChild(title);
 
           if (video.video_url) {
-            const videoPlayer = document.createElement('video');
-            videoPlayer.className = 'video-player';
-            videoPlayer.src = video.video_url;
-            videoPlayer.controls = true;
-            card.appendChild(videoPlayer);
+            const videoEl = document.createElement('video');
+            videoEl.className = 'video-player';
+            videoEl.controls = true;
+            videoEl.src = video.video_url;
+            videoEl.style.maxWidth = '100%';
+            videoEl.style.maxHeight = '200px';
+            videoEl.preload = 'metadata';
+            card.appendChild(videoEl);
+          } else {
+            const noVideoMsg = document.createElement('p');
+            noVideoMsg.className = 'desc';
+            noVideoMsg.textContent = 'No video URL available.';
+            card.appendChild(noVideoMsg);
+          }
+
+          if (video.content) {
+            const desc = document.createElement('p');
+            desc.className = 'desc';
+            desc.textContent = video.content;
+            card.appendChild(desc);
           }
 
           videosContainer.appendChild(card);
@@ -881,7 +895,7 @@
         }
 
         chatContainer.style.display = 'block';
-        await loadChatMessages();
+        loadChatMessages();
         subscribeToChat();
       }
 
@@ -895,19 +909,19 @@
           .order('created_at', { ascending: true });
 
         if (error) {
-          messagesDiv.innerHTML = `<div class="no-content">❌ Error loading chat messages: ${error.message}</div>`;
+          messagesDiv.innerHTML = <div class="no-content">❌ Error loading chat messages: ${error.message}</div>;
           return;
         }
 
         if (!data.length) {
-          messagesDiv.innerHTML = `<p class="no-content">No messages yet for this game.</p>`;
+          messagesDiv.innerHTML = <p class="no-content">No messages yet for this game.</p>;
           return;
         }
 
         messagesDiv.innerHTML = '';
         data.forEach(msg => {
           const msgDiv = document.createElement('div');
-          msgDiv.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
+          msgDiv.innerHTML = <strong>${msg.username}:</strong> ${msg.message};
           messagesDiv.appendChild(msgDiv);
         });
 
@@ -917,22 +931,17 @@
       // Subscribe to real-time chat updates
       function subscribeToChat() {
         if (currentChatSubscription) {
-          supabase.removeChannel(currentChatSubscription);
+          supabase.removeSubscription(currentChatSubscription);
           currentChatSubscription = null;
         }
         if (!selectedGameId) return;
 
         currentChatSubscription = supabase
-          .channel(`game_chat_${selectedGameId}`)
-          .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'game_chat',
-            filter: `game_id=eq.${selectedGameId}`
-          }, payload => {
+          .from(game_chat:game_id=eq.${selectedGameId})
+          .on('INSERT', payload => {
             const newMsg = payload.new;
             const msgDiv = document.createElement('div');
-            msgDiv.innerHTML = `<strong>${newMsg.username}:</strong> ${newMsg.message}`;
+            msgDiv.innerHTML = <strong>${newMsg.username}:</strong> ${newMsg.message};
             messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
           })
@@ -960,6 +969,7 @@
         msgInput.value = '';
       });
 
+      // Initial load
       loadGames();
       loadArt();
       loadVideos();
