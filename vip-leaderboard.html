@@ -392,7 +392,6 @@
   <title>🏆 VIP Leaderboard 💖</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
     body {
       background-color: #1e1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
@@ -404,7 +403,6 @@
       line-height: 1.6;
       text-align: left;
     }
-
     h1 {
       color: #ff69b4;
       font-size: 2.8rem;
@@ -412,32 +410,27 @@
       margin-bottom: 1rem;
       text-align: center;
     }
-
     .intro {
       font-size: 1.1rem;
       margin-bottom: 1.5rem;
       text-align: center;
       color: #ff8edb;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 30px;
     }
-
     th, td {
       border: 1px solid #ff69b4;
       padding: 12px 10px;
       text-align: left;
       vertical-align: top;
     }
-
     th {
       background-color: #2d1a3a;
       width: 35%;
     }
-
     tbody tr:nth-child(odd) {
       background-color: #2a2040;
     }
@@ -479,13 +472,13 @@
 
     async function loadLeaderboard() {
       try {
-        // 1) Get all VIP usernames
+        console.log('Fetching VIP users...');
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
           .select('username')
           .eq('is_vip', true);
-
         if (vipError) throw vipError;
+        console.log('VIP users:', vipUsers);
 
         if (!vipUsers || vipUsers.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
@@ -493,39 +486,38 @@
         }
 
         const vipUsernames = vipUsers.map(u => u.username).filter(Boolean);
+        console.log('VIP usernames:', vipUsernames);
 
         if (vipUsernames.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP usernames found.</td></tr>`;
           return;
         }
 
-        // 2) Fetch all page views for VIP usernames
+        console.log('Fetching VIP page views...');
         const { data: pageViews, error: pvError } = await supabase
           .from('vip_page_views')
           .select('username, view_count')
           .in('username', vipUsernames);
-
         if (pvError) throw pvError;
+        console.log('Page views:', pageViews);
 
         if (!pageViews || pageViews.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
           return;
         }
 
-        // 3) Aggregate total views per VIP username
         const likesMap = {};
         for (const pv of pageViews) {
           if (!likesMap[pv.username]) likesMap[pv.username] = 0;
           likesMap[pv.username] += pv.view_count || 0;
         }
+        console.log('Aggregated likes:', likesMap);
 
-        // 4) Sort VIPs by total likes descending and take top 10
         const sortedVIPs = Object.entries(likesMap)
           .map(([username, totalLikes]) => ({ username, totalLikes }))
           .sort((a, b) => b.totalLikes - a.totalLikes)
           .slice(0, 10);
 
-        // 5) Render leaderboard table rows
         leaderboardBody.innerHTML = sortedVIPs.map(({ username, totalLikes }, idx) => `
           <tr>
             <td>${getRankEmoji(idx)}</td>
