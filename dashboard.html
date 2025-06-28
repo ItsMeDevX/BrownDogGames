@@ -817,6 +817,7 @@ async function loadVipPageLikes() {
 
   if (error || !data) {
     vipLikeCountEl.textContent = 'Page Likes: 0';
+    vipEarningsEl.style.display = 'none';
     return;
   }
 
@@ -824,12 +825,18 @@ async function loadVipPageLikes() {
   vipLikeCountEl.textContent = `Page Likes: ${totalLikes}`;
 
   if (isVip) {
-    // Earn $0.01 per 10 likes (only full cents)
-    const fullCents = Math.floor(totalLikes / 10); // Only full 10-like blocks
+    const fullCents = Math.floor(totalLikes / 10);
     const earnings = (fullCents * 0.01).toFixed(2);
 
     vipEarningsEl.textContent = `Earnings: $${earnings}`;
     vipEarningsEl.style.display = 'block';
+
+    if (fullCents === 0) {
+      const likesToNext = 10 - (totalLikes % 10);
+      vipEarningsEl.textContent += ` (Earn $0.01 after ${likesToNext} more like${likesToNext > 1 ? 's' : ''})`;
+    }
+  } else {
+    vipEarningsEl.style.display = 'none';
   }
 }
 
