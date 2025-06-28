@@ -1137,7 +1137,7 @@ async function loadVipPageLikes() {
 
   <h1>Your Submitted Videos</h1>
 
-  <ul id="videos-list"><li>Loading videos...</li></ul>
+  <ul id="videos-list"></ul>
 
   <form id="addVideoForm">
     <label for="title">Video Title:</label>
@@ -1157,8 +1157,8 @@ async function loadVipPageLikes() {
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'; // replace with your supabase url
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // replace with your anon key
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -1167,7 +1167,7 @@ async function loadVipPageLikes() {
     const message = document.getElementById('formMessage');
     const submitBtn = document.getElementById('submitBtn');
 
-    let currentUser = null;
+    let currentUser;
 
     function showMessage(text, type = '') {
       message.textContent = text;
@@ -1178,7 +1178,7 @@ async function loadVipPageLikes() {
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error || !session?.user) {
-        window.location.href = 'login.html';
+        window.location.href = 'login.html'; // Redirect if not logged in
         return false;
       }
 
@@ -1200,84 +1200,82 @@ async function loadVipPageLikes() {
       return data;
     }
 
-  videos.forEach(video => {
-  console.log('Video data:', video);
+    async function loadVideos() {
+      const videos = await fetchVideos();
+      videosList.innerHTML = '';
+      if (videos.length === 0) {
+        videosList.innerHTML = '<li>No videos submitted yet.</li>';
+        return;
+      }
+      videos.forEach(video => {
+        const li = document.createElement('li');
 
-  const li = document.createElement('li');
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'video-info';
 
-  const infoDiv = document.createElement('div');
-  infoDiv.className = 'video-info';
+        const title = document.createElement('div');
+        title.className = 'video-title';
+        title.textContent = video.title;
 
-  const titleDiv = document.createElement('div');
-  titleDiv.className = 'video-title';
+        const content = document.createElement('div');
+        content.className = 'video-content';
+        content.textContent = video.content;
 
-  // Show fallback if title missing
-  titleDiv.textContent = video.title || '(No title found)';
+        const urlsDiv = document.createElement('div');
+        urlsDiv.className = 'video-urls';
 
-  const contentDiv = document.createElement('div');
-  contentDiv.className = 'video-content';
-  contentDiv.textContent = video.content;
+        const videoLink = document.createElement('a');
+        videoLink.href = video.video_url;
+        videoLink.target = '_blank';
+        videoLink.rel = 'noopener noreferrer';
+        videoLink.textContent = 'Watch Video';
 
-  const urlsDiv = document.createElement('div');
-  urlsDiv.className = 'video-urls';
+        urlsDiv.appendChild(videoLink);
 
-  const videoLink = document.createElement('a');
-  videoLink.href = video.video_url;
-  videoLink.target = '_blank';
-  videoLink.rel = 'noopener noreferrer';
-  videoLink.textContent = 'Watch Video';
+        infoDiv.appendChild(title);
+        infoDiv.appendChild(content);
+        infoDiv.appendChild(urlsDiv);
 
-  urlsDiv.appendChild(videoLink);
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.onclick = async () => {
+          if (!confirm(`Remove "${video.title}"?`)) return;
 
-  infoDiv.appendChild(titleDiv);
-  infoDiv.appendChild(contentDiv);
-  infoDiv.appendChild(urlsDiv);
+          const { error } = await supabase
+            .from('game_videos')
+            .delete()
+            .eq('id', video.id);
 
-  const removeBtn = document.createElement('button');
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.onclick = async () => {
-    if (!confirm(`Remove "${video.title}"?`)) return;
-    const { error } = await supabase.from('game_videos').delete().eq('id', video.id);
-    if (error) {
-      showMessage('Error removing video: ' + error.message, 'error');
-    } else {
-      showMessage('Video removed.', 'success');
-      loadVideos();
+          if (error) {
+            showMessage('Error removing video: ' + error.message, 'error');
+          } else {
+            showMessage('Video removed.', 'success');
+            loadVideos();
+          }
+        };
+
+        li.appendChild(infoDiv);
+        li.appendChild(removeBtn);
+        videosList.appendChild(li);
+      });
     }
-  };
-
-  li.appendChild(infoDiv);
-  li.appendChild(removeBtn);
-  videosList.appendChild(li);
-});
 
     addVideoForm.onsubmit = async (e) => {
       e.preventDefault();
       submitBtn.disabled = true;
       showMessage('');
 
-      const title = document.getElementById('title').value.trim();
-      const content = document.getElementById('content').value.trim();
-      const videoUrl = document.getElementById('videoUrl').value.trim();
-
-      if (!title || !content || !videoUrl) {
-        showMessage('Please fill in all fields.', 'error');
-        submitBtn.disabled = false;
-        return;
-      }
-
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
         avatar_url: currentUser.user_metadata?.avatar_url || null,
-        title,
-        content,
-        video_url: videoUrl,
+        title: document.getElementById('title').value.trim(),
+        content: document.getElementById('content').value.trim(),
+        video_url: document.getElementById('videoUrl').value.trim(),
         created_at: new Date().toISOString()
       };
 
       const { error } = await supabase.from('game_videos').insert([data]);
-
       if (error) {
         showMessage('Adding video failed: ' + error.message, 'error');
       } else {
@@ -1285,12 +1283,12 @@ async function loadVipPageLikes() {
         addVideoForm.reset();
         loadVideos();
       }
-
       submitBtn.disabled = false;
     };
 
     (async () => {
-      if (await checkAuth()) {
+      const loggedIn = await checkAuth();
+      if (loggedIn) {
         loadVideos();
       }
     })();
