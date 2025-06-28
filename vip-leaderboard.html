@@ -389,10 +389,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>VIP Leaderboard 💖</title>
+  <title>Leaderboard - All Users</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
     body {
       background-color: #1e1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
@@ -404,7 +403,6 @@
       line-height: 1.6;
       text-align: left;
     }
-
     h1 {
       color: #ff69b4;
       font-size: 2.8rem;
@@ -412,32 +410,27 @@
       margin-bottom: 1rem;
       text-align: center;
     }
-
     .intro {
       font-size: 1.1rem;
       margin-bottom: 1.5rem;
       text-align: center;
       color: #ff8edb;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 30px;
     }
-
     th, td {
       border: 1px solid #ff69b4;
       padding: 12px 10px;
       text-align: left;
       vertical-align: top;
     }
-
     th {
       background-color: #2d1a3a;
       width: 35%;
     }
-
     tbody tr:nth-child(odd) {
       background-color: #2a2040;
     }
@@ -445,8 +438,8 @@
 </head>
 <body>
 
-  <h1>🏆 VIP Leaderboard</h1>
-  <p class="intro">Shoutout to our top VIPs! Show them some love 💖</p>
+  <h1>🏆 Leaderboard - All Users</h1>
+  <p class="intro">Showing total likes for every user in the system</p>
 
   <table>
     <thead>
@@ -464,11 +457,11 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Your Supabase credentials
+    // Replace with your own Supabase project URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const leaderboardBody = document.getElementById('leaderboard-body');
 
     function getRankEmoji(index) {
@@ -480,32 +473,30 @@
 
     async function loadLeaderboard() {
       try {
-        // Call the RPC function vip_leaderboard()
-        const { data, error } = await supabase.rpc('vip_leaderboard');
+        // Call the Postgres function to get all users with their total likes
+        const { data, error } = await supabase.rpc('leaderboard_all_users');
 
         if (error) throw error;
 
         if (!data || data.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
+          leaderboardBody.innerHTML = `<tr><td colspan="3">No users found.</td></tr>`;
           return;
         }
 
         leaderboardBody.innerHTML = data.map((row, idx) => {
-          const rank = getRankEmoji(idx);
-          const username = row.username ?? 'Unknown';
-          const totalLikes = row.total_likes ?? 0;
-
+          const username = row.username || 'Unknown';
+          const likes = row.total_likes || 0;
           return `
             <tr>
-              <td>${rank}</td>
+              <td>${getRankEmoji(idx)}</td>
               <td>@${username}</td>
-              <td>💖 ${totalLikes}</td>
+              <td>❤️ ${likes}</td>
             </tr>
           `;
         }).join('');
 
-      } catch (error) {
-        console.error('Error loading leaderboard:', error);
+      } catch (err) {
+        console.error('Error loading leaderboard:', err);
         leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
       }
     }
