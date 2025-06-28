@@ -636,8 +636,11 @@
 </head>
 <body>
 
-<div style="display: flex; justify-content: space-between; align-items: center; max-width: 700px; margin: 0 auto 1rem;">
-  <p id="vipLikeCount" style="color: #ff69b4; font-weight: bold; font-size: 1.1rem; margin: 0;">Loading VIP Likes...</p>
+<div style="display: flex; justify-content: space-between; align-items: center; max-width: 700px; margin: 0 auto 1rem; gap: 1rem;">
+  <div style="display: flex; flex-direction: column;">
+    <p id="vipLikeCount" style="color: #ff69b4; font-weight: bold; font-size: 1.1rem; margin: 0;">Loading Page Likes...</p>
+    <p id="vipEarnings" style="color: #8dffa1; font-weight: bold; font-size: 1rem; margin: 0; display: none;">Earnings: $0.00</p>
+  </div>
   <button id="terms-button" style="
     background-color: #ff69b4;
     color: #1e1b2e;
@@ -653,222 +656,225 @@
   </button>
 </div>
 
-  <h1>Your Submitted Games</h1>
+<h1>Your Submitted Games</h1>
 
-  <ul id="games-list"></ul>
+<ul id="games-list"></ul>
 
-  <form id="addGameForm">
-    <label for="title">Game Title:</label>
-    <input type="text" id="title" placeholder="Enter your game title" required />
+<form id="addGameForm">
+  <label for="title">Game Title:</label>
+  <input type="text" id="title" placeholder="Enter your game title" required />
 
-    <label for="description">Description:</label>
-    <textarea id="description" rows="4" placeholder="Brief description of your game" required></textarea>
+  <label for="description">Description:</label>
+  <textarea id="description" rows="4" placeholder="Brief description of your game" required></textarea>
 
-    <label for="embedUrl">Embed URL:</label>
-    <input type="url" id="embedUrl" placeholder="URL to embed your game" required />
+  <label for="embedUrl">Embed URL:</label>
+  <input type="url" id="embedUrl" placeholder="URL to embed your game" required />
 
-    <label for="screenshotUrl">Screenshot URL (optional):</label>
-    <input type="url" id="screenshotUrl" placeholder="Link to a screenshot" />
+  <label for="screenshotUrl">Screenshot URL (optional):</label>
+  <input type="url" id="screenshotUrl" placeholder="Link to a screenshot" />
 
-    <label for="coverUrl">Cover URL (optional):</label>
-    <input type="url" id="coverUrl" placeholder="Link to a cover image" />
+  <label for="coverUrl">Cover URL (optional):</label>
+  <input type="url" id="coverUrl" placeholder="Link to a cover image" />
 
-    <button type="submit" id="submitBtn">Add New Game</button>
-  </form>
+  <button type="submit" id="submitBtn">Add New Game</button>
+</form>
 
-  <p class="message" id="formMessage" aria-live="polite"></p>
+<p class="message" id="formMessage" aria-live="polite"></p>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
 
-    const gamesList = document.getElementById('games-list');
-    const addGameForm = document.getElementById('addGameForm');
-    const message = document.getElementById('formMessage');
-    const submitBtn = document.getElementById('submitBtn');
+  const gamesList = document.getElementById('games-list');
+  const addGameForm = document.getElementById('addGameForm');
+  const message = document.getElementById('formMessage');
+  const submitBtn = document.getElementById('submitBtn');
 
-    let currentUser;
+  let currentUser;
 
-    function showMessage(text, type = '') {
-      message.textContent = text;
-      message.className = `message ${type}`;
-    }
-
-    async function checkAuth() {
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error || !session?.user) {
-        window.location.href = 'login.html';
-        return false;
-      }
-
-      currentUser = session.user;
-      return true;
-    }
-
-    async function fetchGames() {
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        showMessage('Failed to load games: ' + error.message, 'error');
-        return [];
-      }
-      return data;
-    }
-
-    async function loadGames() {
-      const games = await fetchGames();
-      gamesList.innerHTML = '';
-      if (games.length === 0) {
-        gamesList.innerHTML = '<li>No games submitted yet.</li>';
-        return;
-      }
-      games.forEach(game => {
-        const li = document.createElement('li');
-
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'game-info';
-
-        const title = document.createElement('div');
-        title.className = 'game-title';
-        title.textContent = game.title;
-
-        const desc = document.createElement('div');
-        desc.className = 'game-desc';
-        desc.textContent = game.description;
-
-        const urlsDiv = document.createElement('div');
-        urlsDiv.className = 'game-urls';
-
-        const embedLink = document.createElement('a');
-        embedLink.href = game.embed_url;
-        embedLink.target = '_blank';
-        embedLink.rel = 'noopener noreferrer';
-        embedLink.textContent = 'Play';
-
-        urlsDiv.appendChild(embedLink);
-
-        if (game.screenshot_url) {
-          const screenshotLink = document.createElement('a');
-          screenshotLink.href = game.screenshot_url;
-          screenshotLink.target = '_blank';
-          screenshotLink.rel = 'noopener noreferrer';
-          screenshotLink.textContent = 'Screenshot';
-          urlsDiv.appendChild(screenshotLink);
-        }
-
-        if (game.cover_url) {
-          const coverLink = document.createElement('a');
-          coverLink.href = game.cover_url;
-          coverLink.target = '_blank';
-          coverLink.rel = 'noopener noreferrer';
-          coverLink.textContent = 'Cover';
-          urlsDiv.appendChild(coverLink);
-        }
-
-        infoDiv.appendChild(title);
-        infoDiv.appendChild(desc);
-        infoDiv.appendChild(urlsDiv);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.onclick = async () => {
-          if (!confirm(`Remove "${game.title}"?`)) return;
-          const { error } = await supabase
-            .from('game_submissions')
-            .delete()
-            .eq('id', game.id)
-            .eq('user_id', currentUser.id);
-
-          if (error) {
-            showMessage('Error removing game: ' + error.message, 'error');
-          } else {
-            showMessage('Game removed.', 'success');
-            loadGames();
-          }
-        };
-
-        li.appendChild(infoDiv);
-        li.appendChild(removeBtn);
-        gamesList.appendChild(li);
-      });
-    }
-
-async function loadVipPageLikes() {
-  const username = currentUser.user_metadata?.user_name || currentUser.email;
-
-  const { data, error } = await supabase
-    .from('vip_page_views')  // Assuming your likes are stored here
-    .select('view_count')    // Rename this column to 'like_count' in DB ideally, or just treat as likes
-    .eq('username', username);
-
-  const vipLikeCountEl = document.getElementById('vipLikeCount');
-
-  if (error || !data) {
-    vipLikeCountEl.textContent = 'VIP Likes: 0';
-    return;
+  function showMessage(text, type = '') {
+    message.textContent = text;
+    message.className = `message ${type}`;
   }
 
-  const totalLikes = data.reduce((sum, row) => sum + (row.view_count || 0), 0);
+  async function checkAuth() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session?.user) {
+      window.location.href = 'login.html';
+      return false;
+    }
+    currentUser = session.user;
+    return true;
+  }
 
-  vipLikeCountEl.textContent = `VIP Likes: ${totalLikes}`;
-}
+  async function fetchGames() {
+    const { data, error } = await supabase
+      .from('game_submissions')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
 
+    if (error) {
+      showMessage('Failed to load games: ' + error.message, 'error');
+      return [];
+    }
+    return data;
+  }
 
-    addGameForm.onsubmit = async (e) => {
-      e.preventDefault();
-      submitBtn.disabled = true;
-      showMessage('');
+  async function loadGames() {
+    const games = await fetchGames();
+    gamesList.innerHTML = '';
+    if (games.length === 0) {
+      gamesList.innerHTML = '<li>No games submitted yet.</li>';
+      return;
+    }
+    games.forEach(game => {
+      const li = document.createElement('li');
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'game-info';
 
-      const data = {
-        user_id: currentUser.id,
-        github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
-        avatar_url: currentUser.user_metadata?.avatar_url || null,
-        title: document.getElementById('title').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        embed_url: document.getElementById('embedUrl').value.trim(),
-        screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-        cover_url: document.getElementById('coverUrl').value.trim() || null,
-        created_at: new Date().toISOString()
+      const title = document.createElement('div');
+      title.className = 'game-title';
+      title.textContent = game.title;
+
+      const desc = document.createElement('div');
+      desc.className = 'game-desc';
+      desc.textContent = game.description;
+
+      const urlsDiv = document.createElement('div');
+      urlsDiv.className = 'game-urls';
+
+      const embedLink = document.createElement('a');
+      embedLink.href = game.embed_url;
+      embedLink.target = '_blank';
+      embedLink.rel = 'noopener noreferrer';
+      embedLink.textContent = 'Play';
+
+      urlsDiv.appendChild(embedLink);
+
+      if (game.screenshot_url) {
+        const screenshotLink = document.createElement('a');
+        screenshotLink.href = game.screenshot_url;
+        screenshotLink.target = '_blank';
+        screenshotLink.rel = 'noopener noreferrer';
+        screenshotLink.textContent = 'Screenshot';
+        urlsDiv.appendChild(screenshotLink);
+      }
+
+      if (game.cover_url) {
+        const coverLink = document.createElement('a');
+        coverLink.href = game.cover_url;
+        coverLink.target = '_blank';
+        coverLink.rel = 'noopener noreferrer';
+        coverLink.textContent = 'Cover';
+        urlsDiv.appendChild(coverLink);
+      }
+
+      infoDiv.appendChild(title);
+      infoDiv.appendChild(desc);
+      infoDiv.appendChild(urlsDiv);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = 'Remove';
+      removeBtn.onclick = async () => {
+        if (!confirm(`Remove "${game.title}"?`)) return;
+        const { error } = await supabase
+          .from('game_submissions')
+          .delete()
+          .eq('id', game.id)
+          .eq('user_id', currentUser.id);
+
+        if (error) {
+          showMessage('Error removing game: ' + error.message, 'error');
+        } else {
+          showMessage('Game removed.', 'success');
+          loadGames();
+        }
       };
 
-      const { error } = await supabase.from('game_submissions').insert([data]);
-      if (error) {
-        showMessage('Adding game failed: ' + error.message, 'error');
-      } else {
-        showMessage('Game added successfully!', 'success');
-        addGameForm.reset();
-        loadGames();
-      }
-      submitBtn.disabled = false;
+      li.appendChild(infoDiv);
+      li.appendChild(removeBtn);
+      gamesList.appendChild(li);
+    });
+  }
+
+  async function loadVipPageLikes() {
+    const username = currentUser.user_metadata?.user_name || currentUser.email;
+    const isVip = currentUser.user_metadata?.vip === true;
+
+    const { data, error } = await supabase
+      .from('vip_page_views')
+      .select('view_count')
+      .eq('username', username);
+
+    const vipLikeCountEl = document.getElementById('vipLikeCount');
+    const vipEarningsEl = document.getElementById('vipEarnings');
+
+    if (error || !data) {
+      vipLikeCountEl.textContent = 'Page Likes: 0';
+      return;
+    }
+
+    const totalLikes = data.reduce((sum, row) => sum + (row.view_count || 0), 0);
+    vipLikeCountEl.textContent = `Page Likes: ${totalLikes}`;
+
+    if (isVip) {
+      const earnings = (totalLikes * 0.05).toFixed(2);
+      vipEarningsEl.textContent = `Earnings: $${earnings}`;
+      vipEarningsEl.style.display = 'block';
+    }
+  }
+
+  addGameForm.onsubmit = async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    showMessage('');
+
+    const data = {
+      user_id: currentUser.id,
+      github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+      avatar_url: currentUser.user_metadata?.avatar_url || null,
+      title: document.getElementById('title').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      embed_url: document.getElementById('embedUrl').value.trim(),
+      screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
+      cover_url: document.getElementById('coverUrl').value.trim() || null,
+      created_at: new Date().toISOString()
     };
 
-    (async () => {
-      const loggedIn = await checkAuth();
-      if (loggedIn) {
-        await loadVipPageViews();
-        loadGames();
-      }
-    })();
-  </script>
+    const { error } = await supabase.from('game_submissions').insert([data]);
+    if (error) {
+      showMessage('Adding game failed: ' + error.message, 'error');
+    } else {
+      showMessage('Game added successfully!', 'success');
+      addGameForm.reset();
+      loadGames();
+    }
+    submitBtn.disabled = false;
+  };
 
-  <script>
-    const termsButton = document.getElementById('terms-button');
-    termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
-    termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
-    termsButton.addEventListener('click', () => {
-      window.location.href = 'submission-terms.html';
-    });
-  </script>
+  (async () => {
+    const loggedIn = await checkAuth();
+    if (loggedIn) {
+      await loadVipPageLikes();
+      loadGames();
+    }
+  })();
+</script>
+
+<script>
+  const termsButton = document.getElementById('terms-button');
+  termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
+  termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
+  termsButton.addEventListener('click', () => {
+    window.location.href = 'submission-terms.html';
+  });
+</script>
 
 </body>
 </html>
