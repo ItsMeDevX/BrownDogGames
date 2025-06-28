@@ -1140,8 +1140,8 @@ async function loadVipPageLikes() {
   <ul id="videos-list"></ul>
 
   <form id="addVideoForm">
-    <label for="title">Video Title:</label>
-    <input type="text" id="title" placeholder="Enter video title" required />
+    <label for="videoTitle">Video Title:</label>
+    <input type="text" id="videoTitle" placeholder="Enter video title" required />
 
     <label for="content">Description / Content:</label>
     <textarea id="content" rows="4" placeholder="Brief description of your video" required></textarea>
@@ -1157,8 +1157,8 @@ async function loadVipPageLikes() {
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co'; // replace with your supabase url
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'; // replace with your anon key
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -1189,8 +1189,6 @@ async function loadVipPageLikes() {
 
     async function fetchVideos() {
       const username = currentUser.user_metadata?.user_name || currentUser.email;
-      console.log('Fetching videos for user:', username);
-
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
@@ -1202,7 +1200,6 @@ async function loadVipPageLikes() {
         console.error(error);
         return [];
       }
-      console.log('Fetched videos:', data);
       return data;
     }
 
@@ -1214,8 +1211,6 @@ async function loadVipPageLikes() {
         return;
       }
       videos.forEach(video => {
-        console.log('Displaying video:', video);
-
         const li = document.createElement('li');
 
         const infoDiv = document.createElement('div');
@@ -1257,7 +1252,6 @@ async function loadVipPageLikes() {
 
           if (error) {
             showMessage('Error removing video: ' + error.message, 'error');
-            console.error(error);
           } else {
             showMessage('Video removed.', 'success');
             loadVideos();
@@ -1278,23 +1272,18 @@ async function loadVipPageLikes() {
       const data = {
         github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
         avatar_url: currentUser.user_metadata?.avatar_url || null,
-        title: document.getElementById('title').value.trim(),
+        title: document.getElementById('videoTitle').value.trim(),
         content: document.getElementById('content').value.trim(),
         video_url: document.getElementById('videoUrl').value.trim(),
         created_at: new Date().toISOString()
       };
 
-      console.log('Submitting new video:', data);
-
-      // Insert with .select() to get inserted data back
       const { data: insertedData, error } = await supabase.from('game_videos').insert([data]).select();
 
       if (error) {
         showMessage('Adding video failed: ' + error.message, 'error');
-        console.error('Insert error:', error);
       } else {
         showMessage('Video added successfully!', 'success');
-        console.log('Inserted data:', insertedData);
         addVideoForm.reset();
         loadVideos();
       }
