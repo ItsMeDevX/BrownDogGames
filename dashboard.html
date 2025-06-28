@@ -833,31 +833,34 @@ async function loadVipPageLikes() {
     return;
   }
 
-  // ✅ Get all likes received
-  const { data: likes, error: likesError } = await supabase
-    .from('likes')
-    .select('recipient_id')
-    .eq('recipient_id', currentUser.id);
+  // ✅ Get VIP view count instead of likes
+  const { data: views, error: viewsError } = await supabase
+    .from('vip_page_views')
+    .select('view_count')
+    .eq('user_id', currentUser.id)
+    .single();
 
-  if (likesError) {
-    console.error('Error fetching likes:', likesError.message);
+  if (viewsError) {
+    console.error('Error fetching page views:', viewsError.message);
     return;
   }
 
-  const totalLikes = likes.length;
-  const fullCents = Math.floor(totalLikes / 10);
+  const totalViews = views?.view_count || 0;
+  const fullCents = Math.floor(totalViews / 10);
   const earningsValue = fullCents * 0.01;
 
   // ✅ Update UI
+  const vipLikeCountEl = document.getElementById('vipLikeCount');
   const vipEarningsEl = document.getElementById('vipEarnings');
   const payoutBtn = document.getElementById('payoutRequestBtn');
   const payoutStatus = document.getElementById('payoutStatus');
 
-  if (!vipEarningsEl || !payoutBtn || !payoutStatus) {
+  if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
     console.error('Missing required DOM elements');
     return;
   }
 
+  vipLikeCountEl.textContent = `Page Views: ${totalViews}`;
   vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
   vipEarningsEl.style.display = 'block';
 
@@ -866,7 +869,6 @@ async function loadVipPageLikes() {
   payoutBtn.onclick = async () => {
     payoutStatus.textContent = '';
 
-    // ✅ Check for pending requests
     const { data: pending, error: pendingError } = await supabase
       .from('payout_requests')
       .select('*')
@@ -885,7 +887,6 @@ async function loadVipPageLikes() {
       return;
     }
 
-    // ✅ Submit payout request
     const { error: insertError } = await supabase
       .from('payout_requests')
       .insert([{
