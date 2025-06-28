@@ -465,21 +465,18 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const leaderboardBody = document.getElementById('leaderboard-body');
 
     function getRankEmoji(index) {
-      if (index === 0) return '🥇';
-      if (index === 1) return '🥈';
-      if (index === 2) return '🥉';
-      return `#${index + 1}`;
+      return ['🥇','🥈','🥉'][index] || `#${index + 1}`;
     }
 
     async function loadLeaderboard() {
       try {
-        // Step 1: Get all VIP user IDs
+        // Step 1: Get VIP user IDs
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
           .select('id')
@@ -490,34 +487,35 @@
           return;
         }
 
-        const vipUserIds = vipUsers.map(u => u.id);
+        const vipIds = vipUsers.map(user => user.id);
 
-        // Step 2: Get total page views per VIP user (aggregate)
-        const { data: pageViews, error: pvError } = await supabase
+        // Step 2: Get page view entries from those users
+        const { data: views, error: viewError } = await supabase
           .from('vip_page_views')
           .select('username, view_count')
-          .in('user_id', vipUserIds);
+          .in('user_id', vipIds);
 
-        if (pvError || !pageViews || pageViews.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
+        if (viewError || !views || views.length === 0) {
+          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views from VIPs yet.</td></tr>`;
           return;
         }
 
-        // Step 3: Aggregate views per username
-        const aggregated = {};
-        for (const row of pageViews) {
-          const username = row.username ?? 'unknown';
-          aggregated[username] = (aggregated[username] || 0) + (row.view_count || 0);
+        // Step 3: Aggregate by username
+        const stats = {};
+        for (const row of views) {
+          const username = row.username || 'unknown';
+          stats[username] = (stats[username] || 0) + (row.view_count || 0);
         }
 
         // Step 4: Sort by view count
-        const sorted = Object.entries(aggregated)
+        const sorted = Object.entries(stats)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 10); // top 10
 
-        leaderboardBody.innerHTML = sorted.map(([username, views], idx) => `
+        // Step 5: Render table rows
+        leaderboardBody.innerHTML = sorted.map(([username, views], i) => `
           <tr>
-            <td>${getRankEmoji(idx)}</td>
+            <td>${getRankEmoji(i)}</td>
             <td>@${username}</td>
             <td>👁️ ${views}</td>
           </tr>
