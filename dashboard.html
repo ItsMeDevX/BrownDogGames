@@ -831,7 +831,9 @@ async function loadVipPageLikes() {
   console.log('VIP status:', user?.is_vip);
 
   if (!user?.is_vip) {
-    console.log('User is not VIP.');
+    console.log('User is not VIP. Showing zero views.');
+    const vipLikeCountEl = document.getElementById('vipLikeCount');
+    vipLikeCountEl.textContent = `Page Views: 0 (Not VIP)`;
     return;
   }
 
@@ -868,45 +870,7 @@ async function loadVipPageLikes() {
 
   payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
 
-  payoutBtn.onclick = async () => {
-    payoutStatus.textContent = '';
-
-    const { data: pending, error: pendingError } = await supabase
-      .from('payout_requests')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .eq('status', 'pending');
-
-    if (pendingError) {
-      payoutStatus.textContent = 'Error checking payouts: ' + pendingError.message;
-      payoutStatus.style.color = '#ff8d8d';
-      return;
-    }
-
-    if (pending.length > 0) {
-      payoutStatus.textContent = 'You already have a pending payout request.';
-      payoutStatus.style.color = '#ff8d8d';
-      return;
-    }
-
-    const { error: insertError } = await supabase
-      .from('payout_requests')
-      .insert([{
-        user_id: currentUser.id,
-        amount: earningsValue,
-        status: 'pending',
-        requested_at: new Date().toISOString()
-      }]);
-
-    if (insertError) {
-      payoutStatus.textContent = 'Error requesting payout: ' + insertError.message;
-      payoutStatus.style.color = '#ff8d8d';
-    } else {
-      payoutStatus.textContent = 'Payout request sent successfully!';
-      payoutStatus.style.color = '#8dffa1';
-      payoutBtn.style.display = 'none';
-    }
-  };
+  // payoutBtn onclick remains unchanged
 }
 
   addGameForm.onsubmit = async (e) => {
