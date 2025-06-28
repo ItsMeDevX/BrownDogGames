@@ -1200,63 +1200,57 @@ async function loadVipPageLikes() {
       return data;
     }
 
-    async function loadVideos() {
-      const videos = await fetchVideos();
-      videosList.innerHTML = '';
+  videos.forEach(video => {
+  console.log('Video data:', video);
 
-      if (videos.length === 0) {
-        videosList.innerHTML = '<li>No videos submitted yet.</li>';
-        return;
-      }
+  const li = document.createElement('li');
 
-      videos.forEach(video => {
-        const li = document.createElement('li');
+  const infoDiv = document.createElement('div');
+  infoDiv.className = 'video-info';
 
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'video-info';
+  const titleDiv = document.createElement('div');
+  titleDiv.className = 'video-title';
 
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'video-title';
-        titleDiv.textContent = video.title;
+  // Show fallback if title missing
+  titleDiv.textContent = video.title || '(No title found)';
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'video-content';
-        contentDiv.textContent = video.content;
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'video-content';
+  contentDiv.textContent = video.content;
 
-        const urlsDiv = document.createElement('div');
-        urlsDiv.className = 'video-urls';
+  const urlsDiv = document.createElement('div');
+  urlsDiv.className = 'video-urls';
 
-        const videoLink = document.createElement('a');
-        videoLink.href = video.video_url;
-        videoLink.target = '_blank';
-        videoLink.rel = 'noopener noreferrer';
-        videoLink.textContent = 'Watch Video';
+  const videoLink = document.createElement('a');
+  videoLink.href = video.video_url;
+  videoLink.target = '_blank';
+  videoLink.rel = 'noopener noreferrer';
+  videoLink.textContent = 'Watch Video';
 
-        urlsDiv.appendChild(videoLink);
+  urlsDiv.appendChild(videoLink);
 
-        infoDiv.appendChild(titleDiv);
-        infoDiv.appendChild(contentDiv);
-        infoDiv.appendChild(urlsDiv);
+  infoDiv.appendChild(titleDiv);
+  infoDiv.appendChild(contentDiv);
+  infoDiv.appendChild(urlsDiv);
 
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.onclick = async () => {
-          if (!confirm(`Remove "${video.title}"?`)) return;
-          const { error } = await supabase.from('game_videos').delete().eq('id', video.id);
-          if (error) {
-            showMessage('Error removing video: ' + error.message, 'error');
-          } else {
-            showMessage('Video removed.', 'success');
-            loadVideos();
-          }
-        };
-
-        li.appendChild(infoDiv);
-        li.appendChild(removeBtn);
-        videosList.appendChild(li);
-      });
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.onclick = async () => {
+    if (!confirm(`Remove "${video.title}"?`)) return;
+    const { error } = await supabase.from('game_videos').delete().eq('id', video.id);
+    if (error) {
+      showMessage('Error removing video: ' + error.message, 'error');
+    } else {
+      showMessage('Video removed.', 'success');
+      loadVideos();
     }
+  };
+
+  li.appendChild(infoDiv);
+  li.appendChild(removeBtn);
+  videosList.appendChild(li);
+});
 
     addVideoForm.onsubmit = async (e) => {
       e.preventDefault();
