@@ -818,7 +818,7 @@ async function loadVipPageLikes() {
     return;
   }
 
-  // Check VIP status
+  // Fetch user VIP status
   const { data: user, error: userError } = await supabase
     .from('users')
     .select('is_vip')
@@ -835,7 +835,7 @@ async function loadVipPageLikes() {
     return;
   }
 
-  // Get VIP likes (view_count)
+  // Fetch vip_page_views record
   const { data: views, error: viewsError } = await supabase
     .from('vip_page_views')
     .select('view_count')
@@ -848,8 +848,6 @@ async function loadVipPageLikes() {
   }
 
   const totalViews = views?.view_count ?? 0;
-  console.log('Total views (likes):', totalViews);
-
   const fullCents = Math.floor(totalViews / 10);
   const earningsValue = fullCents * 0.01;
 
@@ -863,15 +861,17 @@ async function loadVipPageLikes() {
     return;
   }
 
-  vipLikeCountEl.textContent = `Page Views: ${totalViews}`;
+  vipLikeCountEl.textContent = `Page Likes: ${totalViews}`;
   vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
   vipEarningsEl.style.display = 'block';
 
   payoutBtn.style.display = earningsValue >= 5 ? 'inline-block' : 'none';
+  payoutStatus.textContent = '';
 
   payoutBtn.onclick = async () => {
     payoutStatus.textContent = '';
 
+    // Check for existing pending payouts
     const { data: pending, error: pendingError } = await supabase
       .from('payout_requests')
       .select('*')
@@ -890,6 +890,7 @@ async function loadVipPageLikes() {
       return;
     }
 
+    // Insert payout request
     const { error: insertError } = await supabase
       .from('payout_requests')
       .insert([{
@@ -910,14 +911,14 @@ async function loadVipPageLikes() {
   };
 }
 
-// Usage: call only after user is confirmed logged in
-(async () => {
-  const loggedIn = await checkAuth();
+// Call load after DOM ready & user authenticated
+document.addEventListener('DOMContentLoaded', async () => {
+  const loggedIn = await checkAuth(); // your existing auth check function
   if (loggedIn) {
     await loadVipPageLikes();
-    loadGames();
+    loadGames(); // if you have it
   }
-})();
+});
 
 
   addGameForm.onsubmit = async (e) => {
