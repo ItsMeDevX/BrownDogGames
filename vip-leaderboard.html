@@ -464,7 +464,6 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Initialize Supabase client with your project URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -472,17 +471,12 @@
     const leaderboardBody = document.getElementById('leaderboard-body');
 
     function getRankEmoji(index) {
-      if (index === 0) return '🥇';
-      if (index === 1) return '🥈';
-      if (index === 2) return '🥉';
-      return `#${index + 1}`;
+      return ['🥇', '🥈', '🥉'][index] || `#${index + 1}`;
     }
 
     async function loadLeaderboard() {
       try {
-        // Call your PostgreSQL function vip_leaderboard()
-        const { data, error } = await supabase
-          .rpc('vip_leaderboard');
+        const { data, error } = await supabase.rpc('vip_leaderboard');
 
         if (error) throw error;
 
@@ -491,20 +485,16 @@
           return;
         }
 
-        leaderboardBody.innerHTML = data.map((row, idx) => {
-          const username = row.username ?? 'Unknown';
-          const totalViews = row.total_views ?? 0;
-          return `
-            <tr>
-              <td>${getRankEmoji(idx)}</td>
-              <td>@${username}</td>
-              <td>👁️ ${totalViews}</td>
-            </tr>
-          `;
-        }).join('');
+        leaderboardBody.innerHTML = data.map((row, idx) => `
+          <tr>
+            <td>${getRankEmoji(idx)}</td>
+            <td>@${row.username || 'Unknown'}</td>
+            <td>👁️ ${row.total_views ?? 0}</td>
+          </tr>
+        `).join('');
 
-      } catch (error) {
-        console.error('Leaderboard load error:', error);
+      } catch (err) {
+        console.error('Error loading leaderboard:', err);
         leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
       }
     }
