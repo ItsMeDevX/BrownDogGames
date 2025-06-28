@@ -453,7 +453,7 @@
       <tr>
         <th>Rank</th>
         <th>Username</th>
-        <th>Page Views</th>
+        <th>Total Views</th>
       </tr>
     </thead>
     <tbody id="leaderboard-body">
@@ -464,9 +464,9 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // Initialize Supabase client with your project URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const leaderboardBody = document.getElementById('leaderboard-body');
@@ -480,22 +480,25 @@
 
     async function loadLeaderboard() {
       try {
-        // Call the SQL function to get aggregated page views per username for VIP users
-        const { data, error } = await supabase.rpc('vip_leaderboard');
+        // Call your PostgreSQL function vip_leaderboard()
+        const { data, error } = await supabase
+          .rpc('vip_leaderboard');
 
         if (error) throw error;
 
         if (!data || data.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
+          leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP leaderboard data found.</td></tr>`;
           return;
         }
 
         leaderboardBody.innerHTML = data.map((row, idx) => {
+          const username = row.username ?? 'Unknown';
+          const totalViews = row.total_views ?? 0;
           return `
             <tr>
               <td>${getRankEmoji(idx)}</td>
-              <td>@${row.username}</td>
-              <td>👁️ ${row.total_views}</td>
+              <td>@${username}</td>
+              <td>👁️ ${totalViews}</td>
             </tr>
           `;
         }).join('');
