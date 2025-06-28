@@ -812,100 +812,102 @@
     });
   }
 
-  async function loadVipPageLikes(currentUser) {
-    if (!currentUser || !currentUser.id) {
-      console.log('No currentUser, aborting loadVipPageLikes.');
-      return;
-    }
+async function loadVipPageLikes() {
+  if (!currentUser) return;
 
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('is_vip')
-      .eq('id', currentUser.id)
-      .single();
+  console.log('Checking VIP status for user:', currentUser.id);
 
-    if (userError) {
-      console.error('Error checking VIP status:', userError.message);
-      return;
-    }
+  const { data: user, error: userError } = await supabase
+    .from('users')
+    .select('is_vip')
+    .eq('id', currentUser.id)
+    .single();
 
-    if (!user || !user.is_vip) {
-      console.log('User is not VIP or not found.');
-      return;
-    }
+  if (userError) {
+    console.error('Error checking VIP:', userError.message);
+    return;
+  }
 
-    const { data: views, error: viewsError } = await supabase
-      .from('vip_page_views')
-      .select('view_count')
-      .eq('user_id', currentUser.id)
-      .single();
+  console.log('VIP status:', user?.is_vip);
 
-    if (viewsError) {
-      console.error('Error fetching vip_page_views:', viewsError.message);
-      return;
-    }
+  if (!user?.is_vip) {
+    console.log('User is not VIP.');
+    return;
+  }
 
-    const totalViews = views?.view_count ?? 0;
-    const fullCents = Math.floor(totalViews / 10);
-    const earningsValue = fullCents * 0.01;
+  const { data: views, error: viewsError } = await supabase
+    .from('vip_page_views')
+    .select('view_count')
+    .eq('user_id', currentUser.id)
+    .single();
 
-    const vipLikeCountEl = document.getElementById('vipLikeCount');
-    const vipEarningsEl = document.getElementById('vipEarnings');
-    const payoutBtn = document.getElementById('payoutRequestBtn');
-    const payoutStatus = document.getElementById('payoutStatus');
+  if (viewsError) {
+    console.error('Error fetching page views:', viewsError.message);
+    return;
+  }
 
-    if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
-      console.error('Missing one or more DOM elements.');
-      return;
-    }
+  console.log('Fetched VIP page views:', views);
 
-    vipLikeCountEl.textContent = `Page Likes: ${totalViews}`;
-    vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
-    vipEarningsEl.style.display = 'block';
+  const totalViews = views?.view_count || 0;
+  const fullCents = Math.floor(totalViews / 10);
+  const earningsValue = fullCents * 0.01;
 
-    payoutBtn.style.display = earningsValue >= 5 ? 'inline-block' : 'none';
+  const vipLikeCountEl = document.getElementById('vipLikeCount');
+  const vipEarningsEl = document.getElementById('vipEarnings');
+  const payoutBtn = document.getElementById('payoutRequestBtn');
+  const payoutStatus = document.getElementById('payoutStatus');
+
+  if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
+    console.error('Missing required DOM elements');
+    return;
+  }
+
+  vipLikeCountEl.textContent = `Page Views: ${totalViews}`;
+  vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
+  vipEarningsEl.style.display = 'block';
+
+  payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
+
+  payoutBtn.onclick = async () => {
     payoutStatus.textContent = '';
 
-    payoutBtn.onclick = async () => {
-      payoutStatus.textContent = '';
+    const { data: pending, error: pendingError } = await supabase
+      .from('payout_requests')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'pending');
 
-      const { data: pending, error: pendingError } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
+    if (pendingError) {
+      payoutStatus.textContent = 'Error checking payouts: ' + pendingError.message;
+      payoutStatus.style.color = '#ff8d8d';
+      return;
+    }
 
-      if (pendingError) {
-        payoutStatus.textContent = 'Error checking payouts: ' + pendingError.message;
-        payoutStatus.style.color = '#ff8d8d';
-        return;
-      }
+    if (pending.length > 0) {
+      payoutStatus.textContent = 'You already have a pending payout request.';
+      payoutStatus.style.color = '#ff8d8d';
+      return;
+    }
 
-      if (pending.length > 0) {
-        payoutStatus.textContent = 'You already have a pending payout request.';
-        payoutStatus.style.color = '#ff8d8d';
-        return;
-      }
+    const { error: insertError } = await supabase
+      .from('payout_requests')
+      .insert([{
+        user_id: currentUser.id,
+        amount: earningsValue,
+        status: 'pending',
+        requested_at: new Date().toISOString()
+      }]);
 
-      const { error: insertError } = await supabase
-        .from('payout_requests')
-        .insert([{
-          user_id: currentUser.id,
-          amount: earningsValue,
-          status: 'pending',
-          requested_at: new Date().toISOString(),
-        }]);
-
-      if (insertError) {
-        payoutStatus.textContent = 'Error requesting payout: ' + insertError.message;
-        payoutStatus.style.color = '#ff8d8d';
-      } else {
-        payoutStatus.textContent = 'Payout request sent successfully!';
-        payoutStatus.style.color = '#8dffa1';
-        payoutBtn.style.display = 'none';
-      }
-    };
-  }
+    if (insertError) {
+      payoutStatus.textContent = 'Error requesting payout: ' + insertError.message;
+      payoutStatus.style.color = '#ff8d8d';
+    } else {
+      payoutStatus.textContent = 'Payout request sent successfully!';
+      payoutStatus.style.color = '#8dffa1';
+      payoutBtn.style.display = 'none';
+    }
+  };
+}
 
   addGameForm.onsubmit = async (e) => {
     e.preventDefault();
@@ -935,12 +937,11 @@
     submitBtn.disabled = false;
   };
 
-  // Main init function
   (async () => {
     const loggedIn = await checkAuth();
     if (loggedIn) {
-      await loadVipPageLikes(currentUser);
-      await loadGames();
+      await loadVipPageLikes();
+      loadGames();
     }
   })();
 </script>
