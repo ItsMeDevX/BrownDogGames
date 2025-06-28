@@ -472,7 +472,7 @@
 
     async function loadLeaderboard() {
       try {
-        // 1. Get all VIP user IDs
+        // Step 1: Get VIP user IDs
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
           .select('id')
@@ -486,7 +486,7 @@
 
         const vipUserIds = vipUsers.map(u => u.id);
 
-        // 2. Get all page views for those VIP users
+        // Step 2: Get all page views for VIPs
         const { data: pageViews, error: pvError } = await supabase
           .from('vip_page_views')
           .select('username, user_id')
@@ -498,20 +498,28 @@
           return;
         }
 
-        // 3. Tally views by username
+        // Step 3: Normalize and count views
         const viewCountMap = {};
+        const displayNames = {};
+
         for (const row of pageViews) {
-          const username = row.username || 'Unknown';
-          viewCountMap[username] = (viewCountMap[username] || 0) + 1;
+          const rawUsername = row.username || 'Unknown';
+          const normalized = rawUsername.trim().toLowerCase();
+
+          viewCountMap[normalized] = (viewCountMap[normalized] || 0) + 1;
+          displayNames[normalized] = rawUsername.trim();
         }
 
-        // 4. Sort leaderboard by views
+        // Step 4: Sort by count descending
         const sortedLeaderboard = Object.entries(viewCountMap)
-          .map(([username, totalViews]) => ({ username, totalViews }))
+          .map(([normalized, totalViews]) => ({
+            username: displayNames[normalized],
+            totalViews
+          }))
           .sort((a, b) => b.totalViews - a.totalViews)
-          .slice(0, 10); // Top 10
+          .slice(0, 10);
 
-        // 5. Render table
+        // Step 5: Render table
         leaderboardBody.innerHTML = sortedLeaderboard.map(({ username, totalViews }, idx) => `
           <tr>
             <td>${getRankEmoji(idx)}</td>
