@@ -464,7 +464,6 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Initialize Supabase client with your project URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -480,10 +479,28 @@
 
     async function loadLeaderboard() {
       try {
-        // 1) Get VIP users with their usernames
+        // 1) Get top page views + usernames (fetch more to filter later)
+        const { data: pageViews, error: pvError } = await supabase
+          .from('vip_page_views')
+          .select('user_id, username, view_count')
+          .order('view_count', { ascending: false })
+          .limit(30); // fetch more to allow filtering
+
+        if (pvError) throw pvError;
+
+        if (!pageViews || pageViews.length === 0) {
+          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views found.</td></tr>`;
+          return;
+        }
+
+        // Extract user IDs from page views
+        const userIds = pageViews.map(pv => pv.user_id);
+
+        // 2) Get VIP users among these userIds
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
-          .select('id, username')
+          .select('id')
+          .in('id', userIds)
           .eq('is_vip', true);
 
         if (vipError) throw vipError;
@@ -493,28 +510,19 @@
           return;
         }
 
-        const vipUserIds = vipUsers.map(u => u.id);
-        // Map user_id => username for quick lookup
-        const vipUserMap = new Map(vipUsers.map(u => [u.id, u.username]));
+        const vipUserIds = new Set(vipUsers.map(u => u.id));
 
-        // 2) Get page views for VIP users
-        const { data: pageViews, error: pvError } = await supabase
-          .from('vip_page_views')
-          .select('user_id, view_count')
-          .in('user_id', vipUserIds)
-          .order('view_count', { ascending: false })
-          .limit(10);
+        // 3) Filter pageViews to only VIP user entries, then limit top 10
+        const filteredPageViews = pageViews.filter(pv => vipUserIds.has(pv.user_id)).slice(0, 10);
 
-        if (pvError) throw pvError;
-
-        if (!pageViews || pageViews.length === 0) {
+        if (filteredPageViews.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
           return;
         }
 
-        // Render rows using username from users table (vipUserMap)
-        leaderboardBody.innerHTML = pageViews.map((row, idx) => {
-          const username = vipUserMap.get(row.user_id) ?? 'Unknown';
+        // Render leaderboard rows
+        leaderboardBody.innerHTML = filteredPageViews.map((row, idx) => {
+          const username = row.username ?? 'Unknown';
           const views = row.view_count ?? 0;
           return `
             <tr>
