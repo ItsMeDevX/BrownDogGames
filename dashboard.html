@@ -814,7 +814,6 @@
   }
 
 async function loadVipPageLikes() {
-  const currentUser = supabase.auth.user();
   if (!currentUser) return;
 
   // 1. Check if user is VIP
@@ -826,7 +825,6 @@ async function loadVipPageLikes() {
 
   if (profileError || !profile?.is_vip) return;
 
-  const isVip = profile.is_vip;
   const { data: likes, error } = await supabase
     .from('likes')
     .select('recipient_id')
@@ -845,22 +843,18 @@ async function loadVipPageLikes() {
   const payoutBtn = document.getElementById('payoutRequestBtn');
   const payoutStatus = document.getElementById('payoutStatus');
 
-  // 2. Display earnings
   vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
   vipEarningsEl.style.display = 'block';
 
-  // 3. Show payout button if earnings >= £5
   if (earningsValue >= 5.0) {
     payoutBtn.style.display = 'inline-block';
   } else {
     payoutBtn.style.display = 'none';
   }
 
-  // 4. Handle payout button click
   payoutBtn.onclick = async () => {
     payoutStatus.textContent = '';
-    
-    // Check for existing pending request
+
     const { data: pending } = await supabase
       .from('payout_requests')
       .select('*')
