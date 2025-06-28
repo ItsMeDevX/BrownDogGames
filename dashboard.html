@@ -812,11 +812,8 @@
     });
   }
 
-// Assume supabase initialized and currentUser obtained
-const currentUser = supabase.auth.user();
-
 async function loadVipPageLikes() {
-  if (!currentUser) {
+  if (!currentUser || !currentUser.id) {
     console.log('No currentUser, aborting loadVipPageLikes.');
     return;
   }
@@ -913,8 +910,14 @@ async function loadVipPageLikes() {
   };
 }
 
-// Call it when you want to load VIP likes, e.g., on page load
-loadVipPageLikes();
+// Usage: call only after user is confirmed logged in
+(async () => {
+  const loggedIn = await checkAuth();
+  if (loggedIn) {
+    await loadVipPageLikes();
+    loadGames();
+  }
+})();
 
 
   addGameForm.onsubmit = async (e) => {
