@@ -802,7 +802,7 @@
           showMessage('Error removing game: ' + error.message, 'error');
         } else {
           showMessage('Game removed.', 'success');
-          loadGames();
+          await loadGames();
         }
       };
 
@@ -812,61 +812,61 @@
     });
   }
 
-async function loadVipPageLikes() {
-  if (!currentUser) return;
+  async function loadVipPageLikes() {
+    if (!currentUser) return;
 
-  try {
-    // Check VIP status
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('is_vip')
-      .eq('id', currentUser.id)
-      .single();
+    try {
+      // Check VIP status
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', currentUser.id)
+        .single();
 
-    if (userError) throw userError;
+      if (userError) throw userError;
 
-    const vipLikeCountEl = document.getElementById('vipLikeCount');
-    const vipEarningsEl = document.getElementById('vipEarnings');
-    const payoutBtn = document.getElementById('payoutRequestBtn');
-    const payoutStatus = document.getElementById('payoutStatus');
+      const vipLikeCountEl = document.getElementById('vipLikeCount');
+      const vipEarningsEl = document.getElementById('vipEarnings');
+      const payoutBtn = document.getElementById('payoutRequestBtn');
+      const payoutStatus = document.getElementById('payoutStatus');
 
-    if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
-      console.error('Required DOM elements missing');
-      return;
+      if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
+        console.error('Required DOM elements missing');
+        return;
+      }
+
+      if (!user?.is_vip) {
+        vipLikeCountEl.textContent = `Page Views: 0 (Not VIP)`;
+        vipEarningsEl.style.display = 'none';
+        payoutBtn.style.display = 'none';
+        return;
+      }
+
+      // Fetch VIP page views count
+      const { data: views, error: viewsError } = await supabase
+        .from('vip_page_views')
+        .select('view_count')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();  // Use maybeSingle() to avoid error if no row
+
+      if (viewsError) throw viewsError;
+
+      const totalViews = views?.view_count || 0;
+      const fullCents = Math.floor(totalViews / 10);
+      const earningsValue = fullCents * 0.01;
+
+      vipLikeCountEl.textContent = `Page Views: ${totalViews}`;
+      vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
+      vipEarningsEl.style.display = 'block';
+
+      payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
+
+      payoutStatus.textContent = ''; // clear any previous payout status
+
+    } catch (error) {
+      console.error('Error loading VIP data:', error.message);
     }
-
-    if (!user?.is_vip) {
-      vipLikeCountEl.textContent = `Page Views: 0 (Not VIP)`;
-      vipEarningsEl.style.display = 'none';
-      payoutBtn.style.display = 'none';
-      return;
-    }
-
-    // Fetch VIP page views count
-    const { data: views, error: viewsError } = await supabase
-      .from('vip_page_views')
-      .select('view_count')
-      .eq('user_id', currentUser.id)
-      .single();
-
-    if (viewsError) throw viewsError;
-
-    const totalViews = views?.view_count || 0;
-    const fullCents = Math.floor(totalViews / 10);
-    const earningsValue = fullCents * 0.01;
-
-    vipLikeCountEl.textContent = `Page Views: ${totalViews}`;
-    vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
-    vipEarningsEl.style.display = 'block';
-
-    payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
-
-    payoutStatus.textContent = ''; // clear any previous payout status
-
-  } catch (error) {
-    console.error('Error loading VIP data:', error.message);
   }
-}
 
   addGameForm.onsubmit = async (e) => {
     e.preventDefault();
@@ -891,7 +891,7 @@ async function loadVipPageLikes() {
     } else {
       showMessage('Game added successfully!', 'success');
       addGameForm.reset();
-      loadGames();
+      await loadGames();
     }
     submitBtn.disabled = false;
   };
@@ -900,7 +900,7 @@ async function loadVipPageLikes() {
     const loggedIn = await checkAuth();
     if (loggedIn) {
       await loadVipPageLikes();
-      loadGames();
+      await loadGames();
     }
   })();
 </script>
@@ -913,7 +913,6 @@ async function loadVipPageLikes() {
     window.location.href = 'submission-terms.html';
   });
 </script>
-
 </body>
 </html>
   
