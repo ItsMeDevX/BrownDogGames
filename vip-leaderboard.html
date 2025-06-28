@@ -389,7 +389,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Leaderboard - All Users</title>
+  <title>Leaderboard - Top 10 Users</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
@@ -439,7 +439,7 @@
 <body>
 
   <h1>🏆 Leaderboard</h1>
-  <p class="intro">Everyone ranked by total likes 💖</p>
+  <p class="intro">Top 10 users ranked by total likes 💖</p>
 
   <table>
     <thead>
@@ -470,35 +470,48 @@
       if (index === 2) return '🥉';
       return `#${index + 1}`;
     }
-    
-async function loadLeaderboard() {
-  try {
-    const { data, error } = await supabase.rpc('leaderboard_top_10_users');
-    if (error) throw error;
 
-    console.log('Leaderboard data:', data);
+    async function loadLeaderboard() {
+      try {
+        // Query vip_page_views grouped by user_id, username, summing view_count
+        let { data, error } = await supabase
+          .from('vip_page_views')
+          .select('user_id, username, view_count')
+          .order('view_count', { ascending: false });
 
-    if (!data || data.length === 0) {
-      leaderboardBody.innerHTML = `<tr><td colspan="3">No users found.</td></tr>`;
-      return;
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          leaderboardBody.innerHTML = `<tr><td colspan="3">No users found.</td></tr>`;
+          return;
+        }
+
+        // Aggregate views per user (sum views per username)
+        const userLikesMap = {};
+
+        data.forEach(({ username, view_count }) => {
+          if (!username) username = 'Unknown';
+          if (!userLikesMap[username]) userLikesMap[username] = 0;
+          userLikesMap[username] += view_count;
+        });
+
+        // Convert to array and sort by total likes desc
+        const sortedUsers = Object.entries(userLikesMap)
+          .map(([username, total_likes]) => ({ username, total_likes }))
+          .sort((a, b) => b.total_likes - a.total_likes)
+          .slice(0, 10); // top 10
+
+        leaderboardBody.innerHTML = sortedUsers.map((user, idx) => `
+          <tr>
+            <td>${getRankEmoji(idx)}</td>
+            <td>@${user.username}</td>
+            <td>❤️ ${user.total_likes}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading leaderboard:', err);
+        leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+      }
     }
-
-    leaderboardBody.innerHTML = data.map((row, idx) => {
-      const username = row.username || 'Unknown';
-      const likes = row.total_likes || 0;
-      return `
-        <tr>
-          <td>${getRankEmoji(idx)}</td>
-          <td>@${username}</td>
-          <td>❤️ ${likes}</td>
-        </tr>
-      `;
-    }).join('');
-  } catch (err) {
-    console.error('Error loading leaderboard:', err);
-    leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
-  }
-}
 
     loadLeaderboard();
   </script>
