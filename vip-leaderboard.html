@@ -392,6 +392,7 @@
   <title>VIP Leaderboard 💖</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
     body {
       background-color: #1e1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
@@ -403,6 +404,7 @@
       line-height: 1.6;
       text-align: left;
     }
+
     h1 {
       color: #ff69b4;
       font-size: 2.8rem;
@@ -410,27 +412,32 @@
       margin-bottom: 1rem;
       text-align: center;
     }
+
     .intro {
       font-size: 1.1rem;
       margin-bottom: 1.5rem;
       text-align: center;
       color: #ff8edb;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 30px;
     }
+
     th, td {
       border: 1px solid #ff69b4;
       padding: 12px 10px;
       text-align: left;
       vertical-align: top;
     }
+
     th {
       background-color: #2d1a3a;
       width: 35%;
     }
+
     tbody tr:nth-child(odd) {
       background-color: #2a2040;
     }
@@ -459,6 +466,7 @@
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const leaderboardBody = document.getElementById('leaderboard-body');
@@ -472,61 +480,25 @@
 
     async function loadLeaderboard() {
       try {
-        // Step 1: Get VIP user IDs
-        const { data: vipUsers, error: vipError } = await supabase
-          .from('users')
-          .select('id')
-          .eq('is_vip', true);
+        // Call the SQL function to get aggregated page views per username for VIP users
+        const { data, error } = await supabase.rpc('vip_leaderboard');
 
-        if (vipError) throw vipError;
-        if (!vipUsers || vipUsers.length === 0) {
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
           return;
         }
 
-        const vipUserIds = vipUsers.map(u => u.id);
-
-        // Step 2: Get all page views for VIPs
-        const { data: pageViews, error: pvError } = await supabase
-          .from('vip_page_views')
-          .select('username, user_id')
-          .in('user_id', vipUserIds);
-
-        if (pvError) throw pvError;
-        if (!pageViews || pageViews.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
-          return;
-        }
-
-        // Step 3: Normalize and count views
-        const viewCountMap = {};
-        const displayNames = {};
-
-        for (const row of pageViews) {
-          const rawUsername = row.username || 'Unknown';
-          const normalized = rawUsername.trim().toLowerCase();
-
-          viewCountMap[normalized] = (viewCountMap[normalized] || 0) + 1;
-          displayNames[normalized] = rawUsername.trim();
-        }
-
-        // Step 4: Sort by count descending
-        const sortedLeaderboard = Object.entries(viewCountMap)
-          .map(([normalized, totalViews]) => ({
-            username: displayNames[normalized],
-            totalViews
-          }))
-          .sort((a, b) => b.totalViews - a.totalViews)
-          .slice(0, 10);
-
-        // Step 5: Render table
-        leaderboardBody.innerHTML = sortedLeaderboard.map(({ username, totalViews }, idx) => `
-          <tr>
-            <td>${getRankEmoji(idx)}</td>
-            <td>@${username}</td>
-            <td>👁️ ${totalViews}</td>
-          </tr>
-        `).join('');
+        leaderboardBody.innerHTML = data.map((row, idx) => {
+          return `
+            <tr>
+              <td>${getRankEmoji(idx)}</td>
+              <td>@${row.username}</td>
+              <td>👁️ ${row.total_views}</td>
+            </tr>
+          `;
+        }).join('');
 
       } catch (error) {
         console.error('Leaderboard load error:', error);
