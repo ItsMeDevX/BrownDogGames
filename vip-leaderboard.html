@@ -472,7 +472,7 @@
 
     async function loadLeaderboard() {
       try {
-        // 1. Get VIP user IDs
+        // 1. Get all VIP user IDs
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
           .select('id')
@@ -486,27 +486,37 @@
 
         const vipUserIds = vipUsers.map(u => u.id);
 
-        // 2. Count number of views per username from vip_page_views
-        const { data: viewCounts, error: viewError } = await supabase
+        // 2. Get all page views for those VIP users
+        const { data: pageViews, error: pvError } = await supabase
           .from('vip_page_views')
-          .select('username, count:count(*)')
-          .in('user_id', vipUserIds)
-          .group('username')
-          .order('count', { ascending: false });
+          .select('username, user_id')
+          .in('user_id', vipUserIds);
 
-        if (viewError) throw viewError;
-
-        if (!viewCounts || viewCounts.length === 0) {
+        if (pvError) throw pvError;
+        if (!pageViews || pageViews.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
           return;
         }
 
-        // 3. Render leaderboard
-        leaderboardBody.innerHTML = viewCounts.map(({ username, count }, idx) => `
+        // 3. Tally views by username
+        const viewCountMap = {};
+        for (const row of pageViews) {
+          const username = row.username || 'Unknown';
+          viewCountMap[username] = (viewCountMap[username] || 0) + 1;
+        }
+
+        // 4. Sort leaderboard by views
+        const sortedLeaderboard = Object.entries(viewCountMap)
+          .map(([username, totalViews]) => ({ username, totalViews }))
+          .sort((a, b) => b.totalViews - a.totalViews)
+          .slice(0, 10); // Top 10
+
+        // 5. Render table
+        leaderboardBody.innerHTML = sortedLeaderboard.map(({ username, totalViews }, idx) => `
           <tr>
             <td>${getRankEmoji(idx)}</td>
             <td>@${username}</td>
-            <td>👁️ ${count}</td>
+            <td>👁️ ${totalViews}</td>
           </tr>
         `).join('');
 
