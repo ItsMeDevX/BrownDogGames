@@ -388,126 +388,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>🏆 VIP Leaderboard 💖</title>
-  <style>
-    body {
-      background: linear-gradient(135deg, #361c3e, #1a1328);
-      color: #fefefe;
-      font-family: 'Rubik Mono One', sans-serif;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 30px;
-    }
-    th, td {
-      border: 1px solid #ff69b4;
-      padding: 12px;
-      text-align: left;
-    }
-    th {
-      background-color: #2d1a3a;
-    }
-    tbody tr:nth-child(odd) {
-      background-color: #2a2040;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🏆 VIP Leaderboard 💖</title>
+<style>
+  body {
+    background: linear-gradient(135deg, #361c3e, #1a1328);
+    color: #fefefe;
+    font-family: 'Rubik Mono One', sans-serif, monospace;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+  }
+  th, td {
+    border: 1px solid #ff69b4;
+    padding: 12px;
+    text-align: left;
+  }
+  th {
+    background-color: #2d1a3a;
+  }
+  tbody tr:nth-child(odd) {
+    background-color: #2a2040;
+  }
+</style>
 </head>
 <body>
 
-  <h1>🏆 VIP Leaderboard</h1>
-  <p>Shoutout to our top VIPs! Show them some love 💖</p>
+<h1>🏆 VIP Leaderboard</h1>
+<p>Shoutout to our top VIPs! Show them some love 💖</p>
 
-  <table>
-    <thead>
-      <tr><th>Rank</th><th>Username</th><th>Page Views</th></tr>
-    </thead>
-    <tbody id="leaderboard-body">
-      <tr><td colspan="3">Loading leaderboard...</td></tr>
-    </tbody>
-  </table>
+<table>
+  <thead>
+    <tr><th>Rank</th><th>Username</th><th>Page Views</th></tr>
+  </thead>
+  <tbody id="leaderboard-body">
+    <tr><td colspan="3">Loading leaderboard...</td></tr>
+  </tbody>
+</table>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
 
-    const leaderboardBody = document.getElementById('leaderboard-body');
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const leaderboardBody = document.getElementById('leaderboard-body');
 
-    function getRankEmoji(index) {
-      return index === 0 ? '🥇' :
-             index === 1 ? '🥈' :
-             index === 2 ? '🥉' :
-             `#${index + 1}`;
-    }
+  function getRankEmoji(index) {
+    return index === 0 ? '🥇' :
+           index === 1 ? '🥈' :
+           index === 2 ? '🥉' :
+           `#${index + 1}`;
+  }
 
-    async function loadLeaderboard() {
-      try {
-        // 1) Fetch VIP users
-        const { data: vipUsers, error: vipError } = await supabase
-          .from('users')
-          .select('id, username')
-          .eq('is_vip', true);
-        if (vipError) throw vipError;
+  async function loadLeaderboard() {
+    try {
+      // 1) Fetch VIP users
+      const { data: vipUsers, error: vipError } = await supabase
+        .from('users')
+        .select('id, username')
+        .eq('is_vip', true);
 
-        if (!vipUsers || vipUsers.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
-          return;
-        }
+      if (vipError) throw vipError;
 
-        const vipUserIds = vipUsers.map(u => u.id);
-        const vipUsernamesById = Object.fromEntries(vipUsers.map(u => [u.id, u.username]));
-
-        // 2) Fetch page views for VIPs
-        const { data: pageViews, error: pvError } = await supabase
-          .from('vip_page_views')
-          .select('user_id, view_count')
-          .in('user_id', vipUserIds);
-        if (pvError) throw pvError;
-
-        if (!pageViews || pageViews.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
-          return;
-        }
-
-        // 3) Sum views by user_id
-        const viewsByUser = {};
-        pageViews.forEach(pv => {
-          viewsByUser[pv.user_id] = (viewsByUser[pv.user_id] || 0) + (pv.view_count || 0);
-        });
-
-        // 4) Sort by views desc and take top 10
-        const sortedVIPs = Object.entries(viewsByUser)
-          .sort(([, aViews], [, bViews]) => bViews - aViews)
-          .slice(0, 10);
-
-        // 5) Render leaderboard
-        leaderboardBody.innerHTML = sortedVIPs.map(([userId, views], idx) => {
-          const username = vipUsernamesById[userId] || 'Unknown';
-          return `
-            <tr>
-              <td>${getRankEmoji(idx)}</td>
-              <td>@${username}</td>
-              <td>👁️ ${views}</td>
-            </tr>
-          `;
-        }).join('');
-
-      } catch (error) {
-        console.error('Leaderboard load error:', error);
-        leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+      if (!vipUsers || vipUsers.length === 0) {
+        leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
+        return;
       }
-    }
 
-    loadLeaderboard();
-  </script>
+      const vipUserIds = vipUsers.map(u => u.id);
+
+      // Debug log
+      console.log('VIP user IDs:', vipUserIds);
+
+      // 2) Fetch page views for VIPs with joined username from users table
+      const { data: pageViews, error: pvError } = await supabase
+        .from('vip_page_views')
+        .select('user_id, view_count, users(username)')
+        .in('user_id', vipUserIds)
+        .order('view_count', { ascending: false })
+        .limit(10);
+
+      if (pvError) throw pvError;
+
+      if (!pageViews || pageViews.length === 0) {
+        leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
+        return;
+      }
+
+      console.log('Page views fetched:', pageViews);
+
+      // 3) Render leaderboard
+      leaderboardBody.innerHTML = pageViews.map((row, idx) => {
+        const username = row.users?.username ?? 'Unknown';
+        return `
+          <tr>
+            <td>${getRankEmoji(idx)}</td>
+            <td>@${username}</td>
+            <td>👁️ ${row.view_count}</td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (error) {
+      console.error('Leaderboard load error:', error);
+      leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+    }
+  }
+
+  loadLeaderboard();
+</script>
 
 </body>
 </html>
