@@ -476,6 +476,8 @@
         const { data, error } = await supabase.rpc('leaderboard_all_users');
         if (error) throw error;
 
+        console.log('Leaderboard data:', data);  // Debug output
+
         if (!data || data.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No users found.</td></tr>`;
           return;
