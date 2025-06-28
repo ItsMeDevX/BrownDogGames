@@ -438,8 +438,8 @@
 </head>
 <body>
 
-  <h1>🏆 Leaderboard - All Users</h1>
-  <p class="intro">Showing total likes for every user in the system</p>
+  <h1>🏆 Leaderboard</h1>
+  <p class="intro">Everyone ranked by total likes 💖</p>
 
   <table>
     <thead>
@@ -457,11 +457,11 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Replace with your own Supabase project URL and anon key
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const leaderboardBody = document.getElementById('leaderboard-body');
 
     function getRankEmoji(index) {
@@ -473,9 +473,7 @@
 
     async function loadLeaderboard() {
       try {
-        // Call the Postgres function to get all users with their total likes
         const { data, error } = await supabase.rpc('leaderboard_all_users');
-
         if (error) throw error;
 
         if (!data || data.length === 0) {
@@ -494,7 +492,6 @@
             </tr>
           `;
         }).join('');
-
       } catch (err) {
         console.error('Error loading leaderboard:', err);
         leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
