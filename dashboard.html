@@ -816,7 +816,7 @@
 async function loadVipPageLikes() {
   if (!currentUser) return;
 
-  // 1. Check if user is VIP in 'users' table
+  // ✅ Check VIP status from 'users' table
   const { data: user, error: userError } = await supabase
     .from('users')
     .select('is_vip')
@@ -824,50 +824,49 @@ async function loadVipPageLikes() {
     .single();
 
   if (userError) {
-    console.error('Error fetching VIP status:', userError.message);
+    console.error('Error checking VIP:', userError.message);
     return;
   }
-  if (!user?.is_vip) return;
 
-  // 2. Fetch likes where currentUser is the recipient
+  if (!user?.is_vip) {
+    console.log('User is not VIP.');
+    return;
+  }
+
+  // ✅ Get all likes received
   const { data: likes, error: likesError } = await supabase
     .from('likes')
     .select('recipient_id')
     .eq('recipient_id', currentUser.id);
 
   if (likesError) {
-    console.error('Error loading likes:', likesError.message);
+    console.error('Error fetching likes:', likesError.message);
     return;
   }
 
-  // 3. Calculate earnings based on likes
   const totalLikes = likes.length;
   const fullCents = Math.floor(totalLikes / 10);
   const earningsValue = fullCents * 0.01;
 
-  // 4. Update UI elements
+  // ✅ Update UI
   const vipEarningsEl = document.getElementById('vipEarnings');
   const payoutBtn = document.getElementById('payoutRequestBtn');
   const payoutStatus = document.getElementById('payoutStatus');
 
   if (!vipEarningsEl || !payoutBtn || !payoutStatus) {
-    console.error('Required DOM elements missing.');
+    console.error('Missing required DOM elements');
     return;
   }
 
   vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
   vipEarningsEl.style.display = 'block';
 
-  if (earningsValue >= 5.0) {
-    payoutBtn.style.display = 'inline-block';
-  } else {
-    payoutBtn.style.display = 'none';
-  }
+  payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
 
-  // 5. Payout request button click handler
   payoutBtn.onclick = async () => {
     payoutStatus.textContent = '';
 
+    // ✅ Check for pending requests
     const { data: pending, error: pendingError } = await supabase
       .from('payout_requests')
       .select('*')
@@ -875,7 +874,7 @@ async function loadVipPageLikes() {
       .eq('status', 'pending');
 
     if (pendingError) {
-      payoutStatus.textContent = 'Error checking existing payouts: ' + pendingError.message;
+      payoutStatus.textContent = 'Error checking payouts: ' + pendingError.message;
       payoutStatus.style.color = '#ff8d8d';
       return;
     }
@@ -886,12 +885,15 @@ async function loadVipPageLikes() {
       return;
     }
 
-    const { error: insertError } = await supabase.from('payout_requests').insert([{
-      user_id: currentUser.id,
-      amount: earningsValue,
-      status: 'pending',
-      requested_at: new Date().toISOString()
-    }]);
+    // ✅ Submit payout request
+    const { error: insertError } = await supabase
+      .from('payout_requests')
+      .insert([{
+        user_id: currentUser.id,
+        amount: earningsValue,
+        status: 'pending',
+        requested_at: new Date().toISOString()
+      }]);
 
     if (insertError) {
       payoutStatus.textContent = 'Error requesting payout: ' + insertError.message;
