@@ -464,7 +464,6 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Initialize Supabase client with your project URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -480,7 +479,7 @@
 
     async function loadLeaderboard() {
       try {
-        // 1) Get all VIP user IDs from users table
+        // 1) Get VIP users
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
           .select('id')
@@ -495,7 +494,7 @@
 
         const vipUserIds = vipUsers.map(u => u.id);
 
-        // 2) Get top page views with usernames from vip_page_views table for these VIP users
+        // 2) Get page views for VIP users with usernames
         const { data: pageViews, error: pvError } = await supabase
           .from('vip_page_views')
           .select('user_id, username, view_count')
@@ -510,6 +509,7 @@
           return;
         }
 
+        // Render rows
         leaderboardBody.innerHTML = pageViews.map((row, idx) => {
           const username = row.username ?? 'Unknown';
           const views = row.view_count ?? 0;
