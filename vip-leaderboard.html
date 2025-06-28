@@ -464,6 +464,7 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // Initialize Supabase client with your project URL and anon key
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -479,10 +480,10 @@
 
     async function loadLeaderboard() {
       try {
-        // 1) Get VIP users
+        // 1) Get VIP users with their usernames
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
-          .select('id')
+          .select('id, username')
           .eq('is_vip', true);
 
         if (vipError) throw vipError;
@@ -493,11 +494,13 @@
         }
 
         const vipUserIds = vipUsers.map(u => u.id);
+        // Map user_id => username for quick lookup
+        const vipUserMap = new Map(vipUsers.map(u => [u.id, u.username]));
 
-        // 2) Get page views for VIP users with usernames
+        // 2) Get page views for VIP users
         const { data: pageViews, error: pvError } = await supabase
           .from('vip_page_views')
-          .select('user_id, username, view_count')
+          .select('user_id, view_count')
           .in('user_id', vipUserIds)
           .order('view_count', { ascending: false })
           .limit(10);
@@ -509,9 +512,9 @@
           return;
         }
 
-        // Render rows
+        // Render rows using username from users table (vipUserMap)
         leaderboardBody.innerHTML = pageViews.map((row, idx) => {
-          const username = row.username ?? 'Unknown';
+          const username = vipUserMap.get(row.user_id) ?? 'Unknown';
           const views = row.view_count ?? 0;
           return `
             <tr>
