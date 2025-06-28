@@ -1015,13 +1015,13 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Your key here
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const likeBtn = document.getElementById('like-btn');
     const status = document.getElementById('status');
 
-    // Get ?user=username from URL
+    // Get pageOwner from URL ?user=xxx
     const urlParams = new URLSearchParams(window.location.search);
     const pageOwner = urlParams.get('user');
 
@@ -1037,21 +1037,13 @@
 
     async function getUser() {
       const { data: { user }, error } = await supabase.auth.getUser();
-      return error || !user ? null : user;
-    }
-
-    async function isPageOwnerVIP() {
-      const { data, error } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('username', pageOwner)
-        .single();
-      return data?.is_vip === true;
+      if (error || !user) return null;
+      return user;
     }
 
     async function hasLiked(userId) {
       if (!userId || !pageOwner) return false;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('vip_page_views')
         .select('user_id')
         .eq('user_id', userId)
@@ -1061,7 +1053,8 @@
     }
 
     async function getLikeCount() {
-      const { count } = await supabase
+      if (!pageOwner) return 0;
+      const { count, error } = await supabase
         .from('vip_page_views')
         .select('*', { count: 'exact', head: true })
         .eq('username', pageOwner);
@@ -1070,16 +1063,6 @@
 
     async function updateStatus() {
       const user = await getUser();
-      const isVIPPageOwner = await isPageOwnerVIP();
-      const count = await getLikeCount();
-
-      // If the page owner is not VIP, no one can like their page
-      if (!isVIPPageOwner) {
-        likeBtn.style.display = 'none';
-        status.textContent = `👀 ${pageOwner} is not a VIP, but has ${count} likes.`;
-        return;
-      }
-
       if (!user) {
         status.textContent = '❌ Please log in to like this page.';
         likeBtn.disabled = true;
@@ -1087,6 +1070,7 @@
       }
 
       const liked = await hasLiked(user.id);
+      const count = await getLikeCount();
 
       if (liked) {
         status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
@@ -1103,28 +1087,23 @@
         status.textContent = '❌ You must be logged in to like this page.';
         return;
       }
-
-      const isVIPPageOwner = await isPageOwnerVIP();
-      if (!isVIPPageOwner) {
-        status.textContent = '❌ Cannot like page: the user is not VIP.';
-        return;
-      }
-
       const liked = await hasLiked(user.id);
       if (liked) {
-        status.textContent = `❤️ You've already liked this page.`;
+        status.textContent = `❤️ You've already liked ${pageOwner}'s page.`;
         likeBtn.disabled = true;
         return;
       }
-
       const now = new Date().toISOString();
-      const { error } = await supabase.from('vip_page_views').insert([{
-        user_id: user.id,
-        username: pageOwner,
-        view_count: 1,
-        first_viewed_at: now,
-        last_viewed_at: now,
-      }]);
+
+      const { error } = await supabase
+        .from('vip_page_views')
+        .insert([{
+          user_id: user.id,
+          username: pageOwner,
+          view_count: 1,
+          first_viewed_at: now,
+          last_viewed_at: now,
+        }]);
 
       if (error) {
         console.error('Insert error:', error);
@@ -1137,7 +1116,9 @@
       status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
     });
 
+    // Initialize
     updateStatus();
+
   </script>
 </body>
 </html>
