@@ -441,23 +441,6 @@
     tbody tr:nth-child(odd) {
       background-color: #2a2040;
     }
-
-    a.button {
-      display: inline-block;
-      margin-top: 2rem;
-      padding: 0.7rem 1.4rem;
-      background-color: #ff69b4;
-      color: #1e1b2e;
-      font-weight: bold;
-      text-decoration: none;
-      border-radius: 8px;
-      transition: background-color 0.2s ease;
-      text-align: center;
-    }
-
-    a.button:hover {
-      background-color: #ff8edb;
-    }
   </style>
 </head>
 <body>
@@ -481,10 +464,10 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    // Initialize Supabase client with your project URL and anon key
+    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const leaderboardBody = document.getElementById('leaderboard-body');
 
@@ -497,7 +480,7 @@
 
     async function loadLeaderboard() {
       try {
-        // Step 1: Fetch VIP user IDs and usernames
+        // 1) Get VIP users with their usernames
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
           .select('id, username')
@@ -513,7 +496,7 @@
         const vipUserIds = vipUsers.map(u => u.id);
         const vipUserMap = new Map(vipUsers.map(u => [u.id, u.username]));
 
-        // Step 2: Fetch page views for VIP users only, ordered by view_count desc, limit 10
+        // 2) Get top page views for VIP users from vip_page_views table
         const { data: pageViews, error: pvError } = await supabase
           .from('vip_page_views')
           .select('user_id, view_count')
@@ -528,13 +511,13 @@
           return;
         }
 
-        // Render leaderboard rows as a string
-        leaderboardBody.innerHTML = pageViews.map((row, index) => {
+        // Render the leaderboard rows
+        leaderboardBody.innerHTML = pageViews.map((row, idx) => {
           const username = vipUserMap.get(row.user_id) ?? 'Unknown';
           const views = row.view_count ?? 0;
           return `
             <tr>
-              <td>${getRankEmoji(index)}</td>
+              <td>${getRankEmoji(idx)}</td>
               <td>@${username}</td>
               <td>👁️ ${views}</td>
             </tr>
