@@ -470,35 +470,35 @@
       if (index === 2) return '🥉';
       return `#${index + 1}`;
     }
+    
+async function loadLeaderboard() {
+  try {
+    const { data, error } = await supabase.rpc('leaderboard_top_10_users');
+    if (error) throw error;
 
-    async function loadLeaderboard() {
-      try {
-        const { data, error } = await supabase.rpc('leaderboard_all_users');
-        if (error) throw error;
+    console.log('Leaderboard data:', data);
 
-        console.log('Leaderboard data:', data);  // Debug output
-
-        if (!data || data.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No users found.</td></tr>`;
-          return;
-        }
-
-        leaderboardBody.innerHTML = data.map((row, idx) => {
-          const username = row.username || 'Unknown';
-          const likes = row.total_likes || 0;
-          return `
-            <tr>
-              <td>${getRankEmoji(idx)}</td>
-              <td>@${username}</td>
-              <td>❤️ ${likes}</td>
-            </tr>
-          `;
-        }).join('');
-      } catch (err) {
-        console.error('Error loading leaderboard:', err);
-        leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
-      }
+    if (!data || data.length === 0) {
+      leaderboardBody.innerHTML = `<tr><td colspan="3">No users found.</td></tr>`;
+      return;
     }
+
+    leaderboardBody.innerHTML = data.map((row, idx) => {
+      const username = row.username || 'Unknown';
+      const likes = row.total_likes || 0;
+      return `
+        <tr>
+          <td>${getRankEmoji(idx)}</td>
+          <td>@${username}</td>
+          <td>❤️ ${likes}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Error loading leaderboard:', err);
+    leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+  }
+}
 
     loadLeaderboard();
   </script>
