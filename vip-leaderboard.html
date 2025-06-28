@@ -477,67 +477,70 @@
       return `#${index + 1}`;
     }
 
-    async function loadLeaderboard() {
-      try {
-        // 1) Get top page views + usernames (fetch more to filter later)
-        const { data: pageViews, error: pvError } = await supabase
-          .from('vip_page_views')
-          .select('user_id, username, view_count')
-          .order('view_count', { ascending: false })
-          .limit(30); // fetch more to allow filtering
+  async function loadLeaderboard() {
+  try {
+    // 1) Fetch VIP users with their usernames
+    const { data: vipUsers, error: vipError } = await supabase
+      .from('users')
+      .select('id, username')
+      .eq('is_vip', true);
 
-        if (pvError) throw pvError;
-
-        if (!pageViews || pageViews.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views found.</td></tr>`;
-          return;
-        }
-
-        // Extract user IDs from page views
-        const userIds = pageViews.map(pv => pv.user_id);
-
-        // 2) Get VIP users among these userIds
-        const { data: vipUsers, error: vipError } = await supabase
-          .from('users')
-          .select('id')
-          .in('id', userIds)
-          .eq('is_vip', true);
-
-        if (vipError) throw vipError;
-
-        if (!vipUsers || vipUsers.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
-          return;
-        }
-
-        const vipUserIds = new Set(vipUsers.map(u => u.id));
-
-        // 3) Filter pageViews to only VIP user entries, then limit top 10
-        const filteredPageViews = pageViews.filter(pv => vipUserIds.has(pv.user_id)).slice(0, 10);
-
-        if (filteredPageViews.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
-          return;
-        }
-
-        // Render leaderboard rows
-        leaderboardBody.innerHTML = filteredPageViews.map((row, idx) => {
-          const username = row.username ?? 'Unknown';
-          const views = row.view_count ?? 0;
-          return `
-            <tr>
-              <td>${getRankEmoji(idx)}</td>
-              <td>@${username}</td>
-              <td>👁️ ${views}</td>
-            </tr>
-          `;
-        }).join('');
-
-      } catch (error) {
-        console.error('Leaderboard load error:', error);
-        leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
-      }
+    if (vipError) throw vipError;
+    if (!vipUsers || vipUsers.length === 0) {
+      leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
+      return;
     }
+
+    const vipUsernames = vipUsers.map(u => u.username).filter(Boolean);
+
+    if (vipUsernames.length === 0) {
+      leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP usernames found.</td></tr>`;
+      return;
+    }
+
+    // 2) Fetch likes grouped by username filtered by VIP usernames
+    // Using RPC or query might be needed because Supabase's built-in query limitations
+    // For now, fetch all likes for VIP usernames and aggregate in JS
+
+    const { data: pageViews, error: pvError } = await supabase
+      .from('vip_page_views')
+      .select('username, view_count')
+      .in('username', vipUsernames);
+
+    if (pvError) throw pvError;
+
+    if (!pageViews || pageViews.length === 0) {
+      leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
+      return;
+    }
+
+    // 3) Aggregate total likes per username (page owner)
+    const likesMap = {};
+    for (const pv of pageViews) {
+      if (!likesMap[pv.username]) likesMap[pv.username] = 0;
+      likesMap[pv.username] += pv.view_count || 0;
+    }
+
+    // 4) Convert to array and sort descending by likes
+    const sortedLikes = Object.entries(likesMap)
+      .map(([username, count]) => ({ username, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // 5) Render leaderboard
+    leaderboardBody.innerHTML = sortedLikes.map(({ username, count }, idx) => `
+      <tr>
+        <td>${getRankEmoji(idx)}</td>
+        <td>@${username}</td>
+        <td>👁️ ${count}</td>
+      </tr>
+    `).join('');
+
+  } catch (error) {
+    console.error('Leaderboard load error:', error);
+    leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+  }
+}
 
     loadLeaderboard();
   </script>
