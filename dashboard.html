@@ -815,89 +815,89 @@
     });
   }
 
- async function loadVipPageLikes() {
-  if (!currentUser) return;
+  async function loadVipPageLikes() {
+    if (!currentUser) return;
 
-  try {
-    // Check VIP status
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('is_vip')
-      .eq('id', currentUser.id)
-      .single();
+    try {
+      // Check VIP status
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', currentUser.id)
+        .single();
 
-    if (userError) throw userError;
+      if (userError) throw userError;
 
-    const vipLikeCountEl = document.getElementById('vipLikeCount');
-    const vipEarningsEl = document.getElementById('vipEarnings');
+      const vipLikeCountEl = document.getElementById('vipLikeCount');
+      const vipEarningsEl = document.getElementById('vipEarnings');
 
-    if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
-      console.error('Required DOM elements missing');
-      return;
+      if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
+        console.error('Required DOM elements missing');
+        return;
+      }
+
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) {
+        vipLikeCountEl.textContent = `Page Views: 0 (No username)`;
+        vipEarningsEl.style.display = 'none';
+        payoutBtn.style.display = 'none';
+        payoutStatus.textContent = '';
+        return;
+      }
+
+      // Count total likes (rows) for this username
+      const { count, error: countError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      if (countError) throw countError;
+
+      const totalLikes = count || 0;
+
+      // Show page views (likes) to everyone
+      vipLikeCountEl.textContent = `Page Views: ${totalLikes}`;
+
+      if (!user?.is_vip) {
+        // Non-VIP: no earnings or payout button
+        vipEarningsEl.style.display = 'none';
+        payoutBtn.style.display = 'none';
+        payoutStatus.textContent = 'Payout available for VIP users only.';
+        return;
+      }
+
+      // VIP: calculate earnings and show them
+      // 0.01 pounds per 10 likes
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+
+      if (earningsValue > 0) {
+        vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
+        vipEarningsEl.style.display = 'block';
+      } else {
+        vipEarningsEl.style.display = 'none';
+      }
+
+      // Check for existing pending payout request
+      const { data: existingRequests, error: reqError } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (reqError) throw reqError;
+
+      if (existingRequests.length > 0) {
+        payoutBtn.style.display = 'none';
+        payoutStatus.textContent = 'You have a pending payout request.';
+      } else {
+        payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
+        payoutStatus.textContent = earningsValue < 5.0 ? 'Minimum £5 earnings required for payout.' : '';
+      }
+    } catch (error) {
+      console.error('Error loading VIP data:', error.message);
+      payoutStatus.textContent = 'Error loading stats.';
     }
-
-    // Use username (e.g., currentUser.user_metadata.user_name) to count likes
-    const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-    if (!username) {
-      vipLikeCountEl.textContent = `Page Views: 0 (No username)`;
-      vipEarningsEl.style.display = 'none';
-      payoutBtn.style.display = 'none';
-      payoutStatus.textContent = '';
-      return;
-    }
-
-    // Count total likes (rows) for this username
-    const { count, error: countError } = await supabase
-      .from('vip_page_views')
-      .select('*', { count: 'exact', head: true })
-      .eq('username', username);
-
-    if (countError) throw countError;
-
-    const totalLikes = count || 0;
-
-    // Show page views (likes) to everyone
-    vipLikeCountEl.textContent = `Page Views: ${totalLikes}`;
-
-    if (!user?.is_vip) {
-      // Non-VIP: no earnings or payout button
-      vipEarningsEl.style.display = 'none';
-      payoutBtn.style.display = 'none';
-      payoutStatus.textContent = 'Payout available for VIP users only.';
-      return;
-    }
-
-    // VIP: calculate earnings and show them
-    const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-
-    if (earningsValue > 0) {
-      vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
-      vipEarningsEl.style.display = 'block';
-    } else {
-      vipEarningsEl.style.display = 'none';
-    }
-
-    // Check for existing pending payout request
-    const { data: existingRequests, error: reqError } = await supabase
-      .from('payout_requests')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .eq('status', 'pending');
-
-    if (reqError) throw reqError;
-
-    if (existingRequests.length > 0) {
-      payoutBtn.style.display = 'none';
-      payoutStatus.textContent = 'You have a pending payout request.';
-    } else {
-      payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
-      payoutStatus.textContent = earningsValue < 5.0 ? 'Minimum £5 earnings required for payout.' : '';
-    }
-
-  } catch (error) {
-    console.error('Error loading VIP data:', error.message);
   }
-}
 
   addGameForm.onsubmit = async (e) => {
     e.preventDefault();
@@ -928,21 +928,76 @@
   };
 
   (async () => {
-    const loggedIn = await checkAuth();
-    if (loggedIn) {
-      await loadVipPageLikes();
-      await loadGames();
-    }
-  })();
-</script>
+    if (!(await checkAuth())) return;
 
-<script>
-  const termsButton = document.getElementById('terms-button');
-  termsButton.addEventListener('mouseover', () => termsButton.style.backgroundColor = '#ff8edb');
-  termsButton.addEventListener('mouseout', () => termsButton.style.backgroundColor = '#ff69b4');
-  termsButton.addEventListener('click', () => {
-    window.location.href = 'submission-terms.html';
+    await loadGames();
+    await loadVipPageLikes();
+  })();
+
+  // Payout button click handler
+  payoutBtn.addEventListener('click', async () => {
+    payoutBtn.disabled = true;
+    payoutStatus.textContent = '';
+
+    try {
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) throw new Error('Username not found.');
+
+      // Calculate earnings again
+      const { count } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      const totalLikes = count || 0;
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+
+      if (earningsValue < 5) {
+        payoutStatus.textContent = 'Minimum £5 earnings required for payout.';
+        payoutBtn.disabled = false;
+        return;
+      }
+
+      // Check if already pending
+      const { data: existingRequests } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (existingRequests.length > 0) {
+        payoutStatus.textContent = 'You have a pending payout request.';
+        payoutBtn.disabled = false;
+        return;
+      }
+
+      // Insert payout request
+      const { error } = await supabase.from('payout_requests').insert([{
+        user_id: currentUser.id,
+        amount: earningsValue,
+        status: 'pending',
+        requested_at: new Date().toISOString()
+      }]);
+
+      if (error) throw error;
+
+      payoutStatus.textContent = 'Payout request submitted!';
+      payoutBtn.style.display = 'none';
+    } catch (err) {
+      payoutStatus.textContent = 'Error submitting payout request: ' + err.message;
+    }
+
+    payoutBtn.disabled = false;
   });
+
+  // Terms button click
+  document.getElementById('terms-button').addEventListener('click', () => {
+    alert(`Submission Terms:
+- Submissions must be your own work.
+- Do not submit offensive or inappropriate content.
+- By submitting, you agree to our terms of use.`);
+  });
+
 </script>
 </body>
 </html>
