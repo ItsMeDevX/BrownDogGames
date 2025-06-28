@@ -812,7 +812,7 @@
     });
   }
 
-async function loadVipPageLikes() {
+async function loadVipPageLikes(currentUser) {
   if (!currentUser || !currentUser.id) {
     console.log('No currentUser, aborting loadVipPageLikes.');
     return;
@@ -911,14 +911,20 @@ async function loadVipPageLikes() {
   };
 }
 
-// Call load after DOM ready & user authenticated
-document.addEventListener('DOMContentLoaded', async () => {
-  const loggedIn = await checkAuth(); // your existing auth check function
-  if (loggedIn) {
-    await loadVipPageLikes();
-    loadGames(); // if you have it
+// On page load
+(async () => {
+  const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error('Error getting user:', error.message);
+    return;
   }
-});
+
+  if (currentUser) {
+    await loadVipPageLikes(currentUser);
+  } else {
+    console.log('No logged in user.');
+  }
+})();
 
 
   addGameForm.onsubmit = async (e) => {
