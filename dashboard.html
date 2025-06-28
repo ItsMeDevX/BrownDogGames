@@ -703,6 +703,9 @@
   const message = document.getElementById('formMessage');
   const submitBtn = document.getElementById('submitBtn');
 
+  const payoutBtn = document.getElementById('payoutRequestBtn');
+  const payoutStatus = document.getElementById('payoutStatus');
+
   let currentUser;
 
   function showMessage(text, type = '') {
@@ -827,8 +830,6 @@
 
       const vipLikeCountEl = document.getElementById('vipLikeCount');
       const vipEarningsEl = document.getElementById('vipEarnings');
-      const payoutBtn = document.getElementById('payoutRequestBtn');
-      const payoutStatus = document.getElementById('payoutStatus');
 
       if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
         console.error('Required DOM elements missing');
@@ -839,6 +840,7 @@
         vipLikeCountEl.textContent = `Page Views: 0 (Not VIP)`;
         vipEarningsEl.style.display = 'none';
         payoutBtn.style.display = 'none';
+        payoutStatus.textContent = '';
         return;
       }
 
@@ -848,6 +850,7 @@
         vipLikeCountEl.textContent = `Page Views: 0 (No username)`;
         vipEarningsEl.style.display = 'none';
         payoutBtn.style.display = 'none';
+        payoutStatus.textContent = '';
         return;
       }
 
@@ -870,13 +873,87 @@
         vipEarningsEl.style.display = 'none';
       }
 
-      payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
-      payoutStatus.textContent = '';
+      // Check for existing pending payout request
+      const { data: existingRequests, error: reqError } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (reqError) throw reqError;
+
+      if (existingRequests.length > 0) {
+        payoutBtn.style.display = 'none';
+        payoutStatus.textContent = 'You have a pending payout request.';
+      } else {
+        payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
+        payoutStatus.textContent = '';
+      }
 
     } catch (error) {
       console.error('Error loading VIP data:', error.message);
     }
   }
+
+  payoutBtn.addEventListener('click', async () => {
+    payoutBtn.disabled = true;
+    payoutStatus.textContent = 'Requesting payout...';
+
+    try {
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) throw new Error('No username found.');
+
+      const { count, error: countError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      if (countError) throw countError;
+
+      const totalLikes = count || 0;
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+
+      if (earningsValue < 5.0) {
+        payoutStatus.textContent = 'You do not have enough earnings to request a payout.';
+        payoutBtn.disabled = false;
+        return;
+      }
+
+      // Check if a payout request already exists and is pending
+      const { data: existingRequests, error: reqError } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (reqError) throw reqError;
+      if (existingRequests.length > 0) {
+        payoutStatus.textContent = 'You already have a pending payout request.';
+        payoutBtn.disabled = false;
+        return;
+      }
+
+      // Insert a new payout request
+      const { error: insertError } = await supabase
+        .from('payout_requests')
+        .insert([{
+          user_id: currentUser.id,
+          username: username,
+          amount: earningsValue,
+          status: 'pending',
+          requested_at: new Date().toISOString(),
+        }]);
+
+      if (insertError) throw insertError;
+
+      payoutStatus.textContent = 'Payout requested! Await approval.';
+      payoutBtn.style.display = 'none';
+
+    } catch (error) {
+      payoutStatus.textContent = 'Error requesting payout: ' + error.message;
+      payoutBtn.disabled = false;
+    }
+  });
 
   addGameForm.onsubmit = async (e) => {
     e.preventDefault();
