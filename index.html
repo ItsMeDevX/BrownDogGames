@@ -647,23 +647,7 @@
       overflow: hidden;
       box-shadow: 0 0 15px #ff69b4aa;
     }
-  </style>
-</head>
-<body>
 
-  <div class="box">
-    <h1 class="title">VIP Subscription</h1>
-    <div id="paypal-button-container"></div>
-    <div id="vip-message">🌟 VIP Activated! Thank you for subscribing.</div>
-    <button id="refresh-vip">🔄 Refresh VIP Status</button>
-    <div id="message-box"></div>
-  </div>
-  </div>
-
-  <!-- VIP Leaderboard Button -->
-  <a href="vip-leaderboard.html" class="vip-leaderboard-button">🏆 View VIP Leaderboard</a>
-
-  <style>
     .vip-leaderboard-button {
       display: inline-block;
       margin-top: 20px;
@@ -683,6 +667,20 @@
       background-color: #ff8edb;
       transform: scale(1.05);
     }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1 class="title">VIP Subscription</h1>
+    <div id="paypal-button-container"></div>
+    <div id="vip-message">🌟 VIP Activated! Thank you for subscribing.</div>
+    <button id="refresh-vip">🔄 Refresh VIP Status</button>
+    <div id="message-box"></div>
+  </div>
+
+  <!-- VIP Leaderboard Button -->
+  <a href="vip-leaderboard.html" class="vip-leaderboard-button">🏆 View VIP Leaderboard</a>
 
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
@@ -728,7 +726,6 @@
     }
 
     async function initPayPal(user) {
-      // Clear old PayPal buttons if any
       paypalContainer.innerHTML = '';
 
       paypal.Buttons({
@@ -807,7 +804,6 @@
     }
 
     supabase.auth.onAuthStateChange((_event, session) => {
-      // NO page reload, just update UI smoothly
       setupUIForUser(session?.user);
     });
 
