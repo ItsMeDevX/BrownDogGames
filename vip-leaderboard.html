@@ -391,30 +391,14 @@
   <meta charset="UTF-8" />
   <title>🏆 VIP Leaderboard 💖</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     body {
-      background-color: #1e1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      background: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
       font-family: 'Rubik Mono One', sans-serif;
       max-width: 900px;
       margin: 40px auto;
       padding: 20px;
-      line-height: 1.6;
-      text-align: left;
-    }
-    h1 {
-      color: #ff69b4;
-      font-size: 2.8rem;
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 1rem;
       text-align: center;
-    }
-    .intro {
-      font-size: 1.1rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      color: #ff8edb;
     }
     table {
       width: 100%;
@@ -423,13 +407,11 @@
     }
     th, td {
       border: 1px solid #ff69b4;
-      padding: 12px 10px;
+      padding: 12px;
       text-align: left;
-      vertical-align: top;
     }
     th {
       background-color: #2d1a3a;
-      width: 35%;
     }
     tbody tr:nth-child(odd) {
       background-color: #2a2040;
@@ -439,15 +421,11 @@
 <body>
 
   <h1>🏆 VIP Leaderboard</h1>
-  <p class="intro">Shoutout to our top VIPs! Show them some love 💖</p>
+  <p>Shoutout to our top VIPs! Show them some love 💖</p>
 
   <table>
     <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Username</th>
-        <th>Page Views</th>
-      </tr>
+      <tr><th>Rank</th><th>Username</th><th>Page Views</th></tr>
     </thead>
     <tbody id="leaderboard-body">
       <tr><td colspan="3">Loading leaderboard...</td></tr>
@@ -464,67 +442,63 @@
     const leaderboardBody = document.getElementById('leaderboard-body');
 
     function getRankEmoji(index) {
-      if (index === 0) return '🥇';
-      if (index === 1) return '🥈';
-      if (index === 2) return '🥉';
-      return `#${index + 1}`;
+      return index === 0 ? '🥇' :
+             index === 1 ? '🥈' :
+             index === 2 ? '🥉' :
+             `#${index + 1}`;
     }
 
     async function loadLeaderboard() {
       try {
-        console.log('Fetching VIP users...');
+        // 1) Fetch VIP users
         const { data: vipUsers, error: vipError } = await supabase
           .from('users')
-          .select('username')
+          .select('id, username')
           .eq('is_vip', true);
         if (vipError) throw vipError;
-        console.log('VIP users:', vipUsers);
 
         if (!vipUsers || vipUsers.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
           return;
         }
 
-        const vipUsernames = vipUsers.map(u => u.username).filter(Boolean);
-        console.log('VIP usernames:', vipUsernames);
+        const vipUserIds = vipUsers.map(u => u.id);
+        const vipUsernamesById = Object.fromEntries(vipUsers.map(u => [u.id, u.username]));
 
-        if (vipUsernames.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP usernames found.</td></tr>`;
-          return;
-        }
-
-        console.log('Fetching VIP page views...');
+        // 2) Fetch page views for VIPs
         const { data: pageViews, error: pvError } = await supabase
           .from('vip_page_views')
-          .select('username, view_count')
-          .in('username', vipUsernames);
+          .select('user_id, view_count')
+          .in('user_id', vipUserIds);
         if (pvError) throw pvError;
-        console.log('Page views:', pageViews);
 
         if (!pageViews || pageViews.length === 0) {
           leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
           return;
         }
 
-        const likesMap = {};
-        for (const pv of pageViews) {
-          if (!likesMap[pv.username]) likesMap[pv.username] = 0;
-          likesMap[pv.username] += pv.view_count || 0;
-        }
-        console.log('Aggregated likes:', likesMap);
+        // 3) Sum views by user_id
+        const viewsByUser = {};
+        pageViews.forEach(pv => {
+          viewsByUser[pv.user_id] = (viewsByUser[pv.user_id] || 0) + (pv.view_count || 0);
+        });
 
-        const sortedVIPs = Object.entries(likesMap)
-          .map(([username, totalLikes]) => ({ username, totalLikes }))
-          .sort((a, b) => b.totalLikes - a.totalLikes)
+        // 4) Sort by views desc and take top 10
+        const sortedVIPs = Object.entries(viewsByUser)
+          .sort(([, aViews], [, bViews]) => bViews - aViews)
           .slice(0, 10);
 
-        leaderboardBody.innerHTML = sortedVIPs.map(({ username, totalLikes }, idx) => `
-          <tr>
-            <td>${getRankEmoji(idx)}</td>
-            <td>@${username}</td>
-            <td>👁️ ${totalLikes}</td>
-          </tr>
-        `).join('');
+        // 5) Render leaderboard
+        leaderboardBody.innerHTML = sortedVIPs.map(([userId, views], idx) => {
+          const username = vipUsernamesById[userId] || 'Unknown';
+          return `
+            <tr>
+              <td>${getRankEmoji(idx)}</td>
+              <td>@${username}</td>
+              <td>👁️ ${views}</td>
+            </tr>
+          `;
+        }).join('');
 
       } catch (error) {
         console.error('Leaderboard load error:', error);
