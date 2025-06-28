@@ -459,11 +459,6 @@
       background-color: #ff8edb;
     }
 
-    .logo {
-      display: block;
-      margin: 0 auto 2rem;
-      max-width: 200px;
-    }
   </style>
 </head>
 <body>
@@ -476,7 +471,7 @@
       <tr>
         <th>Rank</th>
         <th>Username</th>
-        <th>Likes Received</th>
+        <th>Page Views</th>
       </tr>
     </thead>
     <tbody id="leaderboard-body">
@@ -487,6 +482,7 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // Initialize Supabase client (replace with your anon key)
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
@@ -502,28 +498,50 @@
     }
 
     async function loadLeaderboard() {
-      const { data, error } = await supabase
+      // Step 1: Fetch VIP user IDs
+      const { data: vipUsers, error: vipError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('is_vip', true);
+
+      if (vipError) {
+        console.error('Error fetching VIP users:', vipError);
+        leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading VIP users 😢</td></tr>`;
+        return;
+      }
+
+      if (!vipUsers || vipUsers.length === 0) {
+        leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
+        return;
+      }
+
+      const vipUserIds = vipUsers.map(user => user.id);
+
+      // Step 2: Fetch page views for VIP users only, order by view_count desc, limit 10
+      const { data: pageViews, error: pvError } = await supabase
         .from('vip_page_views')
-        .select('username, view_count')
+        .select('user_id, username, view_count')
+        .in('user_id', vipUserIds)
         .order('view_count', { ascending: false })
         .limit(10);
 
-      if (error) {
-        console.error('Leaderboard load failed:', error);
+      if (pvError) {
+        console.error('Error fetching VIP page views:', pvError);
         leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
         return;
       }
 
-      if (!data || data.length === 0) {
-        leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP likes yet. Be the first!</td></tr>`;
+      if (!pageViews || pageViews.length === 0) {
+        leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
         return;
       }
 
-      leaderboardBody.innerHTML = data.map((row, index) => `
+      // Render leaderboard
+      leaderboardBody.innerHTML = pageViews.map((row, index) => `
         <tr>
           <td>${getRankEmoji(index)}</td>
           <td>@${row.username}</td>
-          <td>💖 ${row.view_count}</td>
+          <td>👁️ ${row.view_count}</td>
         </tr>
       `).join('');
     }
