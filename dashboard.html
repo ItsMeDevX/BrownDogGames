@@ -737,7 +737,7 @@
   async function loadGames() {
     const games = await fetchGames();
     gamesList.innerHTML = '';
-    if (games.length === 0) {
+    if (!games || games.length === 0) {
       gamesList.innerHTML = '<li>No games submitted yet.</li>';
       return;
     }
@@ -802,7 +802,7 @@
           showMessage('Error removing game: ' + error.message, 'error');
         } else {
           showMessage('Game removed.', 'success');
-          await loadGames();
+          loadGames();
         }
       };
 
@@ -842,26 +842,36 @@
         return;
       }
 
-      // Fetch VIP page views count
-      const { data: views, error: viewsError } = await supabase
+      // Use username (e.g., currentUser.user_metadata.user_name) to count likes
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) {
+        vipLikeCountEl.textContent = `Page Views: 0 (No username)`;
+        vipEarningsEl.style.display = 'none';
+        payoutBtn.style.display = 'none';
+        return;
+      }
+
+      // Count total likes (rows) for this username
+      const { count, error: countError } = await supabase
         .from('vip_page_views')
-        .select('view_count')
-        .eq('user_id', currentUser.id)
-        .maybeSingle();  // Use maybeSingle() to avoid error if no row
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
 
-      if (viewsError) throw viewsError;
+      if (countError) throw countError;
 
-      const totalViews = views?.view_count || 0;
-      const fullCents = Math.floor(totalViews / 10);
-      const earningsValue = fullCents * 0.01;
+      const totalLikes = count || 0;
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
-      vipLikeCountEl.textContent = `Page Views: ${totalViews}`;
-      vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
-      vipEarningsEl.style.display = 'block';
+      vipLikeCountEl.textContent = `Page Views: ${totalLikes}`;
+      if (earningsValue > 0) {
+        vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
+        vipEarningsEl.style.display = 'block';
+      } else {
+        vipEarningsEl.style.display = 'none';
+      }
 
       payoutBtn.style.display = earningsValue >= 5.0 ? 'inline-block' : 'none';
-
-      payoutStatus.textContent = ''; // clear any previous payout status
+      payoutStatus.textContent = '';
 
     } catch (error) {
       console.error('Error loading VIP data:', error.message);
@@ -891,7 +901,7 @@
     } else {
       showMessage('Game added successfully!', 'success');
       addGameForm.reset();
-      await loadGames();
+      loadGames();
     }
     submitBtn.disabled = false;
   };
