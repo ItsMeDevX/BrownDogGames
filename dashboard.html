@@ -1183,20 +1183,26 @@ async function loadVipPageLikes() {
       }
 
       currentUser = session.user;
+      console.log('Current user:', currentUser);
       return true;
     }
 
     async function fetchVideos() {
+      const username = currentUser.user_metadata?.user_name || currentUser.email;
+      console.log('Fetching videos for user:', username);
+
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
-        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
+        .eq('github_username', username)
         .order('created_at', { ascending: false });
 
       if (error) {
         showMessage('Failed to load videos: ' + error.message, 'error');
+        console.error(error);
         return [];
       }
+      console.log('Fetched videos:', data);
       return data;
     }
 
@@ -1208,6 +1214,8 @@ async function loadVipPageLikes() {
         return;
       }
       videos.forEach(video => {
+        console.log('Displaying video:', video);
+
         const li = document.createElement('li');
 
         const infoDiv = document.createElement('div');
@@ -1215,11 +1223,11 @@ async function loadVipPageLikes() {
 
         const title = document.createElement('div');
         title.className = 'video-title';
-        title.textContent = video.title;
+        title.textContent = video.title || '(No Title)';
 
         const content = document.createElement('div');
         content.className = 'video-content';
-        content.textContent = video.content;
+        content.textContent = video.content || '';
 
         const urlsDiv = document.createElement('div');
         urlsDiv.className = 'video-urls';
@@ -1249,6 +1257,7 @@ async function loadVipPageLikes() {
 
           if (error) {
             showMessage('Error removing video: ' + error.message, 'error');
+            console.error(error);
           } else {
             showMessage('Video removed.', 'success');
             loadVideos();
@@ -1275,11 +1284,17 @@ async function loadVipPageLikes() {
         created_at: new Date().toISOString()
       };
 
-      const { error } = await supabase.from('game_videos').insert([data]);
+      console.log('Submitting new video:', data);
+
+      // Insert with .select() to get inserted data back
+      const { data: insertedData, error } = await supabase.from('game_videos').insert([data]).select();
+
       if (error) {
         showMessage('Adding video failed: ' + error.message, 'error');
+        console.error('Insert error:', error);
       } else {
         showMessage('Video added successfully!', 'success');
+        console.log('Inserted data:', insertedData);
         addVideoForm.reset();
         loadVideos();
       }
