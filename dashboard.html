@@ -816,32 +816,44 @@
 async function loadVipPageLikes() {
   if (!currentUser) return;
 
-  // 1. Check if user is VIP
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
+  // 1. Check if user is VIP in 'users' table
+  const { data: user, error: userError } = await supabase
+    .from('users')
     .select('is_vip')
     .eq('id', currentUser.id)
     .single();
 
-  if (profileError || !profile?.is_vip) return;
+  if (userError) {
+    console.error('Error fetching VIP status:', userError.message);
+    return;
+  }
+  if (!user?.is_vip) return;
 
-  const { data: likes, error } = await supabase
+  // 2. Fetch likes where currentUser is the recipient
+  const { data: likes, error: likesError } = await supabase
     .from('likes')
     .select('recipient_id')
     .eq('recipient_id', currentUser.id);
 
-  if (error) {
-    console.error('Error loading likes:', error.message);
+  if (likesError) {
+    console.error('Error loading likes:', likesError.message);
     return;
   }
 
+  // 3. Calculate earnings based on likes
   const totalLikes = likes.length;
   const fullCents = Math.floor(totalLikes / 10);
   const earningsValue = fullCents * 0.01;
 
+  // 4. Update UI elements
   const vipEarningsEl = document.getElementById('vipEarnings');
   const payoutBtn = document.getElementById('payoutRequestBtn');
   const payoutStatus = document.getElementById('payoutStatus');
+
+  if (!vipEarningsEl || !payoutBtn || !payoutStatus) {
+    console.error('Required DOM elements missing.');
+    return;
+  }
 
   vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
   vipEarningsEl.style.display = 'block';
@@ -852,14 +864,21 @@ async function loadVipPageLikes() {
     payoutBtn.style.display = 'none';
   }
 
+  // 5. Payout request button click handler
   payoutBtn.onclick = async () => {
     payoutStatus.textContent = '';
 
-    const { data: pending } = await supabase
+    const { data: pending, error: pendingError } = await supabase
       .from('payout_requests')
       .select('*')
       .eq('user_id', currentUser.id)
       .eq('status', 'pending');
+
+    if (pendingError) {
+      payoutStatus.textContent = 'Error checking existing payouts: ' + pendingError.message;
+      payoutStatus.style.color = '#ff8d8d';
+      return;
+    }
 
     if (pending.length > 0) {
       payoutStatus.textContent = 'You already have a pending payout request.';
