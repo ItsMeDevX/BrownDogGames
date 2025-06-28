@@ -461,75 +461,63 @@
     </tbody>
   </table>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+ <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Initialize Supabase client with your project URL and anon key
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    const leaderboardBody = document.getElementById('leaderboard-body');
+  const leaderboardBody = document.getElementById('leaderboard-body');
 
-    function getRankEmoji(index) {
-      if (index === 0) return '🥇';
-      if (index === 1) return '🥈';
-      if (index === 2) return '🥉';
-      return `#${index + 1}`;
-    }
+  function getRankEmoji(index) {
+    if (index === 0) return '🥇';
+    if (index === 1) return '🥈';
+    if (index === 2) return '🥉';
+    return `#${index + 1}`;
+  }
 
-    async function loadLeaderboard() {
-      try {
-        // 1) Get all VIP user IDs from users table
-        const { data: vipUsers, error: vipError } = await supabase
-          .from('users')
-          .select('id')
-          .eq('is_vip', true);
+  async function loadLeaderboard() {
+    try {
+      const { data: pageViews, error } = await supabase
+        .from('vip_page_views')
+        .select(`
+          user_id,
+          username,
+          view_count,
+          users!inner(is_vip)
+        `)
+        .eq('users.is_vip', true)
+        .order('view_count', { ascending: false })
+        .limit(10);
 
-        if (vipError) throw vipError;
+      if (error) throw error;
 
-        if (!vipUsers || vipUsers.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP users found.</td></tr>`;
-          return;
-        }
-
-        const vipUserIds = vipUsers.map(u => u.id);
-
-        // 2) Get top page views with usernames from vip_page_views table for these VIP users
-        const { data: pageViews, error: pvError } = await supabase
-          .from('vip_page_views')
-          .select('user_id, username, view_count')
-          .in('user_id', vipUserIds)
-          .order('view_count', { ascending: false })
-          .limit(10);
-
-        if (pvError) throw pvError;
-
-        if (!pageViews || pageViews.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No page views for VIPs yet.</td></tr>`;
-          return;
-        }
-
-        leaderboardBody.innerHTML = pageViews.map((row, idx) => {
-          const username = row.username ?? 'Unknown';
-          const views = row.view_count ?? 0;
-          return `
-            <tr>
-              <td>${getRankEmoji(idx)}</td>
-              <td>@${username}</td>
-              <td>👁️ ${views}</td>
-            </tr>
-          `;
-        }).join('');
-
-      } catch (error) {
-        console.error('Leaderboard load error:', error);
-        leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+      if (!pageViews || pageViews.length === 0) {
+        leaderboardBody.innerHTML = `<tr><td colspan="3">No VIP page views found.</td></tr>`;
+        return;
       }
-    }
 
-    loadLeaderboard();
-  </script>
+      leaderboardBody.innerHTML = pageViews.map((row, idx) => {
+        const username = row.username ?? 'Unknown';
+        const views = row.view_count ?? 0;
+        return `
+          <tr>
+            <td>${getRankEmoji(idx)}</td>
+            <td>@${username}</td>
+            <td>👁️ ${views}</td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (error) {
+      console.error('Leaderboard load error:', error);
+      leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+    }
+  }
+
+  loadLeaderboard();
+</script>
 
 </body>
 </html>
