@@ -419,7 +419,7 @@
 
     .back-link {
       display: inline-block;
-      margin-bottom: 2rem;
+      margin: 0.5rem;
       color: #ff69b4;
       font-weight: 700;
       font-size: 1.1rem;
@@ -431,6 +431,7 @@
       box-shadow: 0 0 12px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       user-select: none;
+      cursor: pointer;
     }
 
     .back-link:hover {
@@ -444,6 +445,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
+      margin-top: 2rem;
     }
 
     .user-btn {
@@ -505,6 +507,11 @@
 
   <h1>All User Art Submissions</h1>
 
+  <div>
+    <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
+    <button class="back-link" id="sortNewest">🆕 Newest</button>
+  </div>
+
   <div id="userList">Loading art submissions...</div>
 
   <script type="module">
@@ -516,12 +523,17 @@
     );
 
     const userListEl = document.getElementById('userList');
+    let currentSort = 'alphabetical';
 
-    async function loadUsers() {
+    async function loadUsers(sortMode = 'alphabetical') {
+      const orderBy = sortMode === 'newest'
+        ? { column: 'created_at', ascending: false }
+        : { column: 'github_username', ascending: true };
+
       const { data, error } = await supabase
         .from('user_art')
-        .select('github_username, image_url, title, avatar_url')
-        .order('github_username', { ascending: true });
+        .select('github_username, image_url, title, avatar_url, created_at')
+        .order(orderBy.column, { ascending: orderBy.ascending });
 
       if (error) {
         userListEl.textContent = `Error loading art submissions: ${error.message}`;
@@ -551,7 +563,6 @@
         const avatar = document.createElement('div');
         avatar.className = 'avatar-img';
 
-        // Use avatar_url if present, else show first letter
         if (info.avatar_url) {
           const img = document.createElement('img');
           img.src = info.avatar_url;
@@ -582,7 +593,18 @@
       userListEl.appendChild(fragment);
     }
 
-    loadUsers();
+    // Initial load
+    loadUsers(currentSort);
+
+    document.getElementById('sortAlpha').addEventListener('click', () => {
+      currentSort = 'alphabetical';
+      loadUsers(currentSort);
+    });
+
+    document.getElementById('sortNewest').addEventListener('click', () => {
+      currentSort = 'newest';
+      loadUsers(currentSort);
+    });
   </script>
 
 </body>
