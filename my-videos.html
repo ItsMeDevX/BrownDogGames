@@ -474,96 +474,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Andrew Tate’s Alpha F*ckfest - Gameplay Trailer</title>
-  <meta name="description" content="Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale. Watch the trailer now.">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Player</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: #000;
-      font-family: Arial, sans-serif;
-      color: white;
-    }
-
-    .wrapper {
+      margin: 0; padding: 0; height: 100%;
+      background: #000;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100%;
-      width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
+      align-items: center;
     }
-
-    h1 {
-      font-size: 1.8rem;
-      text-align: center;
-      color: #ff4f9f;
-      margin-bottom: 10px;
-      text-shadow: 1px 1px 0 #000;
-    }
-
-    p {
-      max-width: 800px;
-      text-align: center;
-      font-size: 1rem;
-      margin-bottom: 20px;
-      color: #ddd;
-    }
-
     iframe {
       width: 100%;
-      max-width: 960px;
-      aspect-ratio: 16 / 9;
+      max-width: 800px;
+      height: 450px;
       border: none;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(255, 79, 159, 0.5);
-    }
-
-    .fallback {
-      color: red;
-      text-align: center;
-      font-size: 1.2rem;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.3rem;
-      }
-      p {
-        font-size: 0.9rem;
-      }
     }
   </style>
 </head>
 <body>
-
-  <div class="wrapper" id="playerArea">
-    <!-- Video player and description injected here -->
-  </div>
+  <iframe id="videoFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
   <script>
-    const videoId = new URLSearchParams(window.location.search).get("video");
+    // Get video ID from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('video');
 
-    if (videoId) {
-      document.getElementById("playerArea").innerHTML = `
-        <h1>🎮 Andrew Tate’s Alpha F*ckfest</h1>
-        <p>Welcome to <strong>Andrew Tate’s Alpha F*ckfest</strong>—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.</p>
-        <iframe 
-          src="https://drive.google.com/file/d/${videoId}/preview" 
-          allow="autoplay; encrypted-media" 
-          allowfullscreen>
-        </iframe>
-      `;
+    if(videoId) {
+      const iframe = document.getElementById('videoFrame');
+      iframe.src = `https://drive.google.com/file/d/${videoId}/preview`;
     } else {
-      document.getElementById("playerArea").innerHTML = `
-        <div class="fallback">⚠️ No video ID provided in the URL.</div>
-      `;
+      document.body.innerHTML = '<p style="color: white; font-family: sans-serif; text-align: center;">No video ID provided.</p>';
     }
   </script>
-
 </body>
 </html>
