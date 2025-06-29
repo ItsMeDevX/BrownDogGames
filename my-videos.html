@@ -677,7 +677,7 @@
     <h2>Andrew Tate’s Alpha F*ckfest</h2>
     <p>Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.</p>
     <iframe id="videoFrame" src="https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    <button class="btn" id="shareBtn">Share</button>
+    <button class="btn shareBtn">Share</button>
   </div>
 
   <!-- New Video Entry: Bare Back Boxing -->
@@ -689,7 +689,7 @@
     </p>
     <!-- Embedded Google Drive Video for Bare Back Boxing -->
     <iframe id="videoFrame" src="https://drive.google.com/file/d/1PRUtC3IJcBneZ73hYxm5CVu8GD8ArwCU/preview" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    <button class="btn" id="shareBtn">Share</button>
+    <button class="btn shareBtn">Share</button>
   </div>
 
   <a href="index.html" class="btn-home">🏠 Back to Home</a>
@@ -707,19 +707,35 @@
   </div>
 </div>
 
-  <script>
-    const shareBtn = document.getElementById('shareBtn');
-    const modal = document.getElementById('shareModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const shareLinkTextarea = document.getElementById('shareLink');
-    const embedCodeTextarea = document.getElementById('embedCode');
-    const container = document.getElementById('mainContainer');
+<script>
+  // Get all share buttons using their class
+  const shareBtns = document.querySelectorAll('.shareBtn');
+  const modal = document.getElementById('shareModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const shareLinkTextarea = document.getElementById('shareLink');
+  const embedCodeTextarea = document.getElementById('embedCode');
 
-    // Ensure modal is hidden on page load
-    modal.style.display = 'none';
+  // Ensure modal is hidden on page load
+  modal.style.display = 'none';
 
-    // Show modal only when Share button is pressed
-    shareBtn.addEventListener('click', () => {
+  // Create an array of video objects with title and video URL
+  const videos = [
+    {
+      title: "Andrew Tate’s Alpha F*ckfest",
+      url: "https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview"
+    },
+    {
+      title: "Bare Back Boxing",
+      url: "https://drive.google.com/file/d/1PRUtC3IJcBneZ73hYxm5CVu8GD8ArwCU/preview"
+    }
+  ];
+
+  // Add event listeners to each Share button
+  shareBtns.forEach((btn, index) => {
+    btn.addEventListener('click', () => {
+      const video = videos[index]; // Get the corresponding video object
+
+      // Set the Share Link and Embed Code for the clicked video
       const baseURL = window.location.href.split('?')[0];
       const embedURL = `${baseURL}?embed=1`;
 
@@ -730,19 +746,20 @@
       shareLinkTextarea.focus();
       shareLinkTextarea.select();
     });
+  });
 
-    // Close modal when close button is clicked
-    closeModalBtn.addEventListener('click', () => {
+  // Close modal when close button is clicked
+  closeModalBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside the modal content
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
       modal.style.display = 'none';
-    });
-
-    // Close modal when clicking outside the modal content
-    window.addEventListener('click', e => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
-  </script>
+    }
+  });
+</script>
 
 </body>
 </html>
