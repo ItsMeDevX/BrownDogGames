@@ -1134,35 +1134,35 @@
     }
 
     // Update the status and like button based on the user's status
-    async function updateStatus() {
-      const user = await getUser();
-      if (!user) {
-        status.textContent = '❌ Please log in to like this page.';
-        likeBtn.style.display = 'none';  // Hide like button if not logged in
-        return;
-      }
+   async function updateStatus() {
+  const user = await getUser();
+  if (!user) {
+    status.textContent = '❌ Please log in to like this page.';
+    likeBtn.style.display = 'none';  // Hide like button if not logged in
+    return;
+  }
 
-      const isPageOwnerVip = await isVip(user.id);  // Pass logged-in user's ID
+  const isPageOwnerVip = await isVip(user.id);  // Pass logged-in user's ID
 
-      if (!isPageOwnerVip) {
-        status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
-        likeBtn.style.display = 'none';  // Hide like button if not VIP
-        return;
-      }
+  if (!isPageOwnerVip) {
+    status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
+    likeBtn.style.display = 'none';  // Hide like button if not VIP
+    return;
+  }
 
-      const liked = await hasLiked(user.id);
-      const count = await getLikeCount();
+  const liked = await hasLiked(user.id);
+  const count = await getLikeCount();
 
-      if (liked) {
-        status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
-        likeBtn.disabled = true;  // Disable the button if already liked
-      } else {
-        status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
-        likeBtn.disabled = false;  // Enable button if not liked
-      }
+  if (liked) {
+    status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
+    likeBtn.disabled = true;  // Disable the button if already liked
+  } else {
+    status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
+    likeBtn.disabled = false;  // Enable button if not liked
+  }
 
-      likeBtn.style.display = 'inline-block';  // Show the like button if VIP
-    }
+  likeBtn.style.display = 'inline-block';  // Show the like button if VIP
+}
 
     // Like the page when the button is clicked
     likeBtn.addEventListener('click', async () => {
