@@ -658,7 +658,7 @@
 
   <div id="userList">Loading videos...</div>
 
-  <!-- Video Modal (will no longer be used for user clicks, but kept for featured video) -->
+  <!-- Video Modal -->
   <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div id="modalContent">
       <button id="closeModalBtn" aria-label="Close video player">×</button>
@@ -702,116 +702,150 @@
         return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
       }
 
-      // Fallback blank or placeholder image
+      // Fallback
       return null;
     }
 
-    function displayFeaturedVideo(item) {
-      if (!item) {
+    // Convert video URL to embeddable URL (YouTube or Google Drive)
+    function getEmbedUrl(url) {
+      if (!url) return '';
+
+      // YouTube embed
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+      }
+
+      // Google Drive embed
+      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      if (gdMatch) {
+        return `https://drive.google.com/file/d/${gdMatch[1]}/preview`;
+      }
+
+      // Unknown - just return empty string
+      return '';
+    }
+
+    // Load users and videos from Supabase
+    async function loadUsers(sortMode = 'alphabetical') {
+      const orderBy = sortMode === 'newest'
+        ? { column: 'created_at', ascending: false }
+        : { column: 'github_username', ascending: true };
+
+      const { data, error } = await supabase
+        .from('game_videos')
+        .select('github_username, video_url, title, avatar_url, created_at')
+        .order(orderBy.column, { ascending: orderBy.ascending });
+
+      if (error) {
+        userListEl.textContent = `Error loading videos: ${error.message}`;
         featuredSection.style.display = 'none';
         return;
       }
 
+      if (!data || data.length === 0) {
+        userListEl.textContent = 'No video submissions found.';
+        featuredSection.style.display = 'none';
+        return;
+      }
+
+      // Show featured video - newest submission
+      const newest = data[0];
       featuredSection.style.display = 'block';
 
-      if (item.avatar_url) {
-        featuredAvatar.innerHTML = `<img src="${item.avatar_url}" alt="${item.github_username} avatar" />`;
+      // Featured avatar: if avatar_url exists, use it, else show first letter of username
+      if (newest.avatar_url) {
+        featuredAvatar.innerHTML = `<img src="${newest.avatar_url}" alt="${newest.github_username} avatar" />`;
       } else {
-        featuredAvatar.textContent = item.github_username.charAt(0).toUpperCase();
+        featuredAvatar.textContent = newest.github_username.charAt(0).toUpperCase();
       }
 
-      featuredUsername.textContent = item.github_username;
-      featuredThumbnail.src = getThumbnailFromUrl(item.video_url) || '';
-      featuredThumbnail.alt = `Featured video thumbnail for ${item.title || 'Untitled video'}`;
-      featuredTitle.textContent = item.title || 'Untitled video';
+      featuredUsername.textContent = newest.github_username;
+      featuredTitle.textContent = newest.title || 'Untitled video';
 
-      // Clicking on featured video opens modal
-      featuredSection.onclick = () => openVideoModal(item.video_url);
-      featuredSection.style.cursor = 'pointer';
-    }
-
-    function openVideoModal(videoUrl) {
-      if (!videoUrl) return;
-      videoPlayerIframe.src = videoUrl;
-      videoModal.style.display = 'flex';
-    }
-
-    function closeVideoModal() {
-      videoPlayerIframe.src = '';
-      videoModal.style.display = 'none';
-    }
-
-    closeModalBtn.onclick = closeVideoModal;
-    videoModal.onclick = e => {
-      if (e.target === videoModal) closeVideoModal();
-    };
-
-    async function loadUsers() {
-      userListEl.textContent = 'Loading videos...';
-
-      let { data, error } = await supabase
-        .from('submissions')
-        .select('*');
-
-      if (error) {
-        userListEl.textContent = 'Failed to load data.';
-        console.error(error);
-        return;
+      // Featured thumbnail
+      const thumb = getThumbnailFromUrl(newest.video_url);
+      if (thumb) {
+        featuredThumbnail.src = thumb;
+        featuredThumbnail.alt = `Thumbnail for ${newest.title}`;
+      } else {
+        featuredThumbnail.src = '';
+        featuredThumbnail.alt = 'No thumbnail available';
       }
 
-      if (!data || data.length === 0) {
-        userListEl.textContent = 'No submissions found.';
-        return;
-      }
+      // Clicking featured thumbnail or section opens video modal
+      featuredThumbnail.style.cursor = 'pointer';
+      featuredThumbnail.onclick = () => openVideoModal(newest.video_url);
 
-      // Sort data
-      if (currentSort === 'alphabetical') {
-        data.sort((a, b) => a.github_username.localeCompare(b.github_username));
-      } else if (currentSort === 'newest') {
-        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      }
+      // Build user list cards
+      userListEl.innerHTML = '';
+      data.forEach((item) => {
+        const btn = document.createElement('button');
+        btn.className = 'user-btn';
+        btn.type = 'button';
 
-      // Show featured video as first submission in list (if any)
-      displayFeaturedVideo(data[0]);
-
-      userListEl.textContent = ''; // clear
-
-      data.forEach(item => {
-        // Create a link for each user, linking to user.html?username=...
-        const link = document.createElement('a');
-        link.className = 'user-btn';
-        link.href = `user.html?username=${encodeURIComponent(item.github_username)}`;
-        link.setAttribute('aria-label', `Go to ${item.github_username}'s video page`);
-
+        // Avatar
         let avatarHTML = '';
         if (item.avatar_url) {
           avatarHTML = `<img src="${item.avatar_url}" alt="${item.github_username} avatar" />`;
         } else {
           avatarHTML = item.github_username.charAt(0).toUpperCase();
         }
-
-        link.innerHTML = `
+        btn.innerHTML = `
           <div class="avatar-img">${avatarHTML}</div>
           <div class="username-text">${item.github_username}</div>
           <img class="cover-img" src="${getThumbnailFromUrl(item.video_url) || ''}" alt="Video thumbnail for ${item.title || 'Untitled video'}" />
           <div class="video-title">${item.title || 'Untitled video'}</div>
         `;
 
-        userListEl.appendChild(link);
+        btn.onclick = () => openVideoModal(item.video_url);
+
+        userListEl.appendChild(btn);
       });
     }
 
-    document.getElementById('sortAlpha').onclick = () => {
+    // Open modal and load video player iframe
+    function openVideoModal(videoUrl) {
+      const embedUrl = getEmbedUrl(videoUrl);
+      if (!embedUrl) {
+        alert('Sorry, this video URL cannot be embedded.');
+        return;
+      }
+
+      videoPlayerIframe.src = embedUrl;
+      videoModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // prevent background scroll
+    }
+
+    // Close modal and stop video playback
+    function closeVideoModal() {
+      videoPlayerIframe.src = '';
+      videoModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    closeModalBtn.addEventListener('click', closeVideoModal);
+
+    // Close modal if user clicks outside the iframe
+    videoModal.addEventListener('click', (e) => {
+      if (e.target === videoModal) {
+        closeVideoModal();
+      }
+    });
+
+    // Sorting buttons
+    document.getElementById('sortAlpha').addEventListener('click', () => {
       currentSort = 'alphabetical';
-      loadUsers();
-    };
+      loadUsers(currentSort);
+    });
 
-    document.getElementById('sortNewest').onclick = () => {
+    document.getElementById('sortNewest').addEventListener('click', () => {
       currentSort = 'newest';
-      loadUsers();
-    };
+      loadUsers(currentSort);
+    });
 
-    loadUsers();
+    // Initial load
+    loadUsers(currentSort);
   </script>
 </body>
 </html>
