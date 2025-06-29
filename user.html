@@ -1054,6 +1054,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const pageOwner = urlParams.get('user');
 
+    // Handle error if no user in the URL
     if (!pageOwner) {
       document.title = 'Error';
       document.getElementById('heading').textContent = '❌ No username in URL.';
@@ -1064,17 +1065,19 @@
       document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
     }
 
+    // Function to get logged-in user
     async function getUser() {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) return null;
       return user;
     }
 
-    async function isVip(username) {
+    // Check if the user is VIP
+    async function isVip(userId) {
       const { data, error } = await supabase
         .from('users')
         .select('is_vip')
-        .eq('id', username)
+        .eq('id', userId)  // Query by user ID, not username
         .single();
 
       if (error) {
@@ -1085,6 +1088,7 @@
       return data ? data.is_vip : false;
     }
 
+    // Check if the user has already liked the page
     async function hasLiked(userId) {
       if (!userId || !pageOwner) return false;
       const { data, error } = await supabase
@@ -1096,6 +1100,7 @@
       return !!data;
     }
 
+    // Get the total like count for the page
     async function getLikeCount() {
       if (!pageOwner) return 0;
       const { count, error } = await supabase
@@ -1105,19 +1110,20 @@
       return count || 0;
     }
 
+    // Update the status and like button based on the user's status
     async function updateStatus() {
       const user = await getUser();
       if (!user) {
         status.textContent = '❌ Please log in to like this page.';
-        likeBtn.style.display = 'none';
+        likeBtn.style.display = 'none';  // Hide like button if not logged in
         return;
       }
 
-      const isPageOwnerVip = await isVip(pageOwner);
+      const isPageOwnerVip = await isVip(user.id);  // Pass logged-in user's ID
 
       if (!isPageOwnerVip) {
         status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
-        likeBtn.style.display = 'none';
+        likeBtn.style.display = 'none';  // Hide like button if not VIP
         return;
       }
 
@@ -1126,15 +1132,16 @@
 
       if (liked) {
         status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
-        likeBtn.disabled = true;
+        likeBtn.disabled = true;  // Disable the button if already liked
       } else {
         status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
-        likeBtn.disabled = false;
+        likeBtn.disabled = false;  // Enable button if not liked
       }
 
-      likeBtn.style.display = 'inline-block';
+      likeBtn.style.display = 'inline-block';  // Show the like button if VIP
     }
 
+    // Like the page when the button is clicked
     likeBtn.addEventListener('click', async () => {
       const user = await getUser();
       if (!user) {
@@ -1151,14 +1158,16 @@
 
       const now = new Date().toISOString();
 
+      // Check if the user has already liked the page
       const { data: existingLike, error: likeError } = await supabase
         .from('vip_page_views')
-        .select('view_count')
+        .select('view_count, first_viewed_at')
         .eq('user_id', user.id)
         .eq('username', pageOwner)
         .single();
 
       if (existingLike) {
+        // If the user already liked, update the view count and last viewed timestamp
         const { error: updateError } = await supabase
           .from('vip_page_views')
           .update({
@@ -1178,18 +1187,19 @@
         return;
       }
 
-      const { error } = await supabase
+      // If the user hasn't liked, insert a new row with the current timestamp
+      const { error: insertError } = await supabase
         .from('vip_page_views')
         .insert([{
           user_id: user.id,
           username: pageOwner,
           view_count: 1,
-          first_viewed_at: now,
+          first_viewed_at: now,  // Set the first view time only when they like the page for the first time
           last_viewed_at: now,
         }]);
 
-      if (error) {
-        console.error('Insert error:', error);
+      if (insertError) {
+        console.error('Insert error:', insertError);
         status.textContent = '❌ Error liking page. Please try again.';
         return;
       }
@@ -1199,6 +1209,7 @@
       status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
     });
 
+    // Initialize the page status and like button
     updateStatus();
   </script>
 </body>
