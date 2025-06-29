@@ -700,42 +700,42 @@
     </div>
   </div>
 
-  <script>
-    const shareBtn = document.getElementById('shareBtn');
-    const modal = document.getElementById('shareModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const shareLinkTextarea = document.getElementById('shareLink');
-    const embedCodeTextarea = document.getElementById('embedCode');
-    const container = document.getElementById('mainContainer');
+ <script>
+  const shareBtn = document.getElementById('shareBtn');
+  const modal = document.getElementById('shareModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const shareLinkTextarea = document.getElementById('shareLink');
+  const embedCodeTextarea = document.getElementById('embedCode');
+  const container = document.getElementById('mainContainer');
 
-    // Enable embed-only mode if ?embed=1 in URL
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("embed") === "1") {
-      container.classList.add("embed-mode");
-    }
+  // Enable embed-only mode if ?embed=1 in URL, but don't enable it automatically
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("embed") === "1") {
+    container.classList.add("embed-mode");
+  }
 
-    shareBtn.addEventListener('click', () => {
-      const baseURL = window.location.href.split('?')[0];
-      const embedURL = `${baseURL}?embed=1`;
+  shareBtn.addEventListener('click', () => {
+    const baseURL = window.location.href.split('?')[0];
+    const embedURL = `${baseURL}?embed=1`;
 
-      shareLinkTextarea.value = baseURL;
-      embedCodeTextarea.value = `<iframe src="${embedURL}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
+    shareLinkTextarea.value = baseURL;
+    embedCodeTextarea.value = `<iframe src="${embedURL}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
 
-      modal.style.display = 'flex';
-      shareLinkTextarea.focus();
-      shareLinkTextarea.select();
-    });
+    modal.style.display = 'flex';
+    shareLinkTextarea.focus();
+    shareLinkTextarea.select();
+  });
 
-    closeModalBtn.addEventListener('click', () => {
+  closeModalBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  window.addEventListener('click', e => {
+    if (e.target === modal) {
       modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', e => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
-  </script>
+    }
+  });
+</script>
 
 </body>
 </html>
