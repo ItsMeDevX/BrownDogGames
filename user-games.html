@@ -412,14 +412,14 @@
       font-size: 2.8rem;
       color: #ff69b4;
       text-shadow: 2px 2px 0 #000;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
       user-select: text;
       letter-spacing: 0.1em;
     }
 
     .back-link {
       display: inline-block;
-      margin-bottom: 2rem;
+      margin: 0.5rem;
       color: #ff69b4;
       font-weight: 700;
       font-size: 1.1rem;
@@ -431,6 +431,7 @@
       box-shadow: 0 0 12px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       user-select: none;
+      cursor: pointer;
     }
 
     .back-link:hover {
@@ -444,6 +445,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
+      margin-top: 2rem;
     }
 
     .user-btn {
@@ -499,6 +501,11 @@
 
   <h1>All User Game Pages</h1>
 
+  <div>
+    <button id="sortAlpha" class="back-link">🅰️ Alphabetical</button>
+    <button id="sortNewest" class="back-link">🆕 Newest</button>
+  </div>
+
   <div id="userList">Loading users...</div>
 
   <script type="module">
@@ -510,8 +517,8 @@
     );
 
     const userListEl = document.getElementById('userList');
+    let currentSort = 'alphabetical';
 
-    // Convert Google Drive link to thumbnail URL using the file ID
     function convertDriveLinkToThumbnail(url) {
       if (!url) return url;
       const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
@@ -522,11 +529,15 @@
       return url;
     }
 
-    async function loadUsers() {
+    async function loadUsers(sortMode = 'alphabetical') {
+      const orderBy = sortMode === 'newest'
+        ? { column: 'created_at', ascending: false }
+        : { column: 'github_user', ascending: true };
+
       const { data, error } = await supabase
         .from('game_submissions')
-        .select('github_user, avatar_url, cover_url')
-        .order('github_user', { ascending: true });
+        .select('github_user, avatar_url, cover_url, created_at')
+        .order(orderBy.column, { ascending: orderBy.ascending });
 
       if (error) {
         userListEl.textContent = `Error loading users: ${error.message}`;
@@ -538,7 +549,6 @@
         return;
       }
 
-      // Deduplicate users by github_user
       const usersMap = new Map();
       data.forEach(({ github_user, avatar_url, cover_url }) => {
         if (github_user && !usersMap.has(github_user)) {
@@ -554,7 +564,6 @@
         a.className = 'user-btn';
         a.href = `user.html?user=${encodeURIComponent(user)}`;
 
-        // Avatar image (convert Google Drive links to thumbnail)
         if (images.avatar_url) {
           const avatarImg = document.createElement('img');
           avatarImg.src = convertDriveLinkToThumbnail(images.avatar_url);
@@ -563,25 +572,20 @@
           a.appendChild(avatarImg);
         }
 
-        // Username text
         const usernameSpan = document.createElement('span');
         usernameSpan.className = 'username-text';
         usernameSpan.textContent = user;
         a.appendChild(usernameSpan);
 
-        // Cover image (handle Google Drive and Supabase storage)
         if (images.cover_url) {
           let coverSrc = images.cover_url;
 
-          // Check if this is a Supabase storage path (no http prefix)
           if (!coverSrc.startsWith('http')) {
-            // Try getting public URL from Supabase storage 'covers' bucket
             const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(coverSrc);
             if (publicUrlData && publicUrlData.publicUrl) {
               coverSrc = publicUrlData.publicUrl;
             }
           } else {
-            // Convert Google Drive URLs to thumbnails
             coverSrc = convertDriveLinkToThumbnail(coverSrc);
           }
 
@@ -598,7 +602,19 @@
       userListEl.appendChild(fragment);
     }
 
-    loadUsers();
+    // Load default
+    loadUsers(currentSort);
+
+    // Button event listeners
+    document.getElementById('sortAlpha').addEventListener('click', () => {
+      currentSort = 'alphabetical';
+      loadUsers(currentSort);
+    });
+
+    document.getElementById('sortNewest').addEventListener('click', () => {
+      currentSort = 'newest';
+      loadUsers(currentSort);
+    });
   </script>
 
 </body>
