@@ -583,7 +583,7 @@
 
     /* Modal Styles */
     #shareModal {
-      display: none;
+      display: none; /* Modal is hidden by default */
       position: fixed;
       z-index: 1000;
       left: 0; top: 0;
@@ -644,27 +644,6 @@
       background: #e03e8f;
     }
 
-    /* Embed mode: when ?embed=1 is passed in the URL, hide all clutter */
-    .embed-mode .btn,
-    .embed-mode .btn-home,
-    .embed-mode h1,
-    .embed-mode .video-entry h2,
-    .embed-mode .video-entry p {
-      display: none;
-    }
-
-    .embed-mode .video-entry {
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      background: none;
-    }
-
-    .embed-mode iframe {
-      border-radius: 0;
-      box-shadow: none;
-      height: 100vh;
-    }
   </style>
 </head>
 <body>
@@ -700,42 +679,43 @@
     </div>
   </div>
 
- <script>
-  const shareBtn = document.getElementById('shareBtn');
-  const modal = document.getElementById('shareModal');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const shareLinkTextarea = document.getElementById('shareLink');
-  const embedCodeTextarea = document.getElementById('embedCode');
-  const container = document.getElementById('mainContainer');
+  <script>
+    const shareBtn = document.getElementById('shareBtn');
+    const modal = document.getElementById('shareModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const shareLinkTextarea = document.getElementById('shareLink');
+    const embedCodeTextarea = document.getElementById('embedCode');
+    const container = document.getElementById('mainContainer');
 
-  // Enable embed-only mode if ?embed=1 in URL, but don't enable it automatically
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("embed") === "1") {
-    container.classList.add("embed-mode");
-  }
+    // Only show modal when the Share button is pressed, not on page load
+    shareBtn.addEventListener('click', () => {
+      const baseURL = window.location.href.split('?')[0];
+      const embedURL = `${baseURL}?embed=1`;
 
-  shareBtn.addEventListener('click', () => {
-    const baseURL = window.location.href.split('?')[0];
-    const embedURL = `${baseURL}?embed=1`;
+      // Set Share Link and Embed Code
+      shareLinkTextarea.value = baseURL;
+      embedCodeTextarea.value = `<iframe src="${embedURL}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
 
-    shareLinkTextarea.value = baseURL;
-    embedCodeTextarea.value = `<iframe src="${embedURL}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
+      // Show modal
+      modal.style.display = 'flex';
 
-    modal.style.display = 'flex';
-    shareLinkTextarea.focus();
-    shareLinkTextarea.select();
-  });
+      // Focus on share link input field
+      shareLinkTextarea.focus();
+      shareLinkTextarea.select();
+    });
 
-  closeModalBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-  });
-
-  window.addEventListener('click', e => {
-    if (e.target === modal) {
+    // Close modal when close button is clicked
+    closeModalBtn.addEventListener('click', () => {
       modal.style.display = 'none';
-    }
-  });
-</script>
+    });
+
+    // Close modal when clicking outside the modal content
+    window.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  </script>
 
 </body>
 </html>
