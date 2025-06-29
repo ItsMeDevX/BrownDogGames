@@ -466,7 +466,6 @@
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
       cursor: pointer;
-      border: none;
     }
 
     .user-btn:hover {
@@ -487,7 +486,6 @@
       border: 2px solid #ff69b4;
       margin-bottom: 0.5rem;
       border-radius: 50%;
-      color: #ff69b4;
     }
 
     .avatar-img img {
@@ -502,7 +500,6 @@
       margin-bottom: 0.75rem;
       color: #ffc0cb;
       word-break: break-word;
-      user-select: text;
     }
 
     .cover-img {
@@ -514,38 +511,8 @@
       border: 2px solid #ff69b4;
       background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
-      position: relative;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .cover-img:hover {
-      transform: scale(1.05);
-    }
-
-    /* Overlay text on thumbnails */
-    .cover-img::after,
-    #featuredThumbnail::after {
-      content: "▶️ Click to play";
-      position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(0,0,0,0.6);
-      color: #fff;
-      font-size: 0.8rem;
-      padding: 2px 8px;
-      border-radius: 12px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
       user-select: none;
-      white-space: nowrap;
-    }
-
-    .cover-img:hover::after,
-    #featuredThumbnail:hover::after {
-      opacity: 1;
+      cursor: pointer; /* Added pointer cursor here */
     }
 
     .video-title {
@@ -553,7 +520,6 @@
       margin-top: 0.5rem;
       color: #ffb6d1;
       text-align: center;
-      user-select: text;
     }
 
     /* Featured video section styling */
@@ -603,7 +569,6 @@
       font-size: 1.4rem;
       margin-bottom: 1rem;
       word-break: break-word;
-      user-select: text;
     }
 
     #featuredThumbnail {
@@ -615,68 +580,57 @@
       border: 3px solid #ff8bd8;
       box-shadow: 0 0 15px #ff8bd8cc;
       margin-bottom: 1rem;
-      position: relative;
       cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    #featuredThumbnail:hover {
-      transform: scale(1.05);
     }
 
     #featuredTitle {
       color: #ffb6d1;
       font-size: 1.1rem;
-      user-select: text;
     }
 
     /* Modal styles */
     #videoModal {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(30, 27, 46, 0.85);
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
       display: none;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       z-index: 9999;
     }
 
     #modalContent {
       position: relative;
+      background: #2d1a3a;
+      padding: 1rem;
+      border-radius: 16px;
       max-width: 90vw;
       max-height: 80vh;
-      width: 640px;
-      background: #1e1b2e;
-      border-radius: 16px;
-      box-shadow: 0 0 30px #ff69b4cc;
-      overflow: hidden;
+      box-shadow: 0 0 25px #ff69b4;
     }
 
     #videoPlayerIframe {
       width: 100%;
-      height: 360px;
+      height: 450px;
       border: none;
-      border-radius: 16px;
+      border-radius: 12px;
       background: black;
     }
 
     #closeModalBtn {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 10px;
+      right: 10px;
       background: #ff69b4;
-      border: none;
       color: #1e1b2e;
+      border: none;
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
+      border-radius: 50%;
       width: 32px;
       height: 32px;
-      border-radius: 50%;
       cursor: pointer;
-      user-select: none;
+      line-height: 1;
     }
 
     #closeModalBtn:hover {
@@ -709,8 +663,8 @@
   <!-- Video Modal -->
   <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div id="modalContent">
-      <button id="closeModalBtn" aria-label="Close video player">✖</button>
-      <iframe id="videoPlayerIframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <button id="closeModalBtn" aria-label="Close video player">×</button>
+      <iframe id="videoPlayerIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -718,191 +672,199 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
     const supabase = createClient(
-      'https://fwslmbzfukriibfsfpsy.supabase.co',
-      'public-anon-key'
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
-    const userList = document.getElementById('userList');
+    const userListEl = document.getElementById('userList');
     const featuredSection = document.getElementById('featuredVideo');
     const featuredAvatar = document.getElementById('featuredAvatar');
     const featuredUsername = document.getElementById('featuredUsername');
     const featuredThumbnail = document.getElementById('featuredThumbnail');
     const featuredTitle = document.getElementById('featuredTitle');
 
-    const sortAlphaBtn = document.getElementById('sortAlpha');
-    const sortNewestBtn = document.getElementById('sortNewest');
-
     const videoModal = document.getElementById('videoModal');
     const videoPlayerIframe = document.getElementById('videoPlayerIframe');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
-    // Helper: Extract YouTube thumbnail from URL
-    function getThumbnailFromUrl(url) {
-      if (!url) return '';
-      // Handle typical YouTube URLs
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      if (ytMatch) {
-        return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
-      }
-      return '';
-    }
+    let currentSort = 'alphabetical';
 
-    // Helper: Extract YouTube video ID for embed URL
-    function getYouTubeVideoID(url) {
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      if (ytMatch) return ytMatch[1];
+    function getThumbnailFromUrl(url) {
+      if (!url) return null;
+
+      // YouTube thumbnail
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
+      }
+
+      // Google Drive thumbnail (uses Drive API thumbnail endpoint, may not always work)
+      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      if (gdMatch) {
+        return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
+      }
+
+      // Fallback
       return null;
     }
 
-    // Open modal and play video
-    function openVideoModal(url) {
-      const videoId = getYouTubeVideoID(url);
-      if (!videoId) {
-        alert('Invalid YouTube video URL.');
-        return;
+    // Convert video URL to embeddable URL (YouTube or Google Drive)
+    function getEmbedUrl(url) {
+      if (!url) return '';
+
+      // YouTube embed
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
       }
-      videoPlayerIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-      videoModal.style.display = 'flex';
+
+      // Google Drive embed
+      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      if (gdMatch) {
+        return `https://drive.google.com/file/d/${gdMatch[1]}/preview`;
+      }
+
+      return '';
     }
 
-    // Close modal and stop video
-    function closeVideoModal() {
-      videoModal.style.display = 'none';
-      videoPlayerIframe.src = '';
-    }
-
-    closeModalBtn.addEventListener('click', closeVideoModal);
-
-    videoModal.addEventListener('click', (e) => {
-      if (e.target === videoModal) closeVideoModal();
-    });
-
-    // Fetch and display all video submissions
-    async function fetchVideos() {
+    // Load users and videos from Supabase
+    async function loadUsers() {
       const { data, error } = await supabase
-        .from('game_videos')
+        .from('user_videos')
         .select('*');
 
       if (error) {
-        userList.textContent = `Error loading videos: ${error.message}`;
+        userListEl.textContent = 'Error loading videos.';
         return;
       }
 
-      if (!data || data.length === 0) {
-        userList.textContent = 'No videos found.';
+      let users = data || [];
+
+      if (users.length === 0) {
+        userListEl.textContent = 'No videos submitted yet.';
         return;
       }
 
-      renderVideos(data);
+      // Sort users initially by alphabetical
+      users.sort((a, b) => (a.github_username || '').localeCompare(b.github_username || ''));
+
+      displayUsers(users);
+      displayFeatured(users[users.length - 1]);
     }
 
-    // Render videos sorted by newest by default
-    function renderVideos(videos, sortMethod = 'newest') {
-      // Sort videos
-      if (sortMethod === 'alpha') {
-        videos.sort((a, b) => {
-          if (!a.github_username) return 1;
-          if (!b.github_username) return -1;
-          return a.github_username.localeCompare(b.github_username, undefined, { sensitivity: 'base' });
-        });
-      } else {
-        // Newest
-        videos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      }
+    function displayUsers(users) {
+      userListEl.innerHTML = '';
+      users.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'user-btn';
+        btn.type = 'button';
 
-      // Featured video = newest video
-      const newest = videos[0];
-      if (newest) {
-        featuredSection.style.display = 'block';
-        if (newest.avatar_url) {
-          featuredAvatar.innerHTML = `<img src="${newest.avatar_url}" alt="Avatar for ${newest.github_username || 'user'}" />`;
-        } else {
-          // Show initials if no avatar
-          const initials = (newest.github_username || 'U')[0].toUpperCase();
-          featuredAvatar.textContent = initials;
-        }
-        featuredUsername.textContent = newest.github_username || 'Unknown User';
-
-        const thumbUrl = getThumbnailFromUrl(newest.video_url) || '';
-        featuredThumbnail.src = thumbUrl;
-        featuredThumbnail.alt = `Thumbnail for ${newest.title} - Click to play video`;
-        featuredThumbnail.title = 'Click to play video';
-
-        featuredTitle.textContent = newest.title || '(No Title)';
-
-        featuredThumbnail.onclick = () => openVideoModal(newest.video_url);
-      } else {
-        featuredSection.style.display = 'none';
-      }
-
-      // Clear existing list
-      userList.innerHTML = '';
-
-      // Render all users except featured video (avoid duplication)
-      videos.slice(1).forEach((item) => {
-        // Create user card
-        const card = document.createElement('button');
-        card.className = 'user-btn';
-        card.type = 'button';
-        card.title = `Click to play video by ${item.github_username || 'user'}`;
-
-        // Avatar or initials
-        let avatarHtml;
+        // Avatar image or first letter fallback
+        let avatarHTML = '';
         if (item.avatar_url) {
-          avatarHtml = `<img src="${item.avatar_url}" alt="Avatar for ${item.github_username || 'user'}" />`;
+          avatarHTML = `<img src="${item.avatar_url}" alt="${item.github_username || 'User'} avatar" loading="lazy" />`;
+        } else if (item.github_username) {
+          avatarHTML = item.github_username[0].toUpperCase();
         } else {
-          const initial = (item.github_username || 'U')[0].toUpperCase();
-          avatarHtml = initial;
+          avatarHTML = '?';
         }
-        const avatarDiv = document.createElement('div');
-        avatarDiv.className = 'avatar-img';
-        avatarDiv.innerHTML = avatarHtml;
 
-        // Username
-        const usernameDiv = document.createElement('div');
-        usernameDiv.className = 'username-text';
-        usernameDiv.textContent = item.github_username || 'Unknown User';
+        btn.innerHTML = `
+          <div class="avatar-img">${avatarHTML}</div>
+          <div class="username-text">${item.github_username}</div>
+          <img 
+            class="cover-img" 
+            src="${getThumbnailFromUrl(item.video_url) || ''}" 
+            alt="Video thumbnail for ${item.title || 'Untitled video'}" 
+            style="cursor:pointer;"
+          />
+          <div class="video-title">${item.title || 'Untitled video'}</div>
+        `;
 
-        // Video thumbnail
-        const thumbnailImg = document.createElement('img');
-        thumbnailImg.className = 'cover-img';
-        thumbnailImg.src = getThumbnailFromUrl(item.video_url) || '';
-        thumbnailImg.alt = `Video thumbnail for ${item.title || 'Untitled video'}`;
-        thumbnailImg.title = 'Click to play video';
+        // Clicking anywhere on button opens modal with video
+        btn.onclick = () => openVideoModal(item.video_url);
 
-        // Title below thumbnail
-        const videoTitleDiv = document.createElement('div');
-        videoTitleDiv.className = 'video-title';
-        videoTitleDiv.textContent = item.title || '(No Title)';
+        // Also ensure clicking directly on thumbnail image opens modal
+        const coverImg = btn.querySelector('.cover-img');
+        if (coverImg) {
+          coverImg.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent double event firing
+            openVideoModal(item.video_url);
+          });
+        }
 
-        // Append all parts to card
-        card.appendChild(avatarDiv);
-        card.appendChild(usernameDiv);
-        card.appendChild(thumbnailImg);
-        card.appendChild(videoTitleDiv);
-
-        card.onclick = () => openVideoModal(item.video_url);
-
-        userList.appendChild(card);
+        userListEl.appendChild(btn);
       });
     }
 
-    // Event listeners for sorting
-    sortAlphaBtn.addEventListener('click', () => {
-      fetchVideos().then(({ data }) => {
-        if (data) renderVideos(data, 'alpha');
-      });
-    });
+    function displayFeatured(item) {
+      if (!item) {
+        featuredSection.style.display = 'none';
+        return;
+      }
 
-    sortNewestBtn.addEventListener('click', () => {
-      fetchVideos().then(({ data }) => {
-        if (data) renderVideos(data, 'newest');
-      });
-    });
+      featuredSection.style.display = 'block';
 
-    // Initial load
-    fetchVideos();
+      // Avatar or fallback letter
+      if (item.avatar_url) {
+        featuredAvatar.innerHTML = `<img src="${item.avatar_url}" alt="${item.github_username || 'User'} avatar" loading="lazy" />`;
+      } else if (item.github_username) {
+        featuredAvatar.textContent = item.github_username[0].toUpperCase();
+      } else {
+        featuredAvatar.textContent = '?';
+      }
 
+      featuredUsername.textContent = item.github_username || 'Unknown user';
+      featuredThumbnail.src = getThumbnailFromUrl(item.video_url) || '';
+      featuredThumbnail.alt = `Video thumbnail for ${item.title || 'Untitled video'}`;
+      featuredTitle.textContent = item.title || 'Untitled video';
+
+      featuredThumbnail.onclick = () => openVideoModal(item.video_url);
+    }
+
+    function openVideoModal(videoUrl) {
+      const embedUrl = getEmbedUrl(videoUrl);
+      if (!embedUrl) return;
+
+      videoPlayerIframe.src = embedUrl;
+      videoModal.style.display = 'flex';
+
+      // Trap focus inside modal if needed (not implemented here for brevity)
+    }
+
+    function closeVideoModal() {
+      videoPlayerIframe.src = '';
+      videoModal.style.display = 'none';
+    }
+
+    closeModalBtn.onclick = closeVideoModal;
+
+    videoModal.onclick = (e) => {
+      if (e.target === videoModal) {
+        closeVideoModal();
+      }
+    };
+
+    // Sorting handlers
+    document.getElementById('sortAlpha').onclick = async () => {
+      const { data, error } = await supabase.from('user_videos').select('*');
+      if (error) return;
+      data.sort((a, b) => (a.github_username || '').localeCompare(b.github_username || ''));
+      displayUsers(data);
+      currentSort = 'alphabetical';
+    };
+
+    document.getElementById('sortNewest').onclick = async () => {
+      const { data, error } = await supabase.from('user_videos').select('*');
+      if (error) return;
+      // Assuming you have a timestamp column like 'created_at' for sorting by newest
+      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      displayUsers(data);
+      currentSort = 'newest';
+    };
+
+    loadUsers();
   </script>
+
 </body>
 </html>
