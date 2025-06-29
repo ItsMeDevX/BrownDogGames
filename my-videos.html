@@ -499,13 +499,56 @@
       text-shadow: 2px 2px 0 #000;
     }
 
-    .no-videos {
+    .video-entry {
+      text-align: left;
       background: #2f1a39;
       border: 3px solid #ff4f9f;
       border-radius: 12px;
-      padding: 30px 20px;
-      font-size: 1.2em;
+      padding: 20px 25px;
+      margin-bottom: 40px;
       box-shadow: 0 0 10px #ff4f9faa;
+    }
+
+    .video-entry h2 {
+      color: #ff4f9f;
+      margin-top: 0;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .video-entry p {
+      font-size: 1.1em;
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 340px;
+      border-radius: 12px;
+      border: none;
+      margin-bottom: 20px;
+      box-shadow: 0 0 15px #ff4f9faa;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-right: 10px;
+      padding: 12px 30px;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1em;
+      border-radius: 10px;
+      box-shadow: 0 0 8px #ff4f9faa;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+      border: none;
+    }
+
+    .btn:hover {
+      background-color: #e03e8f;
     }
 
     a.btn-home {
@@ -527,14 +570,15 @@
     }
 
     @media (max-width: 480px) {
-      .no-videos {
+      .video-entry p {
         font-size: 1em;
-        padding: 20px 15px;
       }
-
-      a.btn-home {
+      .btn, a.btn-home {
         font-size: 1em;
         padding: 10px 20px;
+      }
+      iframe {
+        height: 220px;
       }
     }
   </style>
@@ -544,14 +588,36 @@
   <div class="container">
     <h1>📺 Videos</h1>
 
-    <div class="no-videos">
-      Oops! We don’t have any videos uploaded yet.
-      <br /><br />
-      Check back soon for trailers, gameplay, and more wild content!
+    <div class="video-entry">
+      <h2>Andrew Tate’s Alpha F*ckfest</h2>
+      <p>Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.</p>
+      
+      <!-- Embedded Google Drive Video -->
+      <iframe src="https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      
+      <button class="btn" id="shareBtn">Share</button>
     </div>
 
     <a href="index.html" class="btn-home">🏠 Back to Home</a>
   </div>
+
+  <script>
+    const shareBtn = document.getElementById('shareBtn');
+    const videoURL = 'https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/view?usp=sharing';
+
+    shareBtn.addEventListener('click', () => {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(videoURL).then(() => {
+          alert('Video link copied to clipboard!');
+        }, () => {
+          alert('Failed to copy the link. Please copy manually:\n' + videoURL);
+        });
+      } else {
+        // Fallback for older browsers
+        prompt('Copy the video link:', videoURL);
+      }
+    });
+  </script>
 
 </body>
 </html>
