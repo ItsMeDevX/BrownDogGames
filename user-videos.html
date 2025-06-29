@@ -430,6 +430,7 @@
       box-shadow: 0 0 12px #ff69b4aa;
       transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       user-select: none;
+      cursor: pointer;
     }
 
     .back-link:hover {
@@ -437,6 +438,14 @@
       color: #1e1b2e;
       box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
       text-decoration: none;
+    }
+
+    #sortButtons {
+      margin-bottom: 2rem;
+    }
+
+    #sortButtons .back-link {
+      margin-right: 1rem;
     }
 
     #userList {
@@ -466,7 +475,6 @@
     .avatar-img {
       width: 48px;
       height: 48px;
-      border-radius: 50%;
       overflow: hidden;
       background: #1e1b2e;
       display: flex;
@@ -476,6 +484,7 @@
       font-weight: bold;
       border: 2px solid #ff69b4;
       margin-bottom: 0.5rem;
+      border-radius: 50%;
     }
 
     .avatar-img img {
@@ -517,6 +526,11 @@
 
   <h1>All User Video Submissions</h1>
 
+  <div id="sortButtons">
+    <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
+    <button class="back-link" id="sortNewest">🆕 Newest</button>
+  </div>
+
   <div id="userList">Loading videos...</div>
 
   <script type="module">
@@ -528,6 +542,7 @@
     );
 
     const userListEl = document.getElementById('userList');
+    let currentSort = 'alphabetical';
 
     function getThumbnailFromUrl(url) {
       if (!url) return null;
@@ -545,11 +560,15 @@
       return null;
     }
 
-    async function loadUsers() {
+    async function loadUsers(sortMode = 'alphabetical') {
+      const orderBy = sortMode === 'newest'
+        ? { column: 'created_at', ascending: false }
+        : { column: 'github_username', ascending: true };
+
       const { data, error } = await supabase
         .from('game_videos')
-        .select('github_username, video_url, title, avatar_url')
-        .order('github_username', { ascending: true });
+        .select('github_username, video_url, title, avatar_url, created_at')
+        .order(orderBy.column, { ascending: orderBy.ascending });
 
       if (error) {
         userListEl.textContent = `Error loading videos: ${error.message}`;
@@ -618,7 +637,19 @@
       userListEl.appendChild(fragment);
     }
 
-    loadUsers();
+    // Initial load
+    loadUsers(currentSort);
+
+    // Sort buttons event listeners
+    document.getElementById('sortAlpha').addEventListener('click', () => {
+      currentSort = 'alphabetical';
+      loadUsers(currentSort);
+    });
+
+    document.getElementById('sortNewest').addEventListener('click', () => {
+      currentSort = 'newest';
+      loadUsers(currentSort);
+    });
   </script>
 
 </body>
