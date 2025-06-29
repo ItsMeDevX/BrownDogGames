@@ -1006,69 +1006,76 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Show Love to VIP Member</title>
- <style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-  body {
-    font-family: 'Rubik Mono One', sans-serif;
-    background-color: #1b1b2e;
-    color: #fefefe;
-    margin: 0;
-    padding: 0 20px 40px;
-    background-image: linear-gradient(135deg, #361c3e, #1a1328);
-  }
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      color: #fefefe;
+      margin: 0;
+      padding: 0 20px 40px;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
 
-  header {
-    text-align: center;
-    padding: 2rem 1rem;
-  }
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
 
-  header h1 {
-    font-size: 2.5rem;
-    color: #ff4f9f;
-    text-shadow: 2px 2px 0 #000;
-  }
+    header h1 {
+      font-size: 2.5rem;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+    }
 
-  #status {
-    margin-top: 10px;
-    font-size: 18px;
-    color: #fefefe;
-  }
+    #status {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #fefefe;
+      text-align: center;
+      max-width: 600px;
+    }
 
-  #like-btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: #ff4f9f; /* Pink background */
-    color: #fff; /* White text */
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 25px; /* Round button edges */
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: 2px solid #ff4f9f;
-    cursor: pointer;
-    transition: all 0.3s ease; /* Smooth transitions */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Soft shadow */
-  }
+    #like-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #ff4f9f;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 25px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 2px solid #ff4f9f;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
 
-  #like-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    border-color: #ccc;
-  }
+    #like-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      border-color: #ccc;
+    }
 
-  #like-btn:hover {
-    background-color: #ff82ba; /* Lighter pink */
-    transform: scale(1.1); /* Slight zoom effect */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* More prominent shadow */
-    border-color: #ff82ba; /* Light border on hover */
-  }
+    #like-btn:hover {
+      background-color: #ff82ba;
+      transform: scale(1.1);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      border-color: #ff82ba;
+    }
 
-  #like-btn:active {
-    transform: scale(1); /* Snap back when clicked */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow when active */
-  }
-</style>
+    #like-btn:active {
+      transform: scale(1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -1113,7 +1120,7 @@
       const { data, error } = await supabase
         .from('users')
         .select('is_vip')
-        .eq('id', userId)  // Query by user ID, not username
+        .eq('id', userId)
         .single();
 
       if (error) {
@@ -1147,35 +1154,35 @@
     }
 
     // Update the status and like button based on the user's status
-   async function updateStatus() {
-  const user = await getUser();
-  if (!user) {
-    status.textContent = '❌ Please log in to like this page.';
-    likeBtn.style.display = 'none';  // Hide like button if not logged in
-    return;
-  }
+    async function updateStatus() {
+      const user = await getUser();
+      if (!user) {
+        status.textContent = '❌ Please log in to like this page.';
+        likeBtn.style.display = 'none';
+        return;
+      }
 
-  const isPageOwnerVip = await isVip(user.id);  // Pass logged-in user's ID
+      const isPageOwnerVip = await isVip(user.id);
 
-  if (!isPageOwnerVip) {
-    status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
-    likeBtn.style.display = 'none';  // Hide like button if not VIP
-    return;
-  }
+      if (!isPageOwnerVip) {
+        status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
+        likeBtn.style.display = 'none';
+        return;
+      }
 
-  const liked = await hasLiked(user.id);
-  const count = await getLikeCount();
+      const liked = await hasLiked(user.id);
+      const count = await getLikeCount();
 
-  if (liked) {
-    status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
-    likeBtn.disabled = true;  // Disable the button if already liked
-  } else {
-    status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
-    likeBtn.disabled = false;  // Enable button if not liked
-  }
+      if (liked) {
+        status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
+        likeBtn.disabled = true;
+      } else {
+        status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
+        likeBtn.disabled = false;
+      }
 
-  likeBtn.style.display = 'inline-block';  // Show the like button if VIP
-}
+      likeBtn.style.display = 'inline-block';
+    }
 
     // Like the page when the button is clicked
     likeBtn.addEventListener('click', async () => {
@@ -1203,7 +1210,6 @@
         .single();
 
       if (existingLike) {
-        // If the user already liked, update the view count and last viewed timestamp
         const { error: updateError } = await supabase
           .from('vip_page_views')
           .update({
@@ -1230,10 +1236,9 @@
           user_id: user.id,
           username: pageOwner,
           view_count: 1,
-          first_viewed_at: now,  // Set the first view time only when they like the page for the first time
+          first_viewed_at: now,
           last_viewed_at: now,
         }]);
-
 
       if (insertError) {
         console.error('Insert error:', insertError);
