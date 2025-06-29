@@ -1003,17 +1003,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Show Some Love ❤️</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Show Love to VIP Member</title>
+  <style>
+    /* Add some basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
+    }
+    #like-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #like-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
   <h1 id="heading">Show Some Love ❤️</h1>
-  <button id="like-btn">👍 Like this Page</button>
   <p id="status"></p>
+  <button id="like-btn">Like</button>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // Initialize Supabase
     const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -1021,10 +1053,11 @@
     const likeBtn = document.getElementById('like-btn');
     const status = document.getElementById('status');
 
-    // Get pageOwner from URL ?user=xxx
+    // Get the username from URL params
     const urlParams = new URLSearchParams(window.location.search);
     const pageOwner = urlParams.get('user');
 
+    // If no user in the URL, show an error
     if (!pageOwner) {
       document.title = 'Error';
       document.getElementById('heading').textContent = '❌ No username in URL.';
@@ -1035,12 +1068,30 @@
       document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
     }
 
+    // Get the logged-in user
     async function getUser() {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) return null;
       return user;
     }
 
+    // Check if the page owner is a VIP
+    async function isVip(username) {
+      const { data, error } = await supabase
+        .from('vip_memberships')
+        .select('is_vip')
+        .eq('username', username)
+        .single();
+
+      if (error) {
+        console.error('Error fetching VIP status:', error);
+        return false;
+      }
+
+      return data ? data.is_vip : false;
+    }
+
+    // Check if the user has already liked the page
     async function hasLiked(userId) {
       if (!userId || !pageOwner) return false;
       const { data, error } = await supabase
@@ -1052,6 +1103,7 @@
       return !!data;
     }
 
+    // Get the total like count for the page
     async function getLikeCount() {
       if (!pageOwner) return 0;
       const { count, error } = await supabase
@@ -1061,11 +1113,21 @@
       return count || 0;
     }
 
+    // Update the status and like button based on the user's status
     async function updateStatus() {
       const user = await getUser();
       if (!user) {
         status.textContent = '❌ Please log in to like this page.';
-        likeBtn.disabled = true;
+        likeBtn.style.display = 'none';  // Hide like button if not logged in
+        return;
+      }
+
+      // Check if the page owner is a VIP
+      const isPageOwnerVip = await isVip(pageOwner);
+
+      if (!isPageOwnerVip) {
+        status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
+        likeBtn.style.display = 'none';  // Hide like button if not VIP
         return;
       }
 
@@ -1074,13 +1136,16 @@
 
       if (liked) {
         status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
-        likeBtn.disabled = true;
+        likeBtn.disabled = true;  // Disable the button if already liked
       } else {
         status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
-        likeBtn.disabled = false;
+        likeBtn.disabled = false;  // Enable button if not liked
       }
+
+      likeBtn.style.display = 'inline-block';  // Show the like button if VIP
     }
 
+    // Like the page when the button is clicked
     likeBtn.addEventListener('click', async () => {
       const user = await getUser();
       if (!user) {
@@ -1116,9 +1181,8 @@
       status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
     });
 
-    // Initialize
+    // Initialize the page status and like button
     updateStatus();
-
   </script>
 </body>
 </html>
