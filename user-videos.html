@@ -454,6 +454,7 @@
       gap: 1.5rem;
     }
 
+    /* Changed .user-btn from button to anchor styling */
     .user-btn {
       display: flex;
       flex-direction: column;
@@ -466,6 +467,7 @@
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
       cursor: pointer;
+      user-select: none;
     }
 
     .user-btn:hover {
@@ -690,57 +692,71 @@
     function getThumbnailFromUrl(url) {
       if (!url) return null;
 
-      // YouTube thumbnail
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
-      if (ytMatch) {
-        return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
+      // Youtube video thumbnail extraction
+      const youtubeMatch = url.match(
+        /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+      );
+      if (youtubeMatch) {
+        return `https://img.youtube.com/vi/${youtubeMatch[1]}/hqdefault.jpg`;
       }
 
-      // Google Drive thumbnail (uses Drive API thumbnail endpoint, may not always work)
-      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-      if (gdMatch) {
-        return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
-      }
-
-      // Fallback
+      // Vimeo thumbnail extraction (requires API call, skipped here)
+      // Fallback: no thumbnail for other services
       return null;
     }
 
-    // Convert video URL to embeddable URL (YouTube or Google Drive)
-    function getEmbedUrl(url) {
-      if (!url) return '';
+    function createAvatar(username) {
+      const div = document.createElement('div');
+      div.classList.add('avatar-img');
 
-      // YouTube embed
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
-      if (ytMatch) {
-        return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
-      }
+      // If you want, you can add user avatar URL handling here.
+      // For now, just show first letter of username uppercase
+      const firstLetter = username.charAt(0).toUpperCase();
+      div.textContent = firstLetter;
 
-      // Google Drive embed
-      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-      if (gdMatch) {
-        return `https://drive.google.com/file/d/${gdMatch[1]}/preview`;
-      }
-
-      // Unknown - just return empty string
-      return '';
+      return div;
     }
 
-    // Load users and videos from Supabase
-    async function loadUsers(sortMode = 'alphabetical') {
-      const orderBy = sortMode === 'newest'
-        ? { column: 'id', order: 'desc' }
-        : { column: 'github_username', order: 'asc' };
+    function renderUserCard(user) {
+      // Create <a> instead of <button> for user card
+      const a = document.createElement('a');
+      a.classList.add('user-btn');
+      a.href = `user.html?user=${encodeURIComponent(user.username)}`;
+      a.setAttribute('aria-label', `View submissions for ${user.username}`);
 
+      const avatarDiv = createAvatar(user.username);
+
+      const usernameDiv = document.createElement('div');
+      usernameDiv.classList.add('username-text');
+      usernameDiv.textContent = user.username;
+
+      const coverImg = document.createElement('img');
+      coverImg.classList.add('cover-img');
+      coverImg.alt = `Video cover for ${user.username}`;
+      coverImg.src = user.cover || getThumbnailFromUrl(user.video_url) || '';
+
+      const videoTitleDiv = document.createElement('div');
+      videoTitleDiv.classList.add('video-title');
+      videoTitleDiv.textContent = user.title || 'Untitled Video';
+
+      a.appendChild(avatarDiv);
+      a.appendChild(usernameDiv);
+      a.appendChild(coverImg);
+      a.appendChild(videoTitleDiv);
+
+      return a;
+    }
+
+    async function loadUsers() {
       userListEl.textContent = 'Loading videos...';
 
       const { data, error } = await supabase
-        .from('video_submissions')
-        .select('*')
-        .order(orderBy.column, { ascending: orderBy.order === 'asc' });
+        .from('user_videos')
+        .select('*');
 
       if (error) {
-        userListEl.textContent = `Error loading users: ${error.message}`;
+        userListEl.textContent = 'Failed to load videos.';
+        console.error(error);
         return;
       }
 
@@ -749,113 +765,78 @@
         return;
       }
 
-      // Show featured video (the first video sorted by newest)
-      const featuredVideo = data.find((d) => d.video_url);
-      if (featuredVideo) {
-        featuredSection.style.display = 'block';
+      // Sort alphabetically by username as default
+      data.sort((a, b) => a.username.localeCompare(b.username));
 
-        // Avatar
-        if (featuredVideo.avatar_url) {
-          featuredAvatar.innerHTML = `<img src="${featuredVideo.avatar_url}" alt="${featuredVideo.github_username} avatar" />`;
-        } else {
-          featuredAvatar.textContent = featuredVideo.github_username.charAt(0).toUpperCase();
-        }
+      renderFeaturedVideo(data);
 
-        featuredUsername.textContent = featuredVideo.github_username;
-        featuredThumbnail.src = getThumbnailFromUrl(featuredVideo.video_url) || '';
-        featuredThumbnail.alt = `Thumbnail for featured video titled ${featuredVideo.title || 'Untitled'}`;
-        featuredTitle.textContent = featuredVideo.title || 'Untitled Video';
+      renderUserList(data);
+    }
 
-        // Clicking featured thumbnail plays video modal
-        featuredThumbnail.style.cursor = 'pointer';
-        featuredThumbnail.onclick = () => {
-          openVideoModal(featuredVideo.video_url);
-        };
-      } else {
+    function renderFeaturedVideo(users) {
+      if (users.length === 0) {
         featuredSection.style.display = 'none';
+        return;
+      }
+      featuredSection.style.display = 'block';
+
+      // Pick user with most recent video (by created_at)
+      users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const featuredUser = users[0];
+
+      featuredAvatar.innerHTML = '';
+      if (featuredUser.avatar) {
+        const img = document.createElement('img');
+        img.src = featuredUser.avatar;
+        img.alt = `Avatar of ${featuredUser.username}`;
+        featuredAvatar.appendChild(img);
+      } else {
+        featuredAvatar.textContent = featuredUser.username.charAt(0).toUpperCase();
       }
 
-      // Clear existing
+      featuredUsername.textContent = featuredUser.username;
+      featuredThumbnail.src = featuredUser.cover || getThumbnailFromUrl(featuredUser.video_url) || '';
+      featuredThumbnail.alt = `Featured video thumbnail for ${featuredUser.username}`;
+      featuredTitle.textContent = featuredUser.title || 'Untitled Video';
+    }
+
+    function renderUserList(users) {
       userListEl.innerHTML = '';
 
-      // Add user cards
-      data.forEach((item) => {
-        const link = document.createElement('a');
-        link.className = 'user-btn';
-        link.href = `user.html?username=${encodeURIComponent(item.github_username)}`;
-        link.setAttribute('aria-label', `Go to page for user ${item.github_username}`);
+      if (users.length === 0) {
+        userListEl.textContent = 'No videos found.';
+        return;
+      }
 
-        let avatarHTML = '';
-        if (item.avatar_url) {
-          avatarHTML = `<img src="${item.avatar_url}" alt="${item.github_username} avatar" />`;
-        } else {
-          avatarHTML = item.github_username.charAt(0).toUpperCase();
-        }
-
-        const thumbnailSrc = getThumbnailFromUrl(item.video_url) || '';
-
-        link.innerHTML = `
-          <div class="avatar-img">${avatarHTML}</div>
-          <div class="username-text">${item.github_username}</div>
-          <img class="cover-img" src="${thumbnailSrc}" alt="Video thumbnail for ${item.title || 'Untitled video'}" />
-          <div class="video-title">${item.title || 'Untitled video'}</div>
-        `;
-
-        const img = link.querySelector('.cover-img');
-
-        // Clicking the image plays video modal, and prevents link navigation
-        img.addEventListener('click', (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          openVideoModal(item.video_url);
-        });
-
-        userListEl.appendChild(link);
+      users.forEach(user => {
+        const userCard = renderUserCard(user);
+        userListEl.appendChild(userCard);
       });
     }
 
-    function openVideoModal(videoUrl) {
-      const embedUrl = getEmbedUrl(videoUrl);
-      if (!embedUrl) {
-        alert('Sorry, unsupported video URL.');
-        return;
-      }
-      videoPlayerIframe.src = embedUrl;
-      videoModal.style.display = 'flex';
-    }
+    // Sorting buttons event listeners
+    document.getElementById('sortAlpha').addEventListener('click', async () => {
+      currentSort = 'alphabetical';
+      const { data } = await supabase.from('user_videos').select('*');
+      data.sort((a, b) => a.username.localeCompare(b.username));
+      renderUserList(data);
+    });
 
-    function closeVideoModal() {
-      videoPlayerIframe.src = '';
+    document.getElementById('sortNewest').addEventListener('click', async () => {
+      currentSort = 'newest';
+      const { data } = await supabase.from('user_videos').select('*');
+      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      renderUserList(data);
+    });
+
+    // Modal close button (not used currently, but left for future modal support)
+    closeModalBtn.addEventListener('click', () => {
       videoModal.style.display = 'none';
-    }
-
-    closeModalBtn.addEventListener('click', closeVideoModal);
-
-    // Close modal if clicking outside iframe content
-    videoModal.addEventListener('click', (e) => {
-      if (e.target === videoModal) {
-        closeVideoModal();
-      }
+      videoPlayerIframe.src = '';
     });
 
-    // Sorting buttons
-    document.getElementById('sortAlpha').addEventListener('click', () => {
-      if (currentSort !== 'alphabetical') {
-        currentSort = 'alphabetical';
-        loadUsers(currentSort);
-      }
-    });
-
-    document.getElementById('sortNewest').addEventListener('click', () => {
-      if (currentSort !== 'newest') {
-        currentSort = 'newest';
-        loadUsers(currentSort);
-      }
-    });
-
-    // Initial load
-    loadUsers(currentSort);
-
+    // Load users on page load
+    loadUsers();
   </script>
 </body>
 </html>
