@@ -416,15 +416,6 @@
       letter-spacing: 0.1em;
     }
 
-    h2 {
-      font-size: 2rem;
-      color: #ff85c1;
-      margin-bottom: 1rem;
-      letter-spacing: 0.1em;
-      user-select: text;
-      text-shadow: 1px 1px 0 #000;
-    }
-
     .back-link {
       display: inline-block;
       margin-bottom: 2rem;
@@ -457,11 +448,10 @@
       margin-right: 1rem;
     }
 
-    #userList, #featuredList {
+    #userList {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
-      margin-bottom: 3rem;
     }
 
     .user-btn {
@@ -480,20 +470,6 @@
     .user-btn:hover {
       transform: translateY(-4px);
       box-shadow: 0 0 25px #ff8bd8ff, inset 0 0 20px #ff8bd8ee;
-    }
-
-    /* Featured specific styling */
-    #featuredList .user-btn {
-      background-color: #4a255d;
-      box-shadow: 0 0 20px #ff85c1cc, inset 0 0 15px #ff85c1bb;
-      padding: 1.5rem;
-    }
-
-    #featuredList .cover-img {
-      max-width: 220px;
-      height: 120px;
-      border: 2px solid #ff85c1;
-      box-shadow: 0 0 15px #ff85c1aa;
     }
 
     .avatar-img {
@@ -542,6 +518,71 @@
       color: #ffb6d1;
       text-align: center;
     }
+
+    /* Featured video section styling */
+    #featuredVideo {
+      max-width: 600px;
+      margin: 2rem auto 3rem;
+      background: #3d2460;
+      border: 3px solid #ff69b4;
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 0 30px #ff69b4cc;
+      user-select: none;
+      display: none;
+    }
+
+    #featuredVideo h2 {
+      color: #ff8bd8;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    #featuredAvatar {
+      margin: 0 auto 1rem auto;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #ff8bd8;
+      overflow: hidden;
+      background: #2d1a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #ff69b4;
+    }
+
+    #featuredAvatar img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    #featuredUsername {
+      color: #ffc0cb;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      word-break: break-word;
+    }
+
+    #featuredThumbnail {
+      width: 100%;
+      max-width: 300px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 16px;
+      border: 3px solid #ff8bd8;
+      box-shadow: 0 0 15px #ff8bd8cc;
+      margin-bottom: 1rem;
+    }
+
+    #featuredTitle {
+      color: #ffb6d1;
+      font-size: 1.1rem;
+    }
   </style>
 </head>
 <body>
@@ -550,10 +591,13 @@
 
   <h1>All User Video Submissions</h1>
 
-  <!-- Featured Section -->
-  <section>
-    <h2>🌟 Featured Videos</h2>
-    <div id="featuredList">Loading featured videos...</div>
+  <!-- Featured Video Submission Section -->
+  <section id="featuredVideo" aria-label="Featured Video Submission">
+    <h2>🌟 Featured Video Submission</h2>
+    <div id="featuredAvatar"></div>
+    <div id="featuredUsername"></div>
+    <img id="featuredThumbnail" alt="Featured video thumbnail" />
+    <div id="featuredTitle"></div>
   </section>
 
   <div id="sortButtons">
@@ -572,7 +616,12 @@
     );
 
     const userListEl = document.getElementById('userList');
-    const featuredListEl = document.getElementById('featuredList');
+    const featuredSection = document.getElementById('featuredVideo');
+    const featuredAvatar = document.getElementById('featuredAvatar');
+    const featuredUsername = document.getElementById('featuredUsername');
+    const featuredThumbnail = document.getElementById('featuredThumbnail');
+    const featuredTitle = document.getElementById('featuredTitle');
+
     let currentSort = 'alphabetical';
 
     function getThumbnailFromUrl(url) {
@@ -591,74 +640,6 @@
       return null;
     }
 
-    async function loadFeatured() {
-      // Assuming you have a column called 'is_featured' in your 'game_videos' table
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('github_username, video_url, title, avatar_url')
-        .eq('is_featured', true)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        featuredListEl.textContent = `Error loading featured videos: ${error.message}`;
-        return;
-      }
-
-      if (!data.length) {
-        featuredListEl.textContent = 'No featured videos found.';
-        return;
-      }
-
-      featuredListEl.textContent = '';
-      const fragment = document.createDocumentFragment();
-
-      data.forEach(({ github_username, video_url, title, avatar_url }) => {
-        const a = document.createElement('a');
-        a.className = 'user-btn';
-        a.href = `user.html?user=${encodeURIComponent(github_username)}`;
-
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar-img';
-
-        if (avatar_url) {
-          const img = document.createElement('img');
-          img.src = avatar_url;
-          img.alt = `${github_username}'s avatar`;
-          avatar.appendChild(img);
-        } else {
-          const img = document.createElement('img');
-          img.src = `https://github.com/${github_username}.png`;
-          img.alt = `${github_username}'s avatar`;
-          avatar.appendChild(img);
-        }
-
-        a.appendChild(avatar);
-
-        const usernameSpan = document.createElement('span');
-        usernameSpan.className = 'username-text';
-        usernameSpan.textContent = github_username;
-        a.appendChild(usernameSpan);
-
-        const thumb = getThumbnailFromUrl(video_url) || 'https://via.placeholder.com/220x120.png?text=Video';
-        const thumbnail = document.createElement('img');
-        thumbnail.src = thumb;
-        thumbnail.alt = `${github_username}'s video thumbnail`;
-        thumbnail.className = 'cover-img';
-        a.appendChild(thumbnail);
-
-        if (title) {
-          const videoTitle = document.createElement('div');
-          videoTitle.className = 'video-title';
-          videoTitle.textContent = title;
-          a.appendChild(videoTitle);
-        }
-
-        fragment.appendChild(a);
-      });
-
-      featuredListEl.appendChild(fragment);
-    }
-
     async function loadUsers(sortMode = 'alphabetical') {
       const orderBy = sortMode === 'newest'
         ? { column: 'created_at', ascending: false }
@@ -671,14 +652,44 @@
 
       if (error) {
         userListEl.textContent = `Error loading videos: ${error.message}`;
+        featuredSection.style.display = 'none';
         return;
       }
 
       if (!data.length) {
         userListEl.textContent = 'No video submissions found.';
+        featuredSection.style.display = 'none';
         return;
       }
 
+      // Show featured video - choose newest submission if sorting by newest, else last alphabetically
+      const featuredUser = sortMode === 'newest' ? data[0] : data[data.length - 1];
+
+      featuredSection.style.display = 'block';
+
+      // Avatar for featured
+      featuredAvatar.innerHTML = '';
+      if (featuredUser.avatar_url) {
+        const img = document.createElement('img');
+        img.src = featuredUser.avatar_url;
+        img.alt = `${featuredUser.github_username}'s avatar`;
+        featuredAvatar.appendChild(img);
+      } else {
+        featuredAvatar.textContent = featuredUser.github_username.charAt(0).toUpperCase();
+      }
+
+      // Username
+      featuredUsername.textContent = featuredUser.github_username;
+
+      // Video thumbnail
+      const thumb = getThumbnailFromUrl(featuredUser.video_url) || 'https://via.placeholder.com/300x160.png?text=Video';
+      featuredThumbnail.src = thumb;
+      featuredThumbnail.alt = `${featuredUser.github_username}'s video thumbnail`;
+
+      // Video title
+      featuredTitle.textContent = featuredUser.title || '';
+
+      // Build unique users map (first submission per user)
       const usersMap = new Map();
       data.forEach(({ github_username, video_url, title, avatar_url }) => {
         if (github_username && !usersMap.has(github_username)) {
@@ -716,9 +727,9 @@
         usernameSpan.textContent = user;
         a.appendChild(usernameSpan);
 
-        const thumb = getThumbnailFromUrl(info.video_url) || 'https://via.placeholder.com/180x100.png?text=Video';
+        const thumbUrl = getThumbnailFromUrl(info.video_url) || 'https://via.placeholder.com/180x100.png?text=Video';
         const thumbnail = document.createElement('img');
-        thumbnail.src = thumb;
+        thumbnail.src = thumbUrl;
         thumbnail.alt = `${user}'s video thumbnail`;
         thumbnail.className = 'cover-img';
         a.appendChild(thumbnail);
@@ -736,10 +747,7 @@
       userListEl.appendChild(fragment);
     }
 
-    // Load featured videos first
-    loadFeatured();
-
-    // Then load all users
+    // Initial load
     loadUsers(currentSort);
 
     // Sort buttons event listeners
