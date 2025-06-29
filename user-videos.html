@@ -465,6 +465,7 @@
       color: #ffc0cb;
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
+      cursor: pointer;
     }
 
     .user-btn:hover {
@@ -510,6 +511,7 @@
       border: 2px solid #ff69b4;
       background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
+      user-select: none;
     }
 
     .video-title {
@@ -583,6 +585,55 @@
       color: #ffb6d1;
       font-size: 1.1rem;
     }
+
+    /* Modal styles */
+    #videoModal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #modalContent {
+      position: relative;
+      background: #2d1a3a;
+      padding: 1rem;
+      border-radius: 16px;
+      max-width: 90vw;
+      max-height: 80vh;
+      box-shadow: 0 0 25px #ff69b4;
+    }
+
+    #videoPlayerIframe {
+      width: 100%;
+      height: 450px;
+      border: none;
+      border-radius: 12px;
+      background: black;
+    }
+
+    #closeModalBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      font-weight: 700;
+      font-size: 1.3rem;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    #closeModalBtn:hover {
+      background: #ff8bd8;
+    }
   </style>
 </head>
 <body>
@@ -607,31 +658,11 @@
 
   <div id="userList">Loading videos...</div>
 
-  <!-- Video Player Modal -->
-  <div id="videoModal" style="
-    display:none; 
-    position:fixed; 
-    top:0; left:0; right:0; bottom:0; 
-    background:rgba(0,0,0,0.85);
-    z-index:9999; 
-    justify-content:center; 
-    align-items:center;
-  ">
-    <div style="position:relative; width:90%; max-width:800px; aspect-ratio:16/9; background:#000; border-radius:12px;">
-      <button id="closeModalBtn" style="
-        position:absolute; 
-        top:10px; right:10px; 
-        background:#ff69b4; 
-        border:none; 
-        padding:8px 12px; 
-        border-radius:8px; 
-        cursor:pointer;
-        font-weight:bold;
-        color:#1e1b2e;
-        z-index:10;
-      ">✖ Close</button>
-      <iframe id="videoPlayerIframe" src="" frameborder="0" allowfullscreen
-        style="width:100%; height:100%; border-radius:12px;"></iframe>
+  <!-- Video Modal -->
+  <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div id="modalContent">
+      <button id="closeModalBtn" aria-label="Close video player">×</button>
+      <iframe id="videoPlayerIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -650,24 +681,52 @@
     const featuredThumbnail = document.getElementById('featuredThumbnail');
     const featuredTitle = document.getElementById('featuredTitle');
 
+    const videoModal = document.getElementById('videoModal');
+    const videoPlayerIframe = document.getElementById('videoPlayerIframe');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
     let currentSort = 'alphabetical';
 
     function getThumbnailFromUrl(url) {
       if (!url) return null;
 
+      // YouTube thumbnail
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
       if (ytMatch) {
         return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
       }
 
+      // Google Drive thumbnail (uses Drive API thumbnail endpoint, may not always work)
       const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
       if (gdMatch) {
         return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
       }
 
+      // Fallback
       return null;
     }
 
+    // Convert video URL to embeddable URL (YouTube or Google Drive)
+    function getEmbedUrl(url) {
+      if (!url) return '';
+
+      // YouTube embed
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+      }
+
+      // Google Drive embed
+      const gdMatch = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      if (gdMatch) {
+        return `https://drive.google.com/file/d/${gdMatch[1]}/preview`;
+      }
+
+      // Unknown - just return empty string
+      return '';
+    }
+
+    // Load users and videos from Supabase
     async function loadUsers(sortMode = 'alphabetical') {
       const orderBy = sortMode === 'newest'
         ? { column: 'created_at', ascending: false }
@@ -684,139 +743,108 @@
         return;
       }
 
-      if (!data.length) {
+      if (!data || data.length === 0) {
         userListEl.textContent = 'No video submissions found.';
         featuredSection.style.display = 'none';
         return;
       }
 
-      // Show featured video - choose newest submission if sorting by newest, else last alphabetically
-      const featuredUser = sortMode === 'newest' ? data[0] : data[data.length - 1];
-
+      // Show featured video - newest submission
+      const newest = data[0];
       featuredSection.style.display = 'block';
 
-      // Avatar for featured
-      featuredAvatar.innerHTML = '';
-      if (featuredUser.avatar_url) {
-        const img = document.createElement('img');
-        img.src = featuredUser.avatar_url;
-        img.alt = `${featuredUser.github_username}'s avatar`;
-        featuredAvatar.appendChild(img);
+      // Featured avatar: if avatar_url exists, use it, else show first letter of username
+      if (newest.avatar_url) {
+        featuredAvatar.innerHTML = `<img src="${newest.avatar_url}" alt="${newest.github_username} avatar" />`;
       } else {
-        featuredAvatar.textContent = featuredUser.github_username.charAt(0).toUpperCase();
+        featuredAvatar.textContent = newest.github_username.charAt(0).toUpperCase();
       }
 
-      // Username
-      featuredUsername.textContent = featuredUser.github_username;
+      featuredUsername.textContent = newest.github_username;
+      featuredTitle.textContent = newest.title || 'Untitled video';
 
-      // Video thumbnail
-      const thumb = getThumbnailFromUrl(featuredUser.video_url) || 'https://via.placeholder.com/300x160.png?text=Video';
-      featuredThumbnail.src = thumb;
-      featuredThumbnail.alt = `${featuredUser.github_username}'s video thumbnail`;
+      // Featured thumbnail
+      const thumb = getThumbnailFromUrl(newest.video_url);
+      if (thumb) {
+        featuredThumbnail.src = thumb;
+        featuredThumbnail.alt = `Thumbnail for ${newest.title}`;
+      } else {
+        featuredThumbnail.src = '';
+        featuredThumbnail.alt = 'No thumbnail available';
+      }
 
-      // Video title
-      featuredTitle.textContent = featuredUser.title || '';
+      // Clicking featured thumbnail or section opens video modal
+      featuredThumbnail.style.cursor = 'pointer';
+      featuredThumbnail.onclick = () => openVideoModal(newest.video_url);
 
-      // Build unique users map (first submission per user)
-      const usersMap = new Map();
-      data.forEach(({ github_username, video_url, title, avatar_url }) => {
-        if (github_username && !usersMap.has(github_username)) {
-          usersMap.set(github_username, { video_url, title, avatar_url });
-        }
-      });
+      // Build user list cards
+      userListEl.innerHTML = '';
+      data.forEach((item) => {
+        const btn = document.createElement('button');
+        btn.className = 'user-btn';
+        btn.type = 'button';
 
-      userListEl.textContent = '';
-      const fragment = document.createDocumentFragment();
-
-      for (const [user, info] of usersMap.entries()) {
-        const a = document.createElement('a');
-        // Changed here: disable default link and add click handler
-        a.className = 'user-btn';
-        a.href = 'javascript:void(0)';
-
-        a.addEventListener('click', (e) => {
-          e.preventDefault();
-          // Check if the video_url is a Google Drive video
-          const gdMatch = info.video_url.match(/\/file\/d\/([^\/]+)\//) || info.video_url.match(/open\?id=([^&]+)/);
-          if (gdMatch) {
-            const fileId = gdMatch[1];
-            const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-            openVideoModal(embedUrl);
-          } else {
-            // fallback: go to user page
-            window.location.href = `user.html?user=${encodeURIComponent(user)}`;
-          }
-        });
-
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar-img';
-
-        if (info.avatar_url) {
-          const img = document.createElement('img');
-          img.src = info.avatar_url;
-          img.alt = `${user}'s avatar`;
-          avatar.appendChild(img);
+        // Avatar
+        let avatarHTML = '';
+        if (item.avatar_url) {
+          avatarHTML = `<img src="${item.avatar_url}" alt="${item.github_username} avatar" />`;
         } else {
-          const img = document.createElement('img');
-          img.src = `https://github.com/${user}.png?size=128`;
-          img.alt = `${user}'s GitHub avatar`;
-          avatar.appendChild(img);
+          avatarHTML = item.github_username.charAt(0).toUpperCase();
         }
+        btn.innerHTML = `
+          <div class="avatar-img">${avatarHTML}</div>
+          <div class="username-text">${item.github_username}</div>
+          <img class="cover-img" src="${getThumbnailFromUrl(item.video_url) || ''}" alt="Video thumbnail for ${item.title || 'Untitled video'}" />
+          <div class="video-title">${item.title || 'Untitled video'}</div>
+        `;
 
-        const usernameSpan = document.createElement('span');
-        usernameSpan.className = 'username-text';
-        usernameSpan.textContent = user;
+        btn.onclick = () => openVideoModal(item.video_url);
 
-        const coverImg = document.createElement('img');
-        coverImg.className = 'cover-img';
-        coverImg.src = getThumbnailFromUrl(info.video_url) || 'https://via.placeholder.com/180x100.png?text=Video';
-        coverImg.alt = `${user}'s video thumbnail`;
+        userListEl.appendChild(btn);
+      });
+    }
 
-        const vidTitle = document.createElement('div');
-        vidTitle.className = 'video-title';
-        vidTitle.textContent = info.title || '';
-
-        a.appendChild(avatar);
-        a.appendChild(usernameSpan);
-        a.appendChild(coverImg);
-        a.appendChild(vidTitle);
-
-        fragment.appendChild(a);
+    // Open modal and load video player iframe
+    function openVideoModal(videoUrl) {
+      const embedUrl = getEmbedUrl(videoUrl);
+      if (!embedUrl) {
+        alert('Sorry, this video URL cannot be embedded.');
+        return;
       }
 
-      userListEl.appendChild(fragment);
+      videoPlayerIframe.src = embedUrl;
+      videoModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // prevent background scroll
     }
 
-    // Open video modal function
-    function openVideoModal(embedUrl) {
-      const modal = document.getElementById('videoModal');
-      const iframe = document.getElementById('videoPlayerIframe');
-      iframe.src = embedUrl;
-      modal.style.display = 'flex';
+    // Close modal and stop video playback
+    function closeVideoModal() {
+      videoPlayerIframe.src = '';
+      videoModal.style.display = 'none';
+      document.body.style.overflow = '';
     }
 
-    // Close modal button
-    document.getElementById('closeModalBtn').addEventListener('click', () => {
-      const modal = document.getElementById('videoModal');
-      const iframe = document.getElementById('videoPlayerIframe');
-      iframe.src = '';
-      modal.style.display = 'none';
+    closeModalBtn.addEventListener('click', closeVideoModal);
+
+    // Close modal if user clicks outside the iframe
+    videoModal.addEventListener('click', (e) => {
+      if (e.target === videoModal) {
+        closeVideoModal();
+      }
     });
 
+    // Sorting buttons
     document.getElementById('sortAlpha').addEventListener('click', () => {
-      if (currentSort !== 'alphabetical') {
-        currentSort = 'alphabetical';
-        loadUsers(currentSort);
-      }
+      currentSort = 'alphabetical';
+      loadUsers(currentSort);
     });
 
     document.getElementById('sortNewest').addEventListener('click', () => {
-      if (currentSort !== 'newest') {
-        currentSort = 'newest';
-        loadUsers(currentSort);
-      }
+      currentSort = 'newest';
+      loadUsers(currentSort);
     });
 
+    // Initial load
     loadUsers(currentSort);
   </script>
 </body>
