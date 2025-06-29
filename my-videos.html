@@ -742,9 +742,15 @@
       iframe.allow = "autoplay; encrypted-media";
       iframe.allowFullscreen = true;
 
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'btn';
+      shareBtn.textContent = 'Share';
+      shareBtn.onclick = () => openShareModal(video);
+
       div.appendChild(h2);
       div.appendChild(p);
       div.appendChild(iframe);
+      div.appendChild(shareBtn);
 
       return div;
     }
@@ -753,7 +759,7 @@
     const params = new URLSearchParams(window.location.search);
     if (params.get("embed") === "1") {
       document.body.classList.add('embed-mode');
-      // Show only first video for embed
+      // Show only the first video for embed mode
       videosList.appendChild(createVideoEntry(videos[0]));
     } else {
       // Normal mode shows all videos
@@ -769,7 +775,7 @@
     const closeModalBtn = document.getElementById('closeModalBtn');
 
     function openShareModal(video) {
-      // Generate current page URL + video src as share link (example)
+      // Generate current page URL + video src as share link
       const shareUrl = window.location.origin + window.location.pathname + '?video=' + encodeURIComponent(video.src);
       shareLinkInput.value = shareUrl;
 
@@ -784,9 +790,6 @@
     closeModalBtn.addEventListener('click', () => {
       shareModal.style.display = 'none';
     });
-
-    // Optional: You can add share buttons on each video if you want,
-    // then call openShareModal(video) when clicked.
   </script>
 
 </body>
