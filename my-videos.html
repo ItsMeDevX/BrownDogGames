@@ -483,7 +483,8 @@
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      overflow: hidden; /* Prevent scrolling */
     }
 
     .container {
@@ -529,56 +530,22 @@
       box-shadow: 0 0 15px #ff4f9faa;
     }
 
-    .btn {
-      display: inline-block;
-      margin-right: 10px;
-      padding: 12px 30px;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.1em;
-      border-radius: 10px;
-      box-shadow: 0 0 8px #ff4f9faa;
-      transition: background-color 0.3s ease;
-      cursor: pointer;
-      user-select: none;
-      border: none;
+    /* Full page embed */
+    .embed-mode {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
     }
 
-    .btn:hover {
-      background-color: #e03e8f;
-    }
-
-    a.btn-home {
-      display: inline-block;
-      margin-top: 30px;
-      padding: 12px 30px;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.1em;
-      border-radius: 10px;
-      box-shadow: 0 0 8px #ff4f9faa;
-      transition: background-color 0.3s ease;
-    }
-
-    a.btn-home:hover {
-      background-color: #e03e8f;
-    }
-
-    @media (max-width: 480px) {
-      .video-entry p {
-        font-size: 1em;
-      }
-      .btn, a.btn-home {
-        font-size: 1em;
-        padding: 10px 20px;
-      }
-      iframe {
-        height: 220px;
-      }
+    .embed-mode iframe {
+      width: 100%;
+      height: 100vh; /* Full screen height */
+      border-radius: 0;
+      box-shadow: none;
     }
 
     /* Modal Styles */
@@ -586,8 +553,10 @@
       display: none;
       position: fixed;
       z-index: 1000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
       background-color: rgba(0,0,0,0.7);
       display: flex;
       align-items: center;
@@ -643,46 +612,6 @@
     #shareModal button.close-btn:hover {
       background: #e03e8f;
     }
-
-    /* Embed mode styles */
-    .embed-mode {
-      overflow: hidden;
-    }
-    .embed-mode body, .embed-mode html {
-      margin: 0; padding: 0; height: 100%;
-      overflow: hidden;
-    }
-    .embed-mode .container {
-      padding: 0; margin: 0; max-width: none;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      text-align: center;
-    }
-    .embed-mode .video-entry {
-      flex: 1 1 auto;
-      margin: 0;
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      background: none;
-    }
-    .embed-mode iframe {
-      height: 100%;
-      width: 100%;
-      border-radius: 0;
-      box-shadow: none;
-    }
-
-    /* Hide unnecessary elements in embed mode */
-    .embed-mode h1,
-    .embed-mode .btn,
-    .embed-mode .btn-home,
-    .embed-mode .video-entry h2,
-    .embed-mode .video-entry p,
-    .embed-mode #shareBtn {
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -716,13 +645,8 @@
         title: "Andrew Tate’s Alpha F*ckfest",
         description: "Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.",
         src: "https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview"
-      },
-      // Add more videos like this:
-      // {
-      //   title: "Another Video Title",
-      //   description: "Description of the video goes here.",
-      //   src: "https://someothervideo.com/embed/xyz"
-      // }
+      }
+      // More videos can be added here
     ];
 
     const videosList = document.getElementById('videosList');
@@ -755,32 +679,30 @@
       return div;
     }
 
-    // Handle embed mode
+    // Embed mode functionality
     const params = new URLSearchParams(window.location.search);
     if (params.get("embed") === "1") {
       document.body.classList.add('embed-mode');
-      // Show only the first video for embed mode
+      // Show only the first video in embed mode
       videosList.appendChild(createVideoEntry(videos[0]));
     } else {
-      // Normal mode shows all videos
+      // Normal mode, show all videos
       videos.forEach(video => {
         videosList.appendChild(createVideoEntry(video));
       });
     }
 
-    // Share Modal logic
     const shareModal = document.getElementById('shareModal');
     const shareLinkInput = document.getElementById('shareLink');
     const embedCodeInput = document.getElementById('embedCode');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
     function openShareModal(video) {
-      // Generate current page URL + video src as share link
       const shareUrl = window.location.origin + window.location.pathname + '?video=' + encodeURIComponent(video.src);
       shareLinkInput.value = shareUrl;
 
-      // Embed code for iframe with embed mode
-      embedCodeInput.value = `<iframe src="${shareUrl}&embed=1" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
+      // Embed code for full page view
+      embedCodeInput.value = `<iframe src="${shareUrl}&embed=1" width="100vw" height="100vh" frameborder="0" allowfullscreen></iframe>`;
 
       shareModal.style.display = 'flex';
       shareLinkInput.focus();
