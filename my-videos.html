@@ -469,7 +469,6 @@
   });
 </script>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -645,26 +644,44 @@
       background: #e03e8f;
     }
 
-    /* Embed mode: when ?embed=1 is passed in the URL, hide all clutter */
-    .embed-mode .btn,
-    .embed-mode .btn-home,
-    .embed-mode h1,
-    .embed-mode .video-entry h2,
-    .embed-mode .video-entry p {
-      display: none;
+    /* Embed mode styles */
+    .embed-mode {
+      overflow: hidden;
     }
-
+    .embed-mode body, .embed-mode html {
+      margin: 0; padding: 0; height: 100%;
+      overflow: hidden;
+    }
+    .embed-mode .container {
+      padding: 0; margin: 0; max-width: none;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
     .embed-mode .video-entry {
+      flex: 1 1 auto;
+      margin: 0;
       border: none;
       box-shadow: none;
       padding: 0;
       background: none;
     }
-
     .embed-mode iframe {
+      height: 100%;
+      width: 100%;
       border-radius: 0;
       box-shadow: none;
-      height: 100vh;
+    }
+
+    /* Hide unnecessary elements in embed mode */
+    .embed-mode h1,
+    .embed-mode .btn,
+    .embed-mode .btn-home,
+    .embed-mode .video-entry h2,
+    .embed-mode .video-entry p,
+    .embed-mode #shareBtn {
+      display: none;
     }
   </style>
 </head>
@@ -673,15 +690,7 @@
   <div class="container" id="mainContainer">
     <h1>📺 Videos</h1>
 
-    <div class="video-entry">
-      <h2>Andrew Tate’s Alpha F*ckfest</h2>
-      <p>Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.</p>
-      
-      <!-- Embedded Google Drive Video -->
-      <iframe id="videoFrame" src="https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-      
-      <button class="btn" id="shareBtn">Share</button>
-    </div>
+    <div id="videosList"></div>
 
     <a href="index.html" class="btn-home">🏠 Back to Home</a>
   </div>
@@ -690,7 +699,7 @@
   <div id="shareModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
     <div class="modal-content">
       <h3 id="modalTitle">Share this video</h3>
-      
+
       <label for="shareLink">Share Link:</label>
       <textarea id="shareLink" rows="2" readonly></textarea>
 
@@ -702,40 +711,82 @@
   </div>
 
   <script>
-    const shareBtn = document.getElementById('shareBtn');
-    const modal = document.getElementById('shareModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const shareLinkTextarea = document.getElementById('shareLink');
-    const embedCodeTextarea = document.getElementById('embedCode');
-    const container = document.getElementById('mainContainer');
+    const videos = [
+      {
+        title: "Andrew Tate’s Alpha F*ckfest",
+        description: "Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.",
+        src: "https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview"
+      },
+      // Add more videos like this:
+      // {
+      //   title: "Another Video Title",
+      //   description: "Description of the video goes here.",
+      //   src: "https://someothervideo.com/embed/xyz"
+      // }
+    ];
 
-    // Enable embed-only mode if ?embed=1 in URL
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("embed") === "1") {
-      container.classList.add("embed-mode");
+    const videosList = document.getElementById('videosList');
+
+    function createVideoEntry(video) {
+      const div = document.createElement('div');
+      div.className = 'video-entry';
+
+      const h2 = document.createElement('h2');
+      h2.textContent = video.title;
+
+      const p = document.createElement('p');
+      p.textContent = video.description;
+
+      const iframe = document.createElement('iframe');
+      iframe.src = video.src;
+      iframe.allow = "autoplay; encrypted-media";
+      iframe.allowFullscreen = true;
+
+      div.appendChild(h2);
+      div.appendChild(p);
+      div.appendChild(iframe);
+
+      return div;
     }
 
-    shareBtn.addEventListener('click', () => {
-      const baseURL = window.location.href.split('?')[0];
-      const embedURL = `${baseURL}?embed=1`;
+    // Handle embed mode
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("embed") === "1") {
+      document.body.classList.add('embed-mode');
+      // Show only first video for embed
+      videosList.appendChild(createVideoEntry(videos[0]));
+    } else {
+      // Normal mode shows all videos
+      videos.forEach(video => {
+        videosList.appendChild(createVideoEntry(video));
+      });
+    }
 
-      shareLinkTextarea.value = baseURL;
-      embedCodeTextarea.value = `<iframe src="${embedURL}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
+    // Share Modal logic
+    const shareModal = document.getElementById('shareModal');
+    const shareLinkInput = document.getElementById('shareLink');
+    const embedCodeInput = document.getElementById('embedCode');
+    const closeModalBtn = document.getElementById('closeModalBtn');
 
-      modal.style.display = 'flex';
-      shareLinkTextarea.focus();
-      shareLinkTextarea.select();
-    });
+    function openShareModal(video) {
+      // Generate current page URL + video src as share link (example)
+      const shareUrl = window.location.origin + window.location.pathname + '?video=' + encodeURIComponent(video.src);
+      shareLinkInput.value = shareUrl;
+
+      // Embed code for iframe with embed mode
+      embedCodeInput.value = `<iframe src="${shareUrl}&embed=1" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
+
+      shareModal.style.display = 'flex';
+      shareLinkInput.focus();
+      shareLinkInput.select();
+    }
 
     closeModalBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
+      shareModal.style.display = 'none';
     });
 
-    window.addEventListener('click', e => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
+    // Optional: You can add share buttons on each video if you want,
+    // then call openShareModal(video) when clicked.
   </script>
 
 </body>
