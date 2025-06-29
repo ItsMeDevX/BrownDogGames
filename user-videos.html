@@ -416,6 +416,15 @@
       letter-spacing: 0.1em;
     }
 
+    h2 {
+      font-size: 2rem;
+      color: #ff85c1;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+      user-select: text;
+      text-shadow: 1px 1px 0 #000;
+    }
+
     .back-link {
       display: inline-block;
       margin-bottom: 2rem;
@@ -448,10 +457,11 @@
       margin-right: 1rem;
     }
 
-    #userList {
+    #userList, #featuredList {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
+      margin-bottom: 3rem;
     }
 
     .user-btn {
@@ -470,6 +480,20 @@
     .user-btn:hover {
       transform: translateY(-4px);
       box-shadow: 0 0 25px #ff8bd8ff, inset 0 0 20px #ff8bd8ee;
+    }
+
+    /* Featured specific styling */
+    #featuredList .user-btn {
+      background-color: #4a255d;
+      box-shadow: 0 0 20px #ff85c1cc, inset 0 0 15px #ff85c1bb;
+      padding: 1.5rem;
+    }
+
+    #featuredList .cover-img {
+      max-width: 220px;
+      height: 120px;
+      border: 2px solid #ff85c1;
+      box-shadow: 0 0 15px #ff85c1aa;
     }
 
     .avatar-img {
@@ -526,6 +550,12 @@
 
   <h1>All User Video Submissions</h1>
 
+  <!-- Featured Section -->
+  <section>
+    <h2>🌟 Featured Videos</h2>
+    <div id="featuredList">Loading featured videos...</div>
+  </section>
+
   <div id="sortButtons">
     <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
     <button class="back-link" id="sortNewest">🆕 Newest</button>
@@ -542,6 +572,7 @@
     );
 
     const userListEl = document.getElementById('userList');
+    const featuredListEl = document.getElementById('featuredList');
     let currentSort = 'alphabetical';
 
     function getThumbnailFromUrl(url) {
@@ -558,6 +589,74 @@
       }
 
       return null;
+    }
+
+    async function loadFeatured() {
+      // Assuming you have a column called 'is_featured' in your 'game_videos' table
+      const { data, error } = await supabase
+        .from('game_videos')
+        .select('github_username, video_url, title, avatar_url')
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        featuredListEl.textContent = `Error loading featured videos: ${error.message}`;
+        return;
+      }
+
+      if (!data.length) {
+        featuredListEl.textContent = 'No featured videos found.';
+        return;
+      }
+
+      featuredListEl.textContent = '';
+      const fragment = document.createDocumentFragment();
+
+      data.forEach(({ github_username, video_url, title, avatar_url }) => {
+        const a = document.createElement('a');
+        a.className = 'user-btn';
+        a.href = `user.html?user=${encodeURIComponent(github_username)}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar-img';
+
+        if (avatar_url) {
+          const img = document.createElement('img');
+          img.src = avatar_url;
+          img.alt = `${github_username}'s avatar`;
+          avatar.appendChild(img);
+        } else {
+          const img = document.createElement('img');
+          img.src = `https://github.com/${github_username}.png`;
+          img.alt = `${github_username}'s avatar`;
+          avatar.appendChild(img);
+        }
+
+        a.appendChild(avatar);
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username-text';
+        usernameSpan.textContent = github_username;
+        a.appendChild(usernameSpan);
+
+        const thumb = getThumbnailFromUrl(video_url) || 'https://via.placeholder.com/220x120.png?text=Video';
+        const thumbnail = document.createElement('img');
+        thumbnail.src = thumb;
+        thumbnail.alt = `${github_username}'s video thumbnail`;
+        thumbnail.className = 'cover-img';
+        a.appendChild(thumbnail);
+
+        if (title) {
+          const videoTitle = document.createElement('div');
+          videoTitle.className = 'video-title';
+          videoTitle.textContent = title;
+          a.appendChild(videoTitle);
+        }
+
+        fragment.appendChild(a);
+      });
+
+      featuredListEl.appendChild(fragment);
     }
 
     async function loadUsers(sortMode = 'alphabetical') {
@@ -637,7 +736,10 @@
       userListEl.appendChild(fragment);
     }
 
-    // Initial load
+    // Load featured videos first
+    loadFeatured();
+
+    // Then load all users
     loadUsers(currentSort);
 
     // Sort buttons event listeners
