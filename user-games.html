@@ -493,6 +493,54 @@
       background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
     }
+
+    /* Featured User Section */
+    #featuredUser {
+      display: none;
+      max-width: 600px;
+      margin: 2rem auto 3rem;
+      background: #3d2460;
+      border: 3px solid #ff69b4;
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 0 30px #ff69b4cc;
+      user-select: none;
+    }
+    #featuredUser h2 {
+      color: #ff8bd8;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+    }
+    #featuredAvatar {
+      margin: 0 auto 1rem auto;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #ff8bd8;
+      overflow: hidden;
+      background: #2d1a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #ff69b4;
+    }
+    #featuredUsername {
+      color: #ffc0cb;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      word-break: break-word;
+    }
+    #featuredCover {
+      width: 100%;
+      max-width: 300px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 16px;
+      border: 3px solid #ff8bd8;
+      box-shadow: 0 0 15px #ff8bd8cc;
+    }
   </style>
 </head>
 <body>
@@ -500,6 +548,14 @@
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
 
   <h1>All User Game Pages</h1>
+
+  <!-- Featured User Section -->
+  <section id="featuredUser" aria-label="Featured User of the Week">
+    <h2>🌟 Featured User of the Week</h2>
+    <div id="featuredAvatar"></div>
+    <div id="featuredUsername"></div>
+    <img src="" alt="Featured user cover" id="featuredCover" />
+  </section>
 
   <div>
     <button id="sortAlpha" class="back-link">🅰️ Alphabetical</button>
@@ -518,6 +574,11 @@
 
     const userListEl = document.getElementById('userList');
     let currentSort = 'alphabetical';
+
+    const featuredSection = document.getElementById('featuredUser');
+    const featuredAvatar = document.getElementById('featuredAvatar');
+    const featuredUsername = document.getElementById('featuredUsername');
+    const featuredCover = document.getElementById('featuredCover');
 
     function convertDriveLinkToThumbnail(url) {
       if (!url) return url;
@@ -541,14 +602,60 @@
 
       if (error) {
         userListEl.textContent = `Error loading users: ${error.message}`;
+        featuredSection.style.display = 'none';
         return;
       }
 
       if (!data.length) {
         userListEl.textContent = 'No users found.';
+        featuredSection.style.display = 'none';
         return;
       }
 
+      // FEATURED USER - newest submission
+      const featuredUser = data[0];
+      if (featuredUser) {
+        featuredSection.style.display = 'block';
+
+        // Avatar
+        featuredAvatar.innerHTML = '';
+        if (featuredUser.avatar_url) {
+          const img = document.createElement('img');
+          img.src = convertDriveLinkToThumbnail(featuredUser.avatar_url);
+          img.alt = `${featuredUser.github_user}'s avatar`;
+          img.style.width = '80px';
+          img.style.height = '80px';
+          img.style.borderRadius = '50%';
+          featuredAvatar.appendChild(img);
+        } else {
+          // If no avatar URL, show initial letter
+          featuredAvatar.textContent = featuredUser.github_user.charAt(0).toUpperCase();
+        }
+
+        // Username
+        featuredUsername.textContent = featuredUser.github_user;
+
+        // Cover Image
+        let coverSrc = featuredUser.cover_url || '';
+        if (coverSrc) {
+          if (!coverSrc.startsWith('http')) {
+            const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(coverSrc);
+            if (publicUrlData && publicUrlData.publicUrl) {
+              coverSrc = publicUrlData.publicUrl;
+            }
+          } else {
+            coverSrc = convertDriveLinkToThumbnail(coverSrc);
+          }
+        } else {
+          coverSrc = 'https://via.placeholder.com/300x160.png?text=No+Cover';
+        }
+        featuredCover.src = coverSrc;
+        featuredCover.alt = `${featuredUser.github_user}'s cover`;
+      } else {
+        featuredSection.style.display = 'none';
+      }
+
+      // Build user list same as before
       const usersMap = new Map();
       data.forEach(({ github_user, avatar_url, cover_url }) => {
         if (github_user && !usersMap.has(github_user)) {
