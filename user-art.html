@@ -417,60 +417,6 @@
       letter-spacing: 0.1em;
     }
 
-    /* Featured Artist Section */
-    #featuredArtist {
-      margin-bottom: 3rem;
-      padding: 1rem;
-      border: 3px solid #ff69b4;
-      border-radius: 16px;
-      background: #3a1f52;
-      box-shadow: 0 0 25px #ff69b4cc;
-    }
-
-    #featuredArtist h2 {
-      color: #ff69b4;
-      margin-bottom: 1rem;
-    }
-
-    #featuredLink {
-      text-decoration: none;
-      color: #ffc0cb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      user-select: none;
-      cursor: pointer;
-    }
-
-    #featuredAvatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 3px solid #ff69b4;
-      overflow: hidden;
-      background: #1e1b2e;
-      margin-bottom: 1rem;
-      font-size: 3rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ff69b4;
-    }
-
-    #featuredImage {
-      max-width: 320px;
-      border-radius: 12px;
-      border: 2px solid #ff69b4;
-      box-shadow: 0 0 15px #ff69b4cc;
-    }
-
-    #featuredTitle {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-      font-style: italic;
-    }
-
     .back-link {
       display: inline-block;
       margin: 0.5rem;
@@ -559,17 +505,6 @@
 
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
 
-  <!-- Featured Artist of the Week -->
-  <section id="featuredArtist">
-    <h2>🎨 Featured Artist of the Week</h2>
-    <a href="#" id="featuredLink">
-      <div id="featuredAvatar">?</div>
-      <span id="featuredUsername">Loading...</span>
-      <img id="featuredImage" src="https://via.placeholder.com/320x180.png?text=Loading" alt="Featured artwork" />
-      <p id="featuredTitle"></p>
-    </a>
-  </section>
-
   <h1>All User Art Submissions</h1>
 
   <div>
@@ -590,54 +525,14 @@
     const userListEl = document.getElementById('userList');
     let currentSort = 'alphabetical';
 
-    async function loadFeaturedArtist() {
-      // Get all submissions ordered by created_at ascending to pick featured artist based on week
-      const { data, error } = await supabase
-        .from('user_art')
-        .select('github_username, image_url, title, avatar_url')
-        .order('created_at', { ascending: true });
-
-      if (error || !data.length) {
-        console.warn('Could not load featured artist:', error);
-        return;
+    function getDriveThumbnailUrl(url) {
+      // Extract file ID from Google Drive share URL
+      const regex = /\/d\/([^\/]+)\//;
+      const match = url.match(regex);
+      if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}`;
       }
-
-      // Calculate week number from UNIX epoch (Jan 1, 1970)
-      const weekNumber = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
-      const featuredIndex = weekNumber % data.length;
-      const featured = data[featuredIndex];
-
-      const featuredLink = document.getElementById('featuredLink');
-      const featuredAvatar = document.getElementById('featuredAvatar');
-      const featuredUsername = document.getElementById('featuredUsername');
-      const featuredImage = document.getElementById('featuredImage');
-      const featuredTitle = document.getElementById('featuredTitle');
-
-      featuredLink.href = `user.html?user=${encodeURIComponent(featured.github_username)}`;
-      featuredUsername.textContent = featured.github_username;
-      featuredTitle.textContent = featured.title || 'Untitled';
-
-      featuredAvatar.innerHTML = '';
-      if (featured.avatar_url) {
-        const img = document.createElement('img');
-        img.src = featured.avatar_url;
-        img.alt = `${featured.github_username}'s avatar`;
-        img.style.width = '80px';
-        img.style.height = '80px';
-        img.style.borderRadius = '50%';
-        featuredAvatar.appendChild(img);
-      } else {
-        featuredAvatar.textContent = featured.github_username.charAt(0).toUpperCase();
-        featuredAvatar.style.fontSize = '3rem';
-        featuredAvatar.style.color = '#ff69b4';
-        featuredAvatar.style.display = 'flex';
-        featuredAvatar.style.alignItems = 'center';
-        featuredAvatar.style.justifyContent = 'center';
-        featuredAvatar.style.fontWeight = 'bold';
-      }
-
-      featuredImage.src = featured.image_url || 'https://via.placeholder.com/320x180.png?text=No+Image';
-      featuredImage.alt = `${featured.github_username}'s artwork titled "${featured.title}"`;
+      return url; // fallback: return original URL if no match
     }
 
     async function loadUsers(sortMode = 'alphabetical') {
@@ -679,13 +574,13 @@
         avatar.className = 'avatar-img';
 
         if (info.avatar_url) {
-          const img = document.createElement('img');
-          img.src = info.avatar_url;
-          img.alt = `${user}'s avatar`;
-          img.style.width = '48px';
-          img.style.height = '48px';
-          img.style.borderRadius = '50%';
-          avatar.appendChild(img);
+          const imgAvatar = document.createElement('img');
+          imgAvatar.src = info.avatar_url;
+          imgAvatar.alt = `${user}'s avatar`;
+          imgAvatar.style.width = '48px';
+          imgAvatar.style.height = '48px';
+          imgAvatar.style.borderRadius = '50%';
+          avatar.appendChild(imgAvatar);
         } else {
           avatar.textContent = user.charAt(0).toUpperCase();
         }
@@ -697,7 +592,9 @@
         a.appendChild(usernameSpan);
 
         const img = document.createElement('img');
-        img.src = info.image_url || 'https://via.placeholder.com/180x100.png?text=No+Image';
+        img.src = info.image_url && info.image_url.includes('drive.google.com')
+          ? getDriveThumbnailUrl(info.image_url)
+          : (info.image_url || 'https://via.placeholder.com/180x100.png?text=No+Image');
         img.alt = `${user}'s artwork titled "${info.title}"`;
         img.className = 'cover-img';
         a.appendChild(img);
@@ -710,7 +607,6 @@
 
     // Initial load
     loadUsers(currentSort);
-    loadFeaturedArtist();
 
     document.getElementById('sortAlpha').addEventListener('click', () => {
       currentSort = 'alphabetical';
