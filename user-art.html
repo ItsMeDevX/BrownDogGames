@@ -441,6 +441,46 @@
       text-decoration: none;
     }
 
+    #featuredArtist {
+      background: #3d2460;
+      border: 3px solid #ff69b4;
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      margin-bottom: 3rem;
+      box-shadow: 0 0 30px #ff69b4cc;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #featuredArtist h2 {
+      color: #ff8bd8;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    #featuredArtist .avatar-img,
+    #featuredArtist .cover-img {
+      margin: 0 auto 1rem auto;
+      border: 3px solid #ff8bd8;
+    }
+
+    #featuredArtist .avatar-img {
+      width: 80px;
+      height: 80px;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    #featuredArtist .cover-img {
+      width: 100%;
+      max-width: 300px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 16px;
+      box-shadow: 0 0 15px #ff8bd8cc;
+    }
+
     #userList {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -507,6 +547,15 @@
 
   <h1>All User Art Submissions</h1>
 
+  <!-- Featured Artist Section -->
+  <section id="featuredArtist" aria-label="Featured Artist of the Week">
+    <h2>🌟 Featured Artist of the Week</h2>
+    <div class="avatar-img" id="featuredAvatar"></div>
+    <div class="username-text" id="featuredUsername"></div>
+    <img src="" alt="Featured artwork" class="cover-img" id="featuredArtwork" />
+    <div id="featuredTitle" style="margin-top: 0.5rem; font-style: italic; color: #ffb6c1;"></div>
+  </section>
+
   <div>
     <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
     <button class="back-link" id="sortNewest">🆕 Newest</button>
@@ -523,16 +572,21 @@
     );
 
     const userListEl = document.getElementById('userList');
+    const featuredSection = document.getElementById('featuredArtist');
+    const featuredAvatar = document.getElementById('featuredAvatar');
+    const featuredUsername = document.getElementById('featuredUsername');
+    const featuredArtwork = document.getElementById('featuredArtwork');
+    const featuredTitle = document.getElementById('featuredTitle');
+
     let currentSort = 'alphabetical';
 
     function getDriveThumbnailUrl(url) {
-      // Extract file ID from Google Drive share URL
       const regex = /\/d\/([^\/]+)\//;
       const match = url.match(regex);
       if (match && match[1]) {
         return `https://drive.google.com/thumbnail?id=${match[1]}`;
       }
-      return url; // fallback: return original URL if no match
+      return url;
     }
 
     async function loadUsers(sortMode = 'alphabetical') {
@@ -547,14 +601,53 @@
 
       if (error) {
         userListEl.textContent = `Error loading art submissions: ${error.message}`;
+        featuredSection.style.display = 'none';
         return;
       }
 
       if (!data.length) {
         userListEl.textContent = 'No art submissions found.';
+        featuredSection.style.display = 'none';
         return;
       }
 
+      // Set featured artist (latest submission for example)
+      const featured = data[0];
+      if (featured) {
+        featuredSection.style.display = 'block';
+
+        // avatar for featured artist
+        featuredAvatar.innerHTML = '';
+        if (featured.avatar_url) {
+          const img = document.createElement('img');
+          img.src = featured.avatar_url;
+          img.alt = `${featured.github_username}'s avatar`;
+          img.style.width = '80px';
+          img.style.height = '80px';
+          img.style.borderRadius = '50%';
+          featuredAvatar.appendChild(img);
+        } else {
+          featuredAvatar.textContent = featured.github_username.charAt(0).toUpperCase();
+          featuredAvatar.style.fontSize = '2rem';
+          featuredAvatar.style.color = '#ff69b4';
+          featuredAvatar.style.display = 'flex';
+          featuredAvatar.style.alignItems = 'center';
+          featuredAvatar.style.justifyContent = 'center';
+          featuredAvatar.style.background = '#2d1a3a';
+          featuredAvatar.style.border = '3px solid #ff69b4';
+        }
+
+        featuredUsername.textContent = featured.github_username;
+
+        featuredArtwork.src = featured.image_url && featured.image_url.includes('drive.google.com')
+          ? getDriveThumbnailUrl(featured.image_url)
+          : (featured.image_url || 'https://via.placeholder.com/300x160.png?text=No+Image');
+
+        featuredArtwork.alt = `${featured.github_username}'s artwork titled "${featured.title}"`;
+        featuredTitle.textContent = featured.title || '';
+      }
+
+      // Now build user list grid without duplicates (one per user)
       const usersMap = new Map();
       data.forEach(({ github_username, image_url, title, avatar_url }) => {
         if (github_username && !usersMap.has(github_username)) {
