@@ -483,8 +483,7 @@
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
       margin: 0;
-      padding: 0;
-      overflow: hidden; /* Prevent scrolling */
+      padding: 20px;
     }
 
     .container {
@@ -530,22 +529,56 @@
       box-shadow: 0 0 15px #ff4f9faa;
     }
 
-    /* Full page embed */
-    .embed-mode {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
+    .btn {
+      display: inline-block;
+      margin-right: 10px;
+      padding: 12px 30px;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1em;
+      border-radius: 10px;
+      box-shadow: 0 0 8px #ff4f9faa;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+      border: none;
     }
 
-    .embed-mode iframe {
-      width: 100%;
-      height: 100vh; /* Full screen height */
-      border-radius: 0;
-      box-shadow: none;
+    .btn:hover {
+      background-color: #e03e8f;
+    }
+
+    a.btn-home {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 30px;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1em;
+      border-radius: 10px;
+      box-shadow: 0 0 8px #ff4f9faa;
+      transition: background-color 0.3s ease;
+    }
+
+    a.btn-home:hover {
+      background-color: #e03e8f;
+    }
+
+    @media (max-width: 480px) {
+      .video-entry p {
+        font-size: 1em;
+      }
+      .btn, a.btn-home {
+        font-size: 1em;
+        padding: 10px 20px;
+      }
+      iframe {
+        height: 220px;
+      }
     }
 
     /* Modal Styles */
@@ -553,10 +586,8 @@
       display: none;
       position: fixed;
       z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
       background-color: rgba(0,0,0,0.7);
       display: flex;
       align-items: center;
@@ -612,6 +643,28 @@
     #shareModal button.close-btn:hover {
       background: #e03e8f;
     }
+
+    /* Embed mode: when ?embed=1 is passed in the URL, hide all clutter */
+    .embed-mode .btn,
+    .embed-mode .btn-home,
+    .embed-mode h1,
+    .embed-mode .video-entry h2,
+    .embed-mode .video-entry p {
+      display: none;
+    }
+
+    .embed-mode .video-entry {
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      background: none;
+    }
+
+    .embed-mode iframe {
+      border-radius: 0;
+      box-shadow: none;
+      height: 100vh;
+    }
   </style>
 </head>
 <body>
@@ -619,7 +672,15 @@
   <div class="container" id="mainContainer">
     <h1>📺 Videos</h1>
 
-    <div id="videosList"></div>
+    <div class="video-entry">
+      <h2>Andrew Tate’s Alpha F*ckfest</h2>
+      <p>Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.</p>
+      
+      <!-- Embedded Google Drive Video -->
+      <iframe id="videoFrame" src="https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      
+      <button class="btn" id="shareBtn">Share</button>
+    </div>
 
     <a href="index.html" class="btn-home">🏠 Back to Home</a>
   </div>
@@ -628,7 +689,7 @@
   <div id="shareModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
     <div class="modal-content">
       <h3 id="modalTitle">Share this video</h3>
-
+      
       <label for="shareLink">Share Link:</label>
       <textarea id="shareLink" rows="2" readonly></textarea>
 
@@ -640,77 +701,39 @@
   </div>
 
   <script>
-    const videos = [
-      {
-        title: "Andrew Tate’s Alpha F*ckfest",
-        description: "Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.",
-        src: "https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview"
-      }
-      // More videos can be added here
-    ];
+    const shareBtn = document.getElementById('shareBtn');
+    const modal = document.getElementById('shareModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const shareLinkTextarea = document.getElementById('shareLink');
+    const embedCodeTextarea = document.getElementById('embedCode');
+    const container = document.getElementById('mainContainer');
 
-    const videosList = document.getElementById('videosList');
-
-    function createVideoEntry(video) {
-      const div = document.createElement('div');
-      div.className = 'video-entry';
-
-      const h2 = document.createElement('h2');
-      h2.textContent = video.title;
-
-      const p = document.createElement('p');
-      p.textContent = video.description;
-
-      const iframe = document.createElement('iframe');
-      iframe.src = video.src;
-      iframe.allow = "autoplay; encrypted-media";
-      iframe.allowFullscreen = true;
-
-      const shareBtn = document.createElement('button');
-      shareBtn.className = 'btn';
-      shareBtn.textContent = 'Share';
-      shareBtn.onclick = () => openShareModal(video);
-
-      div.appendChild(h2);
-      div.appendChild(p);
-      div.appendChild(iframe);
-      div.appendChild(shareBtn);
-
-      return div;
-    }
-
-    // Embed mode functionality
+    // Enable embed-only mode if ?embed=1 in URL
     const params = new URLSearchParams(window.location.search);
     if (params.get("embed") === "1") {
-      document.body.classList.add('embed-mode');
-      // Show only the first video in embed mode
-      videosList.appendChild(createVideoEntry(videos[0]));
-    } else {
-      // Normal mode, show all videos
-      videos.forEach(video => {
-        videosList.appendChild(createVideoEntry(video));
-      });
+      container.classList.add("embed-mode");
     }
 
-    const shareModal = document.getElementById('shareModal');
-    const shareLinkInput = document.getElementById('shareLink');
-    const embedCodeInput = document.getElementById('embedCode');
-    const closeModalBtn = document.getElementById('closeModalBtn');
+    shareBtn.addEventListener('click', () => {
+      const baseURL = window.location.href.split('?')[0];
+      const embedURL = `${baseURL}?embed=1`;
 
-    function openShareModal(video) {
-      const shareUrl = window.location.origin + window.location.pathname + '?video=' + encodeURIComponent(video.src);
-      shareLinkInput.value = shareUrl;
+      shareLinkTextarea.value = baseURL;
+      embedCodeTextarea.value = `<iframe src="${embedURL}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
 
-      // Embed code for full page view
-      embedCodeInput.value = `<iframe src="${shareUrl}&embed=1" width="100vw" height="100vh" frameborder="0" allowfullscreen></iframe>`;
-
-      shareModal.style.display = 'flex';
-      shareLinkInput.focus();
-      shareLinkInput.select();
-    }
+      modal.style.display = 'flex';
+      shareLinkTextarea.focus();
+      shareLinkTextarea.select();
+    });
 
     closeModalBtn.addEventListener('click', () => {
-      shareModal.style.display = 'none';
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
     });
   </script>
 
