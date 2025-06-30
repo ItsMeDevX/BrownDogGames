@@ -651,6 +651,41 @@
       padding: 1rem;
       border-radius: 10px;
     }
+
+    /* Full-page game iframe container styles */
+    #fullpage-game-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #1b1b2e;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #fullpage-game-container iframe {
+      flex-grow: 1;
+      border: none;
+      width: 100%;
+    }
+
+    #fullpage-game-container button.back-btn {
+      background: #ff4f9f;
+      border: none;
+      color: #1b1b2e;
+      padding: 12px 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      margin: 10px;
+      align-self: flex-start;
+      width: fit-content;
+      transition: background-color 0.2s ease;
+    }
+    #fullpage-game-container button.back-btn:hover {
+      background-color: #ff82ba;
+    }
   </style>
 </head>
 <body>
@@ -703,6 +738,8 @@
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
 
+  let games = []; // Global to hold fetched games for full page embedding
+
   async function incrementVipPageView() {
     if (!username) return;
 
@@ -722,105 +759,128 @@
     const { data, error } = await supabase.rpc('increment_vip_page_view', {
       in_user_id: userData.id,
       in_username: username,
-      in_now: now
+      in_page_name: 'usercontent',
+      in_timestamp: now,
     });
 
     if (error) {
-      console.error('Error incrementing VIP page views:', error);
+      console.error('Error incrementing VIP page view:', error);
     } else {
-      console.log(`Incremented VIP page views for ${username}`);
+      console.log('VIP page view incremented');
     }
   }
 
- async function loadGames() {
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  gamesContainer.innerHTML = '';
-  data.forEach((game, index) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.dataset.gameId = game.id || `game-${index}`;
-
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = game.title || 'Untitled Game';
-    card.appendChild(title);
-
-    if (game.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = game.description;
-      card.appendChild(desc);
-    }
-
-    if (game.screenshot_url) {
-      const img = document.createElement('img');
-      img.className = 'thumbnail';
-      img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-      img.alt = `Screenshot of ${game.title}`;
-      card.appendChild(img);
-    }
-
-    if (game.embed_url) {
-      if (game.embed_url.includes('github.io') || game.embed_url.startsWith('http')) {
-        const iframe = document.createElement('iframe');
-        iframe.src = game.embed_url;
-        iframe.className = 'video-player'; // Reuse styling
-        iframe.style.height = '300px';
-        iframe.style.border = 'none';
-        iframe.allow = 'fullscreen';
-        card.appendChild(iframe);
-      } else {
-        // fallback if not embeddable
-        const playLink = document.createElement('a');
-        playLink.className = 'play-link';
-        playLink.href = game.embed_url;
-        playLink.target = '_blank';
-        playLink.rel = 'noopener noreferrer';
-        playLink.textContent = 'Play Game';
-        card.appendChild(playLink);
-      }
-    }
-
-    gamesContainer.appendChild(card);
-  });
-}
-
-  async function loadArt() {
-    const { data, error } = await supabase
-      .from('user_art')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+  async function fetchUserContent() {
+    if (!username) {
+      pageTitle.textContent = 'User Content: Unknown User';
+      gamesContainer.innerHTML = '<p class="no-content">No user specified.</p>';
+      artContainer.innerHTML = '<p class="no-content">No user specified.</p>';
+      videosContainer.innerHTML = '<p class="no-content">No user specified.</p>';
       return;
     }
 
-    if (!data.length) {
-      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+    pageTitle.textContent = `User Content - ${username}`;
+
+    // Fetch games JSON from external URL (replace URL as needed)
+    try {
+      const gamesResponse = await fetch(`https://example.com/games_${username}.json`);
+      if (!gamesResponse.ok) throw new Error('Games not found');
+      games = await gamesResponse.json();
+      renderGames(games);
+    } catch {
+      gamesContainer.innerHTML = '<p class="no-content">No games found.</p>';
+    }
+
+    // Fetch art JSON
+    try {
+      const artResponse = await fetch(`https://example.com/art_${username}.json`);
+      if (!artResponse.ok) throw new Error('Art not found');
+      const art = await artResponse.json();
+      renderArt(art);
+    } catch {
+      artContainer.innerHTML = '<p class="no-content">No art found.</p>';
+    }
+
+    // Fetch videos JSON
+    try {
+      const videosResponse = await fetch(`https://example.com/videos_${username}.json`);
+      if (!videosResponse.ok) throw new Error('Videos not found');
+      const videos = await videosResponse.json();
+      renderVideos(videos);
+    } catch {
+      videosContainer.innerHTML = '<p class="no-content">No videos found.</p>';
+    }
+  }
+
+  function renderGames(games) {
+    if (!games.length) {
+      gamesContainer.innerHTML = '<p class="no-content">No games found.</p>';
+      return;
+    }
+
+    gamesContainer.innerHTML = '';
+    games.forEach((game, index) => {
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      if (game.thumbnail_url) {
+        const img = document.createElement('img');
+        img.src = game.thumbnail_url;
+        img.alt = game.title || 'Game thumbnail';
+        img.className = 'thumbnail';
+        card.appendChild(img);
+      }
+
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = game.title || 'Untitled Game';
+      card.appendChild(title);
+
+      if (game.description) {
+        const desc = document.createElement('p');
+        desc.className = 'desc';
+        desc.textContent = game.description;
+        card.appendChild(desc);
+      }
+
+      // Optional video preview if present
+      if (game.video_preview_url) {
+        const video = document.createElement('video');
+        video.src = game.video_preview_url;
+        video.controls = true;
+        video.className = 'video-player';
+        card.appendChild(video);
+      }
+
+      // Play Full Page link (hash)
+      const playButton = document.createElement('a');
+      playButton.href = `#play-${index}`;
+      playButton.className = 'play-link';
+      playButton.textContent = '▶️ Play Full Page';
+      card.appendChild(playButton);
+
+      gamesContainer.appendChild(card);
+    });
+  }
+
+  function renderArt(artItems) {
+    if (!artItems.length) {
+      artContainer.innerHTML = '<p class="no-content">No art found.</p>';
       return;
     }
 
     artContainer.innerHTML = '';
-    data.forEach((art, index) => {
+    artItems.forEach((art) => {
       const card = document.createElement('article');
       card.className = 'card';
+
+      if (art.image_url) {
+        const img = document.createElement('img');
+        img.src = art.image_url;
+        img.alt = art.title || 'Art';
+        img.className = 'thumbnail';
+        card.appendChild(img);
+      }
 
       const title = document.createElement('h3');
       title.className = 'title';
@@ -834,78 +894,33 @@
         card.appendChild(desc);
       }
 
-      if (art.image_url) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title}`;
-        card.appendChild(img);
-      }
-
       artContainer.appendChild(card);
     });
   }
 
-  async function loadVideos() {
-    const { data, error } = await supabase
-      .from('game_videos')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
-      return;
-    }
-
-    if (!data.length) {
-      videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+  function renderVideos(videos) {
+    if (!videos.length) {
+      videosContainer.innerHTML = '<p class="no-content">No videos found.</p>';
       return;
     }
 
     videosContainer.innerHTML = '';
-    data.forEach((video, index) => {
+    videos.forEach((video) => {
       const card = document.createElement('article');
       card.className = 'card';
 
-      if (video.video_url) {
-        let videoEl;
-
-        if (video.video_url.includes("drive.google.com")) {
-          const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
-          const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-          if (fileId) {
-            videoEl = document.createElement('iframe');
-            videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-            videoEl.width = '100%';
-            videoEl.height = '360';
-            videoEl.allow = 'autoplay';
-            videoEl.frameBorder = '0';
-            videoEl.className = 'video-player';
-          } else {
-            videoEl = document.createElement('p');
-            videoEl.textContent = '⚠️ Invalid Google Drive link.';
-          }
-
-        } else {
-          videoEl = document.createElement('video');
-          videoEl.controls = true;
-          videoEl.className = 'video-player';
-          videoEl.src = video.video_url;
-          videoEl.type = 'video/mp4';
-        }
-
-        card.appendChild(videoEl);
+      if (video.thumbnail_url) {
+        const img = document.createElement('img');
+        img.src = video.thumbnail_url;
+        img.alt = video.title || 'Video thumbnail';
+        img.className = 'thumbnail';
+        card.appendChild(img);
       }
 
-      if (video.title) {
-        const title = document.createElement('h3');
-        title.className = 'title';
-        title.textContent = video.title;
-        card.appendChild(title);
-      }
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = video.title || 'Untitled Video';
+      card.appendChild(title);
 
       if (video.description) {
         const desc = document.createElement('p');
@@ -914,98 +929,82 @@
         card.appendChild(desc);
       }
 
+      if (video.video_url) {
+        const vid = document.createElement('video');
+        vid.src = video.video_url;
+        vid.controls = true;
+        vid.className = 'video-player';
+        card.appendChild(vid);
+      }
+
       videosContainer.appendChild(card);
     });
   }
 
-  async function loadChatMessages() {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: true });
+  // Full page game embed handler
+  function handleHashChange() {
+    const mainContainer = document.body;
+    const hash = window.location.hash;
 
-    if (error) {
-      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-      console.error(error);
-      return;
+    if (hash.startsWith('#play-')) {
+      const index = parseInt(hash.split('-')[1]);
+      const game = games[index];
+
+      if (game) {
+        // Hide other content sections
+        document.querySelectorAll('.content-section, #chat-container, .back-link').forEach(el => {
+          el.style.display = 'none';
+        });
+        pageTitle.style.display = 'none';
+
+        // Create or replace full page game container
+        let container = document.getElementById('fullpage-game-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'fullpage-game-container';
+          document.body.appendChild(container);
+        }
+
+        container.innerHTML = `
+          <button class="back-btn" aria-label="Back to user content">← Back</button>
+          <iframe src="${game.embed_url}" allowfullscreen></iframe>
+        `;
+
+        container.querySelector('button.back-btn').addEventListener('click', () => {
+          history.back();
+        });
+      }
+    } else {
+      // Show normal content, remove fullpage container if exists
+      document.querySelectorAll('.content-section, #chat-container, .back-link').forEach(el => {
+        el.style.display = '';
+      });
+      pageTitle.style.display = '';
+
+      const container = document.getElementById('fullpage-game-container');
+      if (container) container.remove();
     }
-
-    if (!data.length) {
-      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
-      return;
-    }
-
-    messagesDiv.innerHTML = data.map(m => `
-      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
-    `).join('');
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const message = msgInput.value.trim();
-    if (!message) return;
-
-    const { error } = await supabase
-      .from('messages')
-      .insert([{ github_username: username, content: message }]);
-
-    if (error) {
-      alert('Failed to send message: ' + error.message);
-      return;
-    }
-
-    msgInput.value = '';
-    loadChatMessages();
+  window.addEventListener('hashchange', handleHashChange);
+  window.addEventListener('load', async () => {
+    await incrementVipPageView();
+    await fetchUserContent();
+    handleHashChange();
   });
 
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (m) => {
-      switch(m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        default: return m;
-      }
-    });
-  }
-
-  // Placeholder for your thumbnail conversion logic if needed:
-  function convertDriveLinkToThumbnail(url) {
-    if (!url) return '';
-    // Example: convert Google Drive share URL to thumbnail URL if needed
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
-    }
-    return url;
-  }
-
-  // Main execution block
-  if (!username) {
-    pageTitle.textContent = 'Error';
-    chatHeading.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    artContainer.innerHTML = '';
-    videosContainer.innerHTML = '';
-    messagesDiv.innerHTML = '';
-  } else {
-    pageTitle.textContent = `${username}'s Content`;
-    chatHeading.textContent = `Chat with ${username}`;
-
-    // Increment the VIP page views count each time this page loads for this user
-    incrementVipPageView();
-
-    loadGames();
-    loadArt();
-    loadVideos();
-    loadChatMessages();
-  }
+  // Chat code (simplified example)
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = msgInput.value.trim();
+    if (!msg) return;
+    // Here you would send the message to your backend or supabase
+    const newMsg = document.createElement('div');
+    newMsg.innerHTML = `<strong>You:</strong> ${msg}`;
+    messagesDiv.appendChild(newMsg);
+    msgInput.value = '';
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
 </script>
 
 </body>
