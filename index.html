@@ -561,33 +561,41 @@
   });
   </script>
   
-<head>
-  <!-- Link to external CSS for styling the search bar -->
-  <link rel="stylesheet" href="path/to/search-bar.css">
+<!-- Load the search bar dynamically -->
+<script>
+  // Function to inject the search bar files into the page
+  function loadSearchBar() {
+    // Create a link to the external CSS file for styling
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/assets/search-bar/search-bar.css'; // Update this path based on your file structure
+    document.head.appendChild(link);
 
-  <!-- Link to external JS for the functionality of the search bar -->
-  <script src="path/to/search-bar.js" defer></script>
-</head>
+    // Create a script to load the search bar's functionality (JS)
+    const script = document.createElement('script');
+    script.src = '/assets/search-bar/search-bar.js'; // Update this path
+    script.defer = true;
+    document.body.appendChild(script);
 
-<body>
-  <!-- Your page content goes here -->
-  <h1>Welcome to the Game Page</h1>
-  <p>Enjoy exploring our collection of games.</p>
-
-  <!-- This is where the search bar will be injected -->
-  <div id="search-container"></div>
-
-  <script>
-    // Fetch and inject the search bar HTML into the 'search-container' div
-    fetch('path/to/search-bar.html') // Update this to the correct path where search-bar.html is located
-      .then(response => response.text())  // Get the content of the HTML
+    // Fetch and inject the search bar HTML into the page
+    fetch('/assets/search-bar/search-bar.html') // Update the path if needed
+      .then(response => response.text())
       .then(data => {
-        // Inject the HTML content into the search-container div
-        document.getElementById('search-container').innerHTML = data;
+        // Find a container (or create one) to inject the search bar into
+        let container = document.getElementById('search-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'search-container';
+          document.body.insertBefore(container, document.body.firstChild); // Or append to an existing div
+        }
+        container.innerHTML = data; // Inject the HTML content
       })
-      .catch(error => console.error('Error loading search bar:', error)); // Log any errors
-  </script>
-</body>
+      .catch(error => console.error('Error loading the search bar:', error));
+  }
+
+  // Call the function to load the search bar when the page is ready
+  window.onload = loadSearchBar;
+</script>
   
 <!DOCTYPE html>
 <html lang="en">
