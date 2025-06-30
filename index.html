@@ -561,34 +561,182 @@
   });
   </script>
   
-<head>
-  <!-- Link to external CSS for styling the search bar -->
-  <link rel="stylesheet" href="/assets/search-bar/search-bar.css">
-  
-  <!-- Link to external JS for search bar functionality -->
-  <script src="/assets/search-bar/search-bar.js" defer></script>
-</head>
+<!-- Search Bar -->
+<div id="search-bar" style="
+  max-width: 500px;
+  margin: 20px auto;
+  background-color: #2a243b;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-family: 'Rubik Mono One', sans-serif;
+  color: #fefefe;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+">
+  <input type="text" id="game-search-input" placeholder="Search for a game..." style="
+    width: 80%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    background-color: #3b3750;
+    color: #fefefe;
+  " />
+  <button id="search-button" style="
+    background-color: #ff69b4;
+    color: #1e1b2e;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+  ">Search</button>
+</div>
 
-<body>
-  <!-- Your content here -->
-  <h1>Welcome to the Game Page</h1>
-  <p>Enjoy exploring our collection of games.</p>
+<!-- Dropdown for search suggestions -->
+<div id="suggestions-dropdown" style="
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: #3b3750;
+  border-radius: 8px;
+  position: absolute;
+  width: 500px;
+  top: 80px; /* Position dropdown below the input */
+  left: 50%;
+  transform: translateX(-50%);
+  display: none; /* Hidden by default */
+  z-index: 10;
+">
+  <!-- Suggestions will appear here -->
+</div>
 
-  <!-- This is where the search bar will be injected -->
-  <div id="search-container"></div>
+<script>
+  const gamePages = [
+    { title: 'Lapdance Dash', url: 'https://browndoggames.com/Lapdance-Dash.html' },
+    { title: 'Naked Craft', url: 'https://browndoggames.com/naked-craft.html' },
+    { title: 'Butt Blaster Arena', url: 'https://browndoggames.com/butt-blaster-arena.html' },
+    { title: 'Streaker Run', url: 'https://browndoggames.com/streaker-run.html' },
+    { title: 'Pet Penis Simulator', url: 'https://browndoggames.com/pet-penis-simulator.html' },
+    { title: 'Naked Fang', url: 'https://browndoggames.com/naked-fang.html' },
+    { title: 'Climax Clash', url: 'https://browndoggames.com/Climax-Clash.html' },
+    { title: 'Shafted', url: 'https://browndoggames.com/Shafted.html' },
+    { title: 'She Comes First', url: 'https://browndoggames.com/She-Comes-First.html' }
+  ];
 
-  <script>
-    // Dynamically load the search bar HTML into the page
-    fetch('/assets/search-bar/search-bar.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('search-container').innerHTML = data;
-      })
-      .catch(error => console.error('Error loading search bar:', error));
-  </script>
-</body>
+  const searchInput = document.getElementById('game-search-input');
+  const suggestionsDropdown = document.getElementById('suggestions-dropdown');
+  let highlightedIndex = -1;
 
-  
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    
+    if (query) {
+      // Filter based on first letter and overall query match
+      const firstLetterMatches = gamePages.filter(game => 
+        game.title.toLowerCase().startsWith(query[0])
+      );
+
+      const results = firstLetterMatches.concat(gamePages.filter(game => 
+        game.title.toLowerCase().includes(query) && !game.title.toLowerCase().startsWith(query[0])
+      ));
+
+      if (results.length > 0) {
+        // Show suggestions dropdown
+        suggestionsDropdown.style.display = 'block';
+        
+        // Clear previous suggestions
+        suggestionsDropdown.innerHTML = '';
+
+        // Create a list of suggestions
+        results.forEach((game, index) => {
+          const suggestionItem = document.createElement('div');
+          suggestionItem.style.padding = '8px 12px';
+          suggestionItem.style.cursor = 'pointer';
+          suggestionItem.style.transition = 'background-color 0.2s';
+          suggestionItem.innerHTML = game.title;
+
+          // Highlight item on hover
+          suggestionItem.addEventListener('mouseover', () => {
+            suggestionItem.style.backgroundColor = '#ff69b4';
+            suggestionItem.style.color = '#1e1b2e';
+          });
+
+          suggestionItem.addEventListener('mouseout', () => {
+            if (highlightedIndex !== index) {
+              suggestionItem.style.backgroundColor = 'transparent';
+              suggestionItem.style.color = '#fefefe';
+            }
+          });
+
+          // Set the item as selected on click
+          suggestionItem.addEventListener('click', () => {
+            window.location.href = game.url;
+          });
+
+          suggestionsDropdown.appendChild(suggestionItem);
+        });
+      } else {
+        suggestionsDropdown.style.display = 'none';
+      }
+    } else {
+      suggestionsDropdown.style.display = 'none';
+    }
+  });
+
+  // Handle keyboard navigation
+  searchInput.addEventListener('keydown', (e) => {
+    const suggestions = suggestionsDropdown.querySelectorAll('div');
+
+    if (e.key === 'ArrowDown') {
+      if (highlightedIndex < suggestions.length - 1) {
+        highlightedIndex++;
+        updateHighlightedItem(suggestions);
+      }
+    } else if (e.key === 'ArrowUp') {
+      if (highlightedIndex > 0) {
+        highlightedIndex--;
+        updateHighlightedItem(suggestions);
+      }
+    } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+      suggestions[highlightedIndex].click();
+    }
+  });
+
+  // Update the highlighted item
+  function updateHighlightedItem(suggestions) {
+    suggestions.forEach((item, index) => {
+      if (index === highlightedIndex) {
+        item.style.backgroundColor = '#ff69b4';
+        item.style.color = '#1e1b2e';
+      } else {
+        item.style.backgroundColor = 'transparent';
+        item.style.color = '#fefefe';
+      }
+    });
+  }
+
+  // Hide the suggestions when clicking outside the input or dropdown
+  document.addEventListener('click', (event) => {
+    if (!searchInput.contains(event.target) && !suggestionsDropdown.contains(event.target)) {
+      suggestionsDropdown.style.display = 'none';
+    }
+  });
+
+  // Search button functionality (optional)
+  document.getElementById('search-button').addEventListener('click', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    const result = gamePages.find(game => game.title.toLowerCase() === query);
+
+    if (result) {
+      window.location.href = result.url;
+    } else {
+      alert('No game found for your search.');
+    }
+  });
+</script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
