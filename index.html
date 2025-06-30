@@ -627,23 +627,30 @@
 
   const searchInput = document.getElementById('game-search-input');
   const suggestionsDropdown = document.getElementById('suggestions-dropdown');
+  let highlightedIndex = -1;
 
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim().toLowerCase();
     
     if (query) {
-      // Filter the game list based on the search query
-      const results = gamePages.filter(game => game.title.toLowerCase().includes(query));
+      // Filter based on first letter and overall query match
+      const firstLetterMatches = gamePages.filter(game => 
+        game.title.toLowerCase().startsWith(query[0])
+      );
+
+      const results = firstLetterMatches.concat(gamePages.filter(game => 
+        game.title.toLowerCase().includes(query) && !game.title.toLowerCase().startsWith(query[0])
+      ));
 
       if (results.length > 0) {
         // Show suggestions dropdown
         suggestionsDropdown.style.display = 'block';
         
-        // Clear any previous suggestions
+        // Clear previous suggestions
         suggestionsDropdown.innerHTML = '';
 
         // Create a list of suggestions
-        results.forEach(game => {
+        results.forEach((game, index) => {
           const suggestionItem = document.createElement('div');
           suggestionItem.style.padding = '8px 12px';
           suggestionItem.style.cursor = 'pointer';
@@ -657,11 +664,13 @@
           });
 
           suggestionItem.addEventListener('mouseout', () => {
-            suggestionItem.style.backgroundColor = 'transparent';
-            suggestionItem.style.color = '#fefefe';
+            if (highlightedIndex !== index) {
+              suggestionItem.style.backgroundColor = 'transparent';
+              suggestionItem.style.color = '#fefefe';
+            }
           });
 
-          // Redirect to the game page on click
+          // Set the item as selected on click
           suggestionItem.addEventListener('click', () => {
             window.location.href = game.url;
           });
@@ -669,14 +678,44 @@
           suggestionsDropdown.appendChild(suggestionItem);
         });
       } else {
-        // No results, hide the dropdown
         suggestionsDropdown.style.display = 'none';
       }
     } else {
-      // If the query is empty, hide the dropdown
       suggestionsDropdown.style.display = 'none';
     }
   });
+
+  // Handle keyboard navigation
+  searchInput.addEventListener('keydown', (e) => {
+    const suggestions = suggestionsDropdown.querySelectorAll('div');
+
+    if (e.key === 'ArrowDown') {
+      if (highlightedIndex < suggestions.length - 1) {
+        highlightedIndex++;
+        updateHighlightedItem(suggestions);
+      }
+    } else if (e.key === 'ArrowUp') {
+      if (highlightedIndex > 0) {
+        highlightedIndex--;
+        updateHighlightedItem(suggestions);
+      }
+    } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+      suggestions[highlightedIndex].click();
+    }
+  });
+
+  // Update the highlighted item
+  function updateHighlightedItem(suggestions) {
+    suggestions.forEach((item, index) => {
+      if (index === highlightedIndex) {
+        item.style.backgroundColor = '#ff69b4';
+        item.style.color = '#1e1b2e';
+      } else {
+        item.style.backgroundColor = 'transparent';
+        item.style.color = '#fefefe';
+      }
+    });
+  }
 
   // Hide the suggestions when clicking outside the input or dropdown
   document.addEventListener('click', (event) => {
@@ -697,7 +736,6 @@
     }
   });
 </script>
-
   
 <!DOCTYPE html>
 <html lang="en">
