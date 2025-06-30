@@ -732,7 +732,7 @@
     }
   }
 
- async function loadGames() {
+async function loadGames() {
   const { data, error } = await supabase
     .from('game_submissions')
     .select('*')
@@ -780,9 +780,11 @@
         const iframe = document.createElement('iframe');
         iframe.src = game.embed_url;
         iframe.className = 'video-player'; // Reuse styling
-        iframe.style.height = '300px';
+        iframe.style.height = '500px'; // Increased height for better gameplay area
         iframe.style.border = 'none';
-        iframe.allow = 'fullscreen';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('allow', 'autoplay; fullscreen');
+        iframe.loading = 'lazy';
         card.appendChild(iframe);
       } else {
         // fallback if not embeddable
