@@ -570,13 +570,14 @@
       display: block;
     }
 
-    .video-player {
+    .video-player, iframe.embed-iframe {
       width: 100%;
       border-radius: 8px;
       margin-bottom: 10px;
       background-color: black;
       max-height: 200px;
       max-width: 100%;
+      border: none;
     }
 
     .play-link {
@@ -590,295 +591,6 @@
       transition: background-color 0.2s ease;
       cursor: pointer;
       margin-top: auto; /* push to bottom */
-    }
-    .play-link:hover { background-color: #ff82ba; }
-
-    #chat-container {
-      max-width: 800px;
-      width: 100%;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      padding: 20px;
-      box-sizing: border-box;
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      height: 450px;
-      overflow: hidden;
-    }
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      padding-right: 10px;
-    }
-    #messages div { margin-bottom: 12px; }
-    #messages strong { color: #ff82ba; }
-
-    #chat-form {
-      display: flex;
-      gap: 10px;
-    }
-    #msg-input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: #fff;
-    }
-    button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    button:hover { background-color: #ff82ba; }
-
-    .no-content {
-      font-size: 1.1rem;
-      text-align: center;
-      color: #ddd;
-      margin-top: 2rem;
-      font-style: italic;
-      background-color: #2f1a39;
-      padding: 1rem;
-      border-radius: 10px;
-    }
-
-    /* Full-page game iframe container styles */
-    #fullpage-game-container {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #1b1b2e;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #fullpage-game-container iframe {
-      flex-grow: 1;
-      border: none;
-      width: 100%;
-    }
-
-    #fullpage-game-container button.back-btn {
-      background: #ff4f9f;
-      border: none;
-      color: #1b1b2e;
-      padding: 12px 16px;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 8px;
-      margin: 10px;
-      align-self: flex-start;
-      width: fit-content;
-      transition: background-color 0.2s ease;
-    }
-    #fullpage-game-container button.back-btn:hover {
-      background-color: #ff82ba;
-    }
-  </style>
-</head>
-<body>
-
-  <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
-  <h1 id="pageTitle">User Content</h1>
-
-  <section class="content-section" id="games-section">
-    <h2>Games</h2>
-    <div id="games" class="content-container">Loading games...</div>
-  </section>
-
-  <section class="content-section" id="art-section">
-    <h2>Art</h2>
-    <div id="art" class="content-container">Loading art...</div>
-  </section>
-
-  <section class="content-section" id="videos-section">
-    <h2>Videos</h2>
-    <div id="videos" class="content-container">Loading videos...</div>
-  </section>
-
-  <section id="chat-container">
-    <h2>Chat with {username}</h2>
-    <div id="messages"><p>Loading messages...</p></div>
-    <form id="chat-form">
-      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
-      <button type="submit">Send</button>
-    </form>
-  </section>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  const pageTitle = document.getElementById('pageTitle');
-  const gamesContainer = document.getElementById('games');
-  const artContainer = document.getElementById('art');
-  const videosContainer = document.getElementById('videos');
-  const chatContainer = document.getElementById('chat-container');
-  const messagesDiv = document.getElementById('messages');
-  const form = document.getElementById('chat-form');
-  const msgInput = document.getElementById('msg-input');
-  const chatHeading = chatContainer.querySelector('h2');
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const username = urlParams.get('user') || '';
-
-  let games = []; // Global to hold fetched games for full page embedding
-
-  async function incrementVipPageView() {
-    if (!username) return;
-
-    const { data: use<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>User Content - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      color: #fefefe;
-      margin: 0; padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh;
-    }
-    h1, h2 {
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
-      margin: 1rem 0;
-      width: 100%;
-      max-width: 800px;
-    }
-    .back-link {
-      align-self: flex-start;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      text-decoration: none;
-      font-size: 0.9rem;
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-weight: bold;
-      transition: background-color 0.2s ease;
-      margin-bottom: 1rem;
-      max-width: 800px;
-      display: inline-block;
-    }
-    .back-link:hover { background-color: #ff82ba; }
-
-    .content-section {
-      max-width: 800px;
-      width: 100%;
-      margin-bottom: 40px;
-    }
-
-    .content-container {
-      display: grid;
-      gap: 20px;
-      justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      width: 100%;
-    }
-
-    .card {
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 16px;
-      width: 100%;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 350px; /* enough height for embed */
-    }
-
-    .card:hover {
-      border-color: #ff82ba;
-      box-shadow: 0 0 10px #ff82ba;
-    }
-
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
-    }
-
-    .title {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .desc {
-      color: #ddd;
-      margin: 0.5rem 0 1rem 0;
-      min-height: 3rem;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .thumbnail {
-      width: 100%;
-      max-height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      display: block;
-      z-index: 2;
-    }
-
-    .video-player {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background-color: black;
-      max-height: 200px;
-      max-width: 100%;
-      z-index: 1;
-    }
-
-    iframe.full-embed {
-      width: 100%;
-      height: 300px;
-      border: none;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      z-index: 1;
-    }
-
-    .play-link {
-      display: inline-block;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      padding: 8px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.2s ease;
-      cursor: pointer;
-      margin-top: auto; /* push to bottom */
-      z-index: 2;
     }
     .play-link:hover { background-color: #ff82ba; }
 
@@ -999,297 +711,277 @@
       .from('users')
       .select('id')
       .eq('username', username)
+      .limit(1)
       .single();
 
-    if (userError || !userData) {
-      console.error('User not found for VIP increment:', userError);
+    if (userError || !userData) return;
+
+    const userId = userData.id;
+
+    // Increment vip_page_views count
+    await supabase
+      .from('users')
+      .update({ vip_page_views: supabase.raw('vip_page_views + 1') })
+      .eq('id', userId);
+  }
+
+  function createThumbnail(imageUrl, title = '') {
+    const img = document.createElement('img');
+    img.className = 'thumbnail';
+    img.src = imageUrl;
+    img.alt = title;
+    img.loading = 'lazy';
+    return img;
+  }
+
+  // Embeds an iframe (game or video) safely
+  function createIframeEmbed(url) {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'embed-iframe';
+    iframe.src = url;
+    iframe.width = '100%';
+    iframe.height = '200';
+    iframe.allowFullscreen = true;
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer';
+    iframe.style.border = 'none';
+    return iframe;
+  }
+
+  // Embed video tag for local videos or direct links to mp4/webm etc.
+  function createVideoEmbed(url) {
+    const video = document.createElement('video');
+    video.className = 'video-player';
+    video.controls = true;
+    video.src = url;
+    video.preload = 'metadata';
+    video.style.maxHeight = '200px';
+    video.style.maxWidth = '100%';
+    return video;
+  }
+
+  // Create a card element for content with optional embed (iframe or video)
+  function createContentCard(item, type) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const title = document.createElement('h3');
+    title.className = 'title';
+    title.textContent = item.title || '(Untitled)';
+
+    const desc = document.createElement('p');
+    desc.className = 'desc';
+    desc.textContent = item.description || '';
+
+    card.appendChild(title);
+
+    // For games and videos, embed iframe or video player if embed_url present
+    if ((type === 'games' || type === 'videos') && item.embed_url) {
+      if (type === 'games') {
+        // Game embed as iframe
+        card.appendChild(createIframeEmbed(item.embed_url));
+      } else if (type === 'videos') {
+        // Check if embed_url is a direct video link or a Youtube/Vimeo iframe link
+        const videoExt = item.embed_url.match(/\.(mp4|webm|ogg)$/i);
+        if (videoExt) {
+          card.appendChild(createVideoEmbed(item.embed_url));
+        } else {
+          // Otherwise embed iframe for videos (e.g. YouTube/Vimeo)
+          card.appendChild(createIframeEmbed(item.embed_url));
+        }
+      }
+    } else if (type === 'art' && item.image_url) {
+      // For art, show image thumbnail
+      card.appendChild(createThumbnail(item.image_url, item.title));
+    } else if (item.image_url) {
+      // fallback image thumbnail if available for games/videos without embed
+      card.appendChild(createThumbnail(item.image_url, item.title));
+    }
+
+    card.appendChild(desc);
+
+    // Play/visit link if provided
+    if (item.url) {
+      const link = document.createElement('a');
+      link.className = 'play-link';
+      link.href = item.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = type === 'games' ? 'Play' : type === 'art' ? 'View' : 'Watch';
+      card.appendChild(link);
+    }
+
+    return card;
+  }
+
+  // Load games
+  async function loadGames() {
+    if (!username) {
+      gamesContainer.textContent = 'No user specified.';
       return;
     }
 
-    const now = new Date().toISOString();
-
-    const { data, error } = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.id,
-      in_username: username,
-      in_now: now
-    });
-
-    if (error) {
-      console.error('Error incrementing VIP page views:', error);
-    } else {
-      console.log(`Incremented VIP page views for ${username}`);
-    }
-  }
-
-  async function loadGames() {
     const { data, error } = await supabase
-      .from('game_submissions')
+      .from('games')
       .select('*')
-      .eq('github_user', username)
+      .eq('username', username)
       .order('created_at', { ascending: false });
 
     if (error) {
-      gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
+      gamesContainer.textContent = 'Error loading games.';
+      console.error(error);
       return;
     }
 
-    if (!data.length) {
-      gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+    if (!data || data.length === 0) {
+      gamesContainer.innerHTML = '<p class="no-content">No games found.</p>';
       return;
     }
 
     gamesContainer.innerHTML = '';
-    data.forEach((game, index) => {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.gameId = game.id || `game-${index}`;
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = game.title || 'Untitled Game';
-      card.appendChild(title);
-
-      if (game.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = game.description;
-        card.appendChild(desc);
-      }
-
-      // Show screenshot thumbnail if present and no embed_url OR embed_url is not embeddable
-      if (game.screenshot_url && (!game.embed_url || !isEmbeddableUrl(game.embed_url))) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-        img.alt = `Screenshot of ${game.title}`;
-        card.appendChild(img);
-      }
-
-      // If embed_url is embeddable, show full page embed iframe
-      if (game.embed_url && isEmbeddableUrl(game.embed_url)) {
-        const iframe = document.createElement('iframe');
-        iframe.src = game.embed_url;
-        iframe.className = 'full-embed';
-        iframe.allow = 'fullscreen';
-        card.appendChild(iframe);
-      } else if (game.embed_url) {
-        // fallback if not embeddable
-        const playLink = document.createElement('a');
-        playLink.className = 'play-link';
-        playLink.href = game.embed_url;
-        playLink.target = '_blank';
-        playLink.rel = 'noopener noreferrer';
-        playLink.textContent = 'Play Game';
-        card.appendChild(playLink);
-      }
-
+    data.forEach(game => {
+      const card = createContentCard(game, 'games');
       gamesContainer.appendChild(card);
     });
   }
 
-  function isEmbeddableUrl(url) {
-    // Basic check: allow embedding for github.io or http(s) URLs without file extensions (assuming web apps)
-    try {
-      const u = new URL(url);
-      if (u.hostname.endsWith('github.io')) return true;
-      // Add more conditions here if you want to allow other domains
-      if (u.protocol === 'http:' || u.protocol === 'https:') {
-        // If url ends with .html, .htm, or no extension, allow embed
-        if (u.pathname.endsWith('.html') || u.pathname.endsWith('.htm') || !u.pathname.includes('.')) {
-          return true;
-        }
-      }
-    } catch {
-      return false;
-    }
-    return false;
-  }
-
+  // Load art
   async function loadArt() {
-    const { data, error } = await supabase
-      .from('user_art')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+    if (!username) {
+      artContainer.textContent = 'No user specified.';
       return;
     }
 
-    if (!data.length) {
-      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+    const { data, error } = await supabase
+      .from('art')
+      .select('*')
+      .eq('username', username)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      artContainer.textContent = 'Error loading art.';
+      console.error(error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      artContainer.innerHTML = '<p class="no-content">No art found.</p>';
       return;
     }
 
     artContainer.innerHTML = '';
-    data.forEach((art, index) => {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.artId = art.id || `art-${index}`;
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = art.title || 'Untitled Art';
-      card.appendChild(title);
-
-      if (art.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = art.description;
-        card.appendChild(desc);
-      }
-
-      if (art.image_url) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        img.src = convertDriveLinkToThumbnail(art.image_url);
-        img.alt = `Art by ${username}`;
-        card.appendChild(img);
-      }
-
+    data.forEach(art => {
+      const card = createContentCard(art, 'art');
       artContainer.appendChild(card);
     });
   }
 
+  // Load videos
   async function loadVideos() {
-    const { data, error } = await supabase
-      .from('videos')
-      .select('*')
-      .eq('user_github', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
+    if (!username) {
+      videosContainer.textContent = 'No user specified.';
       return;
     }
 
-    if (!data.length) {
-      videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+    const { data, error } = await supabase
+      .from('videos')
+      .select('*')
+      .eq('username', username)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      videosContainer.textContent = 'Error loading videos.';
+      console.error(error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      videosContainer.innerHTML = '<p class="no-content">No videos found.</p>';
       return;
     }
 
     videosContainer.innerHTML = '';
-    data.forEach((video, index) => {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.videoId = video.id || `video-${index}`;
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = video.title || 'Untitled Video';
-      card.appendChild(title);
-
-      if (video.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = video.description;
-        card.appendChild(desc);
-      }
-
-      if (video.embed_url) {
-        const iframe = document.createElement('iframe');
-        iframe.src = video.embed_url;
-        iframe.className = 'full-embed';
-        iframe.allow = 'fullscreen';
-        card.appendChild(iframe);
-      }
-
+    data.forEach(video => {
+      const card = createContentCard(video, 'videos');
       videosContainer.appendChild(card);
     });
   }
 
-  function convertDriveLinkToThumbnail(link) {
-    // convert google drive view link to direct thumbnail if possible
-    if (!link) return '';
-    const match = link.match(/\/file\/d\/([a-zA-Z0-9_-]+)\//);
-    if (match && match[1]) {
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-    }
-    return link; // fallback to original link if pattern doesn't match
-  }
-
-  // Chat setup
+  // Chat functionality
   async function loadMessages() {
     if (!username) {
-      messagesDiv.innerHTML = '<p>Please provide a username to chat with.</p>';
+      messagesDiv.innerHTML = '<p>No user specified.</p>';
       return;
     }
+
     const { data, error } = await supabase
-      .from('chat_messages')
+      .from('messages')
       .select('*')
-      .eq('recipient', username)
-      .order('created_at', { ascending: true })
-      .limit(100);
+      .eq('username', username)
+      .order('created_at', { ascending: true });
 
     if (error) {
-      messagesDiv.innerHTML = `<p class="no-content">Error loading messages: ${error.message}</p>`;
+      messagesDiv.innerHTML = '<p>Error loading messages.</p>';
+      console.error(error);
       return;
     }
 
-    if (!data.length) {
-      messagesDiv.innerHTML = '<p>No messages yet.</p>';
+    if (!data || data.length === 0) {
+      messagesDiv.innerHTML = '<p>No messages yet. Say hi!</p>';
       return;
     }
 
     messagesDiv.innerHTML = '';
     data.forEach(msg => {
-      const msgDiv = document.createElement('div');
-      msgDiv.innerHTML = `<strong>${msg.sender}</strong>: ${msg.message}`;
-      messagesDiv.appendChild(msgDiv);
+      const div = document.createElement('div');
+      div.innerHTML = `<strong>${msg.sender || 'Anonymous'}:</strong> ${msg.message}`;
+      messagesDiv.appendChild(div);
     });
 
+    // Scroll to bottom
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  async function sendMessage(text) {
+    if (!username) return;
+    const { error } = await supabase.from('messages').insert([
+      { username: username, sender: 'Guest', message: text }
+    ]);
+    if (error) console.error('Error sending message:', error);
+    else loadMessages();
   }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const message = msgInput.value.trim();
-    if (!message) return;
-
-    const { data, error } = await supabase.from('chat_messages').insert([
-      {
-        sender: 'currentUser', // replace with real sender ID or username
-        recipient: username,
-        message,
-        created_at: new Date().toISOString()
-      }
-    ]);
-
-    if (error) {
-      alert('Error sending message: ' + error.message);
-      return;
-    }
-
+    const text = msgInput.value.trim();
+    if (text.length === 0) return;
+    await sendMessage(text);
     msgInput.value = '';
-    await loadMessages();
   });
 
-  // Initialize page
-  async function init() {
+  // Initialize
+  (async () => {
     if (!username) {
-      pageTitle.textContent = 'User Content - No User Specified';
-      gamesContainer.innerHTML = '<p class="no-content">Please specify a user in the URL, e.g. ?user=username</p>';
-      artContainer.innerHTML = '';
-      videosContainer.innerHTML = '';
+      pageTitle.textContent = 'No user specified.';
+      gamesContainer.textContent = '';
+      artContainer.textContent = '';
+      videosContainer.textContent = '';
       chatContainer.style.display = 'none';
       return;
     }
-    pageTitle.textContent = `User Content for ${username}`;
+
+    pageTitle.textContent = `${username}'s Content`;
     chatHeading.textContent = `Chat with ${username}`;
+
     await incrementVipPageView();
-    await loadGames();
-    await loadArt();
-    await loadVideos();
-    await loadMessages();
-  }
 
-  init();
-
+    await Promise.all([loadGames(), loadArt(), loadVideos(), loadMessages()]);
+  })();
 </script>
 
 </body>
 </html>
+
 
 <!DOCTYPE html>
 <html lang="en">
