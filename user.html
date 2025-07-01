@@ -589,7 +589,7 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
-      margin-top: auto; /* push to bottom */
+      margin-top: auto;
     }
     .play-link:hover { background-color: #ff82ba; }
 
@@ -655,32 +655,32 @@
 </head>
 <body>
 
-  <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
-  <h1 id="pageTitle">User Content</h1>
+<a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
+<h1 id="pageTitle">User Content</h1>
 
-  <section class="content-section" id="games-section">
-    <h2>Games</h2>
-    <div id="games" class="content-container">Loading games...</div>
-  </section>
+<section class="content-section" id="games-section">
+  <h2>Games</h2>
+  <div id="games" class="content-container">Loading games...</div>
+</section>
 
-  <section class="content-section" id="art-section">
-    <h2>Art</h2>
-    <div id="art" class="content-container">Loading art...</div>
-  </section>
+<section class="content-section" id="art-section">
+  <h2>Art</h2>
+  <div id="art" class="content-container">Loading art...</div>
+</section>
 
-  <section class="content-section" id="videos-section">
-    <h2>Videos</h2>
-    <div id="videos" class="content-container">Loading videos...</div>
-  </section>
+<section class="content-section" id="videos-section">
+  <h2>Videos</h2>
+  <div id="videos" class="content-container">Loading videos...</div>
+</section>
 
-  <section id="chat-container">
-    <h2>Chat with {username}</h2>
-    <div id="messages"><p>Loading messages...</p></div>
-    <form id="chat-form">
-      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
-      <button type="submit">Send</button>
-    </form>
-  </section>
+<section id="chat-container">
+  <h2>Chat with {username}</h2>
+  <div id="messages"><p>Loading messages...</p></div>
+  <form id="chat-form">
+    <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
+    <button type="submit">Send</button>
+  </form>
+</section>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -702,6 +702,18 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
+  chatHeading.textContent = `Chat with ${username}`;
+  pageTitle.textContent = `User Content - ${username}`;
+
+  function convertDriveLinkToEmbed(url) {
+    const match = url.match(/\/file\/d\/([^/]+)\//);
+    return match ? `https://drive.google.com/uc?export=preview&id=${match[1]}` : url;
+  }
+
+  function convertDriveLinkToThumbnail(url) {
+    const match = url.match(/\/file\/d\/([^/]+)\//);
+    return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : url;
+  }
 
   async function incrementVipPageView() {
     if (!username) return;
@@ -732,74 +744,89 @@
     }
   }
 
-async function loadGames() {
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
+  async function loadGames() {
+    const { data, error } = await supabase
+      .from('game_submissions')
+      .select('*')
+      .eq('github_user', username)
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  gamesContainer.innerHTML = '';
-  data.forEach((game, index) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.dataset.gameId = game.id || `game-${index}`;
-
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = game.title || 'Untitled Game';
-    card.appendChild(title);
-
-    if (game.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = game.description;
-      card.appendChild(desc);
+    if (error) {
+      gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
+      return;
     }
 
-    if (game.screenshot_url) {
-      const img = document.createElement('img');
-      img.className = 'thumbnail';
-      img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-      img.alt = `Screenshot of ${game.title}`;
-      card.appendChild(img);
+    if (!data.length) {
+      gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+      return;
     }
 
-    if (game.embed_url) {
-      if (game.embed_url.includes('github.io') || game.embed_url.startsWith('http')) {
-        const iframe = document.createElement('iframe');
-        iframe.src = game.embed_url;
-        iframe.className = 'video-player'; // Reuse styling
-        iframe.style.height = '500px'; // Increased height for better gameplay area
-        iframe.style.border = 'none';
-        iframe.setAttribute('allowfullscreen', '');
-        iframe.setAttribute('allow', 'autoplay; fullscreen');
-        iframe.loading = 'lazy';
-        card.appendChild(iframe);
-      } else {
-        // fallback if not embeddable
-        const playLink = document.createElement('a');
-        playLink.className = 'play-link';
-        playLink.href = game.embed_url;
-        playLink.target = '_blank';
-        playLink.rel = 'noopener noreferrer';
-        playLink.textContent = 'Play Game';
-        card.appendChild(playLink);
+    gamesContainer.innerHTML = '';
+    data.forEach((game, index) => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.dataset.gameId = game.id || `game-${index}`;
+
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = game.title || 'Untitled Game';
+      card.appendChild(title);
+
+      if (game.description) {
+        const desc = document.createElement('p');
+        desc.className = 'desc';
+        desc.textContent = game.description;
+        card.appendChild(desc);
       }
-    }
 
-    gamesContainer.appendChild(card);
-  });
+      if (game.screenshot_url) {
+        const img = document.createElement('img');
+        img.className = 'thumbnail';
+        img.src = convertDriveLinkToThumbnail(game.screenshot_url);
+        img.alt = `Screenshot of ${game.title}`;
+        card.appendChild(img);
+      }
+
+      if (game.embed_url) {
+        const embedUrl = game.embed_url;
+
+        if (embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
+          const iframe = document.createElement('iframe');
+          iframe.src = embedUrl;
+          iframe.className = 'video-player';
+          iframe.style.height = '500px';
+          iframe.style.border = 'none';
+          iframe.setAttribute('allowfullscreen', '');
+          iframe.setAttribute('allow', 'autoplay; fullscreen');
+          iframe.loading = 'lazy';
+          card.appendChild(iframe);
+        } else if (embedUrl.includes('drive.google.com')) {
+          const iframe = document.createElement('iframe');
+          iframe.src = convertDriveLinkToEmbed(embedUrl);
+          iframe.className = 'video-player';
+          iframe.style.height = '300px';
+          iframe.style.border = 'none';
+          iframe.setAttribute('allowfullscreen', '');
+          iframe.setAttribute('allow', 'autoplay');
+          iframe.loading = 'lazy';
+          card.appendChild(iframe);
+        } else {
+          const playLink = document.createElement('a');
+          playLink.className = 'play-link';
+          playLink.href = embedUrl;
+          playLink.target = '_blank';
+          playLink.rel = 'noopener noreferrer';
+          playLink.textContent = 'Play Game';
+          card.appendChild(playLink);
+        }
+      }
+
+      gamesContainer.appendChild(card);
+    });
+  }
+
+  incrementVipPageView();
+  loadGames();
 }
 
   async function loadArt() {
