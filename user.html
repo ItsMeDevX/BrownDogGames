@@ -776,21 +776,50 @@ async function loadGames() {
     }
 
     if (game.embed_url) {
-      if (game.embed_url.includes('github.io') || game.embed_url.startsWith('http')) {
+      // Detect Google Drive link and convert to preview URL
+      let embedUrl = game.embed_url;
+
+      if (embedUrl.includes('drive.google.com')) {
+        const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
+        const fileId = fileIdMatch ? fileIdMatch[1] : null;
+        if (fileId) {
+          embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+      }
+
+      if (embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
         const iframe = document.createElement('iframe');
-        iframe.src = game.embed_url;
-        iframe.className = 'video-player'; // Reuse styling
-        iframe.style.height = '700px'; // <-- Only changed this to make GitHub Pages bigger
+        iframe.src = embedUrl;
+        iframe.className = 'video-player'; // reuse styling, but let's override width/height
+        iframe.style.width = '100%';
+        iframe.style.height = '700px';  // bigger height for better gameplay
         iframe.style.border = 'none';
         iframe.setAttribute('allowfullscreen', '');
-        iframe.setAttribute('allow', 'autoplay; fullscreen');
+        iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
         iframe.loading = 'lazy';
         card.appendChild(iframe);
+
+        // Optional: fullscreen button to toggle fullscreen for iframe
+        const fsButton = document.createElement('button');
+        fsButton.textContent = 'Fullscreen';
+        fsButton.style.marginTop = '10px';
+        fsButton.style.alignSelf = 'center';
+        fsButton.onclick = () => {
+          if (iframe.requestFullscreen) {
+            iframe.requestFullscreen();
+          } else if (iframe.webkitRequestFullscreen) { /* Safari */
+            iframe.webkitRequestFullscreen();
+          } else if (iframe.msRequestFullscreen) { /* IE11 */
+            iframe.msRequestFullscreen();
+          }
+        };
+        card.appendChild(fsButton);
+
       } else {
         // fallback if not embeddable
         const playLink = document.createElement('a');
         playLink.className = 'play-link';
-        playLink.href = game.embed_url;
+        playLink.href = embedUrl;
         playLink.target = '_blank';
         playLink.rel = 'noopener noreferrer';
         playLink.textContent = 'Play Game';
@@ -801,12 +830,12 @@ async function loadGames() {
     gamesContainer.appendChild(card);
   });
 }
-
+  
   async function loadArt() {
     const { data, error } = await supabase
-      .from('art_submissions')
+      .from('user_art')
       .select('*')
-      .eq('github_user', username)
+      .eq('github_username', username)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -823,7 +852,6 @@ async function loadGames() {
     data.forEach((art, index) => {
       const card = document.createElement('article');
       card.className = 'card';
-      card.dataset.artId = art.id || `art-${index}`;
 
       const title = document.createElement('h3');
       title.className = 'title';
@@ -837,11 +865,12 @@ async function loadGames() {
         card.appendChild(desc);
       }
 
-      if (art.art_url) {
+      if (art.image_url) {
         const img = document.createElement('img');
         img.className = 'thumbnail';
-        img.src = convertDriveLinkToThumbnail(art.art_url);
-        img.alt = `Art: ${art.title}`;
+        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+        img.src = thumbUrl || art.image_url;
+        img.alt = `Artwork: ${art.title}`;
         card.appendChild(img);
       }
 
@@ -851,9 +880,9 @@ async function loadGames() {
 
   async function loadVideos() {
     const { data, error } = await supabase
-      .from('video_submissions')
+      .from('game_videos')
       .select('*')
-      .eq('github_user', username)
+      .eq('github_username', username)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -870,12 +899,44 @@ async function loadGames() {
     data.forEach((video, index) => {
       const card = document.createElement('article');
       card.className = 'card';
-      card.dataset.videoId = video.id || `video-${index}`;
 
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = video.title || 'Untitled Video';
-      card.appendChild(title);
+      if (video.video_url) {
+        let videoEl;
+
+        if (video.video_url.includes("drive.google.com")) {
+          const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
+          const fileId = fileIdMatch ? fileIdMatch[1] : null;
+
+          if (fileId) {
+            videoEl = document.createElement('iframe');
+            videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
+            videoEl.width = '100%';
+            videoEl.height = '360';
+            videoEl.allow = 'autoplay';
+            videoEl.frameBorder = '0';
+            videoEl.className = 'video-player';
+          } else {
+            videoEl = document.createElement('p');
+            videoEl.textContent = '⚠️ Invalid Google Drive link.';
+          }
+
+        } else {
+          videoEl = document.createElement('video');
+          videoEl.controls = true;
+          videoEl.className = 'video-player';
+          videoEl.src = video.video_url;
+          videoEl.type = 'video/mp4';
+        }
+
+        card.appendChild(videoEl);
+      }
+
+      if (video.title) {
+        const title = document.createElement('h3');
+        title.className = 'title';
+        title.textContent = video.title;
+        card.appendChild(title);
+      }
 
       if (video.description) {
         const desc = document.createElement('p');
@@ -884,116 +945,98 @@ async function loadGames() {
         card.appendChild(desc);
       }
 
-      if (video.video_url) {
-        const iframe = document.createElement('iframe');
-        iframe.className = 'video-player';
-        iframe.src = video.video_url;
-        iframe.style.border = 'none';
-        iframe.setAttribute('allowfullscreen', '');
-        iframe.setAttribute('allow', 'autoplay; fullscreen');
-        iframe.loading = 'lazy';
-        card.appendChild(iframe);
-      }
-
       videosContainer.appendChild(card);
     });
   }
 
-  function convertDriveLinkToThumbnail(url) {
-    // converts Google Drive preview URLs to thumbnail URLs if needed
-    // fallback to original url if not recognized
-    if (!url) return '';
-    if (url.includes('drive.google.com')) {
-      // extract file id and build thumbnail URL
-      const match = url.match(/[-\w]{25,}/);
-      if (match) {
-        return `https://drive.google.com/uc?export=view&id=${match[0]}`;
-      }
-    }
-    return url;
-  }
-
-  // CHAT PART (basic polling implementation for demo)
-
-  let lastMessageId = 0;
-  async function loadMessages() {
-    if (!username) return;
-
+  async function loadChatMessages() {
     const { data, error } = await supabase
-      .from('chat_messages')
+      .from('messages')
       .select('*')
-      .eq('chat_user', username)
+      .eq('github_username', username)
       .order('created_at', { ascending: true });
 
     if (error) {
-      messagesDiv.innerHTML = `<div class="no-content">Error loading chat messages: ${error.message}</div>`;
+      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
+      console.error(error);
       return;
     }
 
     if (!data.length) {
-      messagesDiv.innerHTML = `<p class="no-content">No messages yet. Start chatting!</p>`;
+      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
       return;
     }
 
-    // Only update if new messages arrived
-    if (data.length && data[data.length - 1].id !== lastMessageId) {
-      messagesDiv.innerHTML = '';
-      data.forEach(msg => {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>${msg.sender || 'Anon'}:</strong> ${escapeHtml(msg.message)}`;
-        messagesDiv.appendChild(div);
-      });
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      lastMessageId = data[data.length - 1].id;
-    }
+    messagesDiv.innerHTML = data.map(m => `
+      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
+    `).join('');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  function escapeHtml(text) {
-    if (!text) return '';
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  form.addEventListener('submit', async e => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const message = msgInput.value.trim();
     if (!message) return;
 
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .insert([{ chat_user: username, sender: 'User', message }]);
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ github_username: username, content: message }]);
 
     if (error) {
-      alert('Error sending message: ' + error.message);
+      alert('Failed to send message: ' + error.message);
       return;
     }
+
     msgInput.value = '';
-    await loadMessages();
+    loadChatMessages();
   });
 
-  async function initPage() {
-    if (!username) {
-      alert('No user specified in URL? Example: ?user=johndoe');
-      return;
-    }
-    pageTitle.textContent = `Content for ${username}`;
-    chatHeading.textContent = `Chat with ${username}`;
-
-    await incrementVipPageView();
-    await loadGames();
-    await loadArt();
-    await loadVideos();
-    await loadMessages();
-
-    // Poll chat every 5 seconds
-    setInterval(loadMessages, 5000);
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, (m) => {
+      switch(m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#39;';
+        default: return m;
+      }
+    });
   }
 
-  initPage();
+  // Placeholder for your thumbnail conversion logic if needed:
+  function convertDriveLinkToThumbnail(url) {
+    if (!url) return '';
+    // Example: convert Google Drive share URL to thumbnail URL if needed
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      return `https://drive.google.com/thumbnail?id=${fileId}`;
+    }
+    return url;
+  }
+
+  // Main execution block
+  if (!username) {
+    pageTitle.textContent = 'Error';
+    chatHeading.textContent = 'Error';
+    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
+    artContainer.innerHTML = '';
+    videosContainer.innerHTML = '';
+    messagesDiv.innerHTML = '';
+  } else {
+    pageTitle.textContent = `${username}'s Content`;
+    chatHeading.textContent = `Chat with ${username}`;
+
+    // Increment the VIP page views count each time this page loads for this user
+    incrementVipPageView();
+
+    loadGames();
+    loadArt();
+    loadVideos();
+    loadChatMessages();
+  }
 </script>
 
 </body>
