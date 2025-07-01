@@ -815,221 +815,212 @@ function convertDriveLinkToThumbnail(url) {
   return url;
 }
 
-async function loadArt() {
-  const { data, error } = await supabase
-    .from('art_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
+ async function loadArt() {
+    const { data, error } = await supabase
+      .from('user_art')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  artContainer.innerHTML = '';
-  data.forEach((art, index) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-
-    if (art.image_url) {
-      const img = document.createElement('img');
-      img.src = convertDriveLinkToThumbnail(art.image_url);
-      img.alt = art.title || `Art by ${username}`;
-      img.className = 'thumbnail';
-      card.appendChild(img);
+    if (error) {
+      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+      return;
     }
 
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = art.title || 'Untitled Art';
-    card.appendChild(title);
-
-    if (art.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = art.description;
-      card.appendChild(desc);
+    if (!data.length) {
+      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+      return;
     }
 
-    artContainer.appendChild(card);
-  });
-}
+    artContainer.innerHTML = '';
+    data.forEach((art, index) => {
+      const card = document.createElement('article');
+      card.className = 'card';
 
-async function loadVideos() {
-  const { data, error } = await supabase
-    .from('video_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = art.title || 'Untitled Art';
+      card.appendChild(title);
 
-  if (error) {
-    videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  videosContainer.innerHTML = '';
-  data.forEach((video, index) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = video.title || 'Untitled Video';
-    card.appendChild(title);
-
-    if (video.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = video.description;
-      card.appendChild(desc);
-    }
-
-    let videoEl = null;
-    if (video.video_url) {
-      // Try to detect if Google Drive link
-      const driveRegex = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-      const match = video.video_url.match(driveRegex);
-      if (match && match[1]) {
-        const fileId = match[1];
-        videoEl = document.createElement('iframe');
-        videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-        videoEl.width = '100%';
-        videoEl.height = '480'; // Increased height
-        videoEl.allow = 'autoplay';
-        videoEl.frameBorder = '0';
-        videoEl.className = 'video-player';
-      } else {
-        videoEl = document.createElement('video');
-        videoEl.src = video.video_url;
-        videoEl.controls = true;
-        videoEl.className = 'video-player';
+      if (art.description) {
+        const desc = document.createElement('p');
+        desc.className = 'desc';
+        desc.textContent = art.description;
+        card.appendChild(desc);
       }
-      card.appendChild(videoEl);
+
+      if (art.image_url) {
+        const img = document.createElement('img');
+        img.className = 'thumbnail';
+        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+        img.src = thumbUrl || art.image_url;
+        img.alt = `Artwork: ${art.title}`;
+        card.appendChild(img);
+      }
+
+      artContainer.appendChild(card);
+    });
+  }
+
+  async function loadVideos() {
+    const { data, error } = await supabase
+      .from('game_videos')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
+      return;
     }
 
-    videosContainer.appendChild(card);
-  });
-}
+    if (!data.length) {
+      videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+      return;
+    }
 
-// Chat implementation below
+    videosContainer.innerHTML = '';
+    data.forEach((video, index) => {
+      const card = document.createElement('article');
+      card.className = 'card';
 
-let chatSubscription = null;
-let lastMessageId = 0;
+      if (video.video_url) {
+        let videoEl;
 
-async function loadMessages() {
-  if (!username) return;
+        if (video.video_url.includes("drive.google.com")) {
+          const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
+          const fileId = fileIdMatch ? fileIdMatch[1] : null;
 
-  const { data, error } = await supabase
-    .from('chat_messages')
-    .select('*')
-    .eq('room', username)
-    .order('created_at', { ascending: true });
+          if (fileId) {
+            videoEl = document.createElement('iframe');
+            videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
+            videoEl.width = '100%';
+            videoEl.height = '360';
+            videoEl.allow = 'autoplay';
+            videoEl.frameBorder = '0';
+            videoEl.className = 'video-player';
+          } else {
+            videoEl = document.createElement('p');
+            videoEl.textContent = '⚠️ Invalid Google Drive link.';
+          }
 
-  if (error) {
-    messagesDiv.innerHTML = `<div class="no-content">Error loading messages: ${error.message}</div>`;
-    return;
-  }
+        } else {
+          videoEl = document.createElement('video');
+          videoEl.controls = true;
+          videoEl.className = 'video-player';
+          videoEl.src = video.video_url;
+          videoEl.type = 'video/mp4';
+        }
 
-  messagesDiv.innerHTML = '';
-  if (data.length === 0) {
-    messagesDiv.innerHTML = '<p class="no-content">No messages yet.</p>';
-    return;
-  }
-
-  data.forEach(msg => {
-    addMessageToChat(msg);
-    lastMessageId = Math.max(lastMessageId, msg.id);
-  });
-  scrollChatToBottom();
-}
-
-function addMessageToChat(msg) {
-  const div = document.createElement('div');
-  div.innerHTML = `<strong>${escapeHTML(msg.sender)}:</strong> ${escapeHTML(msg.message)}`;
-  messagesDiv.appendChild(div);
-}
-
-function scrollChatToBottom() {
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function escapeHTML(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function subscribeToNewMessages() {
-  if (!username) return;
-
-  if (chatSubscription) {
-    supabase.removeSubscription(chatSubscription);
-  }
-
-  chatSubscription = supabase
-    .from(`chat_messages:room=eq.${username}`)
-    .on('INSERT', payload => {
-      const msg = payload.new;
-      if (msg.id > lastMessageId) {
-        addMessageToChat(msg);
-        lastMessageId = msg.id;
-        scrollChatToBottom();
+        card.appendChild(videoEl);
       }
-    })
-    .subscribe();
-}
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const message = msgInput.value.trim();
-  if (!message) return;
+      if (video.title) {
+        const title = document.createElement('h3');
+        title.className = 'title';
+        title.textContent = video.title;
+        card.appendChild(title);
+      }
 
-  const { data, error } = await supabase.from('chat_messages').insert({
-    room: username,
-    sender: 'Guest',
-    message
-  });
+      if (video.description) {
+        const desc = document.createElement('p');
+        desc.className = 'desc';
+        desc.textContent = video.description;
+        card.appendChild(desc);
+      }
 
-  if (error) {
-    alert('Error sending message: ' + error.message);
-  } else {
+      videosContainer.appendChild(card);
+    });
+  }
+
+  async function loadChatMessages() {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
+      console.error(error);
+      return;
+    }
+
+    if (!data.length) {
+      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
+      return;
+    }
+
+    messagesDiv.innerHTML = data.map(m => `
+      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
+    `).join('');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const message = msgInput.value.trim();
+    if (!message) return;
+
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ github_username: username, content: message }]);
+
+    if (error) {
+      alert('Failed to send message: ' + error.message);
+      return;
+    }
+
     msgInput.value = '';
-  }
-});
+    loadChatMessages();
+  });
 
-async function init() {
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, (m) => {
+      switch(m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#39;';
+        default: return m;
+      }
+    });
+  }
+
+  // Placeholder for your thumbnail conversion logic if needed:
+  function convertDriveLinkToThumbnail(url) {
+    if (!url) return '';
+    // Example: convert Google Drive share URL to thumbnail URL if needed
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      return `https://drive.google.com/thumbnail?id=${fileId}`;
+    }
+    return url;
+  }
+
+  // Main execution block
   if (!username) {
-    pageTitle.textContent = 'User Content - No User Selected';
-    gamesContainer.innerHTML = '<p class="no-content">No user specified in URL.</p>';
+    pageTitle.textContent = 'Error';
+    chatHeading.textContent = 'Error';
+    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
     artContainer.innerHTML = '';
     videosContainer.innerHTML = '';
-    chatContainer.style.display = 'none';
-    return;
+    messagesDiv.innerHTML = '';
+  } else {
+    pageTitle.textContent = `${username}'s Content`;
+    chatHeading.textContent = `Chat with ${username}`;
+
+    // Increment the VIP page views count each time this page loads for this user
+    incrementVipPageView();
+
+    loadGames();
+    loadArt();
+    loadVideos();
+    loadChatMessages();
   }
-
-  pageTitle.textContent = `User Content for ${username}`;
-  chatHeading.textContent = `Chat with ${username}`;
-
-  await incrementVipPageView();
-  await loadGames();
-  await loadArt();
-  await loadVideos();
-  await loadMessages();
-  subscribeToNewMessages();
-}
-
-init();
 </script>
 
 </body>
