@@ -575,8 +575,7 @@
       border-radius: 8px;
       margin-bottom: 10px;
       background-color: black;
-      max-height: none;
-      min-height: 400px;
+      max-height: 200px;
       max-width: 100%;
     }
 
@@ -776,50 +775,38 @@ async function loadGames() {
       card.appendChild(img);
     }
 
-    // Embed games that are GitHub Pages or http URLs
-    if (game.embed_url && (game.embed_url.includes('github.io') || game.embed_url.startsWith('http'))) {
-      const iframe = document.createElement('iframe');
-      iframe.src = game.embed_url;
-      iframe.className = 'video-player';
-      iframe.style.height = '700px'; // Increased height
-      iframe.style.border = 'none';
-      iframe.setAttribute('allowfullscreen', '');
-      iframe.setAttribute('allow', 'autoplay; fullscreen');
-      iframe.loading = 'lazy';
-      card.appendChild(iframe);
-    } else if (game.play_url) {
-      const playLink = document.createElement('a');
-      playLink.href = game.play_url;
-      playLink.textContent = 'Play Game';
-      playLink.className = 'play-link';
-      playLink.target = '_blank';
-      playLink.rel = 'noopener noreferrer nofollow';
-      card.appendChild(playLink);
+    if (game.embed_url) {
+      if (game.embed_url.includes('github.io') || game.embed_url.startsWith('http')) {
+        const iframe = document.createElement('iframe');
+        iframe.src = game.embed_url;
+        iframe.className = 'video-player'; // Reuse styling
+        iframe.style.height = '700px'; // <-- Only changed this to make GitHub Pages bigger
+        iframe.style.border = 'none';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('allow', 'autoplay; fullscreen');
+        iframe.loading = 'lazy';
+        card.appendChild(iframe);
+      } else {
+        // fallback if not embeddable
+        const playLink = document.createElement('a');
+        playLink.className = 'play-link';
+        playLink.href = game.embed_url;
+        playLink.target = '_blank';
+        playLink.rel = 'noopener noreferrer';
+        playLink.textContent = 'Play Game';
+        card.appendChild(playLink);
+      }
     }
 
     gamesContainer.appendChild(card);
   });
 }
 
-function convertDriveLinkToThumbnail(url) {
-  // If URL looks like Google Drive file, convert to direct thumbnail URL
-  try {
-    const driveRegex = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-    const match = url.match(driveRegex);
-    if (match && match[1]) {
-      return `https://drive.google.com/thumbnail?id=${match[1]}`;
-    }
-  } catch {
-    // fail silently
-  }
-  return url;
-}
-
- async function loadArt() {
+  async function loadArt() {
     const { data, error } = await supabase
-      .from('user_art')
+      .from('art_submissions')
       .select('*')
-      .eq('github_username', username)
+      .eq('github_user', username)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -836,6 +823,7 @@ function convertDriveLinkToThumbnail(url) {
     data.forEach((art, index) => {
       const card = document.createElement('article');
       card.className = 'card';
+      card.dataset.artId = art.id || `art-${index}`;
 
       const title = document.createElement('h3');
       title.className = 'title';
@@ -849,12 +837,11 @@ function convertDriveLinkToThumbnail(url) {
         card.appendChild(desc);
       }
 
-      if (art.image_url) {
+      if (art.art_url) {
         const img = document.createElement('img');
         img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title}`;
+        img.src = convertDriveLinkToThumbnail(art.art_url);
+        img.alt = `Art: ${art.title}`;
         card.appendChild(img);
       }
 
@@ -864,9 +851,9 @@ function convertDriveLinkToThumbnail(url) {
 
   async function loadVideos() {
     const { data, error } = await supabase
-      .from('game_videos')
+      .from('video_submissions')
       .select('*')
-      .eq('github_username', username)
+      .eq('github_user', username)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -883,44 +870,12 @@ function convertDriveLinkToThumbnail(url) {
     data.forEach((video, index) => {
       const card = document.createElement('article');
       card.className = 'card';
+      card.dataset.videoId = video.id || `video-${index}`;
 
-      if (video.video_url) {
-        let videoEl;
-
-        if (video.video_url.includes("drive.google.com")) {
-          const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
-          const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-          if (fileId) {
-            videoEl = document.createElement('iframe');
-            videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-            videoEl.width = '100%';
-            videoEl.height = '360';
-            videoEl.allow = 'autoplay';
-            videoEl.frameBorder = '0';
-            videoEl.className = 'video-player';
-          } else {
-            videoEl = document.createElement('p');
-            videoEl.textContent = '⚠️ Invalid Google Drive link.';
-          }
-
-        } else {
-          videoEl = document.createElement('video');
-          videoEl.controls = true;
-          videoEl.className = 'video-player';
-          videoEl.src = video.video_url;
-          videoEl.type = 'video/mp4';
-        }
-
-        card.appendChild(videoEl);
-      }
-
-      if (video.title) {
-        const title = document.createElement('h3');
-        title.className = 'title';
-        title.textContent = video.title;
-        card.appendChild(title);
-      }
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = video.title || 'Untitled Video';
+      card.appendChild(title);
 
       if (video.description) {
         const desc = document.createElement('p');
@@ -929,104 +884,121 @@ function convertDriveLinkToThumbnail(url) {
         card.appendChild(desc);
       }
 
+      if (video.video_url) {
+        const iframe = document.createElement('iframe');
+        iframe.className = 'video-player';
+        iframe.src = video.video_url;
+        iframe.style.border = 'none';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('allow', 'autoplay; fullscreen');
+        iframe.loading = 'lazy';
+        card.appendChild(iframe);
+      }
+
       videosContainer.appendChild(card);
     });
   }
 
-  async function loadChatMessages() {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-      console.error(error);
-      return;
-    }
-
-    if (!data.length) {
-      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
-      return;
-    }
-
-    messagesDiv.innerHTML = data.map(m => `
-      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
-    `).join('');
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const message = msgInput.value.trim();
-    if (!message) return;
-
-    const { error } = await supabase
-      .from('messages')
-      .insert([{ github_username: username, content: message }]);
-
-    if (error) {
-      alert('Failed to send message: ' + error.message);
-      return;
-    }
-
-    msgInput.value = '';
-    loadChatMessages();
-  });
-
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (m) => {
-      switch(m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        default: return m;
-      }
-    });
-  }
-
-  // Placeholder for your thumbnail conversion logic if needed:
   function convertDriveLinkToThumbnail(url) {
+    // converts Google Drive preview URLs to thumbnail URLs if needed
+    // fallback to original url if not recognized
     if (!url) return '';
-    // Example: convert Google Drive share URL to thumbnail URL if needed
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
+    if (url.includes('drive.google.com')) {
+      // extract file id and build thumbnail URL
+      const match = url.match(/[-\w]{25,}/);
+      if (match) {
+        return `https://drive.google.com/uc?export=view&id=${match[0]}`;
+      }
     }
     return url;
   }
 
-  // Main execution block
-  if (!username) {
-    pageTitle.textContent = 'Error';
-    chatHeading.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    artContainer.innerHTML = '';
-    videosContainer.innerHTML = '';
-    messagesDiv.innerHTML = '';
-  } else {
-    pageTitle.textContent = `${username}'s Content`;
+  // CHAT PART (basic polling implementation for demo)
+
+  let lastMessageId = 0;
+  async function loadMessages() {
+    if (!username) return;
+
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('chat_user', username)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      messagesDiv.innerHTML = `<div class="no-content">Error loading chat messages: ${error.message}</div>`;
+      return;
+    }
+
+    if (!data.length) {
+      messagesDiv.innerHTML = `<p class="no-content">No messages yet. Start chatting!</p>`;
+      return;
+    }
+
+    // Only update if new messages arrived
+    if (data.length && data[data.length - 1].id !== lastMessageId) {
+      messagesDiv.innerHTML = '';
+      data.forEach(msg => {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>${msg.sender || 'Anon'}:</strong> ${escapeHtml(msg.message)}`;
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      lastMessageId = data[data.length - 1].id;
+    }
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const message = msgInput.value.trim();
+    if (!message) return;
+
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .insert([{ chat_user: username, sender: 'User', message }]);
+
+    if (error) {
+      alert('Error sending message: ' + error.message);
+      return;
+    }
+    msgInput.value = '';
+    await loadMessages();
+  });
+
+  async function initPage() {
+    if (!username) {
+      alert('No user specified in URL? Example: ?user=johndoe');
+      return;
+    }
+    pageTitle.textContent = `Content for ${username}`;
     chatHeading.textContent = `Chat with ${username}`;
 
-    // Increment the VIP page views count each time this page loads for this user
-    incrementVipPageView();
+    await incrementVipPageView();
+    await loadGames();
+    await loadArt();
+    await loadVideos();
+    await loadMessages();
 
-    loadGames();
-    loadArt();
-    loadVideos();
-    loadChatMessages();
+    // Poll chat every 5 seconds
+    setInterval(loadMessages, 5000);
   }
+
+  initPage();
 </script>
 
 </body>
 </html>
 
-</body>
 </html>
 <!DOCTYPE html>
 <html lang="en">
