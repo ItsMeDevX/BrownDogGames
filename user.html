@@ -752,7 +752,7 @@ async function loadGames() {
   gamesContainer.innerHTML = '';
   data.forEach((game, index) => {
     const card = document.createElement('article');
-    card.className = 'card';
+    card.className = 'card big-game-card';  // Add new class for bigger size
     card.dataset.gameId = game.id || `game-${index}`;
 
     const title = document.createElement('h3');
@@ -790,26 +790,23 @@ async function loadGames() {
       if (embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
         const iframe = document.createElement('iframe');
         iframe.src = embedUrl;
-        iframe.className = 'video-player'; // reuse styling, but let's override width/height
-        iframe.style.width = '100%';
-        iframe.style.height = '700px';  // bigger height for better gameplay
+        iframe.className = 'video-player big-iframe';
         iframe.style.border = 'none';
         iframe.setAttribute('allowfullscreen', '');
         iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
         iframe.loading = 'lazy';
         card.appendChild(iframe);
 
-        // Optional: fullscreen button to toggle fullscreen for iframe
+        // Fullscreen button
         const fsButton = document.createElement('button');
         fsButton.textContent = 'Fullscreen';
-        fsButton.style.marginTop = '10px';
-        fsButton.style.alignSelf = 'center';
+        fsButton.className = 'fullscreen-btn';
         fsButton.onclick = () => {
           if (iframe.requestFullscreen) {
             iframe.requestFullscreen();
-          } else if (iframe.webkitRequestFullscreen) { /* Safari */
+          } else if (iframe.webkitRequestFullscreen) {
             iframe.webkitRequestFullscreen();
-          } else if (iframe.msRequestFullscreen) { /* IE11 */
+          } else if (iframe.msRequestFullscreen) {
             iframe.msRequestFullscreen();
           }
         };
@@ -830,7 +827,7 @@ async function loadGames() {
     gamesContainer.appendChild(card);
   });
 }
-  
+
   async function loadArt() {
     const { data, error } = await supabase
       .from('user_art')
