@@ -702,17 +702,11 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
-  chatHeading.textContent = `Chat with ${username}`;
-  pageTitle.textContent = `User Content - ${username}`;
 
-  function convertDriveLinkToEmbed(url) {
-    const match = url.match(/\/file\/d\/([^/]+)\//);
-    return match ? `https://drive.google.com/uc?export=preview&id=${match[1]}` : url;
-  }
-
-  function convertDriveLinkToThumbnail(url) {
-    const match = url.match(/\/file\/d\/([^/]+)\//);
-    return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : url;
+  function convertDriveLinkToThumbnail(driveUrl) {
+    const match = driveUrl.match(/[-\w]{25,}/);
+    if (!match) return driveUrl;
+    return `https://drive.google.com/thumbnail?id=${match[0]}`;
   }
 
   async function incrementVipPageView() {
@@ -788,11 +782,9 @@
       }
 
       if (game.embed_url) {
-        const embedUrl = game.embed_url;
-
-        if (embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
+        if (game.embed_url.includes('github.io') || game.embed_url.startsWith('http')) {
           const iframe = document.createElement('iframe');
-          iframe.src = embedUrl;
+          iframe.src = game.embed_url;
           iframe.className = 'video-player';
           iframe.style.height = '500px';
           iframe.style.border = 'none';
@@ -800,20 +792,10 @@
           iframe.setAttribute('allow', 'autoplay; fullscreen');
           iframe.loading = 'lazy';
           card.appendChild(iframe);
-        } else if (embedUrl.includes('drive.google.com')) {
-          const iframe = document.createElement('iframe');
-          iframe.src = convertDriveLinkToEmbed(embedUrl);
-          iframe.className = 'video-player';
-          iframe.style.height = '300px';
-          iframe.style.border = 'none';
-          iframe.setAttribute('allowfullscreen', '');
-          iframe.setAttribute('allow', 'autoplay');
-          iframe.loading = 'lazy';
-          card.appendChild(iframe);
         } else {
           const playLink = document.createElement('a');
           playLink.className = 'play-link';
-          playLink.href = embedUrl;
+          playLink.href = game.embed_url;
           playLink.target = '_blank';
           playLink.rel = 'noopener noreferrer';
           playLink.textContent = 'Play Game';
@@ -824,10 +806,6 @@
       gamesContainer.appendChild(card);
     });
   }
-
-  incrementVipPageView();
-  loadGames();
-}
 
   async function loadArt() {
     const { data, error } = await supabase
