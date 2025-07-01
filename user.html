@@ -543,11 +543,6 @@
       box-shadow: 0 0 10px #ff82ba;
     }
 
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
-    }
-
     .title {
       margin-top: 0;
       margin-bottom: 0.5rem;
@@ -570,13 +565,12 @@
       display: block;
     }
 
-    .video-player {
+    .game-frame {
       width: 100%;
+      height: 500px;
       border-radius: 8px;
-      margin-bottom: 10px;
       background-color: black;
-      max-height: 200px;
-      max-width: 100%;
+      border: none;
     }
 
     .play-link {
@@ -589,57 +583,9 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
-      margin-top: auto; /* push to bottom */
+      margin-top: auto;
     }
     .play-link:hover { background-color: #ff82ba; }
-
-    #chat-container {
-      max-width: 800px;
-      width: 100%;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      padding: 20px;
-      box-sizing: border-box;
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      height: 450px;
-      overflow: hidden;
-    }
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      padding-right: 10px;
-    }
-    #messages div { margin-bottom: 12px; }
-    #messages strong { color: #ff82ba; }
-
-    #chat-form {
-      display: flex;
-      gap: 10px;
-    }
-    #msg-input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: #fff;
-    }
-    button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    button:hover { background-color: #ff82ba; }
 
     .no-content {
       font-size: 1.1rem;
@@ -663,150 +609,118 @@
     <div id="games" class="content-container">Loading games...</div>
   </section>
 
-  <section class="content-section" id="art-section">
-    <h2>Art</h2>
-    <div id="art" class="content-container">Loading art...</div>
-  </section>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  <section class="content-section" id="videos-section">
-    <h2>Videos</h2>
-    <div id="videos" class="content-container">Loading videos...</div>
-  </section>
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
-  <section id="chat-container">
-    <h2>Chat with {username}</h2>
-    <div id="messages"><p>Loading messages...</p></div>
-    <form id="chat-form">
-      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
-      <button type="submit">Send</button>
-    </form>
-  </section>
+    const gamesContainer = document.getElementById('games');
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('user') || '';
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    async function loadGames() {
+      const { data, error } = await supabase
+        .from('game_submissions')
+        .select('*')
+        .eq('github_user', username)
+        .order('created_at', { ascending: false });
 
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  const pageTitle = document.getElementById('pageTitle');
-  const gamesContainer = document.getElementById('games');
-  const artContainer = document.getElementById('art');
-  const videosContainer = document.getElementById('videos');
-  const chatContainer = document.getElementById('chat-container');
-  const messagesDiv = document.getElementById('messages');
-  const form = document.getElementById('chat-form');
-  const msgInput = document.getElementById('msg-input');
-  const chatHeading = chatContainer.querySelector('h2');
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const username = urlParams.get('user') || '';
-
-  // Fix: Drive thumbnail helper
-  function convertDriveLinkToThumbnail(url) {
-    const match = url.match(/[-\w]{25,}/);
-    return match ? `https://drive.google.com/thumbnail?id=${match[0]}` : url;
-  }
-
-  async function incrementVipPageView() {
-    if (!username) return;
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
-
-    if (userError || !userData) {
-      console.error('User not found for VIP increment:', userError);
-      return;
-    }
-
-    const now = new Date().toISOString();
-
-    const { data, error } = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.id,
-      in_username: username,
-      in_now: now
-    });
-
-    if (error) {
-      console.error('Error incrementing VIP page views:', error);
-    } else {
-      console.log(`Incremented VIP page views for ${username}`);
-    }
-  }
-
-  async function loadGames() {
-    const { data, error } = await supabase
-      .from('game_submissions')
-      .select('*')
-      .eq('github_user', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-      return;
-    }
-
-    if (!data.length) {
-      gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-      return;
-    }
-
-    gamesContainer.innerHTML = '';
-    data.forEach((game, index) => {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.gameId = game.id || `game-${index}`;
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = game.title || 'Untitled Game';
-      card.appendChild(title);
-
-      if (game.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = game.description;
-        card.appendChild(desc);
+      if (error || !data.length) {
+        gamesContainer.innerHTML = `<div class="no-content">${error ? '❌ Error loading games: ' + error.message : 'No games submitted yet.'}</div>`;
+        return;
       }
 
-      if (game.screenshot_url) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-        img.alt = `Screenshot of ${game.title}`;
-        card.appendChild(img);
-      }
+      gamesContainer.innerHTML = '';
+      data.forEach((game, index) => {
+        const card = document.createElement('article');
+        card.className = 'card';
 
-      if (game.embed_url) {
-        const isGitHubGame = game.embed_url.includes('github.io') || game.embed_url.includes('.vercel.app') || game.embed_url.includes('.netlify.app');
-        if (isGitHubGame) {
+        const title = document.createElement('h3');
+        title.className = 'title';
+        title.textContent = game.title || 'Untitled Game';
+        card.appendChild(title);
+
+        if (game.description) {
+          const desc = document.createElement('p');
+          desc.className = 'desc';
+          desc.textContent = game.description;
+          card.appendChild(desc);
+        }
+
+        if (game.screenshot_url) {
+          const img = document.createElement('img');
+          img.className = 'thumbnail';
+          img.src = convertDriveLinkToThumbnail(game.screenshot_url);
+          img.alt = `Screenshot of ${game.title}`;
+          card.appendChild(img);
+        }
+
+        // Embed logic
+        const embedUrl = game.embed_url || '';
+        if (embedUrl.includes('github.io')) {
           const iframe = document.createElement('iframe');
-          iframe.src = game.embed_url;
-          iframe.className = 'video-player';
-          iframe.style.height = '500px';
-          iframe.style.border = 'none';
-          iframe.setAttribute('allowfullscreen', '');
-          iframe.setAttribute('allow', 'autoplay; fullscreen');
+          iframe.src = embedUrl;
+          iframe.className = 'game-frame';
+          iframe.allow = 'autoplay; fullscreen';
+          iframe.loading = 'lazy';
+          card.appendChild(iframe);
+        } else if (embedUrl.includes('drive.google.com')) {
+          const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
+          const fileId = fileIdMatch ? fileIdMatch[1] : null;
+
+          if (fileId) {
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
+            iframe.className = 'game-frame';
+            iframe.allow = 'autoplay; fullscreen';
+            iframe.loading = 'lazy';
+            card.appendChild(iframe);
+          } else {
+            const link = document.createElement('a');
+            link.href = embedUrl;
+            link.textContent = 'Play Game (Drive)';
+            link.className = 'play-link';
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            card.appendChild(link);
+          }
+        } else if (embedUrl.startsWith('http')) {
+          const iframe = document.createElement('iframe');
+          iframe.src = embedUrl;
+          iframe.className = 'game-frame';
+          iframe.allow = 'autoplay; fullscreen';
           iframe.loading = 'lazy';
           card.appendChild(iframe);
         } else {
-          const playLink = document.createElement('a');
-          playLink.className = 'play-link';
-          playLink.href = game.embed_url;
-          playLink.target = '_blank';
-          playLink.rel = 'noopener noreferrer';
-          playLink.textContent = 'Play Game';
-          card.appendChild(playLink);
+          const link = document.createElement('a');
+          link.href = embedUrl;
+          link.textContent = 'Play Game';
+          link.className = 'play-link';
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          card.appendChild(link);
         }
-      }
 
-      gamesContainer.appendChild(card);
-    });
-  }
+        gamesContainer.appendChild(card);
+      });
+    }
+
+    function convertDriveLinkToThumbnail(url) {
+      if (!url) return '';
+      const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+      const fileId = fileIdMatch ? fileIdMatch[1] : null;
+      return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : url;
+    }
+
+    if (username) {
+      document.getElementById('pageTitle').textContent = `${username}'s Content`;
+      loadGames();
+    } else {
+      gamesContainer.innerHTML = '<p class="no-content">❌ No username provided in URL.</p>';
+    }
 
   async function loadArt() {
     const { data, error } = await supabase
