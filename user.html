@@ -589,7 +589,7 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
-      margin-top: auto;
+      margin-top: auto; /* push to bottom */
     }
     .play-link:hover { background-color: #ff82ba; }
 
@@ -655,32 +655,32 @@
 </head>
 <body>
 
-<a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
-<h1 id="pageTitle">User Content</h1>
+  <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
+  <h1 id="pageTitle">User Content</h1>
 
-<section class="content-section" id="games-section">
-  <h2>Games</h2>
-  <div id="games" class="content-container">Loading games...</div>
-</section>
+  <section class="content-section" id="games-section">
+    <h2>Games</h2>
+    <div id="games" class="content-container">Loading games...</div>
+  </section>
 
-<section class="content-section" id="art-section">
-  <h2>Art</h2>
-  <div id="art" class="content-container">Loading art...</div>
-</section>
+  <section class="content-section" id="art-section">
+    <h2>Art</h2>
+    <div id="art" class="content-container">Loading art...</div>
+  </section>
 
-<section class="content-section" id="videos-section">
-  <h2>Videos</h2>
-  <div id="videos" class="content-container">Loading videos...</div>
-</section>
+  <section class="content-section" id="videos-section">
+    <h2>Videos</h2>
+    <div id="videos" class="content-container">Loading videos...</div>
+  </section>
 
-<section id="chat-container">
-  <h2>Chat with {username}</h2>
-  <div id="messages"><p>Loading messages...</p></div>
-  <form id="chat-form">
-    <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
-    <button type="submit">Send</button>
-  </form>
-</section>
+  <section id="chat-container">
+    <h2>Chat with {username}</h2>
+    <div id="messages"><p>Loading messages...</p></div>
+    <form id="chat-form">
+      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+  </section>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -703,10 +703,10 @@
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
 
-  function convertDriveLinkToThumbnail(driveUrl) {
-    const match = driveUrl.match(/[-\w]{25,}/);
-    if (!match) return driveUrl;
-    return `https://drive.google.com/thumbnail?id=${match[0]}`;
+  // Fix: Drive thumbnail helper
+  function convertDriveLinkToThumbnail(url) {
+    const match = url.match(/[-\w]{25,}/);
+    return match ? `https://drive.google.com/thumbnail?id=${match[0]}` : url;
   }
 
   async function incrementVipPageView() {
@@ -782,7 +782,8 @@
       }
 
       if (game.embed_url) {
-        if (game.embed_url.includes('github.io') || game.embed_url.startsWith('http')) {
+        const isGitHubGame = game.embed_url.includes('github.io') || game.embed_url.includes('.vercel.app') || game.embed_url.includes('.netlify.app');
+        if (isGitHubGame) {
           const iframe = document.createElement('iframe');
           iframe.src = game.embed_url;
           iframe.className = 'video-player';
@@ -1017,7 +1018,6 @@
 
 </body>
 </html>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
