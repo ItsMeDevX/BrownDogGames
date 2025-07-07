@@ -787,7 +787,7 @@ if (game.embed_url) {
     }
   }
 
-  // Create iframe element for embeddable games
+  // Create iframe for embeddable links like GitHub or non-Itch.io games
   const iframe = document.createElement('iframe');
   iframe.src = embedUrl;
   iframe.className = 'video-player big-iframe';
@@ -798,8 +798,16 @@ if (game.embed_url) {
   iframe.width = "100%";
   iframe.height = "400"; // Adjust as needed for better fit
 
-  // Check if it's an Itch.io game or embeddable URL
-  if (embedUrl.includes('itch.io') || embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
+  // Check if it's an embeddable game (excluding Itch.io)
+  if (embedUrl.includes('itch.io')) {
+    const playLink = document.createElement('a');
+    playLink.className = 'play-link';
+    playLink.href = embedUrl;
+    playLink.target = '_blank';
+    playLink.rel = 'noopener noreferrer';
+    playLink.textContent = 'Play Game on Itch.io';
+    card.appendChild(playLink);
+  } else {
     card.appendChild(iframe);
 
     // Fullscreen button (ensure it's always displayed correctly)
@@ -816,18 +824,7 @@ if (game.embed_url) {
       }
     };
 
-    // Make sure the fullscreen button is added after the iframe
     card.appendChild(fsButton);
-  } 
-  // Fallback if not embeddable
-  else {
-    const playLink = document.createElement('a');
-    playLink.className = 'play-link';
-    playLink.href = embedUrl;
-    playLink.target = '_blank';
-    playLink.rel = 'noopener noreferrer';
-    playLink.textContent = 'Play Game';
-    card.appendChild(playLink);
   }
 }
 
