@@ -787,31 +787,22 @@ if (game.embed_url) {
     }
   }
 
-  // Check if it's an Itch.io game
-  if (embedUrl.includes('itch.io')) {
-    const iframe = document.createElement('iframe');
-    iframe.src = embedUrl;
-    iframe.className = 'video-player big-iframe';
-    iframe.style.border = 'none';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
-    iframe.loading = 'lazy';
-    iframe.width = "100%";
-    iframe.height = "400"; // Adjust as needed for better fit
-    card.appendChild(iframe);
-  } 
-  // Check if it's a URL for GitHub pages or other embeddable links
-  else if (embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
-    const iframe = document.createElement('iframe');
-    iframe.src = embedUrl;
-    iframe.className = 'video-player big-iframe';
-    iframe.style.border = 'none';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
-    iframe.loading = 'lazy';
+  // Create iframe element for embeddable games
+  const iframe = document.createElement('iframe');
+  iframe.src = embedUrl;
+  iframe.className = 'video-player big-iframe';
+  iframe.style.border = 'none';
+  iframe.setAttribute('allowfullscreen', '');
+  iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
+  iframe.loading = 'lazy';
+  iframe.width = "100%";
+  iframe.height = "400"; // Adjust as needed for better fit
+
+  // Check if it's an Itch.io game or embeddable URL
+  if (embedUrl.includes('itch.io') || embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
     card.appendChild(iframe);
 
-    // Fullscreen button
+    // Fullscreen button (ensure it's always displayed correctly)
     const fsButton = document.createElement('button');
     fsButton.textContent = 'Fullscreen';
     fsButton.className = 'fullscreen-btn';
@@ -824,10 +815,12 @@ if (game.embed_url) {
         iframe.msRequestFullscreen();
       }
     };
-    card.appendChild(fsButton);
 
-  } else {
-    // fallback if not embeddable
+    // Make sure the fullscreen button is added after the iframe
+    card.appendChild(fsButton);
+  } 
+  // Fallback if not embeddable
+  else {
     const playLink = document.createElement('a');
     playLink.className = 'play-link';
     playLink.href = embedUrl;
