@@ -775,54 +775,68 @@ async function loadGames() {
       card.appendChild(img);
     }
 
-    if (game.embed_url) {
-      // Detect Google Drive link and convert to preview URL
-      let embedUrl = game.embed_url;
+if (game.embed_url) {
+  let embedUrl = game.embed_url;
 
-      if (embedUrl.includes('drive.google.com')) {
-        const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
-        const fileId = fileIdMatch ? fileIdMatch[1] : null;
-        if (fileId) {
-          embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-        }
-      }
-
-      if (embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
-        const iframe = document.createElement('iframe');
-        iframe.src = embedUrl;
-        iframe.className = 'video-player big-iframe';
-        iframe.style.border = 'none';
-        iframe.setAttribute('allowfullscreen', '');
-        iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
-        iframe.loading = 'lazy';
-        card.appendChild(iframe);
-
-        // Fullscreen button
-        const fsButton = document.createElement('button');
-        fsButton.textContent = 'Fullscreen';
-        fsButton.className = 'fullscreen-btn';
-        fsButton.onclick = () => {
-          if (iframe.requestFullscreen) {
-            iframe.requestFullscreen();
-          } else if (iframe.webkitRequestFullscreen) {
-            iframe.webkitRequestFullscreen();
-          } else if (iframe.msRequestFullscreen) {
-            iframe.msRequestFullscreen();
-          }
-        };
-        card.appendChild(fsButton);
-
-      } else {
-        // fallback if not embeddable
-        const playLink = document.createElement('a');
-        playLink.className = 'play-link';
-        playLink.href = embedUrl;
-        playLink.target = '_blank';
-        playLink.rel = 'noopener noreferrer';
-        playLink.textContent = 'Play Game';
-        card.appendChild(playLink);
-      }
+  // Detect Google Drive link and convert to preview URL
+  if (embedUrl.includes('drive.google.com')) {
+    const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
     }
+  }
+
+  // Check if it's an Itch.io game
+  if (embedUrl.includes('itch.io')) {
+    const iframe = document.createElement('iframe');
+    iframe.src = embedUrl;
+    iframe.className = 'video-player big-iframe';
+    iframe.style.border = 'none';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
+    iframe.loading = 'lazy';
+    iframe.width = "100%";
+    iframe.height = "400"; // Adjust as needed for better fit
+    card.appendChild(iframe);
+  } 
+  // Check if it's a URL for GitHub pages or other embeddable links
+  else if (embedUrl.includes('github.io') || embedUrl.startsWith('http')) {
+    const iframe = document.createElement('iframe');
+    iframe.src = embedUrl;
+    iframe.className = 'video-player big-iframe';
+    iframe.style.border = 'none';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
+    iframe.loading = 'lazy';
+    card.appendChild(iframe);
+
+    // Fullscreen button
+    const fsButton = document.createElement('button');
+    fsButton.textContent = 'Fullscreen';
+    fsButton.className = 'fullscreen-btn';
+    fsButton.onclick = () => {
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
+      }
+    };
+    card.appendChild(fsButton);
+
+  } else {
+    // fallback if not embeddable
+    const playLink = document.createElement('a');
+    playLink.className = 'play-link';
+    playLink.href = embedUrl;
+    playLink.target = '_blank';
+    playLink.rel = 'noopener noreferrer';
+    playLink.textContent = 'Play Game';
+    card.appendChild(playLink);
+  }
+}
 
     gamesContainer.appendChild(card);
   });
