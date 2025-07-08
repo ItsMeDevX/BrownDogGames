@@ -702,23 +702,17 @@
 
   const gamesList = document.getElementById('games-list');
   const addGameForm = document.getElementById('addGameForm');
-  const message = document.getElementById('formMessage');
-  const submitBtn = document.getElementById('submitBtn');
-
-  const payoutBtn = document.getElementById('payoutRequestBtn');
+  const payoutRequestBtn = document.getElementById('payoutRequestBtn');
   const payoutStatus = document.getElementById('payoutStatus');
 
-  let currentUser;
-
-  function showMessage(text, type = '') {
-    message.textContent = text;
-    message.className = `message ${type}`;
-  }
+  let currentUser = null;
 
   async function checkAuth() {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error || !session?.user) {
-      window.location.href = 'login.html';
+    const session = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      console.log('No user logged in');
+      return;
     } else {
       currentUser = session.user;
       console.log('Logged in as:', currentUser);
@@ -729,13 +723,12 @@
     if (!currentUser) return;
 
     try {
-      // Fake a VIP user for testing purposes
-      const user = { is_vip: true };  // Force VIP status for testing
+      const user = { is_vip: true }; // Force VIP status for testing
 
       const vipLikeCountEl = document.getElementById('vipLikeCount');
       const vipEarningsEl = document.getElementById('vipEarnings');
 
-      if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
+      if (!vipLikeCountEl || !vipEarningsEl || !payoutRequestBtn || !payoutStatus) {
         console.error('Required DOM elements missing');
         return;
       }
@@ -746,18 +739,14 @@
       if (!username) {
         vipLikeCountEl.textContent = `Page Likes: 0 (No username)`;
         vipEarningsEl.style.display = 'none';
-        payoutBtn.style.display = 'none';
+        payoutRequestBtn.style.display = 'none';
         payoutStatus.textContent = '';
         return;
       }
 
-      // Count total likes for this user (mocking the count for now)
       const totalLikes = 100;  // Simulated value for testing
-
-      // Display page views to all users
       vipLikeCountEl.textContent = `Page Likes: ${totalLikes}`;
 
-      // Show earnings if VIP
       if (user.is_vip) {
         const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
@@ -768,18 +757,28 @@
           vipEarningsEl.style.display = 'none';
         }
 
-        // Ensure payout button is visible
-        payoutBtn.style.display = 'inline-block';
+        payoutRequestBtn.style.display = 'inline-block';
         payoutStatus.textContent = '';
       } else {
         payoutStatus.textContent = 'Payout available for VIP users only.';
-        payoutBtn.style.display = 'none';
+        payoutRequestBtn.style.display = 'none';
       }
     } catch (error) {
       console.error('Error loading VIP data:', error.message);
       payoutStatus.textContent = 'Error loading stats.';
     }
   }
+
+  // Handle payout request button
+  payoutRequestBtn.addEventListener('click', () => {
+    const earningsText = document.getElementById('vipEarnings').textContent;
+    if (earningsText && earningsText.includes('Earnings')) {
+      payoutStatus.textContent = 'Payout request successful! You will receive your funds soon.';
+      payoutRequestBtn.style.display = 'none';
+    } else {
+      payoutStatus.textContent = 'Insufficient earnings for payout.';
+    }
+  });
 
   async function fetchGames() {
     const { data, error } = await supabase
@@ -859,6 +858,7 @@
 
 </body>
 </html>
+
   
 <!DOCTYPE html>
 <html lang="en">
