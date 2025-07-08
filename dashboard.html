@@ -942,61 +942,60 @@ async function loadVipPageLikes() {
     await loadVipPageLikes();
   })();
 
-  // Payout button click handler
-  payoutBtn.addEventListener('click', async () => {
-    payoutBtn.disabled = true;
-    payoutStatus.textContent = '';
+ // Payout button click handler
+payoutBtn.addEventListener('click', async () => {
+  payoutBtn.disabled = true;
+  payoutStatus.textContent = '';
 
-    try {
-      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) throw new Error('Username not found.');
+  try {
+    const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+    if (!username) throw new Error('Username not found.');
 
-      // Calculate earnings again
-      const { count } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', username);
+    // --- SIMULATE MORE PAGE LIKES FOR TESTING ---
+    const simulatedLikes = 1000; // Simulate 1000 page likes (adjust this to a larger number)
+    const earningsValue = Math.floor(simulatedLikes / 10) * 0.01; // Calculate earnings based on the likes
 
-      const totalLikes = count || 0;
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+    console.log('Simulated Likes:', simulatedLikes);
+    console.log('Calculated Earnings:', earningsValue);
 
-      if (earningsValue < 5) {
-        payoutStatus.textContent = 'Minimum £5 earnings required for payout.';
-        payoutBtn.disabled = false;
-        return;
-      }
-
-      // Check if already pending
-      const { data: existingRequests } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
-
-      if (existingRequests.length > 0) {
-        payoutStatus.textContent = 'You have a pending payout request.';
-        payoutBtn.disabled = false;
-        return;
-      }
-
-      // Insert payout request
-      const { error } = await supabase.from('payout_requests').insert([{
-        user_id: currentUser.id,
-        amount: earningsValue,
-        status: 'pending',
-        requested_at: new Date().toISOString()
-      }]);
-
-      if (error) throw error;
-
-      payoutStatus.textContent = 'Payout request submitted!';
-      payoutBtn.style.display = 'none';
-    } catch (err) {
-      payoutStatus.textContent = 'Error submitting payout request: ' + err.message;
+    if (earningsValue < 5) {
+      payoutStatus.textContent = 'Minimum £5 earnings required for payout.';
+      payoutBtn.disabled = false; // Re-enable the button if earnings are too low
+      return;
     }
 
-    payoutBtn.disabled = false;
-  });
+    // Check if already pending payout request
+    const { data: existingRequests } = await supabase
+      .from('payout_requests')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'pending');
+
+    if (existingRequests.length > 0) {
+      payoutStatus.textContent = 'You have a pending payout request.';
+      payoutBtn.disabled = false; // Re-enable button if pending payout exists
+      return;
+    }
+
+    // Insert payout request with simulated earnings value
+    const { error } = await supabase.from('payout_requests').insert([{
+      user_id: currentUser.id,
+      amount: earningsValue,
+      status: 'pending',
+      requested_at: new Date().toISOString()
+    }]);
+
+    if (error) throw error;
+
+    payoutStatus.textContent = 'Payout request submitted!';
+    payoutBtn.style.display = 'none'; // Hide button after submission
+  } catch (err) {
+    payoutStatus.textContent = 'Error submitting payout request: ' + err.message;
+  }
+
+  payoutBtn.disabled = false; // Re-enable the button after processing
+});
+
 
 </script>
 </body>
