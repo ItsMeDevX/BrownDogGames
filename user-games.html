@@ -580,7 +580,7 @@
     const featuredUsername = document.getElementById('featuredUsername');
     const featuredCover = document.getElementById('featuredCover');
 
-   // Helper function to check if the URL is valid
+// Helper function to check if the URL is valid
 function isValidUrl(url) {
   try {
     const parsedUrl = new URL(url);
@@ -608,6 +608,27 @@ function convertDriveLinkToThumbnail(url) {
   return url;
 }
 
+// Function to get the resolved cover URL
+async function getResolvedCoverUrl(cover_url) {
+  let coverSrc = cover_url || '';
+
+  if (coverSrc && isValidUrl(coverSrc)) {
+    // If the URL is valid, check if it's from Supabase Storage or a Google Drive link
+    if (!coverSrc.startsWith('http')) {
+      const { data: publicUrlData } = await supabase.storage.from('covers').getPublicUrl(coverSrc);
+      if (publicUrlData && publicUrlData.publicUrl) {
+        return convertDriveLinkToThumbnail(publicUrlData.publicUrl);
+      }
+    } else {
+      return convertDriveLinkToThumbnail(coverSrc);
+    }
+  }
+
+  // Fallback URL if no valid cover image found
+  return 'https://via.placeholder.com/300x160.png?text=No+Cover';
+}
+
+// Main function to load users, sorted by either 'newest' or 'alphabetical'
 async function loadUsers(sortMode = 'alphabetical') {
   // Determine how to sort the user list (by newest or alphabetically)
   const orderBy = sortMode === 'newest'
@@ -658,19 +679,7 @@ async function loadUsers(sortMode = 'alphabetical') {
     featuredUsername.textContent = featuredUser.github_user;
 
     // Cover Image
-    let coverSrc = featuredUser.cover_url || '';
-    if (coverSrc && isValidUrl(coverSrc)) {
-      if (!coverSrc.startsWith('http')) {
-        const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(coverSrc);
-        if (publicUrlData && publicUrlData.publicUrl) {
-          coverSrc = publicUrlData.publicUrl;
-        }
-      } else {
-        coverSrc = convertDriveLinkToThumbnail(coverSrc);
-      }
-    } else {
-      coverSrc = 'https://via.placeholder.com/300x160.png?text=No+Cover';
-    }
+    let coverSrc = await getResolvedCoverUrl(featuredUser.cover_url);
     featuredCover.src = coverSrc;
     featuredCover.alt = `${featuredUser.github_user}'s cover`;
   } else {
@@ -717,31 +726,12 @@ async function loadUsers(sortMode = 'alphabetical') {
     a.appendChild(usernameSpan);
 
     // Cover Image
-    if (images.cover_url && isValidUrl(images.cover_url)) {
-      let coverSrc = images.cover_url;
-
-      if (!coverSrc.startsWith('http')) {
-        const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(coverSrc);
-        if (publicUrlData && publicUrlData.publicUrl) {
-          coverSrc = publicUrlData.publicUrl;
-        }
-      } else {
-        coverSrc = convertDriveLinkToThumbnail(coverSrc);
-      }
-
-      const coverImg = document.createElement('img');
-      coverImg.src = coverSrc;
-      coverImg.alt = `${user}'s cover`;
-      coverImg.className = 'cover-img';
-      a.appendChild(coverImg);
-    } else {
-      // Provide a fallback if the cover image is missing or invalid
-      const coverFallback = document.createElement('img');
-      coverFallback.src = 'https://via.placeholder.com/300x160.png?text=No+Cover';
-      coverFallback.alt = `${user}'s cover`;
-      coverFallback.className = 'cover-img';
-      a.appendChild(coverFallback);
-    }
+    const coverSrc = await getResolvedCoverUrl(images.cover_url);
+    const coverImg = document.createElement('img');
+    coverImg.src = coverSrc;
+    coverImg.alt = `${user}'s cover`;
+    coverImg.className = 'cover-img';
+    a.appendChild(coverImg);
 
     // Append the user element to the fragment
     fragment.appendChild(a);
@@ -751,7 +741,6 @@ async function loadUsers(sortMode = 'alphabetical') {
   userListEl.appendChild(fragment);
 }
 
-    
     // Load default
     loadUsers(currentSort);
 
