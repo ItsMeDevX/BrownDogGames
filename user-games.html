@@ -580,126 +580,85 @@
     const featuredUsername = document.getElementById('featuredUsername');
     const featuredCover = document.getElementById('featuredCover');
 
-   function convertDriveLinkToThumbnail(url) {
-  if (!url) return 'https://via.placeholder.com/200x200.png?text=No+Image'; // Fallback if URL is empty
-  const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-  const fileId = match ? match[1] : null;
-  if (fileId) {
-    return `https://drive.google.com/thumbnail?id=${fileId}`;
-  }
-  return 'https://via.placeholder.com/200x200.png?text=No+Image'; // Fallback if the link isn't a valid Google Drive link
-}
-
-async function loadUsers(sortMode = 'alphabetical') {
-  const orderBy = sortMode === 'newest'
-    ? { column: 'created_at', ascending: false }
-    : { column: 'github_user', ascending: true };
-
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('github_user, avatar_url, cover_url, created_at')
-    .order(orderBy.column, { ascending: orderBy.ascending });
-
-  if (error) {
-    userListEl.textContent = `Error loading users: ${error.message}`;
-    featuredSection.style.display = 'none';
-    return;
-  }
-
-  if (!data.length) {
-    userListEl.textContent = 'No users found.';
-    featuredSection.style.display = 'none';
-    return;
-  }
-
-  // FEATURED USER - newest submission
-  const featuredUser = data[0];
-  if (featuredUser) {
-    featuredSection.style.display = 'block';
-
-    // Avatar
-    featuredAvatar.innerHTML = '';
-    if (featuredUser.avatar_url) {
-      const img = document.createElement('img');
-      img.src = convertDriveLinkToThumbnail(featuredUser.avatar_url);
-      img.alt = `${featuredUser.github_user}'s avatar`;
-      img.style.width = '80px';
-      img.style.height = '80px';
-      img.style.borderRadius = '50%';
-      featuredAvatar.appendChild(img);
-    } else {
-      // Fallback if no avatar URL is available
-      featuredAvatar.textContent = featuredUser.github_user.charAt(0).toUpperCase();
+    function convertDriveLinkToThumbnail(url) {
+      if (!url) return url;
+      const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      const fileId = match ? match[1] : null;
+      if (fileId) {
+        return `https://drive.google.com/thumbnail?id=${fileId}`;
+      }
+      return url;
     }
 
-    // Username
-    featuredUsername.textContent = featuredUser.github_user;
+    async function loadUsers(sortMode = 'alphabetical') {
+      const orderBy = sortMode === 'newest'
+        ? { column: 'created_at', ascending: false }
+        : { column: 'github_user', ascending: true };
 
-    // Cover Image
-    let coverSrc = featuredUser.cover_url || '';
-    if (coverSrc) {
-      coverSrc = convertDriveLinkToThumbnail(coverSrc);
-    } else {
-      coverSrc = 'https://via.placeholder.com/300x160.png?text=No+Cover';
+      const { data, error } = await supabase
+        .from('game_submissions')
+        .select('github_user, avatar_url, cover_url, created_at')
+        .order(orderBy.column, { ascending: orderBy.ascending });
+
+      if (error) {
+        userListEl.textContent = `Error loading users: ${error.message}`;
+        featuredSection.style.display = 'none';
+        return;
+      }
+
+      if (!data.length) {
+        userListEl.textContent = 'No users found.';
+        featuredSection.style.display = 'none';
+        return;
+      }
+
+      // FEATURED USER - newest submission
+      const featuredUser = data[0];
+      if (featuredUser) {
+        featuredSection.style.display = 'block';
+
+        const featuredAvatarImg = document.createElement('img');
+        featuredAvatarImg.classList.add('avatar-img');
+        featuredAvatarImg.src = convertDriveLinkToThumbnail(featuredUser.avatar_url);
+        featuredAvatarImg.alt = `${featuredUser.github_user}'s avatar`;
+        featuredAvatar.appendChild(featuredAvatarImg);
+
+        featuredUsername.textContent = `@${featuredUser.github_user}`;
+
+        const featuredCoverImg = document.createElement('img');
+        featuredCoverImg.classList.add('cover-img');
+        featuredCoverImg.src = convertDriveLinkToThumbnail(featuredUser.cover_url);
+        featuredCoverImg.alt = `${featuredUser.github_user}'s cover`;
+        featuredCover.appendChild(featuredCoverImg);
+      }
+
+      // USER LIST
+      userListEl.innerHTML = ''; // Clear existing user list
+
+      data.forEach((user) => {
+        const userBtn = document.createElement('a');
+        userBtn.classList.add('user-btn');
+        userBtn.href = `game_page.html?user=${user.github_user}`;
+
+        const avatarImg = document.createElement('img');
+        avatarImg.classList.add('avatar-img');
+        avatarImg.src = convertDriveLinkToThumbnail(user.avatar_url);
+        avatarImg.alt = `${user.github_user}'s avatar`;
+
+        const username = document.createElement('div');
+        username.classList.add('username-text');
+        username.textContent = `@${user.github_user}`;
+
+        userBtn.appendChild(avatarImg);
+        userBtn.appendChild(username);
+        userListEl.appendChild(userBtn);
+      });
     }
-    featuredCover.src = coverSrc;
-    featuredCover.alt = `${featuredUser.github_user}'s cover`;
-  } else {
-    featuredSection.style.display = 'none';
-  }
 
-  // Build user list
-  const usersMap = new Map();
-  data.forEach(({ github_user, avatar_url, cover_url }) => {
-    if (github_user && !usersMap.has(github_user)) {
-      usersMap.set(github_user, { avatar_url, cover_url });
-    }
-  });
-
-  userListEl.textContent = '';
-  const fragment = document.createDocumentFragment();
-
-  for (const [user, images] of usersMap.entries()) {
-    const a = document.createElement('a');
-    a.className = 'user-btn';
-    a.href = `user.html?user=${encodeURIComponent(user)}`;
-
-    // Avatar Image
-    const avatarImg = document.createElement('img');
-    avatarImg.src = convertDriveLinkToThumbnail(images.avatar_url);
-    avatarImg.alt = `${user}'s avatar`;
-    avatarImg.className = 'avatar-img';
-    a.appendChild(avatarImg);
-
-    const usernameSpan = document.createElement('span');
-    usernameSpan.className = 'username-text';
-    usernameSpan.textContent = user;
-    a.appendChild(usernameSpan);
-
-    // Cover Image
-    let coverSrc = images.cover_url || '';
-    if (coverSrc) {
-      coverSrc = convertDriveLinkToThumbnail(coverSrc);
-    } else {
-      coverSrc = 'https://via.placeholder.com/300x160.png?text=No+Cover';
-    }
-
-    const coverImg = document.createElement('img');
-    coverImg.src = coverSrc;
-    coverImg.alt = `${user}'s cover`;
-    coverImg.className = 'cover-img';
-    a.appendChild(coverImg);
-
-    fragment.appendChild(a);
-  }
-
-  userListEl.appendChild(fragment);
-}
-
-    // Load default
+    // Initial Load
     loadUsers(currentSort);
 
-    // Button event listeners
+    // Event Listeners
     document.getElementById('sortAlpha').addEventListener('click', () => {
       currentSort = 'alphabetical';
       loadUsers(currentSort);
