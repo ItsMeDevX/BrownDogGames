@@ -580,136 +580,7 @@
     const featuredUsername = document.getElementById('featuredUsername');
     const featuredCover = document.getElementById('featuredCover');
 
-    function convertDriveLinkToThumbnail(url) {
-      if (!url) return url;
-      const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-      const fileId = match ? match[1] : null;
-      if (fileId) {
-        return `https://drive.google.com/thumbnail?id=${fileId}`;
-      }
-      return url;
-    }
-
-    async function loadUsers(sortMode = 'alphabetical') {
-      const orderBy = sortMode === 'newest'
-        ? { column: 'created_at', ascending: false }
-        : { column: 'github_user', ascending: true };
-
-      const { data, error } = await supabase
-        .from('game_submissions')
-        .select('github_user, avatar_url, cover_url, created_at')
-        .order(orderBy.column, { ascending: orderBy.ascending });
-
-      if (error) {
-        userListEl.textContent = `Error loading users: ${error.message}`;
-        featuredSection.style.display = 'none';
-        return;
-      }
-
-      if (!data.length) {
-        userListEl.textContent = 'No users found.';
-        featuredSection.style.display = 'none';
-        return;
-      }
-
-      // FEATURED USER - newest submission
-      const featuredUser = data[0];
-      if (featuredUser) {
-        featuredSection.style.display = 'block';
-
-        // Avatar
-        featuredAvatar.innerHTML = '';
-        if (featuredUser.avatar_url) {
-          const img = document.createElement('img');
-          img.src = convertDriveLinkToThumbnail(featuredUser.avatar_url);
-          img.alt = `${featuredUser.github_user}'s avatar`;
-          img.style.width = '80px';
-          img.style.height = '80px';
-          img.style.borderRadius = '50%';
-          featuredAvatar.appendChild(img);
-        } else {
-          // If no avatar URL, show initial letter
-          featuredAvatar.textContent = featuredUser.github_user.charAt(0).toUpperCase();
-        }
-
-        // Username
-        featuredUsername.textContent = featuredUser.github_user;
-
-        // Cover Image
-        let coverSrc = featuredUser.cover_url || '';
-        if (coverSrc) {
-          if (!coverSrc.startsWith('http')) {
-            const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(coverSrc);
-            if (publicUrlData && publicUrlData.publicUrl) {
-              coverSrc = publicUrlData.publicUrl;
-            }
-          } else {
-            coverSrc = convertDriveLinkToThumbnail(coverSrc);
-          }
-        } else {
-          coverSrc = 'https://via.placeholder.com/300x160.png?text=No+Cover';
-        }
-        featuredCover.src = coverSrc;
-        featuredCover.alt = `${featuredUser.github_user}'s cover`;
-      } else {
-        featuredSection.style.display = 'none';
-      }
-
-      // Build user list same as before
-      const usersMap = new Map();
-      data.forEach(({ github_user, avatar_url, cover_url }) => {
-        if (github_user && !usersMap.has(github_user)) {
-          usersMap.set(github_user, { avatar_url, cover_url });
-        }
-      });
-
-      userListEl.textContent = '';
-      const fragment = document.createDocumentFragment();
-
-      for (const [user, images] of usersMap.entries()) {
-        const a = document.createElement('a');
-        a.className = 'user-btn';
-        a.href = `user.html?user=${encodeURIComponent(user)}`;
-
-        if (images.avatar_url) {
-          const avatarImg = document.createElement('img');
-          avatarImg.src = convertDriveLinkToThumbnail(images.avatar_url);
-          avatarImg.alt = `${user}'s avatar`;
-          avatarImg.className = 'avatar-img';
-          a.appendChild(avatarImg);
-        }
-
-        const usernameSpan = document.createElement('span');
-        usernameSpan.className = 'username-text';
-        usernameSpan.textContent = user;
-        a.appendChild(usernameSpan);
-
-        if (images.cover_url) {
-          let coverSrc = images.cover_url;
-
-          if (!coverSrc.startsWith('http')) {
-            const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(coverSrc);
-            if (publicUrlData && publicUrlData.publicUrl) {
-              coverSrc = publicUrlData.publicUrl;
-            }
-          } else {
-            coverSrc = convertDriveLinkToThumbnail(coverSrc);
-          }
-
-          const coverImg = document.createElement('img');
-          coverImg.src = coverSrc;
-          coverImg.alt = `${user}'s cover`;
-          coverImg.className = 'cover-img';
-          a.appendChild(coverImg);
-        }
-
-        fragment.appendChild(a);
-      }
-
-      userListEl.appendChild(fragment);
-    }
-
-// Helper function to check if the URL is valid
+   // Helper function to check if the URL is valid
 function isValidUrl(url) {
   try {
     const parsedUrl = new URL(url);
@@ -721,39 +592,49 @@ function isValidUrl(url) {
 
 // Function to convert Google Drive links to thumbnail
 function convertDriveLinkToThumbnail(url) {
-  if (!url || !isValidUrl(url)) return url; // Validate URL
+  // If the URL is invalid or empty, just return the original URL
+  if (!url || !isValidUrl(url)) return url;
 
+  // Regex to match Google Drive file links
   const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
   const fileId = match ? match[1] : null;
+
+  // If a valid file ID is found, return the thumbnail link
   if (fileId) {
     return `https://drive.google.com/thumbnail?id=${fileId}`;
   }
+
+  // Return the original URL if no file ID was found
   return url;
 }
 
 async function loadUsers(sortMode = 'alphabetical') {
+  // Determine how to sort the user list (by newest or alphabetically)
   const orderBy = sortMode === 'newest'
     ? { column: 'created_at', ascending: false }
     : { column: 'github_user', ascending: true };
 
+  // Fetch the user data from Supabase
   const { data, error } = await supabase
     .from('game_submissions')
     .select('github_user, avatar_url, cover_url, created_at')
     .order(orderBy.column, { ascending: orderBy.ascending });
 
+  // Handle errors during data fetch
   if (error) {
     userListEl.textContent = `Error loading users: ${error.message}`;
     featuredSection.style.display = 'none';
     return;
   }
 
+  // If no data found, show a message and hide the featured section
   if (!data.length) {
     userListEl.textContent = 'No users found.';
     featuredSection.style.display = 'none';
     return;
   }
 
-  // FEATURED USER - newest submission
+  // FEATURED USER - Display the user with the newest submission
   const featuredUser = data[0];
   if (featuredUser) {
     featuredSection.style.display = 'block';
@@ -769,7 +650,7 @@ async function loadUsers(sortMode = 'alphabetical') {
       img.style.borderRadius = '50%';
       featuredAvatar.appendChild(img);
     } else {
-      // If no avatar URL or invalid URL, show initial letter
+      // If no avatar URL, show the first letter of the username
       featuredAvatar.textContent = featuredUser.github_user.charAt(0).toUpperCase();
     }
 
@@ -796,7 +677,7 @@ async function loadUsers(sortMode = 'alphabetical') {
     featuredSection.style.display = 'none';
   }
 
-  // Build user list same as before
+  // Build the user list, ensuring no duplicate users
   const usersMap = new Map();
   data.forEach(({ github_user, avatar_url, cover_url }) => {
     if (github_user && !usersMap.has(github_user)) {
@@ -804,9 +685,11 @@ async function loadUsers(sortMode = 'alphabetical') {
     }
   });
 
+  // Clear any existing user list content
   userListEl.textContent = '';
   const fragment = document.createDocumentFragment();
 
+  // Iterate over users and create list elements for each user
   for (const [user, images] of usersMap.entries()) {
     const a = document.createElement('a');
     a.className = 'user-btn';
@@ -820,7 +703,7 @@ async function loadUsers(sortMode = 'alphabetical') {
       avatarImg.className = 'avatar-img';
       a.appendChild(avatarImg);
     } else {
-      // Show initial letter if the avatar URL is missing or invalid
+      // Show the first letter of the username as a fallback
       const initial = document.createElement('span');
       initial.className = 'avatar-initial';
       initial.textContent = user.charAt(0).toUpperCase();
@@ -852,7 +735,7 @@ async function loadUsers(sortMode = 'alphabetical') {
       coverImg.className = 'cover-img';
       a.appendChild(coverImg);
     } else {
-      // Provide a fallback if the cover URL is invalid or missing
+      // Provide a fallback if the cover image is missing or invalid
       const coverFallback = document.createElement('img');
       coverFallback.src = 'https://via.placeholder.com/300x160.png?text=No+Cover';
       coverFallback.alt = `${user}'s cover`;
@@ -860,9 +743,11 @@ async function loadUsers(sortMode = 'alphabetical') {
       a.appendChild(coverFallback);
     }
 
+    // Append the user element to the fragment
     fragment.appendChild(a);
   }
 
+  // Append all user elements to the list
   userListEl.appendChild(fragment);
 }
 
