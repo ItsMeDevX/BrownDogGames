@@ -479,11 +479,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Brown Dog Games</title>
 
   <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
 
   <!-- Custom CSS -->
   <style>
@@ -555,13 +555,15 @@
       margin-bottom: 0.5rem;
     }
 
-    #downloadMessage {
+    #downloadMessage,
+    #downloadMessage2 {
       font-style: italic;
       color: #fefefe;
       margin-bottom: 0.5rem;
     }
 
-    #downloadLink {
+    #downloadLink,
+    #downloadLink2 {
       display: none;
       padding: 10px 16px;
       background-color: #ff4f9f;
@@ -573,7 +575,8 @@
       box-shadow: 0 0 8px #ff4f9f99;
     }
 
-    #downloadLink:hover {
+    #downloadLink:hover,
+    #downloadLink2:hover {
       background-color: #ff82ba;
     }
 
@@ -586,7 +589,7 @@
 <body>
   <h1>🎮 Brown Dog Games</h1>
 
-  <!-- ✅ Game 1: Streaker Run -->
+  <!-- Game 1: Streaker Run -->
   <div class="game" id="streaker-run">
     <header><h2>Streaker Run 👀💨💥</h2></header>
     <div class="screenshot">
@@ -609,7 +612,7 @@
     </div>
   </div>
 
-  <!-- ✅ Game 2: Gay Ghost -->
+  <!-- Game 2: Gay Ghost -->
   <div class="game" id="gay-ghost">
     <header><h2>Gay Ghost 👻🌈🍆</h2></header>
     <div class="screenshot">
@@ -633,7 +636,7 @@
     </div>
   </div>
 
-  <!-- ✅ VIP Script -->
+  <!-- VIP Access Script -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -648,7 +651,10 @@
       const link = document.getElementById(linkId);
       const msg = document.getElementById(msgId);
 
-      if (!user || !link || !msg) return;
+      if (!user || !link || !msg) {
+        if(msg) msg.textContent = '🚫 Please log in to check VIP access.';
+        return;
+      }
 
       const { data: userData, error } = await supabase
         .from('users')
@@ -661,7 +667,7 @@
         return;
       }
 
-      // Countdown
+      // Countdown timer for VIP
       let seconds = 30;
       const countdown = setInterval(() => {
         msg.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
@@ -674,6 +680,7 @@
       }, 30000);
     }
 
+    // Both games require VIP access
     handleVIP('downloadLink', 'downloadMessage');
     handleVIP('downloadLink2', 'downloadMessage2');
   </script>
