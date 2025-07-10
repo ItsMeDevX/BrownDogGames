@@ -475,84 +475,211 @@
 </script>
 
 
-<body>
-  <header>
-    <h1>Streaker Run 👀💨💥</h1>
-  </header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brown Dog Games</title>
 
-  <div class="screenshot">
-    <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/streakerrunScreenshot.png" alt="Streaker Run Screenshot" />
-  </div>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet">
 
-  <section class="description">
-    <p><strong>Streaker Run 🏃‍♂️🍑</strong></p>
-    <p>
-      A fast-paced runner where you’ve ditched your clothes and legged it through the city, the park, and a diner — all while dodging trouble.
-    </p>
-    <ul>
-      <li>👮‍♂️ Jump cops, diner workers, and grumpy old blokes</li>
-      <li>🌳 Slide under trees, tables, and cinder blocks</li>
-      <li>🖕 Outrun the law and anyone else who gets in your way</li>
-    </ul>
-    <p>
-      Quick, crude and a bit daft. Just keep running and don’t get caught.
-    </p>
-  </section>
-
-</style>
-
-<!-- ✅ VIP Download Section -->
-<div class="buttons">
-  <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-  <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-  <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1biNYjxDtk4y_bJ9Dv78wavDlXDTpg62F" download style="display: none;">⬇ Download Game</a>
-  <a href="index.html">← Back to Home</a>
-</div>
-
-<!-- ✅ VIP Protection Script -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  async function showDownloadIfVIP() {
-    const { data } = await supabase.auth.getSession();
-    const user = data?.session?.user;
-    const downloadLink = document.getElementById('downloadLink');
-    const downloadMessage = document.getElementById('downloadMessage');
-
-    if (!user || !downloadLink || !downloadMessage) return;
-
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('is_vip')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !userData?.is_vip) {
-      downloadMessage.textContent = '🚫 VIP Only — Please subscribe to access the download.';
-      return;
+  <!-- Custom CSS -->
+  <style>
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      color: #fefefe;
+      margin: 0;
+      padding: 20px;
     }
 
-    // Countdown timer for VIP
-    let seconds = 30;
-    const countdown = setInterval(() => {
-      downloadMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
-    }, 1000);
+    h1 {
+      text-align: center;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+    }
 
-    setTimeout(() => {
-      clearInterval(countdown);
-      downloadLink.style.display = 'inline-block';
-      downloadMessage.style.display = 'none';
-    }, 30000);
-  }
+    .game {
+      background-color: #2f1a39;
+      border: 3px solid #ff4f9f;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 0 20px #ff4f9f33;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-  showDownloadIfVIP();
-</script>
-  
+    .screenshot img {
+      width: 100%;
+      border-radius: 12px;
+      border: 2px solid #ff4f9f;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 10px #ff4f9f66;
+    }
+
+    .description p,
+    .description ul,
+    .description li {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #ffffff;
+    }
+
+    .description strong {
+      color: #ffb3d1;
+      font-size: 1.1rem;
+    }
+
+    .description ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .description li {
+      margin-bottom: 0.5rem;
+    }
+
+    .buttons {
+      margin-top: 1.5rem;
+    }
+
+    .age-free-info {
+      font-size: 0.85rem;
+      color: #ff82ba;
+      margin-bottom: 0.5rem;
+    }
+
+    #downloadMessage {
+      font-style: italic;
+      color: #fefefe;
+      margin-bottom: 0.5rem;
+    }
+
+    #downloadLink {
+      display: none;
+      padding: 10px 16px;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: background-color 0.2s ease;
+      box-shadow: 0 0 8px #ff4f9f99;
+    }
+
+    #downloadLink:hover {
+      background-color: #ff82ba;
+    }
+
+    a {
+      color: #ff82ba;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Brown Dog Games</h1>
+
+  <!-- ✅ Game 1: Streaker Run -->
+  <div class="game" id="streaker-run">
+    <header><h2>Streaker Run 👀💨💥</h2></header>
+    <div class="screenshot">
+      <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/streakerrunScreenshot.png" alt="Streaker Run Screenshot" />
+    </div>
+    <section class="description">
+      <p><strong>Streaker Run 🏃‍♂️🍑</strong></p>
+      <p>A fast-paced runner where you’ve ditched your clothes and legged it through the city, the park, and a diner — all while dodging trouble.</p>
+      <ul>
+        <li>👮‍♂️ Jump cops, diner workers, and grumpy old blokes</li>
+        <li>🌳 Slide under trees, tables, and cinder blocks</li>
+        <li>🖕 Outrun the law and anyone else who gets in your way</li>
+      </ul>
+      <p>Quick, crude and a bit daft. Just keep running and don’t get caught.</p>
+    </section>
+    <div class="buttons">
+      <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
+      <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+      <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1biNYjxDtk4y_bJ9Dv78wavDlXDTpg62F" download>⬇ Download Game</a>
+    </div>
+  </div>
+
+  <!-- ✅ Game 2: Gay Ghost -->
+  <div class="game" id="gay-ghost">
+    <header><h2>Gay Ghost 👻🌈🍆</h2></header>
+    <div class="screenshot">
+      <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/GayGhostScreenshot.jpg" alt="Gay Ghost Screenshot" />
+    </div>
+    <section class="description">
+      <p><strong>Gay Ghost 👻🌈🍆</strong></p>
+      <p>A wild, naughty maze game where you’re trapped in a fabulous haunted dungeon — and the gay ghosts are thirsty.</p>
+      <ul>
+        <li>👻 Outrun horny ghosts with serious attitude</li>
+        <li>🗝️ Find rainbow keys to unlock the closet door exits</li>
+        <li>🍆 Avoid dildo spikes, slippery lube zones, and trapdoor pits</li>
+        <li>💀 Try not to scream when the walls do</li>
+      </ul>
+      <p>Loud, proud, and completely unhinged. Survive the pleasure maze — or get haunted in all the wrong places.</p>
+    </section>
+    <div class="buttons">
+      <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
+      <div id="downloadMessage2">⏳ Checking VIP access... Please wait 30 seconds</div>
+      <a id="downloadLink2" href="https://drive.google.com/uc?export=download&id=1-s7vC7AQN2QXKhoYebWU10rqxW0ncxPN" download>⬇ Download Game</a>
+    </div>
+  </div>
+
+  <!-- ✅ VIP Script -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
+
+    async function handleVIP(linkId, msgId) {
+      const { data } = await supabase.auth.getSession();
+      const user = data?.session?.user;
+      const link = document.getElementById(linkId);
+      const msg = document.getElementById(msgId);
+
+      if (!user || !link || !msg) return;
+
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !userData?.is_vip) {
+        msg.textContent = '🚫 VIP Only — Please subscribe to access the download.';
+        return;
+      }
+
+      // Countdown
+      let seconds = 30;
+      const countdown = setInterval(() => {
+        msg.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(countdown);
+        link.style.display = 'inline-block';
+        msg.style.display = 'none';
+      }, 30000);
+    }
+
+    handleVIP('downloadLink', 'downloadMessage');
+    handleVIP('downloadLink2', 'downloadMessage2');
+  </script>
+</body>
+</html>
+
   
 <!DOCTYPE html>
 <html lang="en">
