@@ -473,80 +473,215 @@
     renderAuthBar();
   });
 </script>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Brown Dog Games - New Games</title>
 
-  
-<body>
-  
-  <header>
-    <h1>🍑 Butt Blaster Arena 💥</h1>
-  </header>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
 
-  <div class="screenshot">
-    <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/ButtBlasterArenaScreenshot.png" alt="Butt Blaster Arena Screenshot" />
-  </div>
-
-  <section class="description">
-    <p><strong>🍑💥 Butt Blaster Arena 💥🍑</strong></p>
-    <p>
-      Lock. Load. Let it rip! Butt Blaster Arena is a chaotic, top-down party shooter where your ultimate weapon is… your backside! 😆🎮
-    </p>
-    <p>
-      Grab your friends and blast your way through wild arenas using Standard Fart 🍑, fart clouds 💨, 🦘, and bubble traps 🫧 in this ridiculous couch co-op brawler.
-    </p>
-    <p><strong>Controls:</strong> Tab to change fart, Left mouse to toot</p>
-  </section>
-
-<!-- ✅ VIP Download Section -->
-<div class="buttons">
-  <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-  <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-  <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1o325h5KlhFuZ8TWXHo0L5QjfUQcn_sMK" download style="display: none;">⬇ Download Game</a>
-  <a href="index.html">← Back to Home</a>
-</div>
-
-<!-- ✅ VIP Protection Script -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  async function showDownloadIfVIP() {
-    const { data } = await supabase.auth.getSession();
-    const user = data?.session?.user;
-    const downloadLink = document.getElementById('downloadLink');
-    const downloadMessage = document.getElementById('downloadMessage');
-
-    if (!user || !downloadLink || !downloadMessage) return;
-
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('is_vip')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !userData?.is_vip) {
-      downloadMessage.textContent = '🚫 VIP Only — Please subscribe to access the download.';
-      return;
+  <!-- Custom CSS -->
+  <style>
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      color: #fefefe;
+      margin: 0;
+      padding: 20px;
     }
 
-    let seconds = 30;
-    const countdown = setInterval(() => {
-      downloadMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
-    }, 1000);
+    h1 {
+      text-align: center;
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+    }
 
-    setTimeout(() => {
-      clearInterval(countdown);
-      downloadLink.style.display = 'inline-block';
-      downloadMessage.style.display = 'none';
-    }, 30000);
-  }
+    .game {
+      background-color: #2f1a39;
+      border: 3px solid #ff4f9f;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 0 20px #ff4f9f33;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-  showDownloadIfVIP();
-</script>
+    .screenshot img {
+      width: 100%;
+      border-radius: 12px;
+      border: 2px solid #ff4f9f;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 10px #ff4f9f66;
+    }
 
+    .description p,
+    .description ul,
+    .description li {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #ffffff;
+    }
+
+    .description strong {
+      color: #ffb3d1;
+      font-size: 1.1rem;
+    }
+
+    .description ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .description li {
+      margin-bottom: 0.5rem;
+    }
+
+    .buttons {
+      margin-top: 1.5rem;
+    }
+
+    .age-free-info {
+      font-size: 0.85rem;
+      color: #ff82ba;
+      margin-bottom: 0.5rem;
+    }
+
+    #downloadMessage,
+    #downloadMessage2 {
+      font-style: italic;
+      color: #fefefe;
+      margin-bottom: 0.5rem;
+    }
+
+    #downloadLink,
+    #downloadLink2 {
+      display: none;
+      padding: 10px 16px;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: background-color 0.2s ease;
+      box-shadow: 0 0 8px #ff4f9f99;
+    }
+
+    #downloadLink:hover,
+    #downloadLink2:hover {
+      background-color: #ff82ba;
+    }
+
+    a {
+      color: #ff82ba;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Brown Dog Games - New Releases</h1>
+
+  <!-- Game 1: Butt Blaster Arena -->
+  <div class="game" id="butt-blaster-arena">
+    <header><h2>🍑 Butt Blaster Arena 💥</h2></header>
+    <div class="screenshot">
+      <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/ButtBlasterArenaScreenshot.png" alt="Butt Blaster Arena Screenshot" />
+    </div>
+    <section class="description">
+      <p><strong>🍑💥 Butt Blaster Arena 💥🍑</strong></p>
+      <p>
+        Lock. Load. Let it rip! Butt Blaster Arena is a chaotic, top-down party shooter where your ultimate weapon is… your backside! 😆🎮
+      </p>
+      <p>
+        Grab your friends and blast your way through wild arenas using Standard Fart 🍑, fart clouds 💨, 🦘, and bubble traps 🫧 in this ridiculous couch co-op brawler.
+      </p>
+      <p><strong>Controls:</strong> Tab to change fart, Left mouse to toot</p>
+    </section>
+
+    <!-- ✅ VIP Download Section -->
+    <div class="buttons">
+      <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
+      <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+      <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1o325h5KlhFuZ8TWXHo0L5QjfUQcn_sMK" download style="display: none;">⬇ Download Game</a>
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+
+  <!-- Game 2: Erotic Enemies -->
+  <div class="game" id="erotic-enemies">
+    <header><h2>Erotic Enemies 🍑💥</h2></header>
+    <div class="screenshot">
+      <img src="https://github.com/ItsMeDevX/BrownDogGames/blob/main/EroticEnemiesScreenshot.png?raw=true" alt="Erotic Enemies Screenshot" />
+    </div>
+    <section class="description">
+      <p><strong>Erotic Enemies 🔥🍆</strong></p>
+      <p>Defend your castle from waves of naked humans armed with dildo weapons. Use your turret to shoot them down and strategically place traps to stop the attack.</p>
+      <ul>
+        <li>💣 Fire dildos from your turret to fend off the enemies</li>
+        <li>💥 Place traps to halt the advancing horde</li>
+        <li>🛡️ Protect your castle from endless waves of attackers</li>
+      </ul>
+      <p>Quick thinking and strategic defense are the key to surviving the onslaught. Can you stop the naked invasion?</p>
+    </section>
+    <div class="buttons">
+      <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
+      <div id="downloadMessage2">⏳ Checking VIP access... Please wait 30 seconds</div>
+      <a id="downloadLink2" href="https://drive.google.com/uc?export=download&id=1Br-WTVtyLu2wR39_YWeM5sASpxulvYJL" download>⬇ Download Game</a>
+    </div>
+  </div>
+
+  <!-- ✅ VIP Protection Script -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
+
+    async function showDownloadIfVIP(linkId, msgId) {
+      const { data } = await supabase.auth.getSession();
+      const user = data?.session?.user;
+      const link = document.getElementById(linkId);
+      const msg = document.getElementById(msgId);
+
+      if (!user || !link || !msg) return;
+
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !userData?.is_vip) {
+        msg.textContent = '🚫 VIP Only — Please subscribe to access the download.';
+        return;
+      }
+
+      let seconds = 30;
+      const countdown = setInterval(() => {
+        msg.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(countdown);
+        link.style.display = 'inline-block';
+        msg.style.display = 'none';
+      }, 30000);
+    }
+
+    showDownloadIfVIP('downloadLink', 'downloadMessage');
+    showDownloadIfVIP('downloadLink2', 'downloadMessage2');
+  </script>
+</body>
+</html>
 
 <!DOCTYPE html>
 <html lang="en">
