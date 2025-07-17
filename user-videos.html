@@ -466,6 +466,7 @@
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
       cursor: pointer;
+      border: none;
     }
 
     .user-btn:hover {
@@ -486,6 +487,7 @@
       border: 2px solid #ff69b4;
       margin-bottom: 0.5rem;
       border-radius: 50%;
+      color: #ff69b4;
     }
 
     .avatar-img img {
@@ -532,6 +534,7 @@
       box-shadow: 0 0 30px #ff69b4cc;
       user-select: none;
       display: none;
+      cursor: pointer;
     }
 
     #featuredVideo h2 {
@@ -643,7 +646,7 @@
   <h1>All User Video Submissions</h1>
 
   <!-- Featured Video Submission Section -->
-  <section id="featuredVideo" aria-label="Featured Video Submission">
+  <section id="featuredVideo" aria-label="Featured Video Submission" tabindex="0" role="button" aria-pressed="false">
     <h2>🌟 Featured Video Submission</h2>
     <div id="featuredAvatar"></div>
     <div id="featuredUsername"></div>
@@ -671,7 +674,7 @@
 
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTA5NzcyNDIsImV4cCI6MTk0NjU5MzI0Mn0.J-HtTqB6_8akTfD0pz-Lg-U9DeVRX2BZq1p7e1m7n8I'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
     const userListEl = document.getElementById('userList');
@@ -681,156 +684,171 @@
     const featuredThumbnail = document.getElementById('featuredThumbnail');
     const featuredTitle = document.getElementById('featuredTitle');
 
-    const sortAlphaBtn = document.getElementById('sortAlpha');
-    const sortNewestBtn = document.getElementById('sortNewest');
-
     const videoModal = document.getElementById('videoModal');
     const videoPlayerIframe = document.getElementById('videoPlayerIframe');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
-    // Utility: Extract thumbnail from video URL (supports YouTube)
+    let currentSort = 'alphabetical';
+
     function getThumbnailFromUrl(url) {
-      try {
-        const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&]+)/);
-        if (ytMatch && ytMatch[1]) {
-          return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
-        }
-        return '';
-      } catch {
-        return '';
+      if (!url) return null;
+
+      // YouTube thumbnail
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
       }
+
+      // Google Drive thumbnail (uses Drive API thumbnail endpoint, may not always work)
+      const gdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (gdMatch) {
+        return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
+      }
+
+      // Otherwise fallback (could be blank)
+      return null;
     }
 
-    // Open modal with embedded video
+    function createAvatar(item) {
+      const container = document.createElement('div');
+      container.className = 'avatar-img';
+
+      if (item.avatar_url) {
+        const img = document.createElement('img');
+        img.src = item.avatar_url;
+        img.alt = `${item.github_username} avatar`;
+        img.loading = 'lazy';
+        container.appendChild(img);
+      } else {
+        const initial = document.createElement('span');
+        initial.textContent = item.github_username[0]?.toUpperCase() || '?';
+        container.appendChild(initial);
+      }
+
+      return container;
+    }
+
+    function createCard(item) {
+      const btn = document.createElement('button');
+      btn.className = 'user-btn';
+      btn.type = 'button';
+      btn.title = `Watch ${item.github_username}'s video: ${item.title}`;
+
+      // Avatar
+      const avatar = createAvatar(item);
+      btn.appendChild(avatar);
+
+      // Username
+      const usernameText = document.createElement('div');
+      usernameText.className = 'username-text';
+      usernameText.textContent = item.github_username;
+      btn.appendChild(usernameText);
+
+      // Video thumbnail
+      const coverImg = document.createElement('img');
+      coverImg.className = 'cover-img';
+      coverImg.alt = `${item.title} video thumbnail`;
+      const thumbUrl = getThumbnailFromUrl(item.video_url);
+      coverImg.src = thumbUrl || 'https://via.placeholder.com/180x100?text=No+Thumbnail';
+      btn.appendChild(coverImg);
+
+      // Title
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'video-title';
+      titleDiv.textContent = item.title;
+      btn.appendChild(titleDiv);
+
+      btn.onclick = () => openVideoModal(item.video_url);
+
+      return btn;
+    }
+
     function openVideoModal(url) {
-      let embedUrl = url;
-
-      // Convert YouTube watch URL to embed URL
-      const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&]+)/);
-      if (ytMatch && ytMatch[1]) {
-        embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
-      }
-
-      videoPlayerIframe.src = embedUrl;
+      if (!url) return;
+      videoPlayerIframe.src = url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
       videoModal.style.display = 'flex';
-      closeModalBtn.focus();
+      videoModal.focus();
     }
 
-    // Close video modal
     function closeVideoModal() {
       videoModal.style.display = 'none';
       videoPlayerIframe.src = '';
     }
 
-    closeModalBtn.addEventListener('click', closeVideoModal);
-    videoModal.addEventListener('click', (e) => {
-      if (e.target === videoModal) {
-        closeVideoModal();
-      }
-    });
+    closeModalBtn.onclick = closeVideoModal;
+    videoModal.onclick = (e) => {
+      if (e.target === videoModal) closeVideoModal();
+    };
 
-    window.addEventListener('keydown', (e) => {
+    // Allow ESC key to close modal
+    window.addEventListener('keydown', e => {
       if (e.key === 'Escape' && videoModal.style.display === 'flex') {
         closeVideoModal();
       }
     });
 
-    // Load videos grouped by user with sorting
-    async function loadUsers(sortMode = 'alphabetical') {
+    async function loadVideos() {
+      userListEl.textContent = 'Loading videos...';
+
+      let orderBy;
+      if (currentSort === 'alphabetical') {
+        orderBy = { column: 'github_username', ascending: true };
+      } else {
+        orderBy = { column: 'created_at', ascending: false };
+      }
+
       const { data, error } = await supabase
         .from('game_videos')
         .select('github_username, video_url, title, avatar_url, created_at')
-        .order('created_at', { ascending: false }); // newest first for grouping
+        .order(orderBy.column, { ascending: orderBy.ascending });
 
       if (error) {
-        userListEl.textContent = `Error loading videos: ${error.message}`;
-        featuredSection.style.display = 'none';
+        userListEl.textContent = 'Error loading videos: ' + error.message;
         return;
       }
 
       if (!data || data.length === 0) {
-        userListEl.textContent = 'No video submissions found.';
+        userListEl.textContent = 'No video submissions yet.';
         featuredSection.style.display = 'none';
         return;
       }
 
-      // Group videos by username, keep only newest video per user
-      const userMap = new Map();
-      data.forEach(item => {
-        if (!userMap.has(item.github_username)) {
-          userMap.set(item.github_username, item);
-        }
-      });
+      // Show featured video - newest submission
+      const newestVideo = data.reduce((latest, current) => {
+        return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+      }, data[0]);
 
-      let usersArray = Array.from(userMap.values());
-
-      // Sort users by requested mode
-      if (sortMode === 'alphabetical') {
-        usersArray.sort((a, b) => a.github_username.localeCompare(b.github_username));
-      } else if (sortMode === 'newest') {
-        usersArray.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      }
-
-      // Show featured video: newest video overall (not grouped)
-      const newest = data[0];
       featuredSection.style.display = 'block';
+      featuredAvatar.innerHTML = '';
+      featuredAvatar.appendChild(createAvatar(newestVideo));
+      featuredUsername.textContent = newestVideo.github_username;
+      featuredThumbnail.src = getThumbnailFromUrl(newestVideo.video_url) || 'https://via.placeholder.com/300x160?text=No+Thumbnail';
+      featuredThumbnail.alt = `${newestVideo.title} video thumbnail`;
+      featuredTitle.textContent = newestVideo.title;
 
-      if (newest.avatar_url) {
-        featuredAvatar.innerHTML = `<img src="${newest.avatar_url}" alt="${newest.github_username} avatar" />`;
-      } else {
-        featuredAvatar.textContent = newest.github_username.charAt(0).toUpperCase();
-      }
+      // Clicking featured opens modal
+      featuredSection.onclick = () => openVideoModal(newestVideo.video_url);
 
-      featuredUsername.textContent = newest.github_username;
-      featuredTitle.textContent = newest.title || 'Untitled video';
-
-      const thumb = getThumbnailFromUrl(newest.video_url);
-      if (thumb) {
-        featuredThumbnail.src = thumb;
-        featuredThumbnail.alt = `Thumbnail for ${newest.title || 'Untitled video'}`;
-      } else {
-        featuredThumbnail.src = '';
-        featuredThumbnail.alt = 'No thumbnail available';
-      }
-
-      featuredThumbnail.style.cursor = 'pointer';
-      featuredThumbnail.onclick = () => openVideoModal(newest.video_url);
-
-      // Build user cards (one per user)
+      // Clear current list and render all video cards
       userListEl.innerHTML = '';
-      usersArray.forEach((item) => {
-        const btn = document.createElement('button');
-        btn.className = 'user-btn';
-        btn.type = 'button';
-
-        let avatarHTML = '';
-        if (item.avatar_url) {
-          avatarHTML = `<img src="${item.avatar_url}" alt="${item.github_username} avatar" />`;
-        } else {
-          avatarHTML = item.github_username.charAt(0).toUpperCase();
-        }
-
-        btn.innerHTML = `
-          <div class="avatar-img">${avatarHTML}</div>
-          <div class="username-text">${item.github_username}</div>
-          <img class="cover-img" src="${getThumbnailFromUrl(item.video_url) || ''}" alt="Video thumbnail for ${item.title || 'Untitled video'}" />
-          <div class="video-title">${item.title || 'Untitled video'}</div>
-        `;
-
-        btn.onclick = () => {
-          window.location.href = \`user.html?user=\${encodeURIComponent(item.github_username)}\`;
-        };
-
-        userListEl.appendChild(btn);
-      });
+      for (const item of data) {
+        const card = createCard(item);
+        userListEl.appendChild(card);
+      }
     }
 
-    // Initial load
-    loadUsers('alphabetical');
+    // Sort buttons
+    document.getElementById('sortAlpha').onclick = () => {
+      currentSort = 'alphabetical';
+      loadVideos();
+    };
 
-    // Sorting buttons
-    sortAlphaBtn.addEventListener('click', () => loadUsers('alphabetical'));
-    sortNewestBtn.addEventListener('click', () => loadUsers('newest'));
+    document.getElementById('sortNewest').onclick = () => {
+      currentSort = 'newest';
+      loadVideos();
+    };
+
+    loadVideos();
   </script>
 </body>
 </html>
