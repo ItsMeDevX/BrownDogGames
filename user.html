@@ -928,13 +928,16 @@ async function loadVideos() {
         const extMatch = video.video_url.match(/\.(\w+)(?:\?.*)?$/);
         const ext = extMatch ? extMatch[1].toLowerCase() : '';
 
-        // Supported image extensions
-        const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp'];
+        // Supported image extensions (including SVG)
+        const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
 
         // Supported video extensions
         const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
 
-        if (imageExts.includes(ext)) {
+        // Check if URL is a GitHub raw image URL (optional, just treat as image)
+        const isGithubRawImage = video.video_url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
+
+        if (imageExts.includes(ext) || isGithubRawImage) {
           // Render image
           mediaEl = document.createElement('img');
           mediaEl.src = video.video_url;
@@ -947,7 +950,7 @@ async function loadVideos() {
           mediaEl.controls = true;
           mediaEl.className = 'video-player';
           mediaEl.src = video.video_url;
-          mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`; // 'jpg' not video but fallback
+          mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
 
         } else {
           // Unknown file type
@@ -976,7 +979,7 @@ async function loadVideos() {
     videosContainer.appendChild(card);
   });
 }
-
+  
   async function loadChatMessages() {
     const { data, error } = await supabase
       .from('messages')
