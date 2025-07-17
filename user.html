@@ -879,7 +879,7 @@ if (game.embed_url) {
     });
   }
 
- async function loadVideos() {
+async function loadVideos() {
   const { data, error } = await supabase
     .from('game_videos')
     .select('*')
@@ -897,52 +897,66 @@ if (game.embed_url) {
   }
 
   videosContainer.innerHTML = '';
-  data.forEach((video, index) => {
+
+  data.forEach((video) => {
     const card = document.createElement('article');
     card.className = 'card';
 
     if (video.video_url) {
-      let videoEl;
+      let mediaEl;
 
+      // Handle Google Drive video links
       if (video.video_url.includes("drive.google.com")) {
         const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
         const fileId = fileIdMatch ? fileIdMatch[1] : null;
 
         if (fileId) {
-          videoEl = document.createElement('iframe');
-          videoEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-          videoEl.width = '100%';
-          videoEl.height = '360';
-          videoEl.allow = 'autoplay';
-          videoEl.frameBorder = '0';
-          videoEl.className = 'video-player';
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
+          mediaEl.width = '100%';
+          mediaEl.height = '360';
+          mediaEl.allow = 'autoplay';
+          mediaEl.frameBorder = '0';
+          mediaEl.className = 'video-player';
         } else {
-          videoEl = document.createElement('p');
-          videoEl.textContent = '⚠️ Invalid Google Drive link.';
+          mediaEl = document.createElement('p');
+          mediaEl.textContent = '⚠️ Invalid Google Drive link.';
         }
 
-      } else if (video.video_url.match(/\.(gif)$/i)) {
-        // If the URL ends with .gif, show it as an image
-        videoEl = document.createElement('img');
-        videoEl.src = video.video_url;
-        videoEl.className = 'video-player';
-        videoEl.alt = video.title || 'GIF Image';
-
       } else {
-        // For other video types (mp4, webm, ogg)
-        videoEl = document.createElement('video');
-        videoEl.controls = true;
-        videoEl.className = 'video-player';
-        videoEl.src = video.video_url;
+        // Determine file extension (lowercase)
+        const extMatch = video.video_url.match(/\.(\w+)(?:\?.*)?$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : '';
 
-        // Optional: set type attribute based on extension
-        const extMatch = video.video_url.match(/\.(mp4|webm|ogg)$/i);
-        if (extMatch) {
-          videoEl.type = `video/${extMatch[1].toLowerCase()}`;
+        // Supported image extensions
+        const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp'];
+
+        // Supported video extensions
+        const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+
+        if (imageExts.includes(ext)) {
+          // Render image
+          mediaEl = document.createElement('img');
+          mediaEl.src = video.video_url;
+          mediaEl.alt = video.title || 'Image';
+          mediaEl.className = 'video-player';
+
+        } else if (videoExts.includes(ext)) {
+          // Render video element
+          mediaEl = document.createElement('video');
+          mediaEl.controls = true;
+          mediaEl.className = 'video-player';
+          mediaEl.src = video.video_url;
+          mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`; // 'jpg' not video but fallback
+
+        } else {
+          // Unknown file type
+          mediaEl = document.createElement('p');
+          mediaEl.textContent = '⚠️ Unsupported media format.';
         }
       }
 
-      card.appendChild(videoEl);
+      card.appendChild(mediaEl);
     }
 
     if (video.title) {
