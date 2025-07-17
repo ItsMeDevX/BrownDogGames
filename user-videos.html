@@ -390,7 +390,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All User Video Submissions</title>
+  <title>User Video Submissions (Grouped by User)</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
 
@@ -450,44 +450,41 @@
 
     #userList {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
+      user-select: none;
     }
 
-    .user-btn {
+    .user-card {
+      background-color: #2d1a3a;
+      border-radius: 20px;
+      padding: 1.4rem 1rem 2rem 1rem;
+      box-shadow: 0 0 20px #ff69b4cc, inset 0 0 12px #ff69b4bb;
+      color: #ffc0cb;
+      text-align: center;
+      user-select: none;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #2d1a3a;
-      padding: 1rem;
-      border-radius: 16px;
-      box-shadow: 0 0 15px #ff69b4cc, inset 0 0 10px #ff69b4bb;
-      color: #ffc0cb;
-      text-decoration: none;
-      transition: transform 0.25s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-      border: none;
-    }
-
-    .user-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 0 25px #ff8bd8ff, inset 0 0 20px #ff8bd8ee;
+      gap: 1rem;
     }
 
     .avatar-img {
-      width: 48px;
-      height: 48px;
+      width: 72px;
+      height: 72px;
       overflow: hidden;
       background: #1e1b2e;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 2rem;
       font-weight: bold;
-      border: 2px solid #ff69b4;
+      border: 3px solid #ff69b4;
       margin-bottom: 0.5rem;
       border-radius: 50%;
       color: #ff69b4;
+      user-select: none;
+      flex-shrink: 0;
     }
 
     .avatar-img img {
@@ -498,29 +495,55 @@
     }
 
     .username-text {
-      font-size: 1rem;
-      margin-bottom: 0.75rem;
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
       color: #ffc0cb;
       word-break: break-word;
+      user-select: text;
     }
 
-    .cover-img {
-      width: 100%;
-      max-width: 180px;
-      height: 100px;
-      object-fit: cover;
+    .videos-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      user-select: none;
+    }
+
+    .video-thumb {
+      display: flex;
+      flex-direction: column;
+      width: 120px;
+      cursor: pointer;
       border-radius: 12px;
-      border: 2px solid #ff69b4;
-      background: #1a1020;
-      box-shadow: 0 0 10px #ff69b4aa;
+      overflow: hidden;
+      box-shadow: 0 0 12px #ff69b4cc;
+      background: #3a1f59;
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    .video-thumb:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 25px #ff8bd8ff;
+    }
+
+    .video-thumb img {
+      width: 100%;
+      height: 70px;
+      object-fit: cover;
       user-select: none;
     }
 
     .video-title {
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      padding: 0.3rem 0.5rem;
       color: #ffb6d1;
       text-align: center;
+      user-select: text;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Featured video section styling */
@@ -557,6 +580,7 @@
       font-size: 2rem;
       font-weight: bold;
       color: #ff69b4;
+      user-select: none;
     }
 
     #featuredAvatar img {
@@ -571,6 +595,7 @@
       font-size: 1.4rem;
       margin-bottom: 1rem;
       word-break: break-word;
+      user-select: text;
     }
 
     #featuredThumbnail {
@@ -582,11 +607,13 @@
       border: 3px solid #ff8bd8;
       box-shadow: 0 0 15px #ff8bd8cc;
       margin-bottom: 1rem;
+      user-select: none;
     }
 
     #featuredTitle {
       color: #ffb6d1;
       font-size: 1.1rem;
+      user-select: text;
     }
 
     /* Modal styles */
@@ -598,6 +625,7 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
+      user-select: none;
     }
 
     #modalContent {
@@ -616,6 +644,7 @@
       border: none;
       border-radius: 12px;
       background: black;
+      user-select: none;
     }
 
     #closeModalBtn {
@@ -632,6 +661,7 @@
       height: 32px;
       cursor: pointer;
       line-height: 1;
+      user-select: none;
     }
 
     #closeModalBtn:hover {
@@ -699,13 +729,13 @@
         return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
       }
 
-      // Google Drive thumbnail (uses Drive API thumbnail endpoint, may not always work)
+      // Google Drive thumbnail
       const gdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
       if (gdMatch) {
         return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
       }
 
-      // Otherwise fallback (could be blank)
+      // fallback placeholder
       return null;
     }
 
@@ -728,44 +758,43 @@
       return container;
     }
 
-    function createCard(item) {
-      const btn = document.createElement('button');
-      btn.className = 'user-btn';
-      btn.type = 'button';
-      btn.title = `Watch ${item.github_username}'s video: ${item.title}`;
+    // Create video thumbnail element inside user card
+    function createVideoThumb(video) {
+      const container = document.createElement('div');
+      container.className = 'video-thumb';
+      container.title = `Watch video: ${video.title}`;
 
-      // Avatar
-      const avatar = createAvatar(item);
-      btn.appendChild(avatar);
+      const thumbImg = document.createElement('img');
+      thumbImg.alt = `${video.title} thumbnail`;
+      thumbImg.src = getThumbnailFromUrl(video.video_url) || 'https://via.placeholder.com/120x70?text=No+Thumbnail';
 
-      // Username
-      const usernameText = document.createElement('div');
-      usernameText.className = 'username-text';
-      usernameText.textContent = item.github_username;
-      btn.appendChild(usernameText);
-
-      // Video thumbnail
-      const coverImg = document.createElement('img');
-      coverImg.className = 'cover-img';
-      coverImg.alt = `${item.title} video thumbnail`;
-      const thumbUrl = getThumbnailFromUrl(item.video_url);
-      coverImg.src = thumbUrl || 'https://via.placeholder.com/180x100?text=No+Thumbnail';
-      btn.appendChild(coverImg);
-
-      // Title
       const titleDiv = document.createElement('div');
       titleDiv.className = 'video-title';
-      titleDiv.textContent = item.title;
-      btn.appendChild(titleDiv);
+      titleDiv.textContent = video.title;
 
-      btn.onclick = () => openVideoModal(item.video_url);
+      container.appendChild(thumbImg);
+      container.appendChild(titleDiv);
 
-      return btn;
+      container.onclick = () => openVideoModal(video.video_url);
+
+      return container;
     }
 
     function openVideoModal(url) {
       if (!url) return;
-      videoPlayerIframe.src = url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
+      // add autoplay param if needed
+      let embedUrl = url;
+
+      // Convert YouTube watch URL to embed URL if needed for better embedding & autoplay
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+      } else {
+        // Append autoplay param for other URLs if they support it
+        embedUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
+      }
+
+      videoPlayerIframe.src = embedUrl;
       videoModal.style.display = 'flex';
       videoModal.focus();
     }
@@ -780,30 +809,50 @@
       if (e.target === videoModal) closeVideoModal();
     };
 
-    // Allow ESC key to close modal
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape' && videoModal.style.display === 'flex') {
         closeVideoModal();
       }
     });
 
+    // Create one card per user, listing all videos inside
+    function createUserCard(user, videos) {
+      const card = document.createElement('div');
+      card.className = 'user-card';
+
+      // Avatar and username
+      card.appendChild(createAvatar(user));
+      const usernameDiv = document.createElement('div');
+      usernameDiv.className = 'username-text';
+      usernameDiv.textContent = user.github_username;
+      card.appendChild(usernameDiv);
+
+      // Container for all video thumbnails for this user
+      const videosContainer = document.createElement('div');
+      videosContainer.className = 'videos-container';
+
+      for (const video of videos) {
+        const videoThumb = createVideoThumb(video);
+        videosContainer.appendChild(videoThumb);
+      }
+
+      card.appendChild(videosContainer);
+
+      return card;
+    }
+
+    // Load videos from Supabase, group by user, and render
     async function loadVideos() {
       userListEl.textContent = 'Loading videos...';
 
-      let orderBy;
-      if (currentSort === 'alphabetical') {
-        orderBy = { column: 'github_username', ascending: true };
-      } else {
-        orderBy = { column: 'created_at', ascending: false };
-      }
-
+      // Fetch all videos
       const { data, error } = await supabase
         .from('game_videos')
-        .select('github_username, video_url, title, avatar_url, created_at')
-        .order(orderBy.column, { ascending: orderBy.ascending });
+        .select('github_username, video_url, title, avatar_url, created_at');
 
       if (error) {
         userListEl.textContent = 'Error loading videos: ' + error.message;
+        featuredSection.style.display = 'none';
         return;
       }
 
@@ -813,11 +862,42 @@
         return;
       }
 
-      // Show featured video - newest submission
+      // Group videos by github_username
+      const usersMap = new Map();
+
+      for (const item of data) {
+        if (!usersMap.has(item.github_username)) {
+          usersMap.set(item.github_username, {
+            github_username: item.github_username,
+            avatar_url: item.avatar_url,
+            videos: [],
+          });
+        }
+        usersMap.get(item.github_username).videos.push(item);
+      }
+
+      // For sorting by newest, we consider the newest video per user
+      const usersArray = Array.from(usersMap.values());
+
+      usersArray.forEach(user => {
+        user.newestCreatedAt = user.videos.reduce((latest, vid) => {
+          return new Date(vid.created_at) > new Date(latest) ? new Date(vid.created_at) : latest;
+        }, new Date(0));
+      });
+
+      // Sort users
+      if (currentSort === 'alphabetical') {
+        usersArray.sort((a, b) => a.github_username.localeCompare(b.github_username));
+      } else {
+        usersArray.sort((a, b) => b.newestCreatedAt - a.newestCreatedAt);
+      }
+
+      // Featured video = newest overall video from all data
       const newestVideo = data.reduce((latest, current) => {
         return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
       }, data[0]);
 
+      // Update featured section
       featuredSection.style.display = 'block';
       featuredAvatar.innerHTML = '';
       featuredAvatar.appendChild(createAvatar(newestVideo));
@@ -825,19 +905,16 @@
       featuredThumbnail.src = getThumbnailFromUrl(newestVideo.video_url) || 'https://via.placeholder.com/300x160?text=No+Thumbnail';
       featuredThumbnail.alt = `${newestVideo.title} video thumbnail`;
       featuredTitle.textContent = newestVideo.title;
-
-      // Clicking featured opens modal
       featuredSection.onclick = () => openVideoModal(newestVideo.video_url);
 
-      // Clear current list and render all video cards
+      // Clear and render user cards
       userListEl.innerHTML = '';
-      for (const item of data) {
-        const card = createCard(item);
+      for (const user of usersArray) {
+        const card = createUserCard(user, user.videos);
         userListEl.appendChild(card);
       }
     }
 
-    // Sort buttons
     document.getElementById('sortAlpha').onclick = () => {
       currentSort = 'alphabetical';
       loadVideos();
