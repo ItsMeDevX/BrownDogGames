@@ -719,6 +719,11 @@
 
     let currentSort = 'alphabetical';
 
+    // Detect YouTube video ID and get thumbnail
+    // Detect Google Drive video thumbnail pattern
+    // Detect if url points to image file (jpg/png/gif/webp)
+    // Otherwise fallback to placeholder
+
     function getThumbnailFromUrl(url) {
       if (!url) return null;
 
@@ -728,24 +733,62 @@
         return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
       }
 
-      // Vimeo thumbnail - requires API, so just return null here or a placeholder
-      // Or handle other services if needed
+      // Google Drive video thumbnail pattern:
+      // For shared files, usually: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+      // Thumbnail: https://drive.google.com/thumbnail?id=FILE_ID
+      // Let's extract FILE_ID and return thumbnail URL
+      const gdMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || url.match(/drive\.google\.com\/open\?id=([^&]+)/) || url.match(/drive\.google\.com\/uc\?id=([^&]+)/);
+      if (gdMatch) {
+        const fileId = gdMatch[1];
+        return `https://drive.google.com/thumbnail?id=${fileId}`;
+      }
 
+      // If URL ends with image extension, return URL directly (image as thumbnail)
+      if (url.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i)) {
+        return url;
+      }
+
+      // No thumbnail found
       return null;
     }
 
-    function createAvatar(user) {
-      const div = document.createElement('div');
-      div.className = 'avatar-img';
+    function getEmbedUrl(url) {
+      if (!url) return '';
 
+      // YouTube embed URL
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+      }
+
+      // Google Drive embed URL (for videos)
+      const gdMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || url.match(/drive\.google\.com\/open\?id=([^&]+)/) || url.match(/drive\.google\.com\/uc\?id=([^&]+)/);
+      if (gdMatch) {
+        const fileId = gdMatch[1];
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+
+      // For other URLs, just append autoplay param if possible (some video hosts)
+      if (url.includes('?')) {
+        return url + '&autoplay=1';
+      }
+      return url + '?autoplay=1';
+    }
+
+    function createAvatar(user) {
       if (user.avatar_url) {
         const img = document.createElement('img');
         img.src = user.avatar_url;
-        img.alt = `${user.github_username}'s avatar`;
-        div.appendChild(img);
-      } else {
-        div.textContent = user.github_username.charAt(0).toUpperCase();
+        img.alt = `${user.username} avatar`;
+        img.loading = 'lazy';
+        img.width = 72;
+        img.height = 72;
+        return img;
       }
+      // Fallback: initial letter avatar
+      const div = document.createElement('div');
+      div.className = 'avatar-img';
+      div.textContent = user.username[0].toUpperCase();
       return div;
     }
 
@@ -757,6 +800,7 @@
       const img = document.createElement('img');
       img.src = thumbnailUrl;
       img.alt = `${video.title} video thumbnail`;
+      img.loading = 'lazy';
       container.appendChild(img);
 
       const titleDiv = document.createElement('div');
@@ -769,145 +813,167 @@
       return container;
     }
 
-    function openVideoModal(url) {
-      let embedUrl = url;
+    function createUserCard(user) {
+      const card = document.createElement('div');
+      card.className = 'user-card';
 
-      // Convert YouTube watch URL to embed URL with autoplay
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
-      if (ytMatch) {
-        embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+      const avatarContainer = document.createElement('div');
+      avatarContainer.className = 'avatar-img';
+      const avatarEl = createAvatar(user);
+      if (avatarEl.tagName === 'IMG') {
+        avatarContainer.appendChild(avatarEl);
       } else {
-        embedUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
+        avatarContainer.textContent = avatarEl.textContent;
       }
 
+      card.appendChild(avatarContainer);
+
+      const username = document.createElement('div');
+      username.className = 'username-text';
+      username.textContent = user.username;
+      card.appendChild(username);
+
+      if (user.video_url) {
+        const videoThumb = createVideoThumb(user);
+        card.appendChild(videoThumb);
+      }
+
+      // On click open video modal for that user's video
+      card.onclick = () => {
+        if (user.video_url) {
+          openVideoModal(user.video_url);
+        }
+      };
+
+      return card;
+    }
+
+    function openVideoModal(url) {
+      const embedUrl = getEmbedUrl(url);
       videoPlayerIframe.src = embedUrl;
       videoModal.style.display = 'flex';
       videoModal.focus();
     }
 
     function closeVideoModal() {
-      videoModal.style.display = 'none';
       videoPlayerIframe.src = '';
+      videoModal.style.display = 'none';
     }
 
-    closeModalBtn.onclick = closeVideoModal;
-    videoModal.onclick = (e) => {
-      if (e.target === videoModal) closeVideoModal();
-    };
+    closeModalBtn.addEventListener('click', closeVideoModal);
 
-    window.addEventListener('keydown', e => {
+    videoModal.addEventListener('click', (e) => {
+      if (e.target === videoModal) {
+        closeVideoModal();
+      }
+    });
+
+    // Escape key closes modal
+    window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && videoModal.style.display === 'flex') {
         closeVideoModal();
       }
     });
 
-    // Create one card per user with their newest video only
-    function createUserCard(user) {
-      const card = document.createElement('div');
-      card.className = 'user-card';
+    // Load user videos from Supabase
+    async function loadUserVideos() {
+      try {
+        const { data, error } = await supabase
+          .from('user_videos')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      card.appendChild(createAvatar(user));
+        if (error) throw error;
 
-      const usernameDiv = document.createElement('div');
-      usernameDiv.className = 'username-text';
-      usernameDiv.textContent = user.github_username;
-      card.appendChild(usernameDiv);
+        if (!data || data.length === 0) {
+          userListEl.textContent = 'No user videos found.';
+          return;
+        }
 
-      // Show only the newest video for that user
-      if (user.newestVideo) {
-        const videoThumb = createVideoThumb(user.newestVideo);
-        card.appendChild(videoThumb);
-      } else {
-        // No video case fallback
-        const noVideoText = document.createElement('div');
-        noVideoText.textContent = 'No videos available';
-        card.appendChild(noVideoText);
+        // Extract featured video (newest)
+        const featured = data[0];
+        showFeaturedVideo(featured);
+
+        // Sort and render users list
+        renderUserList(data);
+      } catch (err) {
+        console.error(err);
+        userListEl.textContent = 'Failed to load videos.';
       }
-
-      return card;
     }
 
-    // Load videos from Supabase, group by user, and render one video per user card
-    async function loadVideos() {
-      userListEl.textContent = 'Loading videos...';
-
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('github_username, video_url, title, avatar_url, created_at');
-
-      if (error) {
-        userListEl.textContent = 'Error loading videos: ' + error.message;
-        featuredSection.style.display = 'none';
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        userListEl.textContent = 'No video submissions yet.';
-        featuredSection.style.display = 'none';
-        return;
-      }
-
-      // Group videos by github_username, keep track of newest video per user
-      const usersMap = new Map();
-
-      for (const item of data) {
-        if (!usersMap.has(item.github_username)) {
-          usersMap.set(item.github_username, {
-            github_username: item.github_username,
-            avatar_url: item.avatar_url,
-            newestVideo: item,
-          });
-        } else {
-          // Compare dates to keep newest video
-          const currentNewest = usersMap.get(item.github_username).newestVideo;
-          if (new Date(item.created_at) > new Date(currentNewest.created_at)) {
-            usersMap.get(item.github_username).newestVideo = item;
-          }
-        }
-      }
-
-      const usersArray = Array.from(usersMap.values());
-
-      // Sorting
-      if (currentSort === 'alphabetical') {
-        usersArray.sort((a, b) => a.github_username.localeCompare(b.github_username));
-      } else {
-        usersArray.sort((a, b) => new Date(b.newestVideo.created_at) - new Date(a.newestVideo.created_at));
-      }
-
-      // Featured video = newest overall video from all data
-      const newestVideo = data.reduce((latest, current) => {
-        return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
-      }, data[0]);
-
+    function showFeaturedVideo(user) {
       featuredSection.style.display = 'block';
-      featuredAvatar.innerHTML = '';
-      featuredAvatar.appendChild(createAvatar(newestVideo));
-      featuredUsername.textContent = newestVideo.github_username;
-      featuredThumbnail.src = getThumbnailFromUrl(newestVideo.video_url) || 'https://via.placeholder.com/300x160?text=No+Thumbnail';
-      featuredThumbnail.alt = `${newestVideo.title} video thumbnail`;
-      featuredTitle.textContent = newestVideo.title;
-      featuredSection.onclick = () => openVideoModal(newestVideo.video_url);
 
-      // Clear and render user cards
+      // Clear previous
+      featuredAvatar.innerHTML = '';
+      featuredUsername.textContent = '';
+      featuredThumbnail.src = '';
+      featuredTitle.textContent = '';
+
+      // Avatar
+      if (user.avatar_url) {
+        const img = document.createElement('img');
+        img.src = user.avatar_url;
+        img.alt = `${user.username} avatar`;
+        img.loading = 'lazy';
+        featuredAvatar.appendChild(img);
+      } else {
+        featuredAvatar.textContent = user.username[0].toUpperCase();
+      }
+
+      featuredUsername.textContent = user.username;
+      featuredTitle.textContent = user.title || '(No Title)';
+
+      const thumb = getThumbnailFromUrl(user.video_url);
+      featuredThumbnail.src = thumb || 'https://via.placeholder.com/300x160?text=No+Thumbnail';
+      featuredThumbnail.alt = `${user.title || 'Featured video'} thumbnail`;
+
+      // Clicking featured section opens video modal
+      featuredSection.onclick = () => {
+        if (user.video_url) {
+          openVideoModal(user.video_url);
+        }
+      };
+    }
+
+    function renderUserList(users) {
+      if (users.length === 0) {
+        userListEl.textContent = 'No videos found.';
+        return;
+      }
       userListEl.innerHTML = '';
-      for (const user of usersArray) {
+
+      // Sort by currentSort
+      let sortedUsers = [...users];
+      if (currentSort === 'alphabetical') {
+        sortedUsers.sort((a, b) => a.username.localeCompare(b.username));
+      } else if (currentSort === 'newest') {
+        sortedUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      for (const user of sortedUsers) {
+        // Don't include featured user in list again
+        if (user === users[0]) continue;
         const card = createUserCard(user);
         userListEl.appendChild(card);
       }
     }
 
+    // Sort buttons event handlers
     document.getElementById('sortAlpha').onclick = () => {
       currentSort = 'alphabetical';
-      loadVideos();
+      loadUserVideos();
     };
 
     document.getElementById('sortNewest').onclick = () => {
       currentSort = 'newest';
-      loadVideos();
+      loadUserVideos();
     };
 
-    loadVideos();
+    // Initial load
+    loadUserVideos();
+
   </script>
 </body>
 </html>
