@@ -684,14 +684,14 @@
   </section>
 
   <div id="sortButtons">
-    <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
-    <button class="back-link" id="sortNewest">🆕 Newest</button>
+    <button class="back-link" id="sortAlpha" type="button">🅰️ Alphabetical</button>
+    <button class="back-link" id="sortNewest" type="button">🆕 Newest</button>
   </div>
 
   <div id="userList">Loading videos...</div>
 
   <!-- Video Modal -->
-  <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
     <div id="modalContent">
       <button id="closeModalBtn" aria-label="Close video player">×</button>
       <iframe id="videoPlayerIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -719,214 +719,224 @@
 
     let currentSort = 'alphabetical';
 
-function getThumbnailFromUrl(url) {
-  if (!url) return null;
+    function getThumbnailFromUrl(url) {
+      if (!url) return null;
 
-  // YouTube thumbnail
-  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
-  if (ytMatch) {
-    return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
-  }
-
-  // Google Drive thumbnail
-  // Match typical Drive file URL like: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (driveMatch) {
-    const fileId = driveMatch[1];
-    return `https://drive.google.com/thumbnail?id=${fileId}`;
-  }
-
-  // Direct image URLs (jpg, jpeg, png, gif, webp)
-  const imageExt = url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i);
-  if (imageExt) {
-    return url; // Use the image URL as thumbnail directly
-  }
-
-  // For video files directly linked (mp4, webm, etc.), no automatic thumbnail — fallback
-  const videoExt = url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i);
-  if (videoExt) {
-    // Could use a generic video icon or placeholder image
-    return 'https://via.placeholder.com/140x80?text=Video';
-  }
-
-  // Other URLs fallback to placeholder
-  return 'https://via.placeholder.com/140x80?text=No+Thumbnail';
-}
-
-    function createAvatar(user) {
-      const div = document.createElement('div');
-      div.className = 'avatar-img';
-
-      if (user.avatar_url) {
-        const img = document.createElement('img');
-        img.src = user.avatar_url;
-        img.alt = ${user.github_username}'s avatar;
-        div.appendChild(img);
-      } else {
-        div.textContent = user.github_username.charAt(0).toUpperCase();
+      // YouTube thumbnail
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+      if (ytMatch) {
+        return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
       }
-      return div;
+
+      // Google Drive thumbnail
+      // Match typical Drive file URL like: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+      const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (driveMatch) {
+        const fileId = driveMatch[1];
+        return `https://drive.google.com/thumbnail?id=${fileId}`;
+      }
+
+      // No recognizable thumbnail URL
+      return null;
     }
 
-    function createVideoThumb(video) {
-      const container = document.createElement('div');
-      container.className = 'video-thumb';
+    function createAvatar(username, avatar_url) {
+      if (avatar_url) {
+        const img = document.createElement('img');
+        img.src = avatar_url;
+        img.alt = `${username}'s avatar`;
+        return img;
+      } else {
+        // Generate initials
+        const initials = username.split(' ').map(word => word[0].toUpperCase()).slice(0, 2).join('');
+        const div = document.createElement('div');
+        div.textContent = initials || 'U';
+        div.style.userSelect = 'none';
+        return div;
+      }
+    }
 
-      const thumbnailUrl = getThumbnailFromUrl(video.video_url) || 'https://via.placeholder.com/140x80?text=No+Thumbnail';
-      const img = document.createElement('img');
-      img.src = thumbnailUrl;
-      img.alt = ${video.title} video thumbnail;
-      container.appendChild(img);
+    function createUserCard(user) {
+      const card = document.createElement('div');
+      card.className = 'user-card';
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-pressed', 'false');
+      card.setAttribute('aria-label', `Play video submitted by ${user.username}`);
+
+      // Avatar
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'avatar-img';
+      const avatarImgOrInitials = createAvatar(user.username, user.avatar_url);
+      avatarDiv.appendChild(avatarImgOrInitials);
+      card.appendChild(avatarDiv);
+
+      // Username
+      const usernameDiv = document.createElement('div');
+      usernameDiv.className = 'username-text';
+      usernameDiv.textContent = user.username;
+      card.appendChild(usernameDiv);
+
+      // Video thumbnail and title
+      const videoThumb = document.createElement('div');
+      videoThumb.className = 'video-thumb';
+
+      const thumbImg = document.createElement('img');
+      const thumbnail = getThumbnailFromUrl(user.video_url);
+      if (thumbnail) {
+        thumbImg.src = thumbnail;
+      } else {
+        thumbImg.src = 'https://via.placeholder.com/140x80?text=No+Thumbnail';
+      }
+      thumbImg.alt = `Video thumbnail for ${user.video_title}`;
+      videoThumb.appendChild(thumbImg);
 
       const titleDiv = document.createElement('div');
       titleDiv.className = 'video-title';
-      titleDiv.textContent = video.title;
-      container.appendChild(titleDiv);
+      titleDiv.textContent = user.video_title;
+      videoThumb.appendChild(titleDiv);
 
-      container.onclick = () => openVideoModal(video.video_url);
+      card.appendChild(videoThumb);
 
-      return container;
+      card.addEventListener('click', () => {
+        playVideo(user.video_url, user);
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          playVideo(user.video_url, user);
+        }
+      });
+
+      return card;
     }
 
-    function openVideoModal(url) {
-      let embedUrl = url;
+    function playVideo(url, user) {
+      // Support YouTube and Google Drive URLs
+      let embedUrl = '';
 
-      // Convert YouTube watch URL to embed URL with autoplay
+      // YouTube embed
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
       if (ytMatch) {
-        embedUrl = https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1;
+        embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
       } else {
-        embedUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
+        // Google Drive embed (file must have sharing permissions)
+        const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (driveMatch) {
+          const fileId = driveMatch[1];
+          embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+      }
+
+      if (!embedUrl) {
+        alert('Video URL is not supported for playback.');
+        return;
       }
 
       videoPlayerIframe.src = embedUrl;
       videoModal.style.display = 'flex';
+
+      // Focus modal for accessibility
       videoModal.focus();
+
+      // Update featured video area to highlight the video playing
+      setFeaturedVideo(user);
     }
 
     function closeVideoModal() {
-      videoModal.style.display = 'none';
       videoPlayerIframe.src = '';
+      videoModal.style.display = 'none';
     }
 
-    closeModalBtn.onclick = closeVideoModal;
-    videoModal.onclick = (e) => {
-      if (e.target === videoModal) closeVideoModal();
-    };
-
-    window.addEventListener('keydown', e => {
+    closeModalBtn.addEventListener('click', closeVideoModal);
+    videoModal.addEventListener('click', (e) => {
+      if (e.target === videoModal) {
+        closeVideoModal();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && videoModal.style.display === 'flex') {
         closeVideoModal();
       }
     });
 
-    // Create one card per user with their newest video only
-    function createUserCard(user) {
-      const card = document.createElement('div');
-      card.className = 'user-card';
-
-      card.appendChild(createAvatar(user));
-
-      const usernameDiv = document.createElement('div');
-      usernameDiv.className = 'username-text';
-      usernameDiv.textContent = user.github_username;
-      card.appendChild(usernameDiv);
-
-      // Show only the newest video for that user
-      if (user.newestVideo) {
-        const videoThumb = createVideoThumb(user.newestVideo);
-        card.appendChild(videoThumb);
-      } else {
-        // No video case fallback
-        const noVideoText = document.createElement('div');
-        noVideoText.textContent = 'No videos available';
-        card.appendChild(noVideoText);
-      }
-
-      return card;
-    }
-
-    // Load videos from Supabase, group by user, and render one video per user card
-    async function loadVideos() {
-      userListEl.textContent = 'Loading videos...';
-
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('github_username, video_url, title, avatar_url, created_at');
-
-      if (error) {
-        userListEl.textContent = 'Error loading videos: ' + error.message;
-        featuredSection.style.display = 'none';
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        userListEl.textContent = 'No video submissions yet.';
-        featuredSection.style.display = 'none';
-        return;
-      }
-
-      // Group videos by github_username, keep track of newest video per user
-      const usersMap = new Map();
-
-      for (const item of data) {
-        if (!usersMap.has(item.github_username)) {
-          usersMap.set(item.github_username, {
-            github_username: item.github_username,
-            avatar_url: item.avatar_url,
-            newestVideo: item,
-          });
-        } else {
-          // Compare dates to keep newest video
-          const currentNewest = usersMap.get(item.github_username).newestVideo;
-          if (new Date(item.created_at) > new Date(currentNewest.created_at)) {
-            usersMap.get(item.github_username).newestVideo = item;
-          }
-        }
-      }
-
-      const usersArray = Array.from(usersMap.values());
-
-      // Sorting
-      if (currentSort === 'alphabetical') {
-        usersArray.sort((a, b) => a.github_username.localeCompare(b.github_username));
-      } else {
-        usersArray.sort((a, b) => new Date(b.newestVideo.created_at) - new Date(a.newestVideo.created_at));
-      }
-
-      // Featured video = newest overall video from all data
-      const newestVideo = data.reduce((latest, current) => {
-        return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
-      }, data[0]);
-
+    function setFeaturedVideo(user) {
       featuredSection.style.display = 'block';
       featuredAvatar.innerHTML = '';
-      featuredAvatar.appendChild(createAvatar(newestVideo));
-      featuredUsername.textContent = newestVideo.github_username;
-      featuredThumbnail.src = getThumbnailFromUrl(newestVideo.video_url) || 'https://via.placeholder.com/300x160?text=No+Thumbnail';
-      featuredThumbnail.alt = ${newestVideo.title} video thumbnail;
-      featuredTitle.textContent = newestVideo.title;
-      featuredSection.onclick = () => openVideoModal(newestVideo.video_url);
+      const avatarEl = createAvatar(user.username, user.avatar_url);
+      featuredAvatar.appendChild(avatarEl);
+      featuredUsername.textContent = user.username;
+      const thumbUrl = getThumbnailFromUrl(user.video_url) || 'https://via.placeholder.com/300x160?text=No+Thumbnail';
+      featuredThumbnail.src = thumbUrl;
+      featuredThumbnail.alt = `Featured video thumbnail for ${user.video_title}`;
+      featuredTitle.textContent = user.video_title;
+    }
 
-      // Clear and render user cards
+    featuredSection.addEventListener('click', () => {
+      // Play featured video again on click
+      const username = featuredUsername.textContent;
+      if (!username) return;
+
+      // Find user data from current displayed list
+      const user = allUsers.find(u => u.username === username);
+      if (user) playVideo(user.video_url, user);
+    });
+
+    let allUsers = [];
+
+    async function fetchVideos() {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*')
+        .neq('username', '') // username is not empty
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        userListEl.textContent = 'Error loading videos.';
+        console.error(error);
+        return;
+      }
+
+      allUsers = data;
+      renderUsers(allUsers, currentSort);
+    }
+
+    function renderUsers(users, sortBy) {
       userListEl.innerHTML = '';
-      for (const user of usersArray) {
+      if (!users.length) {
+        userListEl.textContent = 'No videos found.';
+        return;
+      }
+
+      let sortedUsers = [...users];
+      if (sortBy === 'alphabetical') {
+        sortedUsers.sort((a, b) => a.username.toLowerCase().localeCompare(b.username.toLowerCase()));
+      } else if (sortBy === 'newest') {
+        sortedUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      sortedUsers.forEach(user => {
         const card = createUserCard(user);
         userListEl.appendChild(card);
+      });
+
+      // Show first video as featured by default
+      if (sortedUsers.length > 0) {
+        setFeaturedVideo(sortedUsers[0]);
       }
     }
 
-    document.getElementById('sortAlpha').onclick = () => {
+    document.getElementById('sortAlpha').addEventListener('click', () => {
       currentSort = 'alphabetical';
-      loadVideos();
-    };
+      renderUsers(allUsers, currentSort);
+    });
 
-    document.getElementById('sortNewest').onclick = () => {
+    document.getElementById('sortNewest').addEventListener('click', () => {
       currentSort = 'newest';
-      loadVideos();
-    };
+      renderUsers(allUsers, currentSort);
+    });
 
-    loadVideos();
+    fetchVideos();
   </script>
 </body>
-</html>  
+</html>
