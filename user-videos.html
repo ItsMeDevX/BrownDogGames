@@ -802,30 +802,59 @@
     });
 
     // Create one card per user with their newest video only
-    function createUserCard(user) {
-      const card = document.createElement('div');
-      card.className = 'user-card';
+   function createUserCard(user) {
+  const card = document.createElement('div');
+  card.className = 'user-card';
 
-      card.appendChild(createAvatar(user));
+  card.appendChild(createAvatar(user));
 
-      const usernameDiv = document.createElement('div');
-      usernameDiv.className = 'username-text';
-      usernameDiv.textContent = user.github_username;
-      card.appendChild(usernameDiv);
+  const usernameDiv = document.createElement('div');
+  usernameDiv.className = 'username-text';
+  usernameDiv.textContent = user.github_username;
+  card.appendChild(usernameDiv);
 
-      // Show only the newest video for that user
-      if (user.newestVideo) {
-        const videoThumb = createVideoThumb(user.newestVideo);
-        card.appendChild(videoThumb);
-      } else {
-        // No video case fallback
-        const noVideoText = document.createElement('div');
-        noVideoText.textContent = 'No videos available';
-        card.appendChild(noVideoText);
-      }
+  // Show only the newest video for that user
+  if (user.newestVideo) {
+    const videoThumb = createVideoThumb(user);
+    card.appendChild(videoThumb);
+  } else {
+    // No video case fallback
+    const noVideoText = document.createElement('div');
+    noVideoText.textContent = 'No videos available';
+    card.appendChild(noVideoText);
+  }
 
-      return card;
-    }
+  // Navigate to user.html when the card is clicked
+  card.onclick = () => {
+    window.location.href = `user.html?user=${user.github_username}`;
+  };
+
+  return card;
+}
+
+function createVideoThumb(user) {
+  const container = document.createElement('div');
+  container.className = 'video-thumb';
+
+  const thumbnailUrl = getThumbnailFromUrl(user.newestVideo.video_url) || 'https://via.placeholder.com/140x80?text=No+Thumbnail';
+  const img = document.createElement('img');
+  img.src = thumbnailUrl;
+  img.alt = `${user.newestVideo.title} video thumbnail`;
+  container.appendChild(img);
+
+  const titleDiv = document.createElement('div');
+  titleDiv.className = 'video-title';
+  titleDiv.textContent = user.newestVideo.title;
+  container.appendChild(titleDiv);
+
+  // Navigate to user.html when the thumbnail is clicked
+  container.onclick = (e) => {
+    e.stopPropagation(); // Prevent the user card click event from firing
+    window.location.href = `user.html?user=${user.github_username}`;
+  };
+
+  return container;
+}
 
     // Load videos from Supabase, group by user, and render one video per user card
     async function loadVideos() {
