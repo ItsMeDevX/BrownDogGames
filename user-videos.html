@@ -390,7 +390,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User Video Submissions (Grouped by User)</title>
+  <title>User Video Submissions (One Video Per User)</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
 
@@ -467,6 +467,13 @@
       flex-direction: column;
       align-items: center;
       gap: 1rem;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
+    }
+
+    .user-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 25px #ff8bd8ff;
     }
 
     .avatar-img {
@@ -502,41 +509,33 @@
       user-select: text;
     }
 
-    .videos-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.75rem;
-      user-select: none;
-    }
-
     .video-thumb {
       display: flex;
       flex-direction: column;
-      width: 120px;
-      cursor: pointer;
+      width: 140px;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 0 12px #ff69b4cc;
       background: #3a1f59;
-      transition: transform 0.25s ease, box-shadow 0.3s ease;
       user-select: none;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
     }
 
     .video-thumb:hover {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
       box-shadow: 0 0 25px #ff8bd8ff;
     }
 
     .video-thumb img {
       width: 100%;
-      height: 70px;
+      height: 80px;
       object-fit: cover;
       user-select: none;
     }
 
     .video-title {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       padding: 0.3rem 0.5rem;
       color: #ffb6d1;
       text-align: center;
@@ -729,50 +728,40 @@
         return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
       }
 
-      // Google Drive thumbnail
-      const gdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-      if (gdMatch) {
-        return `https://drive.google.com/thumbnail?id=${gdMatch[1]}`;
-      }
+      // Vimeo thumbnail - requires API, so just return null here or a placeholder
+      // Or handle other services if needed
 
-      // fallback placeholder
       return null;
     }
 
-    function createAvatar(item) {
-      const container = document.createElement('div');
-      container.className = 'avatar-img';
+    function createAvatar(user) {
+      const div = document.createElement('div');
+      div.className = 'avatar-img';
 
-      if (item.avatar_url) {
+      if (user.avatar_url) {
         const img = document.createElement('img');
-        img.src = item.avatar_url;
-        img.alt = `${item.github_username} avatar`;
-        img.loading = 'lazy';
-        container.appendChild(img);
+        img.src = user.avatar_url;
+        img.alt = `${user.github_username}'s avatar`;
+        div.appendChild(img);
       } else {
-        const initial = document.createElement('span');
-        initial.textContent = item.github_username[0]?.toUpperCase() || '?';
-        container.appendChild(initial);
+        div.textContent = user.github_username.charAt(0).toUpperCase();
       }
-
-      return container;
+      return div;
     }
 
-    // Create video thumbnail element inside user card
     function createVideoThumb(video) {
       const container = document.createElement('div');
       container.className = 'video-thumb';
-      container.title = `Watch video: ${video.title}`;
 
-      const thumbImg = document.createElement('img');
-      thumbImg.alt = `${video.title} thumbnail`;
-      thumbImg.src = getThumbnailFromUrl(video.video_url) || 'https://via.placeholder.com/120x70?text=No+Thumbnail';
+      const thumbnailUrl = getThumbnailFromUrl(video.video_url) || 'https://via.placeholder.com/140x80?text=No+Thumbnail';
+      const img = document.createElement('img');
+      img.src = thumbnailUrl;
+      img.alt = `${video.title} video thumbnail`;
+      container.appendChild(img);
 
       const titleDiv = document.createElement('div');
       titleDiv.className = 'video-title';
       titleDiv.textContent = video.title;
-
-      container.appendChild(thumbImg);
       container.appendChild(titleDiv);
 
       container.onclick = () => openVideoModal(video.video_url);
@@ -781,16 +770,13 @@
     }
 
     function openVideoModal(url) {
-      if (!url) return;
-      // add autoplay param if needed
       let embedUrl = url;
 
-      // Convert YouTube watch URL to embed URL if needed for better embedding & autoplay
+      // Convert YouTube watch URL to embed URL with autoplay
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
       if (ytMatch) {
         embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
       } else {
-        // Append autoplay param for other URLs if they support it
         embedUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
       }
 
@@ -815,37 +801,36 @@
       }
     });
 
-    // Create one card per user, listing all videos inside
-    function createUserCard(user, videos) {
+    // Create one card per user with their newest video only
+    function createUserCard(user) {
       const card = document.createElement('div');
       card.className = 'user-card';
 
-      // Avatar and username
       card.appendChild(createAvatar(user));
+
       const usernameDiv = document.createElement('div');
       usernameDiv.className = 'username-text';
       usernameDiv.textContent = user.github_username;
       card.appendChild(usernameDiv);
 
-      // Container for all video thumbnails for this user
-      const videosContainer = document.createElement('div');
-      videosContainer.className = 'videos-container';
-
-      for (const video of videos) {
-        const videoThumb = createVideoThumb(video);
-        videosContainer.appendChild(videoThumb);
+      // Show only the newest video for that user
+      if (user.newestVideo) {
+        const videoThumb = createVideoThumb(user.newestVideo);
+        card.appendChild(videoThumb);
+      } else {
+        // No video case fallback
+        const noVideoText = document.createElement('div');
+        noVideoText.textContent = 'No videos available';
+        card.appendChild(noVideoText);
       }
-
-      card.appendChild(videosContainer);
 
       return card;
     }
 
-    // Load videos from Supabase, group by user, and render
+    // Load videos from Supabase, group by user, and render one video per user card
     async function loadVideos() {
       userListEl.textContent = 'Loading videos...';
 
-      // Fetch all videos
       const { data, error } = await supabase
         .from('game_videos')
         .select('github_username, video_url, title, avatar_url, created_at');
@@ -862,7 +847,7 @@
         return;
       }
 
-      // Group videos by github_username
+      // Group videos by github_username, keep track of newest video per user
       const usersMap = new Map();
 
       for (const item of data) {
@@ -870,26 +855,24 @@
           usersMap.set(item.github_username, {
             github_username: item.github_username,
             avatar_url: item.avatar_url,
-            videos: [],
+            newestVideo: item,
           });
+        } else {
+          // Compare dates to keep newest video
+          const currentNewest = usersMap.get(item.github_username).newestVideo;
+          if (new Date(item.created_at) > new Date(currentNewest.created_at)) {
+            usersMap.get(item.github_username).newestVideo = item;
+          }
         }
-        usersMap.get(item.github_username).videos.push(item);
       }
 
-      // For sorting by newest, we consider the newest video per user
       const usersArray = Array.from(usersMap.values());
 
-      usersArray.forEach(user => {
-        user.newestCreatedAt = user.videos.reduce((latest, vid) => {
-          return new Date(vid.created_at) > new Date(latest) ? new Date(vid.created_at) : latest;
-        }, new Date(0));
-      });
-
-      // Sort users
+      // Sorting
       if (currentSort === 'alphabetical') {
         usersArray.sort((a, b) => a.github_username.localeCompare(b.github_username));
       } else {
-        usersArray.sort((a, b) => b.newestCreatedAt - a.newestCreatedAt);
+        usersArray.sort((a, b) => new Date(b.newestVideo.created_at) - new Date(a.newestVideo.created_at));
       }
 
       // Featured video = newest overall video from all data
@@ -897,7 +880,6 @@
         return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
       }, data[0]);
 
-      // Update featured section
       featuredSection.style.display = 'block';
       featuredAvatar.innerHTML = '';
       featuredAvatar.appendChild(createAvatar(newestVideo));
@@ -910,7 +892,7 @@
       // Clear and render user cards
       userListEl.innerHTML = '';
       for (const user of usersArray) {
-        const card = createUserCard(user, user.videos);
+        const card = createUserCard(user);
         userListEl.appendChild(card);
       }
     }
