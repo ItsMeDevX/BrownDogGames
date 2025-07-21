@@ -658,19 +658,9 @@
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
-  <section class="content-section" id="games-section">
-    <h2>Games</h2>
-    <div id="games" class="content-container">Loading games...</div>
-  </section>
-
   <section class="content-section" id="art-section">
     <h2>Art</h2>
     <div id="art" class="content-container">Loading art...</div>
-  </section>
-
-  <section class="content-section" id="videos-section">
-    <h2>Videos</h2>
-    <div id="videos" class="content-container">Loading videos...</div>
   </section>
 
   <section id="chat-container">
@@ -732,106 +722,6 @@
     }
   }
 
-async function loadGames() {
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  gamesContainer.innerHTML = '';
-  data.forEach((game, index) => {
-    const card = document.createElement('article');
-    card.className = 'card big-game-card';  // Add new class for bigger size
-    card.dataset.gameId = game.id || `game-${index}`;
-
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = game.title || 'Untitled Game';
-    card.appendChild(title);
-
-    if (game.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = game.description;
-      card.appendChild(desc);
-    }
-
-    if (game.screenshot_url) {
-      const img = document.createElement('img');
-      img.className = 'thumbnail';
-      img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-      img.alt = `Screenshot of ${game.title}`;
-      card.appendChild(img);
-    }
-
-if (game.embed_url) {
-  let embedUrl = game.embed_url;
-
-  // Detect Google Drive link and convert to preview URL
-  if (embedUrl.includes('drive.google.com')) {
-    const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-    }
-  }
-
-  // Create iframe for embeddable links like GitHub or non-Itch.io games
-  const iframe = document.createElement('iframe');
-  iframe.src = embedUrl;
-  iframe.className = 'video-player big-iframe';
-  iframe.style.border = 'none';
-  iframe.setAttribute('allowfullscreen', '');
-  iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
-  iframe.loading = 'lazy';
-  iframe.width = "100%";
-  iframe.height = "400"; // Adjust as needed for better fit
-
-  // Check if it's an embeddable game (excluding Itch.io)
-  if (embedUrl.includes('itch.io')) {
-    const playLink = document.createElement('a');
-    playLink.className = 'play-link';
-    playLink.href = embedUrl;
-    playLink.target = '_blank';
-    playLink.rel = 'noopener noreferrer';
-    playLink.textContent = 'Play Game on Itch.io';
-    card.appendChild(playLink);
-  } else {
-    card.appendChild(iframe);
-
-    // Fullscreen button (ensure it's always displayed correctly)
-    const fsButton = document.createElement('button');
-    fsButton.textContent = 'Fullscreen';
-    fsButton.className = 'fullscreen-btn';
-    fsButton.onclick = () => {
-      if (iframe.requestFullscreen) {
-        iframe.requestFullscreen();
-      } else if (iframe.webkitRequestFullscreen) {
-        iframe.webkitRequestFullscreen();
-      } else if (iframe.msRequestFullscreen) {
-        iframe.msRequestFullscreen();
-      }
-    };
-
-    card.appendChild(fsButton);
-  }
-}
-
-    gamesContainer.appendChild(card);
-  });
-}
-
   async function loadArt() {
     const { data, error } = await supabase
       .from('user_art')
@@ -879,107 +769,6 @@ if (game.embed_url) {
     });
   }
 
-async function loadVideos() {
-  const { data, error } = await supabase
-    .from('game_videos')
-    .select('*')
-    .eq('github_username', username)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  videosContainer.innerHTML = '';
-
-  data.forEach((video) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-
-    if (video.video_url) {
-      let mediaEl;
-
-      // Handle Google Drive video links
-      if (video.video_url.includes("drive.google.com")) {
-        const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
-        const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-        if (fileId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-          mediaEl.width = '100%';
-          mediaEl.height = '360';
-          mediaEl.allow = 'autoplay';
-          mediaEl.frameBorder = '0';
-          mediaEl.className = 'video-player';
-        } else {
-          mediaEl = document.createElement('p');
-          mediaEl.textContent = '⚠️ Invalid Google Drive link.';
-        }
-
-      } else {
-        // Determine file extension (lowercase)
-        const extMatch = video.video_url.match(/\.(\w+)(?:\?.*)?$/);
-        const ext = extMatch ? extMatch[1].toLowerCase() : '';
-
-        // Supported image extensions (including SVG)
-        const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
-
-        // Supported video extensions
-        const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-
-        // Check if URL is a GitHub raw image URL (optional, just treat as image)
-        const isGithubRawImage = video.video_url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
-
-        if (imageExts.includes(ext) || isGithubRawImage) {
-          // Render image
-          mediaEl = document.createElement('img');
-          mediaEl.src = video.video_url;
-          mediaEl.alt = video.title || 'Image';
-          mediaEl.className = 'video-player';
-
-        } else if (videoExts.includes(ext)) {
-          // Render video element
-          mediaEl = document.createElement('video');
-          mediaEl.controls = true;
-          mediaEl.className = 'video-player';
-          mediaEl.src = video.video_url;
-          mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
-
-        } else {
-          // Unknown file type
-          mediaEl = document.createElement('p');
-          mediaEl.textContent = '⚠️ Unsupported media format.';
-        }
-      }
-
-      card.appendChild(mediaEl);
-    }
-
-    if (video.title) {
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = video.title;
-      card.appendChild(title);
-    }
-
-    if (video.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = video.description;
-      card.appendChild(desc);
-    }
-
-    videosContainer.appendChild(card);
-  });
-}
-  
   async function loadChatMessages() {
     const { data, error } = await supabase
       .from('messages')
@@ -1063,9 +852,7 @@ async function loadVideos() {
     // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
 
-    loadGames();
     loadArt();
-    loadVideos();
     loadChatMessages();
   }
 </script>
