@@ -714,111 +714,94 @@
     });
 
     if (error) {
-      console.error('Error incrementing VIP page view:', error);
+      console.error('Error incrementing VIP page views:', error);
     } else {
-      console.log('VIP page view incremented:', data);
+      console.log(`Incremented VIP page views for ${username}`);
     }
   }
 
-  async function loadGames() {
-    if (!username) {
-      gamesContainer.innerHTML = '<p>No user found.</p>';
-      return;
-    }
+async function loadGames() {
+  const { data, error } = await supabase
+    .from('games')
+    .select('id, title, description, embed_url, thumbnail_url, drive_url')
+    .eq('user', username);
 
-    const { data, error } = await supabase
-      .from('games')
-      .select('*')
-      .eq('username', username)
-      .order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error loading games:', error);
+    gamesContainer.innerHTML = '<div class="no-content">No games available.</div>';
+    return;
+  }
 
-    if (error) {
-      gamesContainer.innerHTML = '<p>Error loading games.</p>';
-      console.error(error);
-      return;
-    }
+  if (data.length === 0) {
+    gamesContainer.innerHTML = '<div class="no-content">No games found for this user.</div>';
+    return;
+  }
 
-    if (data.length === 0) {
-      gamesContainer.innerHTML = '<p>No games found for this user.</p>';
-      return;
-    }
-
-    gamesContainer.innerHTML = '';
-    data.forEach(game => {
-      const gameCard = document.createElement('div');
-      gameCard.classList.add('card');
-      gameCard.innerHTML = `
-        <img class="thumbnail" src="${game.thumbnail || 'https://via.placeholder.com/200'}" alt="${game.title}">
+  gamesContainer.innerHTML = data.map((game) => {
+    return `
+      <div class="card">
+        <img class="thumbnail" src="${game.thumbnail_url}" alt="${game.title}" />
         <h3 class="title">${game.title}</h3>
-        <p class="desc">${game.description || 'No description available.'}</p>
-        <a href="${game.url}" class="play-link" target="_blank">Play Game</a>
-      `;
-      gamesContainer.appendChild(gameCard);
-    });
+        <p class="desc">${game.description}</p>
+        <a href="${game.embed_url}" target="_blank" class="play-link">Play the game</a>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadChat() {
+  const { data, error } = await supabase
+    .from('chat')
+    .select('username, message, created_at')
+    .eq('user', username)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error loading chat messages:', error);
+    messagesDiv.innerHTML = '<p>Error loading chat messages.</p>';
+    return;
   }
 
-  async function loadMessages() {
-    if (!username) {
-      chatHeading.innerHTML = 'Chat (no user)';
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('username', username)
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      messagesDiv.innerHTML = '<p>Error loading messages.</p>';
-      console.error(error);
-      return;
-    }
-
-    if (data.length === 0) {
-      messagesDiv.innerHTML = '<p>No messages found for this user.</p>';
-      return;
-    }
-
-    messagesDiv.innerHTML = '';
-    data.forEach(msg => {
-      const messageDiv = document.createElement('div');
-      messageDiv.innerHTML = `<strong>${msg.username}</strong>: ${msg.message}`;
-      messagesDiv.appendChild(messageDiv);
-    });
-
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  if (data.length === 0) {
+    messagesDiv.innerHTML = '<p>No messages found for this user.</p>';
+    return;
   }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  messagesDiv.innerHTML = data.map(message => `
+    <div>
+      <strong>${message.username}</strong>: ${message.message}
+    </div>
+  `).join('');
+}
 
-    const message = msgInput.value.trim();
-    if (!message) return;
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .insert([{ username, message }]);
+  const message = msgInput.value.trim();
+  if (!message) return;
 
-    if (error) {
-      console.error('Error sending message:', error);
-      return;
-    }
+  const { data, error } = await supabase
+    .from('chat')
+    .insert([
+      { username: 'Guest', user: username, message }
+    ]);
 
-    msgInput.value = '';
-    await loadMessages();
-  });
+  if (error) {
+    console.error('Error sending message:', error);
+    return;
+  }
 
-  window.onload = () => {
-    if (username) {
-      incrementVipPageView();
-      pageTitle.textContent = `User Content for ${username}`;
-      loadGames();
-      loadMessages();
-    } else {
-      pageTitle.textContent = 'No user selected';
-    }
-  };
+  msgInput.value = '';
+  loadChat(); // Reload chat messages
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  incrementVipPageView();
+  loadGames();
+  loadChat();
+
+  chatHeading.textContent = `Chat with ${username}`;
+});
 </script>
 
 </body>
