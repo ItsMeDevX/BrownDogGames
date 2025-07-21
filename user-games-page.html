@@ -714,106 +714,111 @@
     });
 
     if (error) {
-      console.error('Error incrementing VIP page views:', error);
+      console.error('Error incrementing VIP page view:', error);
     } else {
-      console.log(`Incremented VIP page views for ${username}`);
+      console.log('VIP page view incremented:', data);
     }
   }
 
-async function loadGames() {
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
+  async function loadGames() {
+    if (!username) {
+      gamesContainer.innerHTML = '<p>No user found.</p>';
+      return;
+    }
 
-  if (error) {
-    gamesContainer.innerHTML = '<p>Error loading games</p>';
-    console.error(error);
-    return;
+    const { data, error } = await supabase
+      .from('games')
+      .select('*')
+      .eq('username', username)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      gamesContainer.innerHTML = '<p>Error loading games.</p>';
+      console.error(error);
+      return;
+    }
+
+    if (data.length === 0) {
+      gamesContainer.innerHTML = '<p>No games found for this user.</p>';
+      return;
+    }
+
+    gamesContainer.innerHTML = '';
+    data.forEach(game => {
+      const gameCard = document.createElement('div');
+      gameCard.classList.add('card');
+      gameCard.innerHTML = `
+        <img class="thumbnail" src="${game.thumbnail || 'https://via.placeholder.com/200'}" alt="${game.title}">
+        <h3 class="title">${game.title}</h3>
+        <p class="desc">${game.description || 'No description available.'}</p>
+        <a href="${game.url}" class="play-link" target="_blank">Play Game</a>
+      `;
+      gamesContainer.appendChild(gameCard);
+    });
   }
 
-  if (data.length === 0) {
-    gamesContainer.innerHTML = '<p>No games found for this user.</p>';
-    return;
+  async function loadMessages() {
+    if (!username) {
+      chatHeading.innerHTML = 'Chat (no user)';
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('username', username)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      messagesDiv.innerHTML = '<p>Error loading messages.</p>';
+      console.error(error);
+      return;
+    }
+
+    if (data.length === 0) {
+      messagesDiv.innerHTML = '<p>No messages found for this user.</p>';
+      return;
+    }
+
+    messagesDiv.innerHTML = '';
+    data.forEach(msg => {
+      const messageDiv = document.createElement('div');
+      messageDiv.innerHTML = `<strong>${msg.username}</strong>: ${msg.message}`;
+      messagesDiv.appendChild(messageDiv);
+    });
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  gamesContainer.innerHTML = '';
-  data.forEach(game => {
-    const gameCard = document.createElement('div');
-    gameCard.classList.add('card');
-    gameCard.innerHTML = `
-      <img class="thumbnail" src="${game.thumbnail || 'https://via.placeholder.com/200'}" alt="${game.title}">
-      <h3 class="title">${game.title}</h3>
-      <p class="desc">${game.description || 'No description available.'}</p>
-      <a href="${game.url}" class="play-link" target="_blank">Play Game</a>
-    `;
-    gamesContainer.appendChild(gameCard);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const message = msgInput.value.trim();
+    if (!message) return;
+
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .insert([{ username, message }]);
+
+    if (error) {
+      console.error('Error sending message:', error);
+      return;
+    }
+
+    msgInput.value = '';
+    await loadMessages();
   });
-}
 
-async function loadMessages() {
-  if (!username) {
-    chatHeading.innerHTML = 'Chat (no user)';
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from('chat_messages')
-    .select('*')
-    .eq('username', username)
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    messagesDiv.innerHTML = '<p>Error loading messages</p>';
-    console.error(error);
-    return;
-  }
-
-  if (data.length === 0) {
-    messagesDiv.innerHTML = '<p>No messages found for this user.</p>';
-    return;
-  }
-
-  messagesDiv.innerHTML = '';
-  data.forEach(msg => {
-    const messageDiv = document.createElement('div');
-    messageDiv.innerHTML = `<strong>${msg.username}</strong>: ${msg.message}`;
-    messagesDiv.appendChild(messageDiv);
-  });
-
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const message = msgInput.value.trim();
-  if (!message) return;
-
-  const { data, error } = await supabase
-    .from('chat_messages')
-    .insert([{ username, message }]);
-
-  if (error) {
-    console.error('Error sending message:', error);
-    return;
-  }
-
-  msgInput.value = '';
-  await loadMessages();
-});
-
-window.onload = () => {
-  if (username) {
-    incrementVipPageView();
-    pageTitle.textContent = `User Content for ${username}`;
-    loadGames();
-    loadMessages();
-  } else {
-    pageTitle.textContent = 'No user selected';
-  }
-};
+  window.onload = () => {
+    if (username) {
+      incrementVipPageView();
+      pageTitle.textContent = `User Content for ${username}`;
+      loadGames();
+      loadMessages();
+    } else {
+      pageTitle.textContent = 'No user selected';
+    }
+  };
 </script>
 
 </body>
