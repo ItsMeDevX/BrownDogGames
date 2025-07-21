@@ -682,6 +682,8 @@
 
   const pageTitle = document.getElementById('pageTitle');
   const gamesContainer = document.getElementById('games');
+  const artContainer = document.getElementById('art');
+  const videosContainer = document.getElementById('videos');
   const chatContainer = document.getElementById('chat-container');
   const messagesDiv = document.getElementById('messages');
   const form = document.getElementById('chat-form');
@@ -716,96 +718,199 @@
     if (error) {
       console.error('Error incrementing VIP page views:', error);
     } else {
-      console.log(`Incremented VIP page views for ${username}`);
+      console.log(Incremented VIP page views for ${username});
     }
   }
 
 async function loadGames() {
   const { data, error } = await supabase
-    .from('games')
-    .select('id, title, description, embed_url, thumbnail_url, drive_url')
-    .eq('user', username);
-
-  if (error) {
-    console.error('Error loading games:', error);
-    gamesContainer.innerHTML = '<div class="no-content">No games available.</div>';
-    return;
-  }
-
-  if (data.length === 0) {
-    gamesContainer.innerHTML = '<div class="no-content">No games found for this user.</div>';
-    return;
-  }
-
-  gamesContainer.innerHTML = data.map((game) => {
-    return `
-      <div class="card">
-        <img class="thumbnail" src="${game.thumbnail_url}" alt="${game.title}" />
-        <h3 class="title">${game.title}</h3>
-        <p class="desc">${game.description}</p>
-        <a href="${game.embed_url}" target="_blank" class="play-link">Play the game</a>
-      </div>
-    `;
-  }).join('');
-}
-
-async function loadChat() {
-  const { data, error } = await supabase
-    .from('chat')
-    .select('username, message, created_at')
-    .eq('user', username)
+    .from('game_submissions')
+    .select('*')
+    .eq('github_user', username)
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error loading chat messages:', error);
-    messagesDiv.innerHTML = '<p>Error loading chat messages.</p>';
+    gamesContainer.innerHTML = <div class="no-content">❌ Error loading games: ${error.message}</div>;
     return;
   }
 
-  if (data.length === 0) {
-    messagesDiv.innerHTML = '<p>No messages found for this user.</p>';
+  if (!data.length) {
+    gamesContainer.innerHTML = <p class="no-content">No games submitted by ${username} yet.</p>;
     return;
   }
 
-  messagesDiv.innerHTML = data.map(message => `
-    <div>
-      <strong>${message.username}</strong>: ${message.message}
-    </div>
-  `).join('');
+  gamesContainer.innerHTML = '';
+  data.forEach((game, index) => {
+    const card = document.createElement('article');
+    card.className = 'card big-game-card';  // Add new class for bigger size
+    card.dataset.gameId = game.id || game-${index};
+
+    const title = document.createElement('h3');
+    title.className = 'title';
+    title.textContent = game.title || 'Untitled Game';
+    card.appendChild(title);
+
+    if (game.description) {
+      const desc = document.createElement('p');
+      desc.className = 'desc';
+      desc.textContent = game.description;
+      card.appendChild(desc);
+    }
+
+    if (game.screenshot_url) {
+      const img = document.createElement('img');
+      img.className = 'thumbnail';
+      img.src = convertDriveLinkToThumbnail(game.screenshot_url);
+      img.alt = Screenshot of ${game.title};
+      card.appendChild(img);
+    }
+
+if (game.embed_url) {
+  let embedUrl = game.embed_url;
+
+  // Detect Google Drive link and convert to preview URL
+  if (embedUrl.includes('drive.google.com')) {
+    const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      embedUrl = https://drive.google.com/file/d/${fileId}/preview;
+    }
+  }
+
+  // Create iframe for embeddable links like GitHub or non-Itch.io games
+  const iframe = document.createElement('iframe');
+  iframe.src = embedUrl;
+  iframe.className = 'video-player big-iframe';
+  iframe.style.border = 'none';
+  iframe.setAttribute('allowfullscreen', '');
+  iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
+  iframe.loading = 'lazy';
+  iframe.width = "100%";
+  iframe.height = "400"; // Adjust as needed for better fit
+
+  // Check if it's an embeddable game (excluding Itch.io)
+  if (embedUrl.includes('itch.io')) {
+    const playLink = document.createElement('a');
+    playLink.className = 'play-link';
+    playLink.href = embedUrl;
+    playLink.target = '_blank';
+    playLink.rel = 'noopener noreferrer';
+    playLink.textContent = 'Play Game on Itch.io';
+    card.appendChild(playLink);
+  } else {
+    card.appendChild(iframe);
+
+    // Fullscreen button (ensure it's always displayed correctly)
+    const fsButton = document.createElement('button');
+    fsButton.textContent = 'Fullscreen';
+    fsButton.className = 'fullscreen-btn';
+    fsButton.onclick = () => {
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
+      }
+    };
+
+    card.appendChild(fsButton);
+  }
 }
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
+    gamesContainer.appendChild(card);
+  });
+}
+  
+  async function loadChatMessages() {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: true });
 
-  const message = msgInput.value.trim();
-  if (!message) return;
+    if (error) {
+      messagesDiv.innerHTML = <p style="color:red;">Error loading messages: ${error.message}</p>;
+      console.error(error);
+      return;
+    }
 
-  const { data, error } = await supabase
-    .from('chat')
-    .insert([
-      { username: 'Guest', user: username, message }
-    ]);
+    if (!data.length) {
+      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
+      return;
+    }
 
-  if (error) {
-    console.error('Error sending message:', error);
-    return;
+    messagesDiv.innerHTML = data.map(m => 
+      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
+    ).join('');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  msgInput.value = '';
-  loadChat(); // Reload chat messages
-});
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-document.addEventListener('DOMContentLoaded', () => {
-  incrementVipPageView();
-  loadGames();
-  loadChat();
+    const message = msgInput.value.trim();
+    if (!message) return;
 
-  chatHeading.textContent = `Chat with ${username}`;
-});
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ github_username: username, content: message }]);
+
+    if (error) {
+      alert('Failed to send message: ' + error.message);
+      return;
+    }
+
+    msgInput.value = '';
+    loadChatMessages();
+  });
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, (m) => {
+      switch(m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#39;';
+        default: return m;
+      }
+    });
+  }
+
+  // Placeholder for your thumbnail conversion logic if needed:
+  function convertDriveLinkToThumbnail(url) {
+    if (!url) return '';
+    // Example: convert Google Drive share URL to thumbnail URL if needed
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      return https://drive.google.com/thumbnail?id=${fileId};
+    }
+    return url;
+  }
+
+  // Main execution block
+  if (!username) {
+    pageTitle.textContent = 'Error';
+    chatHeading.textContent = 'Error';
+    gamesContainer.innerHTML = <p class="no-content">❌ No username provided in URL.</p>;
+    artContainer.innerHTML = '';
+    videosContainer.innerHTML = '';
+    messagesDiv.innerHTML = '';
+  } else {
+    pageTitle.textContent = ${username}'s Content;
+    chatHeading.textContent = Chat with ${username};
+
+    // Increment the VIP page views count each time this page loads for this user
+    incrementVipPageView();
+
+    loadGames();
+    loadChatMessages();
+  }
 </script>
 
 </body>
-</html>
 
 </html>
 <!DOCTYPE html>
