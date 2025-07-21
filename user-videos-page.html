@@ -658,16 +658,6 @@
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
-  <section class="content-section" id="games-section">
-    <h2>Games</h2>
-    <div id="games" class="content-container">Loading games...</div>
-  </section>
-
-  <section class="content-section" id="art-section">
-    <h2>Art</h2>
-    <div id="art" class="content-container">Loading art...</div>
-  </section>
-
   <section class="content-section" id="videos-section">
     <h2>Videos</h2>
     <div id="videos" class="content-container">Loading videos...</div>
@@ -730,153 +720,6 @@
     } else {
       console.log(`Incremented VIP page views for ${username}`);
     }
-  }
-
-async function loadGames() {
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  gamesContainer.innerHTML = '';
-  data.forEach((game, index) => {
-    const card = document.createElement('article');
-    card.className = 'card big-game-card';  // Add new class for bigger size
-    card.dataset.gameId = game.id || `game-${index}`;
-
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = game.title || 'Untitled Game';
-    card.appendChild(title);
-
-    if (game.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = game.description;
-      card.appendChild(desc);
-    }
-
-    if (game.screenshot_url) {
-      const img = document.createElement('img');
-      img.className = 'thumbnail';
-      img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-      img.alt = `Screenshot of ${game.title}`;
-      card.appendChild(img);
-    }
-
-if (game.embed_url) {
-  let embedUrl = game.embed_url;
-
-  // Detect Google Drive link and convert to preview URL
-  if (embedUrl.includes('drive.google.com')) {
-    const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-    }
-  }
-
-  // Create iframe for embeddable links like GitHub or non-Itch.io games
-  const iframe = document.createElement('iframe');
-  iframe.src = embedUrl;
-  iframe.className = 'video-player big-iframe';
-  iframe.style.border = 'none';
-  iframe.setAttribute('allowfullscreen', '');
-  iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
-  iframe.loading = 'lazy';
-  iframe.width = "100%";
-  iframe.height = "400"; // Adjust as needed for better fit
-
-  // Check if it's an embeddable game (excluding Itch.io)
-  if (embedUrl.includes('itch.io')) {
-    const playLink = document.createElement('a');
-    playLink.className = 'play-link';
-    playLink.href = embedUrl;
-    playLink.target = '_blank';
-    playLink.rel = 'noopener noreferrer';
-    playLink.textContent = 'Play Game on Itch.io';
-    card.appendChild(playLink);
-  } else {
-    card.appendChild(iframe);
-
-    // Fullscreen button (ensure it's always displayed correctly)
-    const fsButton = document.createElement('button');
-    fsButton.textContent = 'Fullscreen';
-    fsButton.className = 'fullscreen-btn';
-    fsButton.onclick = () => {
-      if (iframe.requestFullscreen) {
-        iframe.requestFullscreen();
-      } else if (iframe.webkitRequestFullscreen) {
-        iframe.webkitRequestFullscreen();
-      } else if (iframe.msRequestFullscreen) {
-        iframe.msRequestFullscreen();
-      }
-    };
-
-    card.appendChild(fsButton);
-  }
-}
-
-    gamesContainer.appendChild(card);
-  });
-}
-
-  async function loadArt() {
-    const { data, error } = await supabase
-      .from('user_art')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
-      return;
-    }
-
-    if (!data.length) {
-      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
-      return;
-    }
-
-    artContainer.innerHTML = '';
-    data.forEach((art, index) => {
-      const card = document.createElement('article');
-      card.className = 'card';
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = art.title || 'Untitled Art';
-      card.appendChild(title);
-
-      if (art.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = art.description;
-        card.appendChild(desc);
-      }
-
-      if (art.image_url) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title}`;
-        card.appendChild(img);
-      }
-
-      artContainer.appendChild(card);
-    });
   }
 
 async function loadVideos() {
@@ -1063,8 +906,6 @@ async function loadVideos() {
     // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
 
-    loadGames();
-    loadArt();
     loadVideos();
     loadChatMessages();
   }
