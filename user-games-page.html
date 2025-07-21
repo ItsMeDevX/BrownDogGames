@@ -710,136 +710,110 @@
     const { data, error } = await supabase.rpc('increment_vip_page_view', {
       in_user_id: userData.id,
       in_username: username,
-      in_page: 'user-games',
-      in_datetime: now,
+      in_now: now
     });
 
     if (error) {
-      console.error('Error incrementing page view:', error);
-    }
-  }
-
-  async function loadGames() {
-    if (!username) return;
-
-    const { data, error } = await supabase
-      .from('game_submissions')
-      .select('*')
-      .eq('username', username);
-
-    if (error) {
-      console.error('Error loading games:', error);
-      gamesContainer.innerHTML = '<p class="no-content">Error loading games. Please try again later.</p>';
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      gamesContainer.innerHTML = '<p class="no-content">No games available.</p>';
-      return;
-    }
-
-    const gameCards = data.map(game => {
-      const card = document.createElement('div');
-      card.classList.add('card');
-      card.dataset.id = game.id;
-
-      const title = document.createElement('h3');
-      title.classList.add('title');
-      title.textContent = game.title;
-
-      const desc = document.createElement('p');
-      desc.classList.add('desc');
-      desc.textContent = game.description || 'No description available.';
-
-      const thumbnail = document.createElement('img');
-      thumbnail.classList.add('thumbnail');
-      thumbnail.src = game.thumbnail || 'https://via.placeholder.com/300x150?text=No+Image';
-      thumbnail.alt = game.title;
-
-      const playLink = document.createElement('a');
-      playLink.classList.add('play-link');
-      playLink.href = game.play_url || '#';
-      playLink.textContent = 'Play Now';
-      playLink.target = '_blank';
-
-      card.appendChild(thumbnail);
-      card.appendChild(title);
-      card.appendChild(desc);
-      card.appendChild(playLink);
-
-      return card;
-    });
-
-    gamesContainer.innerHTML = '';
-    gamesContainer.append(...gameCards);
-  }
-
-  async function loadMessages() {
-    if (!username) return;
-
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('username', username)
-      .order('created_at', { ascending: true });
-
-    if (error || !data) {
-      messagesDiv.innerHTML = '<p>No messages available.</p>';
-      return;
-    }
-
-    const messages = data.map(msg => {
-      const messageDiv = document.createElement('div');
-      const sender = document.createElement('strong');
-      sender.textContent = msg.sender_username;
-      const message = document.createElement('span');
-      message.textContent = msg.message;
-      messageDiv.appendChild(sender);
-      messageDiv.appendChild(message);
-      return messageDiv;
-    });
-
-    messagesDiv.innerHTML = '';
-    messagesDiv.append(...messages);
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const message = msgInput.value.trim();
-    if (!message) return;
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
-
-    if (userError || !userData) {
-      console.error('User not found for message:', userError);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('messages')
-      .insert([
-        { sender_username: 'CurrentUser', message, username, user_id: userData.id }
-      ]);
-
-    if (error) {
-      console.error('Error inserting message:', error);
+      console.error('Error incrementing VIP page views:', error);
     } else {
-      msgInput.value = '';
-      loadMessages();
+      console.log(`Incremented VIP page views for ${username}`);
     }
+  }
+
+async function loadGames() {
+  const { data, error } = await supabase
+    .from('game_submissions')
+    .select('*')
+    .eq('github_user', username)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    gamesContainer.innerHTML = '<p>Error loading games</p>';
+    console.error(error);
+    return;
+  }
+
+  if (data.length === 0) {
+    gamesContainer.innerHTML = '<p>No games found for this user.</p>';
+    return;
+  }
+
+  gamesContainer.innerHTML = '';
+  data.forEach(game => {
+    const gameCard = document.createElement('div');
+    gameCard.classList.add('card');
+    gameCard.innerHTML = `
+      <img class="thumbnail" src="${game.thumbnail || 'https://via.placeholder.com/200'}" alt="${game.title}">
+      <h3 class="title">${game.title}</h3>
+      <p class="desc">${game.description || 'No description available.'}</p>
+      <a href="${game.url}" class="play-link" target="_blank">Play Game</a>
+    `;
+    gamesContainer.appendChild(gameCard);
+  });
+}
+
+async function loadMessages() {
+  if (!username) {
+    chatHeading.innerHTML = 'Chat (no user)';
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .eq('username', username)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    messagesDiv.innerHTML = '<p>Error loading messages</p>';
+    console.error(error);
+    return;
+  }
+
+  if (data.length === 0) {
+    messagesDiv.innerHTML = '<p>No messages found for this user.</p>';
+    return;
+  }
+
+  messagesDiv.innerHTML = '';
+  data.forEach(msg => {
+    const messageDiv = document.createElement('div');
+    messageDiv.innerHTML = `<strong>${msg.username}</strong>: ${msg.message}`;
+    messagesDiv.appendChild(messageDiv);
   });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    pageTitle.textContent = `${username}'s Games`;
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const message = msgInput.value.trim();
+  if (!message) return;
+
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .insert([{ username, message }]);
+
+  if (error) {
+    console.error('Error sending message:', error);
+    return;
+  }
+
+  msgInput.value = '';
+  await loadMessages();
+});
+
+window.onload = () => {
+  if (username) {
     incrementVipPageView();
+    pageTitle.textContent = `User Content for ${username}`;
     loadGames();
     loadMessages();
-  });
+  } else {
+    pageTitle.textContent = 'No user selected';
+  }
+};
 </script>
 
 </body>
