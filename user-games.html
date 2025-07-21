@@ -698,44 +698,46 @@ async function loadUsers(sortMode = 'alphabetical') {
   userListEl.textContent = '';
   const fragment = document.createDocumentFragment();
 
-  // Iterate over users and create list elements for each user
-  for (const [user, images] of usersMap.entries()) {
-    const a = document.createElement('a');
-    a.className = 'user-btn';
-    a.href = `user.html?user=${encodeURIComponent(user)}`;
+// Iterate over users and create list elements for each user
+for (const [user, images] of usersMap.entries()) {
+  const a = document.createElement('a');
+  
+  // Change the link to open 'user-games-page.html' instead of 'user.html'
+  a.className = 'user-btn';
+  a.href = `user-games-page.html?user=${encodeURIComponent(user)}`; // Updated link
 
-    // Avatar
-    if (images.avatar_url && isValidUrl(images.avatar_url)) {
-      const avatarImg = document.createElement('img');
-      avatarImg.src = convertDriveLinkToThumbnail(images.avatar_url);
-      avatarImg.alt = `${user}'s avatar`;
-      avatarImg.className = 'avatar-img';
-      a.appendChild(avatarImg);
-    } else {
-      // Show the first letter of the username as a fallback
-      const initial = document.createElement('span');
-      initial.className = 'avatar-initial';
-      initial.textContent = user.charAt(0).toUpperCase();
-      a.appendChild(initial);
-    }
-
-    // Username
-    const usernameSpan = document.createElement('span');
-    usernameSpan.className = 'username-text';
-    usernameSpan.textContent = user;
-    a.appendChild(usernameSpan);
-
-    // Cover Image
-    const coverSrc = await getResolvedCoverUrl(images.cover_url);
-    const coverImg = document.createElement('img');
-    coverImg.src = coverSrc;
-    coverImg.alt = `${user}'s cover`;
-    coverImg.className = 'cover-img';
-    a.appendChild(coverImg);
-
-    // Append the user element to the fragment
-    fragment.appendChild(a);
+  // Avatar
+  if (images.avatar_url && isValidUrl(images.avatar_url)) {
+    const avatarImg = document.createElement('img');
+    avatarImg.src = convertDriveLinkToThumbnail(images.avatar_url);
+    avatarImg.alt = `${user}'s avatar`;
+    avatarImg.className = 'avatar-img';
+    a.appendChild(avatarImg);
+  } else {
+    // Show the first letter of the username as a fallback
+    const initial = document.createElement('span');
+    initial.className = 'avatar-initial';
+    initial.textContent = user.charAt(0).toUpperCase();
+    a.appendChild(initial);
   }
+
+  // Username
+  const usernameSpan = document.createElement('span');
+  usernameSpan.className = 'username-text';
+  usernameSpan.textContent = user;
+  a.appendChild(usernameSpan);
+
+  // Cover Image
+  const coverSrc = await getResolvedCoverUrl(images.cover_url);
+  const coverImg = document.createElement('img');
+  coverImg.src = coverSrc;
+  coverImg.alt = `${user}'s cover`;
+  coverImg.className = 'cover-img';
+  a.appendChild(coverImg);
+
+  // Append the user element to the fragment
+  fragment.appendChild(a);
+}
 
   // Append all user elements to the list
   userListEl.appendChild(fragment);
