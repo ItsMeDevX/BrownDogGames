@@ -589,7 +589,7 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
-      margin-top: auto;
+      margin-top: auto; /* push to bottom */
     }
     .play-link:hover { background-color: #ff82ba; }
 
@@ -724,59 +724,83 @@ async function loadGames() {
   const { data, error } = await supabase
     .from('game_submissions')
     .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
+    .eq('username', username);
 
-  if (error) {
-    console.error('Error loading games:', error);
-    gamesContainer.innerHTML = `<p class="no-content">Unable to load games at the moment.</p>`;
-  } else if (data.length === 0) {
-    gamesContainer.innerHTML = `<p class="no-content">No games found for this user.</p>`;
-  } else {
-    gamesContainer.innerHTML = '';
-    data.forEach((game) => {
-      const gameCard = document.createElement('div');
-      gameCard.classList.add('card');
-      gameCard.innerHTML = `
-        <img class="thumbnail" src="${game.thumbnail_url}" alt="${game.name}" />
-        <h3 class="title">${game.name}</h3>
-        <p class="desc">${game.description || 'No description available'}</p>
-        <a class="play-link" href="${game.game_url}" target="_blank">Play</a>
-      `;
-      gamesContainer.appendChild(gameCard);
-    });
+  if (error || !data) {
+    gamesContainer.innerHTML = '<p class="no-content">No games available.</p>';
+    return;
   }
+
+  const gameCards = data.map(game => {
+    const card = document.createElement('div');
+    card.classList.add('card');
+    card.dataset.id = game.id;
+
+    const title = document.createElement('h3');
+    title.classList.add('title');
+    title.textContent = game.title;
+
+    const desc = document.createElement('p');
+    desc.classList.add('desc');
+    desc.textContent = game.description;
+
+    const thumbnail = document.createElement('img');
+    thumbnail.classList.add('thumbnail');
+    thumbnail.src = game.thumbnail || 'https://via.placeholder.com/300x150?text=No+Image';
+    thumbnail.alt = game.title;
+
+    const playLink = document.createElement('a');
+    playLink.classList.add('play-link');
+    playLink.href = game.play_url || '#';
+    playLink.textContent = 'Play Now';
+    playLink.target = '_blank';
+
+    card.appendChild(thumbnail);
+    card.appendChild(title);
+    card.appendChild(desc);
+    card.appendChild(playLink);
+
+    return card;
+  });
+
+  gamesContainer.innerHTML = '';
+  gamesContainer.append(...gameCards);
 }
 
 async function loadMessages() {
+  if (!username) return;
+
   const { data, error } = await supabase
-    .from('chat_messages')
+    .from('messages')
     .select('*')
     .eq('username', username)
     .order('created_at', { ascending: true });
 
-  if (error) {
-    console.error('Error loading messages:', error);
-    messagesDiv.innerHTML = `<p class="no-content">Unable to load messages.</p>`;
-  } else if (data.length === 0) {
-    messagesDiv.innerHTML = `<p class="no-content">No messages to display.</p>`;
-  } else {
-    messagesDiv.innerHTML = '';
-    data.forEach((message) => {
-      const messageDiv = document.createElement('div');
-      messageDiv.innerHTML = `
-        <strong>${message.username}</strong>: ${message.content}
-      `;
-      messagesDiv.appendChild(messageDiv);
-    });
+  if (error || !data) {
+    messagesDiv.innerHTML = '<p>No messages available.</p>';
+    return;
   }
+
+  const messages = data.map(msg => {
+    const messageDiv = document.createElement('div');
+    const sender = document.createElement('strong');
+    sender.textContent = msg.sender_username;
+    const message = document.createElement('span');
+    message.textContent = msg.message;
+    messageDiv.appendChild(sender);
+    messageDiv.appendChild(message);
+    return messageDiv;
+  });
+
+  messagesDiv.innerHTML = '';
+  messagesDiv.append(...messages);
 }
 
-async function sendMessage(event) {
-  event.preventDefault();
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  const messageContent = msgInput.value.trim();
-  if (!messageContent) return;
+  const message = msgInput.value.trim();
+  if (!message) return;
 
   const { data: userData, error: userError } = await supabase
     .from('users')
@@ -785,43 +809,29 @@ async function sendMessage(event) {
     .single();
 
   if (userError || !userData) {
-    console.error('User not found for message send:', userError);
+    console.error('User not found for message:', userError);
     return;
   }
 
-  const { error: insertError } = await supabase
-    .from('chat_messages')
+  const { data, error } = await supabase
+    .from('messages')
     .insert([
-      {
-        username: username,
-        user_id: userData.id,
-        content: messageContent,
-        created_at: new Date().toISOString(),
-      },
+      { sender_username: 'CurrentUser', message, username, user_id: userData.id }
     ]);
 
-  if (insertError) {
-    console.error('Error inserting message:', insertError);
+  if (error) {
+    console.error('Error inserting message:', error);
   } else {
     msgInput.value = '';
     loadMessages();
   }
-}
+});
 
-document.addEventListener('DOMContentLoaded', async () => {
-  if (!username) {
-    alert('Username is required.');
-    return;
-  }
-
-  pageTitle.innerText = `${username}'s Content`;
-  chatHeading.innerHTML = `Chat with <span style="color: #ff82ba;">${username}</span>`;
-
-  await incrementVipPageView();
-  await loadGames();
-  await loadMessages();
-
-  form.addEventListener('submit', sendMessage);
+document.addEventListener('DOMContentLoaded', () => {
+  pageTitle.textContent = `${username}'s Games`;
+  incrementVipPageView();
+  loadGames();
+  loadMessages();
 });
 </script>
 
