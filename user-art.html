@@ -658,42 +658,42 @@
       userListEl.textContent = '';
       const fragment = document.createDocumentFragment();
 
-      for (const [user, info] of usersMap.entries()) {
-        const a = document.createElement('a');
-        a.className = 'user-btn';
-        a.href = `user.html?user=${encodeURIComponent(user)}`;
+     for (const [user, info] of usersMap.entries()) {
+  const a = document.createElement('a');
+  a.className = 'user-btn';
+  a.href = `user-art-page.html?user=${encodeURIComponent(user)}`; // Updated here
 
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar-img';
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar-img';
 
-        if (info.avatar_url) {
-          const imgAvatar = document.createElement('img');
-          imgAvatar.src = info.avatar_url;
-          imgAvatar.alt = `${user}'s avatar`;
-          imgAvatar.style.width = '48px';
-          imgAvatar.style.height = '48px';
-          imgAvatar.style.borderRadius = '50%';
-          avatar.appendChild(imgAvatar);
-        } else {
-          avatar.textContent = user.charAt(0).toUpperCase();
-        }
-        a.appendChild(avatar);
+  if (info.avatar_url) {
+    const imgAvatar = document.createElement('img');
+    imgAvatar.src = info.avatar_url;
+    imgAvatar.alt = `${user}'s avatar`;
+    imgAvatar.style.width = '48px';
+    imgAvatar.style.height = '48px';
+    imgAvatar.style.borderRadius = '50%';
+    avatar.appendChild(imgAvatar);
+  } else {
+    avatar.textContent = user.charAt(0).toUpperCase();
+  }
+  a.appendChild(avatar);
 
-        const usernameSpan = document.createElement('span');
-        usernameSpan.className = 'username-text';
-        usernameSpan.textContent = user;
-        a.appendChild(usernameSpan);
+  const usernameSpan = document.createElement('span');
+  usernameSpan.className = 'username-text';
+  usernameSpan.textContent = user;
+  a.appendChild(usernameSpan);
 
-        const img = document.createElement('img');
-        img.src = info.image_url && info.image_url.includes('drive.google.com')
-          ? getDriveThumbnailUrl(info.image_url)
-          : (info.image_url || 'https://via.placeholder.com/180x100.png?text=No+Image');
-        img.alt = `${user}'s artwork titled "${info.title}"`;
-        img.className = 'cover-img';
-        a.appendChild(img);
+  const img = document.createElement('img');
+  img.src = info.image_url && info.image_url.includes('drive.google.com')
+    ? getDriveThumbnailUrl(info.image_url)
+    : (info.image_url || 'https://via.placeholder.com/180x100.png?text=No+Image');
+  img.alt = `${user}'s artwork titled "${info.title}"`;
+  img.className = 'cover-img';
+  a.appendChild(img);
 
-        fragment.appendChild(a);
-      }
+  fragment.appendChild(a);
+}
 
       userListEl.appendChild(fragment);
     }
