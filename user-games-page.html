@@ -710,129 +710,136 @@
     const { data, error } = await supabase.rpc('increment_vip_page_view', {
       in_user_id: userData.id,
       in_username: username,
-      in_now: now
+      in_page: 'user-games',
+      in_datetime: now,
     });
 
     if (error) {
-      console.error('Error incrementing VIP page views:', error);
-    } else {
-      console.log(`Incremented VIP page views for ${username}`);
+      console.error('Error incrementing page view:', error);
     }
   }
 
-async function loadGames() {
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('*')
-    .eq('username', username);
+  async function loadGames() {
+    if (!username) return;
 
-  if (error || !data) {
-    gamesContainer.innerHTML = '<p class="no-content">No games available.</p>';
-    return;
+    const { data, error } = await supabase
+      .from('game_submissions')
+      .select('*')
+      .eq('username', username);
+
+    if (error) {
+      console.error('Error loading games:', error);
+      gamesContainer.innerHTML = '<p class="no-content">Error loading games. Please try again later.</p>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      gamesContainer.innerHTML = '<p class="no-content">No games available.</p>';
+      return;
+    }
+
+    const gameCards = data.map(game => {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.id = game.id;
+
+      const title = document.createElement('h3');
+      title.classList.add('title');
+      title.textContent = game.title;
+
+      const desc = document.createElement('p');
+      desc.classList.add('desc');
+      desc.textContent = game.description || 'No description available.';
+
+      const thumbnail = document.createElement('img');
+      thumbnail.classList.add('thumbnail');
+      thumbnail.src = game.thumbnail || 'https://via.placeholder.com/300x150?text=No+Image';
+      thumbnail.alt = game.title;
+
+      const playLink = document.createElement('a');
+      playLink.classList.add('play-link');
+      playLink.href = game.play_url || '#';
+      playLink.textContent = 'Play Now';
+      playLink.target = '_blank';
+
+      card.appendChild(thumbnail);
+      card.appendChild(title);
+      card.appendChild(desc);
+      card.appendChild(playLink);
+
+      return card;
+    });
+
+    gamesContainer.innerHTML = '';
+    gamesContainer.append(...gameCards);
   }
 
-  const gameCards = data.map(game => {
-    const card = document.createElement('div');
-    card.classList.add('card');
-    card.dataset.id = game.id;
+  async function loadMessages() {
+    if (!username) return;
 
-    const title = document.createElement('h3');
-    title.classList.add('title');
-    title.textContent = game.title;
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('username', username)
+      .order('created_at', { ascending: true });
 
-    const desc = document.createElement('p');
-    desc.classList.add('desc');
-    desc.textContent = game.description;
+    if (error || !data) {
+      messagesDiv.innerHTML = '<p>No messages available.</p>';
+      return;
+    }
 
-    const thumbnail = document.createElement('img');
-    thumbnail.classList.add('thumbnail');
-    thumbnail.src = game.thumbnail || 'https://via.placeholder.com/300x150?text=No+Image';
-    thumbnail.alt = game.title;
+    const messages = data.map(msg => {
+      const messageDiv = document.createElement('div');
+      const sender = document.createElement('strong');
+      sender.textContent = msg.sender_username;
+      const message = document.createElement('span');
+      message.textContent = msg.message;
+      messageDiv.appendChild(sender);
+      messageDiv.appendChild(message);
+      return messageDiv;
+    });
 
-    const playLink = document.createElement('a');
-    playLink.classList.add('play-link');
-    playLink.href = game.play_url || '#';
-    playLink.textContent = 'Play Now';
-    playLink.target = '_blank';
+    messagesDiv.innerHTML = '';
+    messagesDiv.append(...messages);
+  }
 
-    card.appendChild(thumbnail);
-    card.appendChild(title);
-    card.appendChild(desc);
-    card.appendChild(playLink);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    return card;
+    const message = msgInput.value.trim();
+    if (!message) return;
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single();
+
+    if (userError || !userData) {
+      console.error('User not found for message:', userError);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([
+        { sender_username: 'CurrentUser', message, username, user_id: userData.id }
+      ]);
+
+    if (error) {
+      console.error('Error inserting message:', error);
+    } else {
+      msgInput.value = '';
+      loadMessages();
+    }
   });
 
-  gamesContainer.innerHTML = '';
-  gamesContainer.append(...gameCards);
-}
-
-async function loadMessages() {
-  if (!username) return;
-
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .eq('username', username)
-    .order('created_at', { ascending: true });
-
-  if (error || !data) {
-    messagesDiv.innerHTML = '<p>No messages available.</p>';
-    return;
-  }
-
-  const messages = data.map(msg => {
-    const messageDiv = document.createElement('div');
-    const sender = document.createElement('strong');
-    sender.textContent = msg.sender_username;
-    const message = document.createElement('span');
-    message.textContent = msg.message;
-    messageDiv.appendChild(sender);
-    messageDiv.appendChild(message);
-    return messageDiv;
-  });
-
-  messagesDiv.innerHTML = '';
-  messagesDiv.append(...messages);
-}
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const message = msgInput.value.trim();
-  if (!message) return;
-
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('id')
-    .eq('username', username)
-    .single();
-
-  if (userError || !userData) {
-    console.error('User not found for message:', userError);
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from('messages')
-    .insert([
-      { sender_username: 'CurrentUser', message, username, user_id: userData.id }
-    ]);
-
-  if (error) {
-    console.error('Error inserting message:', error);
-  } else {
-    msgInput.value = '';
+  document.addEventListener('DOMContentLoaded', () => {
+    pageTitle.textContent = `${username}'s Games`;
+    incrementVipPageView();
+    loadGames();
     loadMessages();
-  }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  pageTitle.textContent = `${username}'s Games`;
-  incrementVipPageView();
-  loadGames();
-  loadMessages();
-});
+  });
 </script>
 
 </body>
