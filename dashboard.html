@@ -817,11 +817,11 @@
     });
   }
 
-async function loadVipStatus() {
-  if (!currentUser) return null;
+async function loadVipPageLikes() {
+  if (!currentUser) return;
 
   try {
-    // Get VIP status
+    // Get user data (VIP status is no longer important for the payout logic)
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('is_vip')
@@ -829,26 +829,13 @@ async function loadVipStatus() {
       .single();
 
     if (userError || !user) {
-      console.warn('User VIP status not found, treating as non-VIP');
-      return false;
+      console.warn('User data not found');
     }
-
-    return user.is_vip;
-
-  } catch (error) {
-    console.error('Error checking VIP status:', error.message);
-    return false;
-  }
-}
-
-async function loadVipPageLikes() {
-  if (!currentUser) return;
-
-  try {
-    const vipStatus = await loadVipStatus(); // Use the new function to get VIP status
 
     const vipLikeCountEl = document.getElementById('vipLikeCount');
     const vipEarningsEl = document.getElementById('vipEarnings');
+    const payoutBtn = document.getElementById('payoutBtn');
+    const payoutStatus = document.getElementById('payoutStatus');
 
     if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
       console.error('Required DOM elements missing');
@@ -870,7 +857,7 @@ async function loadVipPageLikes() {
     const { count, error: countError } = await supabase
       .from('vip_page_views')
       .select('*', { count: 'exact', head: true })
-      .eq('username', username);
+      .eq('username', username); // or .ilike() if usernames may vary in case
 
     if (countError) throw countError;
 
@@ -879,15 +866,7 @@ async function loadVipPageLikes() {
     // Display page views to all users
     vipLikeCountEl.textContent = `Page Likes: ${totalLikes}`;
 
-    // If not a VIP, hide earnings and payout button
-    if (!vipStatus) {
-      vipEarningsEl.style.display = 'none';
-      payoutBtn.style.display = 'none';
-      payoutStatus.textContent = 'Payout available for VIP users only.';
-      return;
-    }
-
-    // VIP: calculate earnings
+    // Calculate earnings for all users (not just VIPs)
     const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
     if (earningsValue > 0) {
@@ -917,38 +896,38 @@ async function loadVipPageLikes() {
       payoutStatus.textContent = `Earnings (£${earningsValue.toFixed(2)}) must reach £5.00 to request payout.`;
     }
   } catch (error) {
-    console.error('Error loading VIP data:', error.message);
+    console.error('Error loading data:', error.message);
     payoutStatus.textContent = 'Error loading stats.';
   }
 }
 
-addGameForm.onsubmit = async (e) => {
-  e.preventDefault();
-  submitBtn.disabled = true;
-  showMessage('');
+  addGameForm.onsubmit = async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    showMessage('');
 
-  const data = {
-    user_id: currentUser.id,
-    github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
-    avatar_url: currentUser.user_metadata?.avatar_url || null,
-    title: document.getElementById('title').value.trim(),
-    description: document.getElementById('description').value.trim(),
-    embed_url: document.getElementById('embedUrl').value.trim(),
-    screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-    cover_url: document.getElementById('coverUrl').value.trim() || null,
-    created_at: new Date().toISOString()
+    const data = {
+      user_id: currentUser.id,
+      github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+      avatar_url: currentUser.user_metadata?.avatar_url || null,
+      title: document.getElementById('title').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      embed_url: document.getElementById('embedUrl').value.trim(),
+      screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
+      cover_url: document.getElementById('coverUrl').value.trim() || null,
+      created_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase.from('game_submissions').insert([data]);
+    if (error) {
+      showMessage('Adding game failed: ' + error.message, 'error');
+    } else {
+      showMessage('Game added successfully!', 'success');
+      addGameForm.reset();
+      loadGames();
+    }
+    submitBtn.disabled = false;
   };
-
-  const { error } = await supabase.from('game_submissions').insert([data]);
-  if (error) {
-    showMessage('Adding game failed: ' + error.message, 'error');
-  } else {
-    showMessage('Game added successfully!', 'success');
-    addGameForm.reset();
-    loadGames();
-  }
-  submitBtn.disabled = false;
-};
 
   (async () => {
     if (!(await checkAuth())) return;
