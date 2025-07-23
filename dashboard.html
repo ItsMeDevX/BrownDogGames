@@ -718,212 +718,154 @@
   async function checkAuth() {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session?.user) {
-      showMessage('You need to be logged in to access this page.', 'error');
-      return;
+      window.location.href = 'login.html';
+      return false;
     }
+
     currentUser = session.user;
-    loadVipPageLikes();
-    loadGames();
+    return true;
   }
 
-  async function loadVipPageLikes() {
-    if (!currentUser) return;
-
-    try {
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (userError || !user) {
-        console.warn('User data not found');
-      }
-
-      const vipLikeCountEl = document.getElementById('vipLikeCount');
-      const vipEarningsEl = document.getElementById('vipEarnings');
-      const payoutBtn = document.getElementById('payoutRequestBtn');
-      const payoutStatus = document.getElementById('payoutStatus');
-
-      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) {
-        vipLikeCountEl.textContent = `Page Likes: 0 (No username)`;
-        vipEarningsEl.style.display = 'none';
-        payoutBtn.style.display = 'none';
-        payoutStatus.textContent = '';
-        return;
-      }
-
-      const { count, error: countError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', username);
-
-      if (countError) throw countError;
-
-      const totalLikes = count || 0;
-
-      vipLikeCountEl.textContent = `Page Likes: ${totalLikes}`;
-
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-
-      if (earningsValue > 0) {
-        vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
-        vipEarningsEl.style.display = 'block';
-      } else {
-        vipEarningsEl.style.display = 'none';
-      }
-
-      const { data: existingRequests, error: reqError } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
-
-      if (reqError) throw reqError;
-
-      if (existingRequests.length > 0) {
-        payoutBtn.style.display = 'none';
-        payoutStatus.textContent = 'You have a pending payout request.';
-      } else if (earningsValue >= 5.0) {
-        payoutBtn.style.display = 'inline-block';
-        payoutStatus.textContent = '';
-      } else {
-        payoutBtn.style.display = 'none';
-        payoutStatus.textContent = `Earnings (£${earningsValue.toFixed(2)}) must reach £5.00 to request payout.`;
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error.message);
-      payoutStatus.textContent = 'Error loading stats.';
-    }
-  }
-
-  payoutBtn.addEventListener('click', async () => {
-    payoutBtn.disabled = true;
-    payoutStatus.textContent = '';
-
-    try {
-      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) throw new Error('Username not found.');
-
-      const { count } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', username);
-
-      const totalLikes = count || 0;
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-
-      if (earningsValue < 5) {
-        payoutStatus.textContent = 'Minimum £5 earnings required for payout.';
-        payoutBtn.disabled = false;
-        return;
-      }
-
-      const { data: existingRequests } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
-
-      if (existingRequests.length > 0) {
-        payoutStatus.textContent = 'You have a pending payout request.';
-        payoutBtn.disabled = false;
-        return;
-      }
-
-      const { error } = await supabase.from('payout_requests').insert([{
-        user_id: currentUser.id,
-        amount: earningsValue,
-        status: 'pending',
-        requested_at: new Date().toISOString()
-      }]);
-
-      if (error) throw error;
-
-      payoutStatus.textContent = 'Payout request submitted!';
-      payoutBtn.style.display = 'none';
-    } catch (err) {
-      payoutStatus.textContent = 'Error submitting payout request: ' + err.message;
-    }
-
-    payoutBtn.disabled = false;
-  });
-  
-  addGameForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
-    const embedUrl = document.getElementById('embedUrl').value;
-    const screenshotUrl = document.getElementById('screenshotUrl').value;
-    const coverUrl = document.getElementById('coverUrl').value;
-
-    const { error } = await supabase.from('games').insert([{
-      title,
-      description,
-      embed_url: embedUrl,
-      screenshot_url: screenshotUrl,
-      cover_url: coverUrl,
-      user_id: currentUser.id,
-      created_at: new Date().toISOString()
-    }]);
-
-    if (error) {
-      showMessage('Error adding game.', 'error');
-      return;
-    }
-
-    showMessage('Game added successfully!', 'success');
-    loadGames();
-    addGameForm.reset();
-  });
-
-  async function loadGames() {
+  async function fetchGames() {
     const { data: games, error } = await supabase
       .from('games')
       .select('*')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false });
+      .eq('user_id', currentUser.id);
 
     if (error) {
-      showMessage('Error loading games.', 'error');
+      showMessage('Error fetching games', 'error');
       return;
     }
 
-    gamesList.innerHTML = '';
-    games.forEach(game => {
-      const gameItem = document.createElement('li');
-      gameItem.innerHTML = `
-        <div class="game-info">
-          <p class="game-title">${game.title}</p>
-          <p class="game-desc">${game.description}</p>
-          <div class="game-urls">
-            <a href="${game.embed_url}" target="_blank">Play Game</a>
-            ${game.screenshot_url ? `<a href="${game.screenshot_url}" target="_blank">Screenshot</a>` : ''}
-            ${game.cover_url ? `<a href="${game.cover_url}" target="_blank">Cover</a>` : ''}
-          </div>
-        </div>
-        <button class="remove-btn" onclick="removeGame('${game.id}')">Remove</button>
-      `;
-      gamesList.appendChild(gameItem);
+    gamesList.innerHTML = games
+      .map(
+        (game) => `
+          <li>
+            <div class="game-info">
+              <div class="game-title">${game.title}</div>
+              <div class="game-desc">${game.description}</div>
+              <div class="game-urls">
+                <a href="${game.embed_url}" target="_blank">Embed</a>
+                <a href="${game.screenshot_url}" target="_blank">Screenshot</a>
+                <a href="${game.cover_url}" target="_blank">Cover</a>
+              </div>
+            </div>
+            <button class="remove-btn" data-id="${game.id}">Remove</button>
+          </li>
+        `
+      )
+      .join('');
+
+    document.querySelectorAll('.remove-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => removeGame(e.target.dataset.id));
     });
   }
 
-  async function removeGame(gameId) {
-    const { error } = await supabase.from('games').delete().eq('id', gameId);
+  async function addGame(e) {
+    e.preventDefault();
 
-    if (error) {
-      showMessage('Error removing game.', 'error');
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const embedUrl = document.getElementById('embedUrl').value.trim();
+    const screenshotUrl = document.getElementById('screenshotUrl').value.trim();
+    const coverUrl = document.getElementById('coverUrl').value.trim();
+
+    if (!title || !description || !embedUrl) {
+      showMessage('Please fill out all required fields', 'error');
       return;
     }
 
-    showMessage('Game removed successfully!', 'success');
-    loadGames();
+    const { data, error } = await supabase
+      .from('games')
+      .insert([
+        {
+          user_id: currentUser.id,
+          title,
+          description,
+          embed_url: embedUrl,
+          screenshot_url: screenshotUrl,
+          cover_url: coverUrl
+        }
+      ]);
+
+    if (error) {
+      showMessage('Error adding game', 'error');
+      return;
+    }
+
+    showMessage('Game added successfully', 'success');
+    fetchGames();
+    addGameForm.reset();
   }
 
-  // Check authentication state on page load
-  checkAuth();
+  async function removeGame(gameId) {
+    const { error } = await supabase
+      .from('games')
+      .delete()
+      .eq('id', gameId);
+
+    if (error) {
+      showMessage('Error removing game', 'error');
+      return;
+    }
+
+    showMessage('Game removed successfully', 'success');
+    fetchGames();
+  }
+
+  async function fetchPayoutInfo() {
+    const { data: earnings, error } = await supabase
+      .from('earnings')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (error || !earnings) {
+      payoutStatus.textContent = 'Error fetching earnings.';
+      return;
+    }
+
+    const earningsAmount = earnings.amount;
+
+    document.getElementById('vipEarnings').style.display = earningsAmount >= 100 ? 'block' : 'none';
+
+    if (earningsAmount >= 100) {
+      payoutBtn.style.display = 'block';
+    } else {
+      payoutBtn.style.display = 'none';
+    }
+
+    const payoutAvailable = earningsAmount >= 100;
+
+    if (payoutAvailable) {
+      payoutBtn.onclick = async () => {
+        const { error } = await supabase
+          .from('earnings')
+          .update({ amount: 0 })
+          .eq('user_id', currentUser.id);
+
+        if (error) {
+          payoutStatus.textContent = 'Error processing payout.';
+          return;
+        }
+
+        payoutStatus.textContent = 'Payout successful!';
+        fetchPayoutInfo(); // Refresh earnings
+      };
+    }
+  }
+
+  async function initialize() {
+    const isAuthenticated = await checkAuth();
+    if (!isAuthenticated) return;
+
+    fetchGames();
+    fetchPayoutInfo();
+  }
+
+  initialize();
+
+  addGameForm.addEventListener('submit', addGame);
 </script>
 
 </body>
