@@ -638,8 +638,8 @@
 <!-- Existing Earnings + Terms Display -->
 <div style="display: flex; justify-content: space-between; align-items: center; max-width: 700px; margin: 0 auto 1rem; gap: 1rem;">
   <div style="display: flex; flex-direction: column;">
-    <p id="vipLikeCount" style="color: #ff69b4; font-weight: bold; font-size: 1.1rem; margin: 0;">Loading Likes...</p>
-    <p id="vipEarnings" style="color: #8dffa1; font-weight: bold; font-size: 1rem; margin: 0; display: none;">Earnings: £0.00</p>
+    <p id="likeCount" style="color: #ff69b4; font-weight: bold; font-size: 1.1rem; margin: 0;">Loading Likes...</p>
+    <p id="earnings" style="color: #8dffa1; font-weight: bold; font-size: 1rem; margin: 0; display: none;">Earnings: £0.00</p>
   </div>
   <a href="submission-terms.html" style="
     background-color: #ff69b4;
@@ -710,92 +710,83 @@
 
   let currentUser;
 
-  // Function to check the current user
-  async function fetchUser() {
-    const { data: user, error } = await supabase.auth.getUser();
-    if (user) {
-      currentUser = user;
-      // Set up initial fetch for likes & earnings
-      fetchUserLikes();
+  function showMessage(text, type = '') {
+    message.textContent = text;
+    message.className = `message ${type}`;
+  }
+
+  async function checkAuth() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session?.user) {
+      window.location.href = 'login.html';
+      return false;
+    }
+    currentUser = session.user;
+    return true;
+  }
+
+  async function fetchUserLikes() {
+    const { data, error } = await supabase
+      .from('user_likes')
+      .select('like_count')
+      .eq('user_id', currentUser.id)
+      .single();
+    if (error) {
+      showMessage('Failed to load likes.', 'error');
+    } else {
+      const likeCount = data ? data.like_count : 0;
+      document.getElementById('likeCount').textContent = `Likes: ${likeCount}`;
+      const earnings = (likeCount * 0.5).toFixed(2);
+      document.getElementById('earnings').textContent = `Earnings: £${earnings}`;
+      document.getElementById('earnings').style.display = 'block';
+      if (likeCount >= 10) {
+        payoutBtn.style.display = 'inline-block';
+      } else {
+        payoutBtn.style.display = 'none';
+      }
     }
   }
 
-  // Fetching likes count for the user and determining payouts
-  async function fetchUserLikes() {
+  async function handlePayoutRequest() {
     const { data, error } = await supabase
-      .from('games')
-      .select('likes')
-      .eq('user_id', currentUser.id);
-
+      .from('user_likes')
+      .select('like_count')
+      .eq('user_id', currentUser.id)
+      .single();
     if (error) {
-      message.textContent = "Error fetching game likes.";
+      showMessage('Failed to fetch user data for payout.', 'error');
       return;
     }
 
-    let totalLikes = 0;
-    data.forEach(game => {
-      totalLikes += game.likes;
-    });
+    const likeCount = data ? data.like_count : 0;
+    const earnings = (likeCount * 0.5).toFixed(2);
 
-    const totalEarnings = totalLikes * 0.01; // 1p per like
-    document.getElementById('vipLikeCount').textContent = `You have ${totalLikes} likes`;
-    document.getElementById('vipEarnings').style.display = 'block';
-    document.getElementById('vipEarnings').textContent = `Earnings: £${totalEarnings.toFixed(2)}`;
-
-    // Enable payout button if earnings are greater than 0
-    if (totalEarnings > 0) {
-      payoutBtn.style.display = 'inline-block';
+    if (likeCount < 10) {
+      showMessage('Insufficient likes for payout. Earn more likes to request a payout.', 'error');
+      return;
     }
-  }
 
-  // Handle payout request
-  async function handlePayoutRequest() {
-    const { data, error } = await supabase
+    const { error: payoutError } = await supabase
       .from('payouts')
       .insert([
-        { user_id: currentUser.id, amount: 0.01 }
+        {
+          user_id: currentUser.id,
+          amount: earnings,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        },
       ]);
 
-    if (error) {
-      payoutStatus.textContent = "Error processing payout request. Please try again later.";
-      payoutStatus.style.color = '#ff8d8d';
+    if (payoutError) {
+      showMessage('Failed to request payout.', 'error');
     } else {
-      payoutStatus.textContent = "Payout request successful! You will be notified once it's processed.";
-      payoutStatus.style.color = '#8dffa1';
+      showMessage(`Payout requested: £${earnings}. Awaiting approval.`, 'success');
+      payoutBtn.style.display = 'none';
+      payoutStatus.textContent = `Status: Payout requested for £${earnings}`;
+      payoutStatus.style.display = 'block';
     }
   }
 
-  // Add a new game to the user's submission
-  addGameForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
-    const embedUrl = document.getElementById('embedUrl').value;
-    const screenshotUrl = document.getElementById('screenshotUrl').value;
-    const coverUrl = document.getElementById('coverUrl').value;
-
-    const { data, error } = await supabase
-      .from('games')
-      .insert([
-        { title, description, embed_url: embedUrl, screenshot_url: screenshotUrl, cover_url: coverUrl, user_id: currentUser.id, likes: 0 }
-      ]);
-
-    if (error) {
-      message.textContent = "There was an error adding your game. Please try again later.";
-      message.classList.add('error');
-    } else {
-      message.textContent = "Game added successfully!";
-      message.classList.remove('error');
-      message.classList.add('success');
-
-      // Clear the form
-      addGameForm.reset();
-      fetchGames(); // Refresh the games list
-    }
-  });
-
-  // Fetch the list of games submitted by the user
   async function fetchGames() {
     const { data, error } = await supabase
       .from('games')
@@ -803,58 +794,75 @@
       .eq('user_id', currentUser.id);
 
     if (error) {
-      console.error("Error fetching games:", error);
-      return;
-    }
-
-    gamesList.innerHTML = '';
-    data.forEach(game => {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <div class="game-info">
-          <span class="game-title">${game.title}</span>
-          <p class="game-desc">${game.description}</p>
-          <div class="game-urls">
-            <a href="${game.embed_url}" target="_blank">Embed</a>
-            <a href="${game.screenshot_url}" target="_blank">Screenshot</a>
-            <a href="${game.cover_url}" target="_blank">Cover</a>
+      showMessage('Failed to load games.', 'error');
+    } else {
+      gamesList.innerHTML = '';
+      data.forEach((game) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <div class="game-info">
+            <div class="game-title">${game.title}</div>
+            <div class="game-desc">${game.description}</div>
+            <div class="game-urls">
+              <a href="${game.embed_url}" target="_blank">Play Game</a>
+              <a href="${game.screenshot_url}" target="_blank">Screenshot</a>
+              <a href="${game.cover_url}" target="_blank">Cover</a>
+            </div>
           </div>
-        </div>
-        <button class="remove-btn" data-id="${game.id}">Remove</button>
-      `;
-      gamesList.appendChild(li);
-    });
+          <button class="remove-btn" onclick="removeGame(${game.id})">Remove</button>
+        `;
+        gamesList.appendChild(listItem);
+      });
+    }
   }
 
-  // Event listener for removing a game
-  gamesList.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('remove-btn')) {
-      const gameId = e.target.dataset.id;
-      const { data, error } = await supabase
-        .from('games')
-        .delete()
-        .eq('id', gameId)
-        .eq('user_id', currentUser.id);
-
-      if (error) {
-        message.textContent = "Error deleting game. Please try again later.";
-        message.classList.add('error');
-      } else {
-        message.textContent = "Game deleted successfully!";
-        message.classList.remove('error');
-        message.classList.add('success');
-        fetchGames(); // Refresh the games list
-      }
+  async function removeGame(gameId) {
+    const { error } = await supabase.from('games').delete().eq('id', gameId);
+    if (error) {
+      showMessage('Failed to remove game.', 'error');
+    } else {
+      fetchGames();
     }
-  });
+  }
 
-  // Attach event listener for payout button
+  async function handleAddGame(event) {
+    event.preventDefault();
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const embedUrl = document.getElementById('embedUrl').value;
+    const screenshotUrl = document.getElementById('screenshotUrl').value;
+    const coverUrl = document.getElementById('coverUrl').value;
+
+    const { error } = await supabase.from('games').insert([
+      {
+        user_id: currentUser.id,
+        title,
+        description,
+        embed_url: embedUrl,
+        screenshot_url: screenshotUrl,
+        cover_url: coverUrl,
+      },
+    ]);
+
+    if (error) {
+      showMessage('Failed to add game.', 'error');
+    } else {
+      showMessage('Game added successfully!', 'success');
+      fetchGames();
+      addGameForm.reset();
+    }
+  }
+
+  addGameForm.addEventListener('submit', handleAddGame);
   payoutBtn.addEventListener('click', handlePayoutRequest);
 
-  // Initialize the page
-  fetchUser();
+  checkAuth().then((authenticated) => {
+    if (authenticated) {
+      fetchUserLikes();
+      fetchGames();
+    }
+  });
 </script>
-
 </body>
 </html>
   
