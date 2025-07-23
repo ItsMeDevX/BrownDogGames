@@ -821,21 +821,19 @@ async function loadVipPageLikes() {
   if (!currentUser) return;
 
   try {
-    // Get user data (VIP status is no longer important for the payout logic)
+    // Get user data (no need to check for VIP status anymore)
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('is_vip')
+      .select('id')
       .eq('id', currentUser.id)
       .single();
 
     if (userError || !user) {
-      console.warn('User data not found');
+      console.warn('User not found, treating as regular user');
     }
 
     const vipLikeCountEl = document.getElementById('vipLikeCount');
     const vipEarningsEl = document.getElementById('vipEarnings');
-    const payoutBtn = document.getElementById('payoutBtn');
-    const payoutStatus = document.getElementById('payoutStatus');
 
     if (!vipLikeCountEl || !vipEarningsEl || !payoutBtn || !payoutStatus) {
       console.error('Required DOM elements missing');
@@ -857,7 +855,7 @@ async function loadVipPageLikes() {
     const { count, error: countError } = await supabase
       .from('vip_page_views')
       .select('*', { count: 'exact', head: true })
-      .eq('username', username); // or .ilike() if usernames may vary in case
+      .eq('username', username);
 
     if (countError) throw countError;
 
@@ -866,7 +864,7 @@ async function loadVipPageLikes() {
     // Display page views to all users
     vipLikeCountEl.textContent = `Page Likes: ${totalLikes}`;
 
-    // Calculate earnings for all users (not just VIPs)
+    // Calculate earnings (regardless of VIP status)
     const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
     if (earningsValue > 0) {
@@ -876,7 +874,7 @@ async function loadVipPageLikes() {
       vipEarningsEl.style.display = 'none';
     }
 
-    // Check for pending payout
+    // Check for pending payout (for any user, not just VIP)
     const { data: existingRequests, error: reqError } = await supabase
       .from('payout_requests')
       .select('*')
@@ -900,6 +898,7 @@ async function loadVipPageLikes() {
     payoutStatus.textContent = 'Error loading stats.';
   }
 }
+
 
   addGameForm.onsubmit = async (e) => {
     e.preventDefault();
