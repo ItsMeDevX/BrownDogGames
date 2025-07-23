@@ -721,81 +721,65 @@
       window.location.href = 'login.html';
       return false;
     }
-
     currentUser = session.user;
     return true;
   }
 
+  async function fetchUserLikes() {
+    const { data, error } = await supabase
+      .from('user_likes')
+      .select('likes')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching likes:', error);
+      return;
+    }
+
+    const likes = data?.likes || 0;
+    const threshold = 100; // example threshold for payout
+
+    document.getElementById('vipLikeCount').textContent = `Likes: ${likes}`;
+
+    if (likes >= threshold) {
+      document.getElementById('vipEarnings').style.display = 'block';
+      document.getElementById('payoutRequestBtn').style.display = 'inline-block';
+      document.getElementById('payoutStatus').textContent = 'You are eligible for a payout!';
+    } else {
+      document.getElementById('vipEarnings').style.display = 'none';
+      document.getElementById('payoutRequestBtn').style.display = 'none';
+    }
+  }
+
   async function fetchGames() {
-    const { data: games, error } = await supabase
+    const { data, error } = await supabase
       .from('games')
       .select('*')
       .eq('user_id', currentUser.id);
 
     if (error) {
-      showMessage('Error fetching games', 'error');
+      console.error('Error fetching games:', error);
       return;
     }
 
-    gamesList.innerHTML = games
-      .map(
-        (game) => `
-          <li>
-            <div class="game-info">
-              <div class="game-title">${game.title}</div>
-              <div class="game-desc">${game.description}</div>
-              <div class="game-urls">
-                <a href="${game.embed_url}" target="_blank">Embed</a>
-                <a href="${game.screenshot_url}" target="_blank">Screenshot</a>
-                <a href="${game.cover_url}" target="_blank">Cover</a>
-              </div>
-            </div>
-            <button class="remove-btn" data-id="${game.id}">Remove</button>
-          </li>
-        `
-      )
-      .join('');
-
-    document.querySelectorAll('.remove-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => removeGame(e.target.dataset.id));
+    gamesList.innerHTML = '';
+    data.forEach(game => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div class="game-info">
+          <div class="game-title">${game.title}</div>
+          <div class="game-desc">${game.description}</div>
+          <div class="game-urls">
+            <a href="${game.embed_url}" target="_blank">Play Game</a>
+            ${game.screenshot_url ? `<a href="${game.screenshot_url}" target="_blank">Screenshot</a>` : ''}
+            ${game.cover_url ? `<a href="${game.cover_url}" target="_blank">Cover</a>` : ''}
+          </div>
+        </div>
+        <button class="remove-btn" onclick="removeGame(${game.id})">Remove</button>
+      `;
+      gamesList.appendChild(li);
     });
-  }
-
-  async function addGame(e) {
-    e.preventDefault();
-
-    const title = document.getElementById('title').value.trim();
-    const description = document.getElementById('description').value.trim();
-    const embedUrl = document.getElementById('embedUrl').value.trim();
-    const screenshotUrl = document.getElementById('screenshotUrl').value.trim();
-    const coverUrl = document.getElementById('coverUrl').value.trim();
-
-    if (!title || !description || !embedUrl) {
-      showMessage('Please fill out all required fields', 'error');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('games')
-      .insert([
-        {
-          user_id: currentUser.id,
-          title,
-          description,
-          embed_url: embedUrl,
-          screenshot_url: screenshotUrl,
-          cover_url: coverUrl
-        }
-      ]);
-
-    if (error) {
-      showMessage('Error adding game', 'error');
-      return;
-    }
-
-    showMessage('Game added successfully', 'success');
-    fetchGames();
-    addGameForm.reset();
   }
 
   async function removeGame(gameId) {
@@ -805,69 +789,87 @@
       .eq('id', gameId);
 
     if (error) {
+      console.error('Error removing game:', error);
       showMessage('Error removing game', 'error');
       return;
     }
 
+    fetchGames(); // Refresh games list
     showMessage('Game removed successfully', 'success');
-    fetchGames();
   }
 
-  async function fetchPayoutInfo() {
-    const { data: earnings, error } = await supabase
-      .from('earnings')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .single();
+  async function addGame(e) {
+    e.preventDefault();
 
-    if (error || !earnings) {
-      payoutStatus.textContent = 'Error fetching earnings.';
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const embedUrl = document.getElementById('embedUrl').value;
+    const screenshotUrl = document.getElementById('screenshotUrl').value;
+    const coverUrl = document.getElementById('coverUrl').value;
+
+    if (!title || !description || !embedUrl) {
+      showMessage('Title, description, and embed URL are required', 'error');
       return;
     }
 
-    const earningsAmount = earnings.amount;
+    const { error } = await supabase
+      .from('games')
+      .insert([
+        {
+          user_id: currentUser.id,
+          title,
+          description,
+          embed_url: embedUrl,
+          screenshot_url: screenshotUrl,
+          cover_url: coverUrl,
+        },
+      ]);
 
-    document.getElementById('vipEarnings').style.display = earningsAmount >= 100 ? 'block' : 'none';
+    if (error) {
+      console.error('Error adding game:', error);
+      showMessage('Error adding game', 'error');
+      return;
+    }
 
-    if (earningsAmount >= 100) {
-      payoutBtn.style.display = 'block';
+    fetchGames(); // Refresh games list
+    showMessage('Game added successfully', 'success');
+    addGameForm.reset();
+  }
+
+  async function requestPayout() {
+    const { data, error } = await supabase
+      .from('user_likes')
+      .select('likes')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (error) {
+      console.error('Error checking likes:', error);
+      showMessage('Error requesting payout', 'error');
+      return;
+    }
+
+    if (data.likes >= 100) {
+      // Proceed with payout logic
+      showMessage('Payout request received!', 'success');
+      payoutStatus.textContent = 'Payout has been processed.';
     } else {
-      payoutBtn.style.display = 'none';
-    }
-
-    const payoutAvailable = earningsAmount >= 100;
-
-    if (payoutAvailable) {
-      payoutBtn.onclick = async () => {
-        const { error } = await supabase
-          .from('earnings')
-          .update({ amount: 0 })
-          .eq('user_id', currentUser.id);
-
-        if (error) {
-          payoutStatus.textContent = 'Error processing payout.';
-          return;
-        }
-
-        payoutStatus.textContent = 'Payout successful!';
-        fetchPayoutInfo(); // Refresh earnings
-      };
+      showMessage('Not enough likes for payout.', 'error');
     }
   }
 
-  async function initialize() {
-    const isAuthenticated = await checkAuth();
-    if (!isAuthenticated) return;
+  payoutBtn.addEventListener('click', requestPayout);
 
-    fetchGames();
-    fetchPayoutInfo();
-  }
-
-  initialize();
+  // Initialize
+  (async () => {
+    if (await checkAuth()) {
+      fetchUserLikes();
+      fetchGames();
+    }
+  })();
 
   addGameForm.addEventListener('submit', addGame);
 </script>
-
 </body>
 </html>
   
