@@ -860,7 +860,6 @@
 </body>
 </html>
 
-</html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -969,22 +968,6 @@
       return user;
     }
 
-    // Check if the user is VIP
-    async function isVip(userId) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('id', userId)  // Query by user ID, not username
-        .single();
-
-      if (error) {
-        console.error('Error fetching VIP status:', error);
-        return false;
-      }
-
-      return data ? data.is_vip : false;
-    }
-
     // Check if the user has already liked the page
     async function hasLiked(userId) {
       if (!userId || !pageOwner) return false;
@@ -1016,14 +999,6 @@
         return;
       }
 
-      const isPageOwnerVip = await isVip(user.id);  // Pass logged-in user's ID
-
-      if (!isPageOwnerVip) {
-        status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
-        likeBtn.style.display = 'none';  // Hide like button if not VIP
-        return;
-      }
-
       const liked = await hasLiked(user.id);
       const count = await getLikeCount();
 
@@ -1035,7 +1010,7 @@
         likeBtn.disabled = false;  // Enable button if not liked
       }
 
-      likeBtn.style.display = 'inline-block';  // Show the like button if VIP
+      likeBtn.style.display = 'inline-block';  // Show the like button if logged in
     }
 
     // Like the page when the button is clicked
@@ -1094,7 +1069,6 @@
           first_viewed_at: now,  // Set the first view time only when they like the page for the first time
           last_viewed_at: now,
         }]);
-
 
       if (insertError) {
         console.error('Insert error:', insertError);
