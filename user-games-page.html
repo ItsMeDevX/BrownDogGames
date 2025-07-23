@@ -794,6 +794,11 @@
           card.appendChild(playLink);
         } else {
           card.appendChild(iframe);
+          const fullscreenButton = document.createElement('button');
+          fullscreenButton.textContent = 'Fullscreen';
+          fullscreenButton.className = 'play-link';
+          fullscreenButton.addEventListener('click', () => toggleFullscreen(iframe));
+          card.appendChild(fullscreenButton);
         }
       }
 
@@ -820,7 +825,7 @@
     }
 
     messagesDiv.innerHTML = data.map(m => 
-      `<div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>`
+      `<div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>` 
     ).join('');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
@@ -865,6 +870,18 @@
       return `https://drive.google.com/thumbnail?id=${fileId}`;
     }
     return url;
+  }
+
+  function toggleFullscreen(iframe) {
+    if (iframe.requestFullscreen) {
+      iframe.requestFullscreen();
+    } else if (iframe.mozRequestFullScreen) { // Firefox
+      iframe.mozRequestFullScreen();
+    } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari and Opera
+      iframe.webkitRequestFullscreen();
+    } else if (iframe.msRequestFullscreen) { // IE/Edge
+      iframe.msRequestFullscreen();
+    }
   }
 
   if (!username) {
