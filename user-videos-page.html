@@ -579,6 +579,110 @@
       max-width: 100%;
     }
 
+    .preview-card {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #2f1a39, #1a1328);
+      border: 2px solid #ff4f9f;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .preview-card:hover::before {
+      left: 100%;
+    }
+
+    .preview-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(255, 79, 159, 0.3);
+      border-color: #ff82ba;
+    }
+
+    .preview-thumbnail {
+      width: 100%;
+      height: 120px;
+      background: linear-gradient(45deg, #ff4f9f, #ff82ba);
+      border-radius: 6px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .preview-title {
+      color: #ff4f9f;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .preview-platform {
+      color: #ddd;
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+    }
+
+    .preview-link {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      color: #1b1b2e;
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #ff82ba, #ff4f9f);
+      transition: left 0.3s ease;
+      z-index: -1;
+    }
+
+    .preview-link:hover::before {
+      left: 0;
+    }
+
+    .preview-link:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
+    }
+
     .play-link {
       display: inline-block;
       background-color: #ff4f9f;
@@ -843,10 +947,36 @@
     return match ? { accountId: match[1], videoId: match[2] } : null;
   }
 
-  function extractKalturaId(url) {
-    const regExp = /kaltura\.com\/.*\/embedIframeJs\/.*\/partner_id\/(\d+).*\/uiconf_id\/(\d+).*\/entry_id\/([a-zA-Z0-9_]+)/;
-    const match = url.match(regExp);
-    return match ? { partnerId: match[1], uiconfId: match[2], entryId: match[3] } : null;
+  // Function to create enhanced preview cards
+  function createPreviewCard(url, platform, emoji, platformName) {
+    const mediaEl = document.createElement('div');
+    mediaEl.className = 'preview-card';
+    
+    // Try to extract thumbnail if possible
+    let thumbnailUrl = null;
+    if (platform === 'pornhub') {
+      // PornHub thumbnail extraction (if video ID available)
+      const match = url.match(/viewkey=([a-zA-Z0-9]+)/);
+      if (match) {
+        thumbnailUrl = `https://ci.phncdn.com/videos/201501/25/36944322/original/(m=eafTGgaaaa)(mh=jOakqk_rBQwZcBOb)1.jpg`;
+      }
+    }
+    
+    mediaEl.innerHTML = `
+      <div class="preview-thumbnail">
+        ${thumbnailUrl ? 
+          `<img src="${thumbnailUrl}" alt="${platformName} thumbnail" onerror="this.style.display='none'; this.parentNode.innerHTML='${emoji}';" />` : 
+          emoji
+        }
+      </div>
+      <div class="preview-title">${platformName} Content</div>
+      <div class="preview-platform">Click to view on ${platformName}</div>
+      <a href="${url}" target="_blank" class="preview-link">
+        View Content →
+      </a>
+    `;
+    
+    return mediaEl;
   }
 
 async function loadVideos() {
@@ -1002,18 +1132,12 @@ async function loadVideos() {
       // Twitter/X videos
       else if (url.includes('twitter.com/') && url.includes('/status/')) {
         mediaEl = document.createElement('div');
-        mediaEl.className = 'video-player';
-        mediaEl.style.display = 'flex';
-        mediaEl.style.alignItems = 'center';
-        mediaEl.style.justifyContent = 'center';
-        mediaEl.style.backgroundColor = '#333';
-        mediaEl.style.color = '#fff';
-        mediaEl.style.padding = '20px';
+        mediaEl.className = 'preview-card';
         mediaEl.innerHTML = `
-          <div style="text-align: center;">
-            <p>🐦 Twitter Video</p>
-            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on Twitter</a>
-          </div>
+          <div class="preview-thumbnail">🐦</div>
+          <div class="preview-title">Twitter Video</div>
+          <div class="preview-platform">Click to view on Twitter</div>
+          <a href="${url}" target="_blank" class="preview-link">View Tweet →</a>
         `;
       }
       
@@ -1059,73 +1183,21 @@ async function loadVideos() {
         }
       }
       
-      // Adult content platforms (with generic embed attempts)
+      // Adult content platforms (with enhanced preview cards)
       else if (url.includes('redtube.com/')) {
-        mediaEl = document.createElement('div');
-        mediaEl.className = 'video-player';
-        mediaEl.style.display = 'flex';
-        mediaEl.style.alignItems = 'center';
-        mediaEl.style.justifyContent = 'center';
-        mediaEl.style.backgroundColor = '#333';
-        mediaEl.style.color = '#fff';
-        mediaEl.style.padding = '20px';
-        mediaEl.innerHTML = `
-          <div style="text-align: center;">
-            <p>🔞 Adult Content</p>
-            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on RedTube</a>
-          </div>
-        `;
+        mediaEl = createPreviewCard(url, 'redtube', '🔥', 'RedTube');
       }
       
       else if (url.includes('xvideos.com/')) {
-        mediaEl = document.createElement('div');
-        mediaEl.className = 'video-player';
-        mediaEl.style.display = 'flex';
-        mediaEl.style.alignItems = 'center';
-        mediaEl.style.justifyContent = 'center';
-        mediaEl.style.backgroundColor = '#333';
-        mediaEl.style.color = '#fff';
-        mediaEl.style.padding = '20px';
-        mediaEl.innerHTML = `
-          <div style="text-align: center;">
-            <p>🔞 Adult Content</p>
-            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on XVideos</a>
-          </div>
-        `;
+        mediaEl = createPreviewCard(url, 'xvideos', '📹', 'XVideos');
       }
       
       else if (url.includes('pornhub.com/')) {
-        mediaEl = document.createElement('div');
-        mediaEl.className = 'video-player';
-        mediaEl.style.display = 'flex';
-        mediaEl.style.alignItems = 'center';
-        mediaEl.style.justifyContent = 'center';
-        mediaEl.style.backgroundColor = '#333';
-        mediaEl.style.color = '#fff';
-        mediaEl.style.padding = '20px';
-        mediaEl.innerHTML = `
-          <div style="text-align: center;">
-            <p>🔞 Adult Content</p>
-            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on PornHub</a>
-          </div>
-        `;
+        mediaEl = createPreviewCard(url, 'pornhub', '🎬', 'PornHub');
       }
       
       else if (url.includes('spankbang.com/')) {
-        mediaEl = document.createElement('div');
-        mediaEl.className = 'video-player';
-        mediaEl.style.display = 'flex';
-        mediaEl.style.alignItems = 'center';
-        mediaEl.style.justifyContent = 'center';
-        mediaEl.style.backgroundColor = '#333';
-        mediaEl.style.color = '#fff';
-        mediaEl.style.padding = '20px';
-        mediaEl.innerHTML = `
-          <div style="text-align: center;">
-            <p>🔞 Adult Content</p>
-            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on SpankBang</a>
-          </div>
-        `;
+        mediaEl = createPreviewCard(url, 'spankbang', '⭐', 'SpankBang');
       }
       
       // Facebook Videos
@@ -1147,18 +1219,12 @@ async function loadVideos() {
       // Reddit Videos
       else if (url.includes('reddit.com/r/') && url.includes('/comments/')) {
         mediaEl = document.createElement('div');
-        mediaEl.className = 'video-player';
-        mediaEl.style.display = 'flex';
-        mediaEl.style.alignItems = 'center';
-        mediaEl.style.justifyContent = 'center';
-        mediaEl.style.backgroundColor = '#333';
-        mediaEl.style.color = '#fff';
-        mediaEl.style.padding = '20px';
+        mediaEl.className = 'preview-card';
         mediaEl.innerHTML = `
-          <div style="text-align: center;">
-            <p>📱 Reddit Video</p>
-            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on Reddit</a>
-          </div>
+          <div class="preview-thumbnail">📱</div>
+          <div class="preview-title">Reddit Video</div>
+          <div class="preview-platform">Click to view on Reddit</div>
+          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
         `;
       }
       
@@ -1207,18 +1273,12 @@ async function loadVideos() {
       // LinkedIn Videos (link only - no embedding available)
       else if (url.includes('linkedin.com/') && (url.includes('/feed/update/') || url.includes('/posts/'))) {
         mediaEl = document.createElement('div');
-        mediaEl.className = 'video-player';
-        mediaEl.style.display = 'flex';
-        mediaEl.style.alignItems = 'center';
-        mediaEl.style.justifyContent = 'center';
-        mediaEl.style.backgroundColor = '#0077b5';
-        mediaEl.style.color = '#fff';
-        mediaEl.style.padding = '20px';
+        mediaEl.className = 'preview-card';
         mediaEl.innerHTML = `
-          <div style="text-align: center;">
-            <p>💼 LinkedIn Video</p>
-            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on LinkedIn</a>
-          </div>
+          <div class="preview-thumbnail">💼</div>
+          <div class="preview-title">LinkedIn Video</div>
+          <div class="preview-platform">Click to view on LinkedIn</div>
+          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
         `;
       }
 
