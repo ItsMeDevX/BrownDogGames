@@ -1134,12 +1134,29 @@ async function loadVideos() {
                (url.includes('x.com/') && url.includes('/status/'))) {
         mediaEl = document.createElement('div');
         mediaEl.className = 'preview-card';
-        mediaEl.innerHTML = `
-          <div class="preview-thumbnail">🐦</div>
-          <div class="preview-title">X (Twitter) Video</div>
-          <div class="preview-platform">Click to view on X</div>
-          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
-        `;
+        
+        const thumbnailDiv = document.createElement('div');
+        thumbnailDiv.className = 'preview-thumbnail';
+        thumbnailDiv.textContent = '🐦';
+        
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'preview-title';
+        titleDiv.textContent = 'X (Twitter) Video';
+        
+        const platformDiv = document.createElement('div');
+        platformDiv.className = 'preview-platform';
+        platformDiv.textContent = 'Click to view on X';
+        
+        const linkEl = document.createElement('a');
+        linkEl.href = url;
+        linkEl.target = '_blank';
+        linkEl.className = 'preview-link';
+        linkEl.textContent = 'View Post →';
+        
+        mediaEl.appendChild(thumbnailDiv);
+        mediaEl.appendChild(titleDiv);
+        mediaEl.appendChild(platformDiv);
+        mediaEl.appendChild(linkEl);
       }
       
       // Wistia videos
