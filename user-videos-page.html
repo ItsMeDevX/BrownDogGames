@@ -947,7 +947,7 @@
     return match ? { accountId: match[1], videoId: match[2] } : null;
   }
 
-  // Function to create enhanced preview cards
+  // Function to create enhanced preview cards (MODIFIED: removed target="_blank")
   function createPreviewCard(url, platform, emoji, platformName) {
     const mediaEl = document.createElement('div');
     mediaEl.className = 'preview-card';
@@ -971,7 +971,7 @@
       </div>
       <div class="preview-title">${platformName} Content</div>
       <div class="preview-platform">Click to view on ${platformName}</div>
-      <a href="${url}" target="_blank" class="preview-link">
+      <a href="${url}" class="preview-link">
         View Content →
       </a>
     `;
@@ -1129,7 +1129,7 @@ async function loadVideos() {
         }
       }
       
-      // Twitter/X videos (supports both twitter.com and x.com)
+      // Twitter/X videos (MODIFIED: removed target="_blank")
       else if ((url.includes('twitter.com/') && url.includes('/status/')) || 
                (url.includes('x.com/') && url.includes('/status/'))) {
         mediaEl = document.createElement('div');
@@ -1149,7 +1149,6 @@ async function loadVideos() {
         
         const linkEl = document.createElement('a');
         linkEl.href = url;
-        linkEl.target = '_blank';
         linkEl.className = 'preview-link';
         linkEl.textContent = 'View Post →';
         
@@ -1234,7 +1233,7 @@ async function loadVideos() {
         }
       }
       
-      // Reddit Videos
+      // Reddit Videos (MODIFIED: removed target="_blank")
       else if (url.includes('reddit.com/r/') && url.includes('/comments/')) {
         mediaEl = document.createElement('div');
         mediaEl.className = 'preview-card';
@@ -1242,7 +1241,7 @@ async function loadVideos() {
           <div class="preview-thumbnail">📱</div>
           <div class="preview-title">Reddit Video</div>
           <div class="preview-platform">Click to view on Reddit</div>
-          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
+          <a href="${url}" class="preview-link">View Post →</a>
         `;
       }
       
@@ -1288,7 +1287,7 @@ async function loadVideos() {
         }
       }
       
-      // LinkedIn Videos (link only - no embedding available)
+      // LinkedIn Videos (MODIFIED: removed target="_blank")
       else if (url.includes('linkedin.com/') && (url.includes('/feed/update/') || url.includes('/posts/'))) {
         mediaEl = document.createElement('div');
         mediaEl.className = 'preview-card';
@@ -1296,7 +1295,7 @@ async function loadVideos() {
           <div class="preview-thumbnail">💼</div>
           <div class="preview-title">LinkedIn Video</div>
           <div class="preview-platform">Click to view on LinkedIn</div>
-          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
+          <a href="${url}" class="preview-link">View Post →</a>
         `;
       }
 
@@ -1348,7 +1347,7 @@ async function loadVideos() {
           mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
 
         } else {
-          // Unknown file type - show link to original instead of error
+          // Unknown file type - show link to original instead of error (MODIFIED: removed target="_blank")
           mediaEl = document.createElement('div');
           mediaEl.className = 'video-player';
           mediaEl.style.display = 'flex';
@@ -1360,7 +1359,7 @@ async function loadVideos() {
           mediaEl.innerHTML = `
             <div style="text-align: center;">
               <p>⚠️ Unsupported format</p>
-              <a href="${url}" target="_blank" style="color: #ff4f9f;">Open Link</a>
+              <a href="${url}" style="color: #ff4f9f;">Open Link</a>
             </div>
           `;
         }
