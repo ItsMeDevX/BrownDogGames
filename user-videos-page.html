@@ -753,6 +753,72 @@
     return match ? match[1] : null;
   }
 
+  function extractMmmeId(url) {
+    const regExp = /mmme\.me\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractRedTubeId(url) {
+    const regExp = /redtube\.com\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractXVideosId(url) {
+    const regExp = /xvideos\.com\/video(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractPornHubId(url) {
+    const regExp = /pornhub\.com\/view_video\.php\?viewkey=([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractTikTokId(url) {
+    const regExp = /tiktok\.com\/@[\w.-]+\/video\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractInstagramId(url) {
+    const regExp = /instagram\.com\/p\/([a-zA-Z0-9_-]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractTwitterVideoId(url) {
+    const regExp = /twitter\.com\/\w+\/status\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractWistiaId(url) {
+    const regExp = /wistia\.com\/medias\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractBitChuteId(url) {
+    const regExp = /bitchute\.com\/video\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractRumbleId(url) {
+    const regExp = /rumble\.com\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractSpankBangId(url) {
+    const regExp = /spankbang\.com\/([a-zA-Z0-9]+)\/video/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
 async function loadVideos() {
   const { data, error } = await supabase
     .from('game_videos')
@@ -850,6 +916,186 @@ async function loadVideos() {
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-player';
         }
+      }
+      
+      // Mmme.me videos
+      else if (url.includes('mmme.me/')) {
+        const videoId = extractMmmeId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://mmme.me/embed/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // TikTok videos
+      else if (url.includes('tiktok.com/')) {
+        const videoId = extractTikTokId(url);
+        if (videoId) {
+          mediaEl = document.createElement('blockquote');
+          mediaEl.className = 'tiktok-embed video-player';
+          mediaEl.setAttribute('cite', url);
+          mediaEl.setAttribute('data-video-id', videoId);
+          mediaEl.style.maxWidth = '100%';
+          mediaEl.style.minWidth = '325px';
+          mediaEl.style.margin = '0';
+          
+          // Load TikTok embed script if not already loaded
+          if (!document.querySelector('script[src*="tiktok.com/embed"]')) {
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.tiktok.com/embed.js';
+            document.head.appendChild(script);
+          }
+        }
+      }
+      
+      // Instagram videos
+      else if (url.includes('instagram.com/p/')) {
+        const videoId = extractInstagramId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.instagram.com/p/${videoId}/embed/`;
+          mediaEl.width = '100%';
+          mediaEl.height = '400';
+          mediaEl.frameBorder = '0';
+          mediaEl.scrolling = 'no';
+          mediaEl.allowTransparency = 'true';
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Twitter/X videos
+      else if (url.includes('twitter.com/') && url.includes('/status/')) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.display = 'flex';
+        mediaEl.style.alignItems = 'center';
+        mediaEl.style.justifyContent = 'center';
+        mediaEl.style.backgroundColor = '#333';
+        mediaEl.style.color = '#fff';
+        mediaEl.style.padding = '20px';
+        mediaEl.innerHTML = `
+          <div style="text-align: center;">
+            <p>🐦 Twitter Video</p>
+            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on Twitter</a>
+          </div>
+        `;
+      }
+      
+      // Wistia videos
+      else if (url.includes('wistia.com/medias/')) {
+        const videoId = extractWistiaId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://fast.wistia.net/embed/iframe/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // BitChute videos
+      else if (url.includes('bitchute.com/video/')) {
+        const videoId = extractBitChuteId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.bitchute.com/embed/${videoId}/`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Rumble videos
+      else if (url.includes('rumble.com/')) {
+        const videoId = extractRumbleId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://rumble.com/embed/${videoId}/`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Adult content platforms (with generic embed attempts)
+      else if (url.includes('redtube.com/')) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.display = 'flex';
+        mediaEl.style.alignItems = 'center';
+        mediaEl.style.justifyContent = 'center';
+        mediaEl.style.backgroundColor = '#333';
+        mediaEl.style.color = '#fff';
+        mediaEl.style.padding = '20px';
+        mediaEl.innerHTML = `
+          <div style="text-align: center;">
+            <p>🔞 Adult Content</p>
+            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on RedTube</a>
+          </div>
+        `;
+      }
+      
+      else if (url.includes('xvideos.com/')) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.display = 'flex';
+        mediaEl.style.alignItems = 'center';
+        mediaEl.style.justifyContent = 'center';
+        mediaEl.style.backgroundColor = '#333';
+        mediaEl.style.color = '#fff';
+        mediaEl.style.padding = '20px';
+        mediaEl.innerHTML = `
+          <div style="text-align: center;">
+            <p>🔞 Adult Content</p>
+            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on XVideos</a>
+          </div>
+        `;
+      }
+      
+      else if (url.includes('pornhub.com/')) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.display = 'flex';
+        mediaEl.style.alignItems = 'center';
+        mediaEl.style.justifyContent = 'center';
+        mediaEl.style.backgroundColor = '#333';
+        mediaEl.style.color = '#fff';
+        mediaEl.style.padding = '20px';
+        mediaEl.innerHTML = `
+          <div style="text-align: center;">
+            <p>🔞 Adult Content</p>
+            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on PornHub</a>
+          </div>
+        `;
+      }
+      
+      else if (url.includes('spankbang.com/')) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.display = 'flex';
+        mediaEl.style.alignItems = 'center';
+        mediaEl.style.justifyContent = 'center';
+        mediaEl.style.backgroundColor = '#333';
+        mediaEl.style.color = '#fff';
+        mediaEl.style.padding = '20px';
+        mediaEl.innerHTML = `
+          <div style="text-align: center;">
+            <p>🔞 Adult Content</p>
+            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on SpankBang</a>
+          </div>
+        `;
       }
 
       // Handle Google Drive video links (your original code)
