@@ -819,6 +819,36 @@
     return match ? match[1] : null;
   }
 
+  function extractFacebookVideoId(url) {
+    const regExp = /facebook\.com\/.*\/videos\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractRedditVideoId(url) {
+    const regExp = /reddit\.com\/r\/[\w]+\/comments\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractJWPlayerId(url) {
+    const regExp = /jwplatform\.com\/players\/([a-zA-Z0-9-]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractBrightcoveId(url) {
+    const regExp = /players\.brightcove\.net\/(\d+)\/.*\/index\.html\?videoId=(\d+)/;
+    const match = url.match(regExp);
+    return match ? { accountId: match[1], videoId: match[2] } : null;
+  }
+
+  function extractKalturaId(url) {
+    const regExp = /kaltura\.com\/.*\/embedIframeJs\/.*\/partner_id\/(\d+).*\/uiconf_id\/(\d+).*\/entry_id\/([a-zA-Z0-9_]+)/;
+    const match = url.match(regExp);
+    return match ? { partnerId: match[1], uiconfId: match[2], entryId: match[3] } : null;
+  }
+
 async function loadVideos() {
   const { data, error } = await supabase
     .from('game_videos')
@@ -1094,6 +1124,100 @@ async function loadVideos() {
           <div style="text-align: center;">
             <p>🔞 Adult Content</p>
             <a href="${url}" target="_blank" style="color: #ff4f9f;">View on SpankBang</a>
+          </div>
+        `;
+      }
+      
+      // Facebook Videos
+      else if (url.includes('facebook.com/') && url.includes('/videos/')) {
+        const videoId = extractFacebookVideoId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&width=500`;
+          mediaEl.width = '100%';
+          mediaEl.height = '280';
+          mediaEl.style.border = 'none';
+          mediaEl.scrolling = 'no';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Reddit Videos
+      else if (url.includes('reddit.com/r/') && url.includes('/comments/')) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.display = 'flex';
+        mediaEl.style.alignItems = 'center';
+        mediaEl.style.justifyContent = 'center';
+        mediaEl.style.backgroundColor = '#333';
+        mediaEl.style.color = '#fff';
+        mediaEl.style.padding = '20px';
+        mediaEl.innerHTML = `
+          <div style="text-align: center;">
+            <p>📱 Reddit Video</p>
+            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on Reddit</a>
+          </div>
+        `;
+      }
+      
+      // JW Player
+      else if (url.includes('jwplatform.com/players/')) {
+        const playerId = extractJWPlayerId(url);
+        if (playerId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://cdn.jwplayer.com/players/${playerId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Brightcove
+      else if (url.includes('players.brightcove.net/')) {
+        const brightcoveData = extractBrightcoveId(url);
+        if (brightcoveData) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://players.brightcove.net/${brightcoveData.accountId}/default_default/index.html?videoId=${brightcoveData.videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Kaltura
+      else if (url.includes('kaltura.com/')) {
+        const kalturaData = extractKalturaId(url);
+        if (kalturaData) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://cdnapisec.kaltura.com/p/${kalturaData.partnerId}/sp/${kalturaData.partnerId}00/embedIframeJs/uiconf_id/${kalturaData.uiconfId}/partner_id/${kalturaData.partnerId}?iframeembed=true&entry_id=${kalturaData.entryId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // LinkedIn Videos (link only - no embedding available)
+      else if (url.includes('linkedin.com/') && (url.includes('/feed/update/') || url.includes('/posts/'))) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.display = 'flex';
+        mediaEl.style.alignItems = 'center';
+        mediaEl.style.justifyContent = 'center';
+        mediaEl.style.backgroundColor = '#0077b5';
+        mediaEl.style.color = '#fff';
+        mediaEl.style.padding = '20px';
+        mediaEl.innerHTML = `
+          <div style="text-align: center;">
+            <p>💼 LinkedIn Video</p>
+            <a href="${url}" target="_blank" style="color: #ff4f9f;">View on LinkedIn</a>
           </div>
         `;
       }
