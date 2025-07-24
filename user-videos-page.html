@@ -1048,44 +1048,107 @@
   // Create Twitter embed content
   function createTwitterEmbed(url) {
     const embedContainer = document.createElement('div');
-    embedContainer.innerHTML = `
-      <div style="display: flex; justify-content: center; align-items: center; height: 400px; background: #000; border-radius: 8px;">
-        <div style="color: #fff; text-align: center;">
-          <div style="font-size: 2rem; margin-bottom: 10px;">🐦</div>
-          <p>Loading Twitter embed...</p>
-        </div>
-      </div>
+    embedContainer.style.cssText = `
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+      padding: 20px;
     `;
     
-    // Create Twitter embed
-    setTimeout(() => {
-      const twitterEmbed = document.createElement('div');
-      twitterEmbed.innerHTML = `
-        <blockquote class="twitter-tweet" data-theme="dark" data-width="550">
-          <a href="${url}">Loading tweet...</a>
-        </blockquote>
+    // Extract tweet ID from URL for better embedding
+    const tweetIdMatch = url.match(/status\/(\d+)/);
+    const tweetId = tweetIdMatch ? tweetIdMatch[1] : null;
+    
+    if (tweetId) {
+      // Use the official Twitter oEmbed API approach
+      embedContainer.innerHTML = `
+        <div id="tweet-${tweetId}" style="max-width: 550px; width: 100%;">
+          <div style="background: #000; color: #fff; padding: 40px; text-align: center; border-radius: 8px;">
+            <div style="font-size: 2rem; margin-bottom: 10px;">🐦</div>
+            <p>Loading tweet...</p>
+          </div>
+        </div>
       `;
       
-      embedContainer.innerHTML = '';
-      embedContainer.appendChild(twitterEmbed);
-      
-      // Load Twitter widgets script if not already loaded
-      if (!window.twttr) {
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://platform.twitter.com/widgets.js';
-        script.onload = () => {
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load(embedContainer);
-          }
-        };
-        document.head.appendChild(script);
-      } else {
-        window.twttr.widgets.load(embedContainer);
-      }
-    }, 100);
+      // Try to load the tweet using Twitter's oEmbed API
+      loadTweetEmbed(tweetId, url, embedContainer);
+    } else {
+      // Fallback for invalid URLs
+      embedContainer.innerHTML = createFallbackEmbed(url, 'X (Twitter)', '🐦').innerHTML;
+    }
     
     return embedContainer;
+  }
+
+  // Load tweet using oEmbed API
+  function loadTweetEmbed(tweetId, url, container) {
+    // First try to use existing Twitter widgets if available
+    if (window.twttr && window.twttr.widgets) {
+      createTwitterWidget(tweetId, url, container);
+      return;
+    }
+    
+    // Load Twitter widgets script
+    const script = document.createElement('script');
+    script.src = 'https://platform.twitter.com/widgets.js';
+    script.async = true;
+    script.onload = () => {
+      if (window.twttr && window.twttr.widgets) {
+        createTwitterWidget(tweetId, url, container);
+      } else {
+        showTwitterFallback(url, container);
+      }
+    };
+    script.onerror = () => {
+      showTwitterFallback(url, container);
+    };
+    
+    document.head.appendChild(script);
+  }
+
+  // Create the actual Twitter widget
+  function createTwitterWidget(tweetId, url, container) {
+    const targetDiv = container.querySelector(`#tweet-${tweetId}`);
+    if (targetDiv && window.twttr && window.twttr.widgets) {
+      // Clear loading message
+      targetDiv.innerHTML = '';
+      
+      // Create the tweet embed
+      window.twttr.widgets.createTweet(tweetId, targetDiv, {
+        theme: 'dark',
+        width: 550,
+        align: 'center',
+        conversation: 'none',
+        cards: 'visible'
+      }).then((el) => {
+        if (!el) {
+          // If tweet creation failed, show fallback
+          showTwitterFallback(url, container);
+        }
+      }).catch(() => {
+        showTwitterFallback(url, container);
+      });
+    } else {
+      showTwitterFallback(url, container);
+    }
+  }
+
+  // Show fallback when Twitter embed fails
+  function showTwitterFallback(url, container) {
+    container.innerHTML = `
+      <div style="background: linear-gradient(135deg, #2f1a39, #1a1328); border: 2px solid #ff4f9f; border-radius: 8px; padding: 40px; text-align: center; max-width: 550px; width: 100%;">
+        <div style="font-size: 3rem; margin-bottom: 20px;">🐦</div>
+        <h3 style="color: #ff4f9f; margin-bottom: 15px;">X (Twitter) Post</h3>
+        <p style="color: #ddd; margin-bottom: 25px;">
+          Unable to embed this tweet. Click below to view it on X.
+        </p>
+        <button onclick="window.open('${url}', '_blank');" 
+                style="background: linear-gradient(135deg, #ff4f9f, #ff82ba); color: #1b1b2e; border: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
+          View on X →
+        </button>
+      </div>
+    `;
   }
 
   // Create TikTok embed content  
