@@ -579,6 +579,110 @@
       max-width: 100%;
     }
 
+    .preview-card {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #2f1a39, #1a1328);
+      border: 2px solid #ff4f9f;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .preview-card:hover::before {
+      left: 100%;
+    }
+
+    .preview-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(255, 79, 159, 0.3);
+      border-color: #ff82ba;
+    }
+
+    .preview-thumbnail {
+      width: 100%;
+      height: 120px;
+      background: linear-gradient(45deg, #ff4f9f, #ff82ba);
+      border-radius: 6px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .preview-title {
+      color: #ff4f9f;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .preview-platform {
+      color: #ddd;
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+    }
+
+    .preview-link {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      color: #1b1b2e;
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #ff82ba, #ff4f9f);
+      transition: left 0.3s ease;
+      z-index: -1;
+    }
+
+    .preview-link:hover::before {
+      left: 0;
+    }
+
+    .preview-link:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
+    }
+
     .play-link {
       display: inline-block;
       background-color: #ff4f9f;
@@ -722,6 +826,159 @@
     }
   }
 
+  // Helper functions to extract video IDs
+  function extractYouTubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  function extractVimeoId(url) {
+    const regExp = /(?:vimeo)\.com.*(?:videos|video|channels|)\/([\d]+)/i;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractTwitchVideoId(url) {
+    const regExp = /twitch\.tv\/videos\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractDailymotionId(url) {
+    const regExp = /dailymotion\.com\/video\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractStreamableId(url) {
+    const regExp = /streamable\.com\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractMmmeId(url) {
+    const regExp = /mmme\.me\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractRedTubeId(url) {
+    const regExp = /redtube\.com\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractXVideosId(url) {
+    const regExp = /xvideos\.com\/video(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractPornHubId(url) {
+    const regExp = /pornhub\.com\/view_video\.php\?viewkey=([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractTikTokId(url) {
+    const regExp = /tiktok\.com\/@[\w.-]+\/video\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractInstagramId(url) {
+    const regExp = /instagram\.com\/p\/([a-zA-Z0-9_-]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractTwitterVideoId(url) {
+    const regExp = /(twitter\.com|x\.com)\/\w*\/?.*\/status\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[2] : null;
+  }
+
+  function extractWistiaId(url) {
+    const regExp = /wistia\.com\/medias\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractBitChuteId(url) {
+    const regExp = /bitchute\.com\/video\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractRumbleId(url) {
+    const regExp = /rumble\.com\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractSpankBangId(url) {
+    const regExp = /spankbang\.com\/([a-zA-Z0-9]+)\/video/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractFacebookVideoId(url) {
+    const regExp = /facebook\.com\/.*\/videos\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractRedditVideoId(url) {
+    const regExp = /reddit\.com\/r\/[\w]+\/comments\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractJWPlayerId(url) {
+    const regExp = /jwplatform\.com\/players\/([a-zA-Z0-9-]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractBrightcoveId(url) {
+    const regExp = /players\.brightcove\.net\/(\d+)\/.*\/index\.html\?videoId=(\d+)/;
+    const match = url.match(regExp);
+    return match ? { accountId: match[1], videoId: match[2] } : null;
+  }
+
+  // Function to create enhanced preview cards
+  function createPreviewCard(url, platform, emoji, platformName) {
+    const mediaEl = document.createElement('div');
+    mediaEl.className = 'preview-card';
+    
+    // Try to extract thumbnail if possible
+    let thumbnailUrl = null;
+    if (platform === 'pornhub') {
+      // PornHub thumbnail extraction (if video ID available)
+      const match = url.match(/viewkey=([a-zA-Z0-9]+)/);
+      if (match) {
+        thumbnailUrl = `https://ci.phncdn.com/videos/201501/25/36944322/original/(m=eafTGgaaaa)(mh=jOakqk_rBQwZcBOb)1.jpg`;
+      }
+    }
+    
+    mediaEl.innerHTML = `
+      <div class="preview-thumbnail">
+        ${thumbnailUrl ? 
+          `<img src="${thumbnailUrl}" alt="${platformName} thumbnail" onerror="this.style.display='none'; this.parentNode.innerHTML='${emoji}';" />` : 
+          emoji
+        }
+      </div>
+      <div class="preview-title">${platformName} Content</div>
+      <div class="preview-platform">Click to view on ${platformName}</div>
+      <a href="${url}" target="_blank" class="preview-link">
+        View Content →
+      </a>
+    `;
+    
+    return mediaEl;
+  }
+
 async function loadVideos() {
   const { data, error } = await supabase
     .from('game_videos')
@@ -745,189 +1002,357 @@ async function loadVideos() {
     const card = document.createElement('article');
     card.className = 'card';
 
-if (video.video_url) {
-  let mediaEl;
+    if (video.video_url) {
+      let mediaEl;
+      const url = video.video_url;
 
-  // 1. Handle X.com (Twitter) video links
-  if (video.video_url.includes("x.com/i/status/")) {
-    const tweetIdMatch = video.video_url.match(/i\/status\/(\d+)/);
-    const tweetId = tweetIdMatch ? tweetIdMatch[1] : null;
+      // YouTube videos
+      if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
+        const videoId = extractYouTubeId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.youtube.com/embed/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Vimeo videos
+      else if (url.includes('vimeo.com/')) {
+        const videoId = extractVimeoId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://player.vimeo.com/video/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Twitch videos
+      else if (url.includes('twitch.tv/videos/')) {
+        const videoId = extractTwitchVideoId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://player.twitch.tv/?video=${videoId}&parent=${window.location.hostname}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Dailymotion videos
+      else if (url.includes('dailymotion.com/video/')) {
+        const videoId = extractDailymotionId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.dailymotion.com/embed/video/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Streamable videos
+      else if (url.includes('streamable.com/')) {
+        const videoId = extractStreamableId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://streamable.com/e/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Mmme.me videos
+      else if (url.includes('mmme.me/')) {
+        const videoId = extractMmmeId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://mmme.me/embed/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // TikTok videos
+      else if (url.includes('tiktok.com/')) {
+        const videoId = extractTikTokId(url);
+        if (videoId) {
+          mediaEl = document.createElement('blockquote');
+          mediaEl.className = 'tiktok-embed video-player';
+          mediaEl.setAttribute('cite', url);
+          mediaEl.setAttribute('data-video-id', videoId);
+          mediaEl.style.maxWidth = '100%';
+          mediaEl.style.minWidth = '325px';
+          mediaEl.style.margin = '0';
+          
+          // Load TikTok embed script if not already loaded
+          if (!document.querySelector('script[src*="tiktok.com/embed"]')) {
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.tiktok.com/embed.js';
+            document.head.appendChild(script);
+          }
+        }
+      }
+      
+      // Instagram videos
+      else if (url.includes('instagram.com/p/')) {
+        const videoId = extractInstagramId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.instagram.com/p/${videoId}/embed/`;
+          mediaEl.width = '100%';
+          mediaEl.height = '400';
+          mediaEl.frameBorder = '0';
+          mediaEl.scrolling = 'no';
+          mediaEl.allowTransparency = 'true';
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Twitter/X videos (supports both twitter.com and x.com)
+      else if ((url.includes('twitter.com/') && url.includes('/status/')) || 
+               (url.includes('x.com/') && url.includes('/status/'))) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'preview-card';
+        mediaEl.innerHTML = `
+          <div class="preview-thumbnail">🐦</div>
+          <div class="preview-title">X (Twitter) Video</div>
+          <div class="preview-platform">Click to view on X</div>
+          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
+        `;
+      }
+      
+      // Wistia videos
+      else if (url.includes('wistia.com/medias/')) {
+        const videoId = extractWistiaId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://fast.wistia.net/embed/iframe/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // BitChute videos
+      else if (url.includes('bitchute.com/video/')) {
+        const videoId = extractBitChuteId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.bitchute.com/embed/${videoId}/`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Rumble videos
+      else if (url.includes('rumble.com/')) {
+        const videoId = extractRumbleId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://rumble.com/embed/${videoId}/`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Adult content platforms (with enhanced preview cards)
+      else if (url.includes('redtube.com/')) {
+        mediaEl = createPreviewCard(url, 'redtube', '🔥', 'RedTube');
+      }
+      
+      else if (url.includes('xvideos.com/')) {
+        mediaEl = createPreviewCard(url, 'xvideos', '📹', 'XVideos');
+      }
+      
+      else if (url.includes('pornhub.com/')) {
+        mediaEl = createPreviewCard(url, 'pornhub', '🎬', 'PornHub');
+      }
+      
+      else if (url.includes('spankbang.com/')) {
+        mediaEl = createPreviewCard(url, 'spankbang', '⭐', 'SpankBang');
+      }
+      
+      // Facebook Videos
+      else if (url.includes('facebook.com/') && url.includes('/videos/')) {
+        const videoId = extractFacebookVideoId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&width=500`;
+          mediaEl.width = '100%';
+          mediaEl.height = '280';
+          mediaEl.style.border = 'none';
+          mediaEl.scrolling = 'no';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Reddit Videos
+      else if (url.includes('reddit.com/r/') && url.includes('/comments/')) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'preview-card';
+        mediaEl.innerHTML = `
+          <div class="preview-thumbnail">📱</div>
+          <div class="preview-title">Reddit Video</div>
+          <div class="preview-platform">Click to view on Reddit</div>
+          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
+        `;
+      }
+      
+      // JW Player
+      else if (url.includes('jwplatform.com/players/')) {
+        const playerId = extractJWPlayerId(url);
+        if (playerId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://cdn.jwplayer.com/players/${playerId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Brightcove
+      else if (url.includes('players.brightcove.net/')) {
+        const brightcoveData = extractBrightcoveId(url);
+        if (brightcoveData) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://players.brightcove.net/${brightcoveData.accountId}/default_default/index.html?videoId=${brightcoveData.videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Kaltura
+      else if (url.includes('kaltura.com/')) {
+        const kalturaData = extractKalturaId(url);
+        if (kalturaData) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://cdnapisec.kaltura.com/p/${kalturaData.partnerId}/sp/${kalturaData.partnerId}00/embedIframeJs/uiconf_id/${kalturaData.uiconfId}/partner_id/${kalturaData.partnerId}?iframeembed=true&entry_id=${kalturaData.entryId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // LinkedIn Videos (link only - no embedding available)
+      else if (url.includes('linkedin.com/') && (url.includes('/feed/update/') || url.includes('/posts/'))) {
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'preview-card';
+        mediaEl.innerHTML = `
+          <div class="preview-thumbnail">💼</div>
+          <div class="preview-title">LinkedIn Video</div>
+          <div class="preview-platform">Click to view on LinkedIn</div>
+          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
+        `;
+      }
 
-    if (tweetId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}`;
-      mediaEl.width = '100%';
-      mediaEl.height = '400';
-      mediaEl.allow = 'autoplay; encrypted-media';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid X.com link.';
+      // Handle Google Drive video links (your original code)
+      else if (url.includes("drive.google.com")) {
+        const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+        const fileId = fileIdMatch ? fileIdMatch[1] : null;
+
+        if (fileId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.allow = 'autoplay';
+          mediaEl.frameBorder = '0';
+          mediaEl.className = 'video-player';
+        } else {
+          mediaEl = document.createElement('p');
+          mediaEl.textContent = '⚠️ Invalid Google Drive link.';
+        }
+
+      } else {
+        // Determine file extension (lowercase) - your original code
+        const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : '';
+
+        // Supported image extensions (including SVG)
+        const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
+
+        // Supported video extensions
+        const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+
+        // Check if URL is a GitHub raw image URL (optional, just treat as image)
+        const isGithubRawImage = url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
+
+        if (imageExts.includes(ext) || isGithubRawImage) {
+          // Render image
+          mediaEl = document.createElement('img');
+          mediaEl.src = url;
+          mediaEl.alt = video.title || 'Image';
+          mediaEl.className = 'video-player';
+
+        } else if (videoExts.includes(ext)) {
+          // Render video element
+          mediaEl = document.createElement('video');
+          mediaEl.controls = true;
+          mediaEl.className = 'video-player';
+          mediaEl.src = url;
+          mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
+
+        } else {
+          // Unknown file type - show link to original instead of error
+          mediaEl = document.createElement('div');
+          mediaEl.className = 'video-player';
+          mediaEl.style.display = 'flex';
+          mediaEl.style.alignItems = 'center';
+          mediaEl.style.justifyContent = 'center';
+          mediaEl.style.backgroundColor = '#333';
+          mediaEl.style.color = '#fff';
+          mediaEl.style.padding = '20px';
+          mediaEl.innerHTML = `
+            <div style="text-align: center;">
+              <p>⚠️ Unsupported format</p>
+              <a href="${url}" target="_blank" style="color: #ff4f9f;">Open Link</a>
+            </div>
+          `;
+        }
+      }
+
+      if (mediaEl) {
+        card.appendChild(mediaEl);
+      }
     }
-
-  // 2. Handle YouTube links
-  } else if (video.video_url.includes("youtube.com/watch") || video.video_url.includes("youtu.be/")) {
-    const videoIdMatch = video.video_url.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/?))([^"&?\/\s]{11})|(?:youtu\.be\/)([\w\-]{11})/);
-    const videoId = videoIdMatch ? videoIdMatch[1] || videoIdMatch[2] : null;
-
-    if (videoId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://www.youtube.com/embed/${videoId}`;
-      mediaEl.width = '100%';
-      mediaEl.height = '360';
-      mediaEl.allow = 'autoplay; encrypted-media';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid YouTube link.';
-    }
-
-  // 3. Handle Vimeo links
-  } else if (video.video_url.includes("vimeo.com/")) {
-    const vimeoIdMatch = video.video_url.match(/vimeo\.com\/(\d+)/);
-    const vimeoId = vimeoIdMatch ? vimeoIdMatch[1] : null;
-
-    if (vimeoId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://player.vimeo.com/video/${vimeoId}`;
-      mediaEl.width = '100%';
-      mediaEl.height = '360';
-      mediaEl.allow = 'autoplay; encrypted-media';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid Vimeo link.';
-    }
-
-  // 4. Handle Instagram video links (by username or post)
-  } else if (video.video_url.includes("instagram.com/p/")) {
-    const instagramIdMatch = video.video_url.match(/instagram\.com\/p\/([^/]+)/);
-    const instagramId = instagramIdMatch ? instagramIdMatch[1] : null;
-
-    if (instagramId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://www.instagram.com/p/${instagramId}/embed`;
-      mediaEl.width = '100%';
-      mediaEl.height = '400';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid Instagram link.';
-    }
-
-  // 5. Handle Dailymotion links
-  } else if (video.video_url.includes("dailymotion.com/video/")) {
-    const dailymotionIdMatch = video.video_url.match(/dailymotion\.com\/video\/([a-zA-Z0-9_]+)/);
-    const dailymotionId = dailymotionIdMatch ? dailymotionIdMatch[1] : null;
-
-    if (dailymotionId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://www.dailymotion.com/embed/video/${dailymotionId}`;
-      mediaEl.width = '100%';
-      mediaEl.height = '360';
-      mediaEl.allow = 'autoplay; encrypted-media';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid Dailymotion link.';
-    }
-
-  // 6. Handle TikTok links
-  } else if (video.video_url.includes("tiktok.com/")) {
-    const tiktokIdMatch = video.video_url.match(/tiktok\.com\/(@[\w\d]+)\/video\/(\d+)/);
-    const tiktokId = tiktokIdMatch ? tiktokIdMatch[2] : null;
-
-    if (tiktokId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://www.tiktok.com/embed/v2/${tiktokId}`;
-      mediaEl.width = '100%';
-      mediaEl.height = '400';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid TikTok link.';
-    }
-
-  // 7. Handle Twitch streams (by channel)
-  } else if (video.video_url.includes("twitch.tv/")) {
-    const twitchIdMatch = video.video_url.match(/twitch\.tv\/([^\/]+)/);
-    const twitchId = twitchIdMatch ? twitchIdMatch[1] : null;
-
-    if (twitchId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://player.twitch.tv/?channel=${twitchId}`;
-      mediaEl.width = '100%';
-      mediaEl.height = '360';
-      mediaEl.allow = 'autoplay; encrypted-media';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid Twitch link.';
-    }
-
-  // 8. Handle Facebook video links
-  } else if (video.video_url.includes("facebook.com/")) {
-    const facebookIdMatch = video.video_url.match(/facebook\.com\/([^/]+)\/videos\/(\d+)/);
-    const facebookId = facebookIdMatch ? facebookIdMatch[2] : null;
-
-    if (facebookId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/${facebookId}&show_text=0&height=400`;
-      mediaEl.width = '100%';
-      mediaEl.height = '400';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid Facebook link.';
-    }
-
-  // 9. Handle Google Drive links
-  } else if (video.video_url.includes("drive.google.com")) {
-    const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-    if (fileId) {
-      mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-      mediaEl.width = '100%';
-      mediaEl.height = '360';
-      mediaEl.allow = 'autoplay';
-      mediaEl.frameBorder = '0';
-      mediaEl.className = 'video-player';
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Invalid Google Drive link.';
-    }
-
-  // 10. Handle direct video links (MP4, WebM, etc.)
-  } else {
-    const extMatch = video.video_url.match(/\.(\w+)(?:\?.*)?$/);
-    const ext = extMatch ? extMatch[1].toLowerCase() : '';
-
-    const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-
-    if (videoExts.includes(ext)) {
-      mediaEl = document.createElement('video');
-      mediaEl.controls = true;
-      mediaEl.className = 'video-player';
-      mediaEl.src = video.video_url;
-      mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
-    } else {
-      mediaEl = document.createElement('p');
-      mediaEl.textContent = '⚠️ Unsupported media format.';
-    }
-  }
-
-  card.appendChild(mediaEl);
-}
 
     if (video.title) {
       const title = document.createElement('h3');
@@ -1019,8 +1444,8 @@ if (video.video_url) {
   if (!username) {
     pageTitle.textContent = 'Error';
     chatHeading.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    artContainer.innerHTML = '';
+    if (gamesContainer) gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
+    if (artContainer) artContainer.innerHTML = '';
     videosContainer.innerHTML = '';
     messagesDiv.innerHTML = '';
   } else {
