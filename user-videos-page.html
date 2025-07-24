@@ -722,6 +722,37 @@
     }
   }
 
+  // Helper functions to extract video IDs
+  function extractYouTubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  function extractVimeoId(url) {
+    const regExp = /(?:vimeo)\.com.*(?:videos|video|channels|)\/([\d]+)/i;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractTwitchVideoId(url) {
+    const regExp = /twitch\.tv\/videos\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractDailymotionId(url) {
+    const regExp = /dailymotion\.com\/video\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function extractStreamableId(url) {
+    const regExp = /streamable\.com\/([a-zA-Z0-9]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
 async function loadVideos() {
   const { data, error } = await supabase
     .from('game_videos')
@@ -747,17 +778,90 @@ async function loadVideos() {
 
     if (video.video_url) {
       let mediaEl;
+      const url = video.video_url;
 
-      // Handle Google Drive video links
-      if (video.video_url.includes("drive.google.com")) {
-        const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
+      // YouTube videos
+      if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
+        const videoId = extractYouTubeId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.youtube.com/embed/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Vimeo videos
+      else if (url.includes('vimeo.com/')) {
+        const videoId = extractVimeoId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://player.vimeo.com/video/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Twitch videos
+      else if (url.includes('twitch.tv/videos/')) {
+        const videoId = extractTwitchVideoId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://player.twitch.tv/?video=${videoId}&parent=${window.location.hostname}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Dailymotion videos
+      else if (url.includes('dailymotion.com/video/')) {
+        const videoId = extractDailymotionId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.dailymotion.com/embed/video/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+      
+      // Streamable videos
+      else if (url.includes('streamable.com/')) {
+        const videoId = extractStreamableId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://streamable.com/e/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '200';
+          mediaEl.frameBorder = '0';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-player';
+        }
+      }
+
+      // Handle Google Drive video links (your original code)
+      else if (url.includes("drive.google.com")) {
+        const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
         const fileId = fileIdMatch ? fileIdMatch[1] : null;
 
         if (fileId) {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
           mediaEl.width = '100%';
-          mediaEl.height = '360';
+          mediaEl.height = '200';
           mediaEl.allow = 'autoplay';
           mediaEl.frameBorder = '0';
           mediaEl.className = 'video-player';
@@ -767,8 +871,8 @@ async function loadVideos() {
         }
 
       } else {
-        // Determine file extension (lowercase)
-        const extMatch = video.video_url.match(/\.(\w+)(?:\?.*)?$/);
+        // Determine file extension (lowercase) - your original code
+        const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
         const ext = extMatch ? extMatch[1].toLowerCase() : '';
 
         // Supported image extensions (including SVG)
@@ -778,12 +882,12 @@ async function loadVideos() {
         const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
 
         // Check if URL is a GitHub raw image URL (optional, just treat as image)
-        const isGithubRawImage = video.video_url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
+        const isGithubRawImage = url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
 
         if (imageExts.includes(ext) || isGithubRawImage) {
           // Render image
           mediaEl = document.createElement('img');
-          mediaEl.src = video.video_url;
+          mediaEl.src = url;
           mediaEl.alt = video.title || 'Image';
           mediaEl.className = 'video-player';
 
@@ -792,17 +896,31 @@ async function loadVideos() {
           mediaEl = document.createElement('video');
           mediaEl.controls = true;
           mediaEl.className = 'video-player';
-          mediaEl.src = video.video_url;
+          mediaEl.src = url;
           mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
 
         } else {
-          // Unknown file type
-          mediaEl = document.createElement('p');
-          mediaEl.textContent = '⚠️ Unsupported media format.';
+          // Unknown file type - show link to original instead of error
+          mediaEl = document.createElement('div');
+          mediaEl.className = 'video-player';
+          mediaEl.style.display = 'flex';
+          mediaEl.style.alignItems = 'center';
+          mediaEl.style.justifyContent = 'center';
+          mediaEl.style.backgroundColor = '#333';
+          mediaEl.style.color = '#fff';
+          mediaEl.style.padding = '20px';
+          mediaEl.innerHTML = `
+            <div style="text-align: center;">
+              <p>⚠️ Unsupported format</p>
+              <a href="${url}" target="_blank" style="color: #ff4f9f;">Open Link</a>
+            </div>
+          `;
         }
       }
 
-      card.appendChild(mediaEl);
+      if (mediaEl) {
+        card.appendChild(mediaEl);
+      }
     }
 
     if (video.title) {
@@ -895,8 +1013,8 @@ async function loadVideos() {
   if (!username) {
     pageTitle.textContent = 'Error';
     chatHeading.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    artContainer.innerHTML = '';
+    if (gamesContainer) gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
+    if (artContainer) artContainer.innerHTML = '';
     videosContainer.innerHTML = '';
     messagesDiv.innerHTML = '';
   } else {
