@@ -755,6 +755,103 @@
       padding: 1rem;
       border-radius: 10px;
     }
+
+    /* Modal styles for in-site viewer */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      display: none;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
+      box-shadow: 0 0 20px rgba(255, 79, 159, 0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ff4f9f;
+      padding-bottom: 10px;
+    }
+
+    .modal-title {
+      color: #ff4f9f;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: #ff82ba;
+    }
+
+    .modal-iframe {
+      width: 100%;
+      height: 70vh;
+      border: none;
+      border-radius: 8px;
+      background-color: #000;
+    }
+
+    .modal-actions {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .modal-action-btn {
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      color: #1b1b2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+
+    .modal-action-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -776,6 +873,21 @@
     </form>
   </section>
 
+  <!-- Modal for in-site viewer -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" class="modal-title">External Content</h3>
+        <button id="modal-close" class="modal-close">&times;</button>
+      </div>
+      <iframe id="modal-iframe" class="modal-iframe" src="about:blank"></iframe>
+      <div class="modal-actions">
+        <a id="modal-open-external" href="#" class="modal-action-btn">Open in External Site</a>
+        <button id="modal-refresh" class="modal-action-btn">Refresh</button>
+      </div>
+    </div>
+  </div>
+
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -796,6 +908,47 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
+
+  // Modal elements
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalClose = document.getElementById('modal-close');
+  const modalIframe = document.getElementById('modal-iframe');
+  const modalTitle = document.getElementById('modal-title');
+  const modalOpenExternal = document.getElementById('modal-open-external');
+  const modalRefresh = document.getElementById('modal-refresh');
+
+  // Modal functions
+  function openModal(url, title = 'External Content') {
+    modalTitle.textContent = title;
+    modalIframe.src = url;
+    modalOpenExternal.href = url;
+    modalOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+
+  function closeModal() {
+    modalOverlay.classList.remove('active');
+    modalIframe.src = 'about:blank';
+    document.body.style.overflow = ''; // Restore scrolling
+  }
+
+  // Modal event listeners
+  modalClose.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+  modalRefresh.addEventListener('click', () => {
+    const currentSrc = modalIframe.src;
+    modalIframe.src = 'about:blank';
+    setTimeout(() => modalIframe.src = currentSrc, 100);
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+      closeModal();
+    }
+  });
 
   async function incrementVipPageView() {
     if (!username) return;
@@ -947,7 +1100,7 @@
     return match ? { accountId: match[1], videoId: match[2] } : null;
   }
 
-  // Function to create enhanced preview cards (MODIFIED: removed target="_blank")
+  // Function to create enhanced preview cards (MODIFIED: opens in modal)
   function createPreviewCard(url, platform, emoji, platformName) {
     const mediaEl = document.createElement('div');
     mediaEl.className = 'preview-card';
@@ -971,10 +1124,17 @@
       </div>
       <div class="preview-title">${platformName} Content</div>
       <div class="preview-platform">Click to view on ${platformName}</div>
-      <a href="${url}" class="preview-link">
+      <a href="#" class="preview-link" data-url="${url}" data-title="${platformName} Content">
         View Content →
       </a>
     `;
+    
+    // Add click event to open in modal
+    const link = mediaEl.querySelector('.preview-link');
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal(url, `${platformName} Content`);
+    });
     
     return mediaEl;
   }
@@ -1129,7 +1289,7 @@ async function loadVideos() {
         }
       }
       
-      // Twitter/X videos (MODIFIED: removed target="_blank")
+      // Twitter/X videos (MODIFIED: opens in modal)
       else if ((url.includes('twitter.com/') && url.includes('/status/')) || 
                (url.includes('x.com/') && url.includes('/status/'))) {
         mediaEl = document.createElement('div');
@@ -1148,9 +1308,13 @@ async function loadVideos() {
         platformDiv.textContent = 'Click to view on X';
         
         const linkEl = document.createElement('a');
-        linkEl.href = url;
+        linkEl.href = '#';
         linkEl.className = 'preview-link';
         linkEl.textContent = 'View Post →';
+        linkEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          openModal(url, 'X (Twitter) Post');
+        });
         
         mediaEl.appendChild(thumbnailDiv);
         mediaEl.appendChild(titleDiv);
@@ -1233,7 +1397,7 @@ async function loadVideos() {
         }
       }
       
-      // Reddit Videos (MODIFIED: removed target="_blank")
+      // Reddit Videos (MODIFIED: opens in modal)
       else if (url.includes('reddit.com/r/') && url.includes('/comments/')) {
         mediaEl = document.createElement('div');
         mediaEl.className = 'preview-card';
@@ -1241,8 +1405,14 @@ async function loadVideos() {
           <div class="preview-thumbnail">📱</div>
           <div class="preview-title">Reddit Video</div>
           <div class="preview-platform">Click to view on Reddit</div>
-          <a href="${url}" class="preview-link">View Post →</a>
+          <a href="#" class="preview-link">View Post →</a>
         `;
+        
+        const link = mediaEl.querySelector('.preview-link');
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          openModal(url, 'Reddit Post');
+        });
       }
       
       // JW Player
@@ -1287,7 +1457,7 @@ async function loadVideos() {
         }
       }
       
-      // LinkedIn Videos (MODIFIED: removed target="_blank")
+      // LinkedIn Videos (MODIFIED: opens in modal)
       else if (url.includes('linkedin.com/') && (url.includes('/feed/update/') || url.includes('/posts/'))) {
         mediaEl = document.createElement('div');
         mediaEl.className = 'preview-card';
@@ -1295,8 +1465,14 @@ async function loadVideos() {
           <div class="preview-thumbnail">💼</div>
           <div class="preview-title">LinkedIn Video</div>
           <div class="preview-platform">Click to view on LinkedIn</div>
-          <a href="${url}" class="preview-link">View Post →</a>
+          <a href="#" class="preview-link">View Post →</a>
         `;
+        
+        const link = mediaEl.querySelector('.preview-link');
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          openModal(url, 'LinkedIn Post');
+        });
       }
 
       // Handle Google Drive video links (your original code)
@@ -1347,7 +1523,7 @@ async function loadVideos() {
           mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
 
         } else {
-          // Unknown file type - show link to original instead of error (MODIFIED: removed target="_blank")
+          // Unknown file type - show link to original instead of error (MODIFIED: opens in modal)
           mediaEl = document.createElement('div');
           mediaEl.className = 'video-player';
           mediaEl.style.display = 'flex';
@@ -1359,9 +1535,15 @@ async function loadVideos() {
           mediaEl.innerHTML = `
             <div style="text-align: center;">
               <p>⚠️ Unsupported format</p>
-              <a href="${url}" style="color: #ff4f9f;">Open Link</a>
+              <a href="#" style="color: #ff4f9f;" class="open-link-modal">Open Link</a>
             </div>
           `;
+          
+          const link = mediaEl.querySelector('.open-link-modal');
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal(url, 'External File');
+          });
         }
       }
 
