@@ -579,6 +579,15 @@
       max-width: 100%;
     }
 
+    .adult-video-player {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: black;
+      height: 340px;
+      max-width: 100%;
+    }
+
     .preview-card {
       width: 100%;
       border-radius: 8px;
@@ -1334,9 +1343,15 @@
   }
 
   function extractPornHubId(url) {
-    const regExp = /pornhub\.com\/view_video\.php\?viewkey=([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
+    // Handle both view_video.php and embed URLs
+    let match = url.match(/pornhub\.com\/view_video\.php\?viewkey=([a-zA-Z0-9]+)/);
+    if (match) return match[1];
+    
+    // Handle direct embed URLs
+    match = url.match(/pornhub\.com\/embed\/([a-zA-Z0-9]+)/);
+    if (match) return match[1];
+    
+    return null;
   }
 
   function extractTikTokId(url) {
@@ -1403,6 +1418,16 @@
     const regExp = /players\.brightcove\.net\/(\d+)\/.*\/index\.html\?videoId=(\d+)/;
     const match = url.match(regExp);
     return match ? { accountId: match[1], videoId: match[2] } : null;
+  }
+
+  function extractKalturaId(url) {
+    const regExp = /kaltura\.com\/p\/(\d+)\/sp\/(\d+)00\/.*\/uiconf_id\/(\d+)\/.*entry_id\/([a-zA-Z0-9_-]+)/;
+    const match = url.match(regExp);
+    return match ? { 
+      partnerId: match[1], 
+      uiconfId: match[3], 
+      entryId: match[4] 
+    } : null;
   }
 
   // Function to create enhanced preview cards (MODIFIED: opens in modal)
@@ -1669,21 +1694,61 @@ async function loadVideos() {
         }
       }
       
-      // Adult content platforms (with enhanced preview cards)
+      // Adult content platforms - NOW WITH DIRECT IFRAME EMBEDDING
+      else if (url.includes('pornhub.com/')) {
+        const videoId = extractPornHubId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.pornhub.com/embed/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '340';
+          mediaEl.frameBorder = '0';
+          mediaEl.scrolling = 'no';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'adult-video-player';
+        }
+      }
+      
       else if (url.includes('redtube.com/')) {
-        mediaEl = createPreviewCard(url, 'redtube', '🔥', 'RedTube');
+        const videoId = extractRedTubeId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://embed.redtube.com/?id=${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '340';
+          mediaEl.frameBorder = '0';
+          mediaEl.scrolling = 'no';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'adult-video-player';
+        }
       }
       
       else if (url.includes('xvideos.com/')) {
-        mediaEl = createPreviewCard(url, 'xvideos', '📹', 'XVideos');
-      }
-      
-      else if (url.includes('pornhub.com/')) {
-        mediaEl = createPreviewCard(url, 'pornhub', '🎬', 'PornHub');
+        const videoId = extractXVideosId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.xvideos.com/embedframe/${videoId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '340';
+          mediaEl.frameBorder = '0';
+          mediaEl.scrolling = 'no';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'adult-video-player';
+        }
       }
       
       else if (url.includes('spankbang.com/')) {
-        mediaEl = createPreviewCard(url, 'spankbang', '⭐', 'SpankBang');
+        const videoId = extractSpankBangId(url);
+        if (videoId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://spankbang.com/${videoId}/embed/`;
+          mediaEl.width = '100%';
+          mediaEl.height = '340';
+          mediaEl.frameBorder = '0';
+          mediaEl.scrolling = 'no';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'adult-video-player';
+        }
       }
       
       // Facebook Videos
