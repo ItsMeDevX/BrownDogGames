@@ -748,7 +748,7 @@ async function loadVideos() {
 if (video.video_url) {
   let mediaEl;
 
-  // Handle X.com video links
+  // 1. Handle X.com (Twitter) video links
   if (video.video_url.includes("x.com/i/status/")) {
     const tweetIdMatch = video.video_url.match(/i\/status\/(\d+)/);
     const tweetId = tweetIdMatch ? tweetIdMatch[1] : null;
@@ -766,61 +766,130 @@ if (video.video_url) {
       mediaEl.textContent = '⚠️ Invalid X.com link.';
     }
 
-  // Handle YouTube video links
-  } else if (video.video_url.includes("youtube.com/watch")) {
-    const youtubeIdMatch = video.video_url.match(/[?&]v=([^&]+)/);
-    const youtubeId = youtubeIdMatch ? youtubeIdMatch[1] : null;
+  // 2. Handle YouTube links
+  } else if (video.video_url.includes("youtube.com/watch") || video.video_url.includes("youtu.be/")) {
+    const videoIdMatch = video.video_url.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/?))([^"&?\/\s]{11})|(?:youtu\.be\/)([\w\-]{11})/);
+    const videoId = videoIdMatch ? videoIdMatch[1] || videoIdMatch[2] : null;
 
-    if (youtubeId) {
+    if (videoId) {
       mediaEl = document.createElement('iframe');
-      mediaEl.src = `https://www.youtube.com/embed/${youtubeId}`;
+      mediaEl.src = `https://www.youtube.com/embed/${videoId}`;
       mediaEl.width = '100%';
-      mediaEl.height = '400';
-      mediaEl.frameBorder = '0';
+      mediaEl.height = '360';
       mediaEl.allow = 'autoplay; encrypted-media';
+      mediaEl.frameBorder = '0';
       mediaEl.className = 'video-player';
     } else {
       mediaEl = document.createElement('p');
       mediaEl.textContent = '⚠️ Invalid YouTube link.';
     }
 
-  // Handle Vimeo video links
-  } else if (video.video_url.includes("vimeo.com")) {
-    const vimeoIdMatch = video.video_url.match(/vimeo.com\/(\d+)/);
+  // 3. Handle Vimeo links
+  } else if (video.video_url.includes("vimeo.com/")) {
+    const vimeoIdMatch = video.video_url.match(/vimeo\.com\/(\d+)/);
     const vimeoId = vimeoIdMatch ? vimeoIdMatch[1] : null;
 
     if (vimeoId) {
       mediaEl = document.createElement('iframe');
       mediaEl.src = `https://player.vimeo.com/video/${vimeoId}`;
       mediaEl.width = '100%';
-      mediaEl.height = '400';
+      mediaEl.height = '360';
+      mediaEl.allow = 'autoplay; encrypted-media';
       mediaEl.frameBorder = '0';
-      mediaEl.allow = 'autoplay; fullscreen';
       mediaEl.className = 'video-player';
     } else {
       mediaEl = document.createElement('p');
       mediaEl.textContent = '⚠️ Invalid Vimeo link.';
     }
 
-  // Handle Dailymotion video links
-  } else if (video.video_url.includes("dailymotion.com")) {
-    const dailymotionIdMatch = video.video_url.match(/dailymotion.com\/video\/([^_]+)/);
+  // 4. Handle Instagram video links (by username or post)
+  } else if (video.video_url.includes("instagram.com/p/")) {
+    const instagramIdMatch = video.video_url.match(/instagram\.com\/p\/([^/]+)/);
+    const instagramId = instagramIdMatch ? instagramIdMatch[1] : null;
+
+    if (instagramId) {
+      mediaEl = document.createElement('iframe');
+      mediaEl.src = `https://www.instagram.com/p/${instagramId}/embed`;
+      mediaEl.width = '100%';
+      mediaEl.height = '400';
+      mediaEl.frameBorder = '0';
+      mediaEl.className = 'video-player';
+    } else {
+      mediaEl = document.createElement('p');
+      mediaEl.textContent = '⚠️ Invalid Instagram link.';
+    }
+
+  // 5. Handle Dailymotion links
+  } else if (video.video_url.includes("dailymotion.com/video/")) {
+    const dailymotionIdMatch = video.video_url.match(/dailymotion\.com\/video\/([a-zA-Z0-9_]+)/);
     const dailymotionId = dailymotionIdMatch ? dailymotionIdMatch[1] : null;
 
     if (dailymotionId) {
       mediaEl = document.createElement('iframe');
       mediaEl.src = `https://www.dailymotion.com/embed/video/${dailymotionId}`;
       mediaEl.width = '100%';
-      mediaEl.height = '400';
+      mediaEl.height = '360';
+      mediaEl.allow = 'autoplay; encrypted-media';
       mediaEl.frameBorder = '0';
-      mediaEl.allow = 'autoplay';
       mediaEl.className = 'video-player';
     } else {
       mediaEl = document.createElement('p');
       mediaEl.textContent = '⚠️ Invalid Dailymotion link.';
     }
 
-  // Handle Google Drive video links
+  // 6. Handle TikTok links
+  } else if (video.video_url.includes("tiktok.com/")) {
+    const tiktokIdMatch = video.video_url.match(/tiktok\.com\/(@[\w\d]+)\/video\/(\d+)/);
+    const tiktokId = tiktokIdMatch ? tiktokIdMatch[2] : null;
+
+    if (tiktokId) {
+      mediaEl = document.createElement('iframe');
+      mediaEl.src = `https://www.tiktok.com/embed/v2/${tiktokId}`;
+      mediaEl.width = '100%';
+      mediaEl.height = '400';
+      mediaEl.frameBorder = '0';
+      mediaEl.className = 'video-player';
+    } else {
+      mediaEl = document.createElement('p');
+      mediaEl.textContent = '⚠️ Invalid TikTok link.';
+    }
+
+  // 7. Handle Twitch streams (by channel)
+  } else if (video.video_url.includes("twitch.tv/")) {
+    const twitchIdMatch = video.video_url.match(/twitch\.tv\/([^\/]+)/);
+    const twitchId = twitchIdMatch ? twitchIdMatch[1] : null;
+
+    if (twitchId) {
+      mediaEl = document.createElement('iframe');
+      mediaEl.src = `https://player.twitch.tv/?channel=${twitchId}`;
+      mediaEl.width = '100%';
+      mediaEl.height = '360';
+      mediaEl.allow = 'autoplay; encrypted-media';
+      mediaEl.frameBorder = '0';
+      mediaEl.className = 'video-player';
+    } else {
+      mediaEl = document.createElement('p');
+      mediaEl.textContent = '⚠️ Invalid Twitch link.';
+    }
+
+  // 8. Handle Facebook video links
+  } else if (video.video_url.includes("facebook.com/")) {
+    const facebookIdMatch = video.video_url.match(/facebook\.com\/([^/]+)\/videos\/(\d+)/);
+    const facebookId = facebookIdMatch ? facebookIdMatch[2] : null;
+
+    if (facebookId) {
+      mediaEl = document.createElement('iframe');
+      mediaEl.src = `https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/${facebookId}&show_text=0&height=400`;
+      mediaEl.width = '100%';
+      mediaEl.height = '400';
+      mediaEl.frameBorder = '0';
+      mediaEl.className = 'video-player';
+    } else {
+      mediaEl = document.createElement('p');
+      mediaEl.textContent = '⚠️ Invalid Facebook link.';
+    }
+
+  // 9. Handle Google Drive links
   } else if (video.video_url.includes("drive.google.com")) {
     const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
@@ -838,28 +907,19 @@ if (video.video_url) {
       mediaEl.textContent = '⚠️ Invalid Google Drive link.';
     }
 
+  // 10. Handle direct video links (MP4, WebM, etc.)
   } else {
-    // Handle common video formats (MP4, WebM, OGG, etc.)
     const extMatch = video.video_url.match(/\.(\w+)(?:\?.*)?$/);
     const ext = extMatch ? extMatch[1].toLowerCase() : '';
 
-    const videoExts = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'mkv', 'wmv'];
-    const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
+    const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
 
-    // Handle image or GIFs
-    if (imageExts.includes(ext)) {
-      mediaEl = document.createElement('img');
-      mediaEl.src = video.video_url;
-      mediaEl.alt = video.title || 'Image';
-      mediaEl.className = 'video-player';
-
-    // Handle video files
-    } else if (videoExts.includes(ext)) {
+    if (videoExts.includes(ext)) {
       mediaEl = document.createElement('video');
       mediaEl.controls = true;
       mediaEl.className = 'video-player';
       mediaEl.src = video.video_url;
-      mediaEl.type = `video/${ext}`;
+      mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
     } else {
       mediaEl = document.createElement('p');
       mediaEl.textContent = '⚠️ Unsupported media format.';
