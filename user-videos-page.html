@@ -894,9 +894,9 @@
   }
 
   function extractTwitterVideoId(url) {
-    const regExp = /twitter\.com\/\w+\/status\/(\d+)/;
+    const regExp = /(twitter\.com|x\.com)\/\w*\/?.*\/status\/(\d+)/;
     const match = url.match(regExp);
-    return match ? match[1] : null;
+    return match ? match[2] : null;
   }
 
   function extractWistiaId(url) {
@@ -1130,14 +1130,14 @@ async function loadVideos() {
       }
       
       // Twitter/X videos
-      else if (url.includes('twitter.com/') && url.includes('/status/')) {
+      else if ((url.includes('twitter.com/') || url.includes('x.com/')) && url.includes('/status/')) {
         mediaEl = document.createElement('div');
         mediaEl.className = 'preview-card';
         mediaEl.innerHTML = `
           <div class="preview-thumbnail">🐦</div>
-          <div class="preview-title">Twitter Video</div>
-          <div class="preview-platform">Click to view on Twitter</div>
-          <a href="${url}" target="_blank" class="preview-link">View Tweet →</a>
+          <div class="preview-title">X (Twitter) Video</div>
+          <div class="preview-platform">Click to view on X</div>
+          <a href="${url}" target="_blank" class="preview-link">View Post →</a>
         `;
       }
       
