@@ -976,7 +976,9 @@
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'fullscreen-btn';
         fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.title = 'View Fullscreen';
         fullscreenBtn.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
           openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
@@ -998,6 +1000,7 @@
 
       artContainer.appendChild(card);
     });
+  }
   }
 
   async function loadChatMessages() {
