@@ -869,64 +869,280 @@
  <style>
   @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
+  * { box-sizing: border-box; }
+
   body {
     font-family: 'Rubik Mono One', sans-serif;
     background-color: #1b1b2e;
+    background-image: linear-gradient(135deg, #361c3e, #1a1328);
     color: #fefefe;
     margin: 0;
-    padding: 0 20px 40px;
-    background-image: linear-gradient(135deg, #361c3e, #1a1328);
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
+
+
 
   header {
     text-align: center;
     padding: 2rem 1rem;
+    max-width: 800px;
+    width: 100%;
   }
 
   header h1 {
-    font-size: 2.5rem;
+    font-size: 3.2rem;
     color: #ff4f9f;
-    text-shadow: 2px 2px 0 #000;
+    text-shadow: 2px 2px 0 #ff4f9f;
+    margin: 1rem 0;
+    width: 100%;
+    max-width: 800px;
+    font-family: 'Rubik Mono One', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  .main-content {
+    max-width: 600px;
+    width: 100%;
+    background: linear-gradient(145deg, #3a2147, #241834);
+    border: 2px solid #ff4f9f;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .main-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .main-content:hover::before {
+    left: 100%;
   }
 
   #status {
-    margin-top: 10px;
-    font-size: 18px;
-    color: #fefefe;
+    margin: 20px 0 30px;
+    font-size: 1.2rem;
+    color: #e0e0e0;
+    line-height: 1.4;
+    position: relative;
+    z-index: 2;
+    opacity: 0.9;
+    font-family: 'Rubik Mono One', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   #like-btn {
     display: inline-block;
-    padding: 12px 24px;
-    background-color: #ff4f9f; /* Pink background */
-    color: #fff; /* White text */
-    font-size: 18px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #ff4f9f, #ff1493);
+    color: #ffffff;
+    font-size: 1rem;
     font-weight: bold;
-    border-radius: 25px; /* Round button edges */
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: 2px solid #ff4f9f;
+    font-family: 'Rubik Mono One', sans-serif;
+    border-radius: 25px;
+    text-decoration: none;
+    border: none;
     cursor: pointer;
-    transition: all 0.3s ease; /* Smooth transitions */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Soft shadow */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    margin-top: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #like-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  #like-btn:hover::before {
+    left: 100%;
   }
 
   #like-btn:disabled {
-    background-color: #ccc;
+    background: linear-gradient(135deg, #666, #444);
     cursor: not-allowed;
-    border-color: #ccc;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
 
-  #like-btn:hover {
-    background-color: #ff82ba; /* Lighter pink */
-    transform: scale(1.1); /* Slight zoom effect */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* More prominent shadow */
-    border-color: #ff82ba; /* Light border on hover */
+  #like-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff82ba, #ff69b4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
   }
 
-  #like-btn:active {
-    transform: scale(1); /* Snap back when clicked */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow when active */
+  .footer-card {
+    max-width: 800px;
+    width: 100%;
+    background: linear-gradient(145deg, #3a2147, #241834);
+    border: 2px solid #ff4f9f;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .footer-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .footer-card:hover::before {
+    left: 100%;
+  }
+
+  .footer-card h2 {
+    font-size: 1.6rem;
+    color: #ff4f9f;
+    margin-bottom: 15px;
+    text-align: center;
+    text-shadow: 2px 2px 0 #ff4f9f;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 800px;
+    font-family: 'Rubik Mono One', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  .footer-card p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #e0e0e0;
+    line-height: 1.4;
+    opacity: 0.9;
+    position: relative;
+    z-index: 2;
+    font-family: 'Rubik Mono One', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .perks-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    display: grid;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .perks-list li {
+    background: linear-gradient(135deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.05));
+    padding: 12px 20px;
+    border-radius: 12px;
+    border-left: 4px solid #ff4f9f;
+    font-size: 1rem;
+    color: #e0e0e0;
+    transition: all 0.3s ease;
+    line-height: 1.4;
+    font-family: 'Rubik Mono One', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .perks-list li:hover {
+    background: linear-gradient(135deg, rgba(255, 79, 159, 0.15), rgba(255, 130, 186, 0.08));
+    transform: translateX(8px);
+  }
+
+  .signup-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff4f9f, #ff1493);
+    color: #ffffff;
+    padding: 12px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    font-family: 'Rubik Mono One', sans-serif;
+    border-radius: 25px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+    cursor: pointer;
+    z-index: 2;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .signup-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .signup-btn:hover::before {
+    left: 100%;
+  }
+
+  .signup-btn:hover {
+    background: linear-gradient(135deg, #ff82ba, #ff69b4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+  }
+
+  @media (max-width: 768px) {
+    header h1 {
+      font-size: 2.2rem;
+    }
+    
+    .main-content, .footer-card {
+      padding: 25px;
+    }
+    
+    #like-btn, .signup-btn {
+      padding: 10px 16px;
+      font-size: 0.8rem;
+    }
   }
 </style>
 </head>
@@ -934,8 +1150,26 @@
   <header>
     <h1 id="heading">Show Some Love ❤️</h1>
   </header>
-  <p id="status"></p>
-  <button id="like-btn">Like</button>
+  
+  <div class="main-content">
+    <p id="status"></p>
+    <button id="like-btn">Like</button>
+  </div>
+
+  <div class="footer-card">
+    <h2>💡 Join the community and unlock exclusive perks!</h2>
+    <p>By signing up as a VIP member, you can support your favorite creators and get access to special content and rewards. Your likes help the creators grow and earn rewards, too!</p>
+    <p>Become a VIP today and enjoy:</p>
+    <ul class="perks-list">
+      <li>🔓 Access to exclusive content</li>
+      <li>💎 VIP-only features</li>
+      <li>💖 Direct impact on the creators you love</li>
+    </ul>
+    <p style="margin-top: 30px;">Ready to make a difference?</p>
+    <a href="javascript:void(0);" onclick="window.scrollTo(0, 0);" class="signup-btn">
+      Sign in now with GitHub!
+    </a>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -1084,28 +1318,6 @@
     // Initialize the page status and like button
     updateStatus();
   </script>
-
-<footer style="background-color: #222; color: #fefefe; padding: 40px 20px;">
-  <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-    <p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">💡 Join the community and unlock exclusive perks!</p>
-    <p style="font-size: 16px; margin-bottom: 20px;">By signing up as a VIP member, you can support your favorite creators and get access to special content and rewards. Your likes help the creators grow and earn rewards, too!</p>
-    <p style="font-size: 16px; margin-bottom: 15px;">Become a VIP today and enjoy:</p>
-    <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 14px; text-align: left;">
-      <li>🔓 Access to exclusive content</li>
-      <li>💎 VIP-only features</li>
-      <li>💖 Direct impact on the creators you love</li>
-    </ul>
-    <p style="font-size: 16px; margin-top: 20px;">Ready to make a difference?</p>
-    <a href="javascript:void(0);" onclick="window.scrollTo(0, 0);" style="display: inline-block; background-color: #ff4f9f; color: #fff; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 5px; transition: background-color 0.3s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
-      Sign in now with GitHub!
-    </a>
-  </div>
-</footer>
-
-<!-- Add this in your sign-in section -->
-<section id="signin" style="padding: 50px 0;">
-  <!-- Your sign-in form goes here -->
-</section>
 
 </body>
 </html>
