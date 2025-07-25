@@ -1011,87 +1011,18 @@
 </body>
 </html>
 
-  <header>
-    <h1>💦 Climax Clash 😤</h1>
-  </header>
-
-  <div class="screenshot">
-    <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/ClimaxClashScreenshot.png" alt="Climax Clash Screenshot" />
-  </div>
-
-<section class="description">
-  <p><strong>Get ready for the ultimate button-mashing showdown! In <em>Climax Clash</em>, it’s a lightning-fast race to the top — mash two buttons as quickly as possible to fill your energy bar and beat your opponent to the peak. Fast, chaotic, and full of bold humor.</strong></p>
-  
-  <p>🔥 <strong>FEATURES:</strong></p>
-  
-  <p>🎮 1-player and local 2-player modes</p>
-  <p>⏱️ Quickfire rounds — easy to pick up, tough to win</p>
-  <p>🧠 Ridiculous premise with addictive gameplay</p>
-  <p>🎤 Funny and explicit pre-round banter between competitors</p>
-  <p>⚠️🔞 Contains explicit content and crude humor — not for the faint of heart</p>
-</section>
-
-
-<!-- ✅ VIP Download Section -->
-<div class="buttons">
-  <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-  <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-  <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1P5gHi2VQeL8yoVKh1gByjDAy91GeA4Xr" download style="display: none;">⬇ Download Game</a>
-  <a href="index.html">← Back to Home</a>
-</div>
-
-<!-- ✅ VIP Protection Script -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  async function showDownloadIfVIP() {
-    const { data } = await supabase.auth.getSession();
-    const user = data?.session?.user;
-    const downloadLink = document.getElementById('downloadLink');
-    const downloadMessage = document.getElementById('downloadMessage');
-
-    if (!user || !downloadLink || !downloadMessage) return;
-
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('is_vip')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !userData?.is_vip) {
-      downloadMessage.textContent = '🚫 VIP Only — Please subscribe to access the download.';
-      return;
-    }
-
-    let seconds = 30;
-    const countdown = setInterval(() => {
-      downloadMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
-    }, 1000);
-
-    setTimeout(() => {
-      clearInterval(countdown);
-      downloadLink.style.display = 'inline-block';
-      downloadMessage.style.display = 'none';
-    }, 30000);
-  }
-
-  showDownloadIfVIP();
-</script>
-
-  
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Game Chat - BrownDogGames</title>
+  <title>Climax Clash - BrownDogGames</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       font-family: 'Rubik Mono One', sans-serif;
@@ -1100,22 +1031,109 @@
       color: #fefefe;
       margin: 0;
       padding: 20px;
+      line-height: 1.6;
     }
 
-    h1 {
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header h1 {
       text-align: center;
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin-bottom: 2rem;
+      font-size: 2.5rem;
+    }
+
+    .screenshot {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .screenshot img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 3px solid #ff4f9f;
+    }
+
+    .description {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+
+    .description p {
+      margin-bottom: 1rem;
+    }
+
+    .description strong {
+      color: #ff82ba;
+    }
+
+    .buttons {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .age-free-info {
+      color: #ff82ba;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    #downloadMessage {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      color: #ff82ba;
+      font-size: 1.1rem;
+    }
+
+    .button-link {
+      display: inline-block;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      margin: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .button-link:hover {
+      background-color: #ff82ba;
+    }
+
+    .chat-section {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 3rem 0;
+    }
+
+    .chat-section h2 {
+      color: #ff4f9f;
+      text-align: center;
+      margin-bottom: 1.5rem;
     }
 
     #game-id-container {
-      max-width: 600px;
-      margin: 0 auto 20px;
+      margin-bottom: 1.5rem;
     }
 
     #game-id-label {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: #ff4f9f;
       display: block;
       margin-bottom: 5px;
@@ -1127,23 +1145,25 @@
       font-size: 16px;
       border: 2px solid #ff4f9f;
       border-radius: 8px;
-      background-color: #2f1a39;
+      background-color: #1b1b2e;
       color: #fff;
+      font-family: inherit;
     }
 
     #messages {
-      background-color: #2f1a39;
+      background-color: #1b1b2e;
       border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 20px;
-      max-height: 400px;
+      border-radius: 8px;
+      padding: 1rem;
+      max-height: 300px;
       overflow-y: auto;
-      margin: 0 auto 20px;
-      max-width: 600px;
+      margin-bottom: 1rem;
+      min-height: 150px;
     }
 
     #messages div {
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
     }
 
     #messages strong {
@@ -1153,8 +1173,6 @@
     #chat-form {
       display: flex;
       gap: 10px;
-      max-width: 600px;
-      margin: 0 auto;
     }
 
     #msg-input {
@@ -1163,8 +1181,9 @@
       font-size: 16px;
       border-radius: 8px;
       border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
+      background-color: #1b1b2e;
       color: #fff;
+      font-family: inherit;
     }
 
     button {
@@ -1176,38 +1195,121 @@
       padding: 10px 16px;
       cursor: pointer;
       transition: background-color 0.2s ease;
+      font-family: inherit;
     }
 
     button:hover {
       background-color: #ff82ba;
     }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 0 10px;
+      }
+      
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .description {
+        padding: 1.5rem;
+      }
+      
+      .chat-section {
+        padding: 1.5rem;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>💦 Climax Clash 😤</h1>
+    </header>
 
-  <h1>Game Chat</h1>
+    <div class="screenshot">
+      <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/ClimaxClashScreenshot.png" alt="Climax Clash Screenshot" />
+    </div>
 
-  <div id="game-id-container">
-    <label id="game-id-label" for="game-id">Game ID:</label>
-    <input type="text" id="game-id" value="Climax-Clash" readonly />
+    <section class="description">
+      <p><strong>Get ready for the ultimate button-mashing showdown! In <em>Climax Clash</em>, it's a lightning-fast race to the top — mash two buttons as quickly as possible to fill your energy bar and beat your opponent to the peak. Fast, chaotic, and full of bold humor.</strong></p>
+      
+      <p>🔥 <strong>FEATURES:</strong></p>
+      
+      <p>🎮 1-player and local 2-player modes</p>
+      <p>⏱️ Quickfire rounds — easy to pick up, tough to win</p>
+      <p>🧠 Ridiculous premise with addictive gameplay</p>
+      <p>🎤 Funny and explicit pre-round banter between competitors</p>
+      <p>⚠️🔞 Contains explicit content and crude humor — not for the faint of heart</p>
+    </section>
+
+    <div class="buttons">
+      <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
+      <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
+      <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1P5gHi2VQeL8yoVKh1gByjDAy91GeA4Xr" class="button-link" download style="display: none;">⬇ Download Game</a>
+      <a href="index.html" class="button-link">← Back to Home</a>
+    </div>
+
+    <section class="chat-section">
+      <h2>🎮 Game Chat</h2>
+      
+      <div id="game-id-container">
+        <label id="game-id-label" for="game-id">Game ID:</label>
+        <input type="text" id="game-id" value="Climax-Clash" readonly />
+      </div>
+
+      <div id="messages">
+        <p>Loading messages...</p>
+      </div>
+
+      <form id="chat-form">
+        <input type="text" id="msg-input" placeholder="Type a message..." required />
+        <button type="submit">Send</button>
+      </form>
+    </section>
   </div>
-
-  <div id="messages">
-    <p>Loading messages...</p>
-  </div>
-
-  <form id="chat-form">
-    <input type="text" id="msg-input" placeholder="Type a message..." required />
-    <button type="submit">Send</button>
-  </form>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
+    // VIP Download functionality
+    async function showDownloadIfVIP() {
+      const { data } = await supabase.auth.getSession();
+      const user = data?.session?.user;
+      const downloadLink = document.getElementById('downloadLink');
+      const downloadMessage = document.getElementById('downloadMessage');
+
+      if (!user || !downloadLink || !downloadMessage) return;
+
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !userData?.is_vip) {
+        downloadMessage.textContent = '🚫 VIP Only — Please subscribe to access the download.';
+        return;
+      }
+
+      let seconds = 30;
+      const countdown = setInterval(() => {
+        downloadMessage.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(countdown);
+        downloadLink.style.display = 'inline-block';
+        downloadMessage.style.display = 'none';
+      }, 30000);
+    }
+
+    // Chat functionality
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
     const msgInput = document.getElementById('msg-input');
@@ -1233,7 +1335,7 @@
         .order('created_at', { ascending: true });
 
       if (error) {
-        messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
+        messagesDiv.innerHTML = `<p style="color:#ff4f9f;">Error loading messages: ${error.message}</p>`;
         console.error(error);
         return;
       }
@@ -1273,12 +1375,15 @@
       loadMessages();
     });
 
+    // Subscribe to real-time updates
     supabase.channel('messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
         loadMessages();
       })
       .subscribe();
 
+    // Initialize both functionalities
+    showDownloadIfVIP();
     loadMessages();
   </script>
 </body>
