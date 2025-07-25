@@ -940,7 +940,7 @@
     
     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
       <button id="testPayoutBtn" style="background-color: #8dffa1; color: #1e1b2e; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
-        🧪 Test Payout (£10.00)
+        💰 Request Real Payout
       </button>
       
       <button id="viewPayoutsBtn" style="background-color: #ffc0cb; color: #1e1b2e; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
@@ -1434,21 +1434,68 @@
     testBtn.disabled = true;
     
     try {
-      logToTestStatus('🧪 Starting test payout request...', 'info');
+      logToTestStatus('💰 Starting real payout request...', 'info');
       
-      // Insert a test payout request
-      const testData = {
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) {
+        logToTestStatus(`❌ Error: Username not found`, 'error');
+        testBtn.disabled = false;
+        return;
+      }
+
+      // Calculate actual earnings
+      const { count, error: countError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      if (countError) {
+        logToTestStatus(`❌ Error fetching likes: ${countError.message}`, 'error');
+        throw countError;
+      }
+
+      const totalLikes = count || 0;
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+      
+      logToTestStatus(`📊 Current likes: ${totalLikes}, Earnings: £${earningsValue.toFixed(2)}`, 'info');
+
+      if (earningsValue < 5.0) {
+        logToTestStatus(`❌ Insufficient earnings: Need £5.00 minimum, have £${earningsValue.toFixed(2)}`, 'error');
+        testBtn.disabled = false;
+        return;
+      }
+
+      // Check for existing pending requests
+      const { data: existingRequests, error: reqError } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (reqError) {
+        logToTestStatus(`❌ Error checking pending requests: ${reqError.message}`, 'error');
+        throw reqError;
+      }
+
+      if (existingRequests.length > 0) {
+        logToTestStatus(`❌ Already have pending payout request`, 'error');
+        testBtn.disabled = false;
+        return;
+      }
+      
+      // Insert real payout request based on actual earnings
+      const payoutData = {
         user_id: currentUser.id,
-        amount: 10.00,
+        amount: earningsValue,
         status: 'pending',
         requested_at: new Date().toISOString()
       };
       
-      logToTestStatus(`📝 Inserting test payout: £${testData.amount} for user ${currentUser.email}`, 'info');
+      logToTestStatus(`📝 Submitting real payout: £${payoutData.amount} for user ${currentUser.email}`, 'info');
       
       const { data, error } = await supabase
         .from('payout_requests')
-        .insert([testData])
+        .insert([payoutData])
         .select();
       
       if (error) {
@@ -1456,15 +1503,16 @@
         throw error;
       }
       
-      logToTestStatus(`✅ Test payout request created successfully!`, 'success');
-      logToTestStatus(`📊 Request ID: ${data[0].id}`, 'info');
+      logToTestStatus(`✅ Real payout request created successfully!`, 'success');
+      logToTestStatus(`📊 Request ID: ${data[0].id}, Amount: £${parseFloat(data[0].amount).toFixed(2)}`, 'success');
       
       // Refresh the payouts list and main display
       await viewAllPayouts();
       await updatePaymentsTabDisplay();
+      await loadVipPageLikes(); // Update header display too
       
     } catch (err) {
-      logToTestStatus(`💥 Test failed: ${err.message}`, 'error');
+      logToTestStatus(`💥 Request failed: ${err.message}`, 'error');
     }
     
     testBtn.disabled = false;
