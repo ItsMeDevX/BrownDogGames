@@ -489,7 +489,7 @@
     }
     h1, h2 {
       color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
+      text-shadow: 2px 2px 0 #ff4f9f;
       margin: 1rem 0;
       width: 100%;
       max-width: 800px;
@@ -525,121 +525,193 @@
     }
 
     .card {
-      background-color: #2f1a39;
+      background: linear-gradient(145deg, #3a2147, #241834);
       border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 20px;
       width: 100%;
       box-sizing: border-box;
-      transition: border-color 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .card:hover::before {
+      left: 100%;
     }
 
     .card:hover {
       border-color: #ff82ba;
-      box-shadow: 0 0 10px #ff82ba;
+      box-shadow: 0 12px 40px rgba(255, 79, 159, 0.3), 0 0 20px rgba(255, 130, 186, 0.2);
+      transform: translateY(-8px) scale(1.02);
     }
 
     .card.selected {
       border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
+      box-shadow: 0 0 30px #ff4f9f, inset 0 0 20px rgba(255, 79, 159, 0.1);
+      transform: scale(1.05);
     }
 
     .title {
       margin-top: 0;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
       text-align: center;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      font-weight: bold;
+      position: relative;
+      z-index: 2;
     }
 
     .desc {
-      color: #ddd;
-      margin: 0.5rem 0 1rem 0;
+      color: #e0e0e0;
+      margin: 0.5rem 0 1.2rem 0;
       min-height: 3rem;
       text-align: center;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
     }
 
     .thumbnail {
       width: 100%;
-      max-height: 150px;
+      max-height: 160px;
       object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      margin-bottom: 15px;
       display: block;
+      transition: transform 0.3s ease, filter 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      position: relative;
+      z-index: 2;
     }
 
-    .video-player {
+    .card:hover .thumbnail {
+      transform: scale(1.05);
+      filter: brightness(1.1) contrast(1.1);
+    }
+
+    .game-player {
       width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      margin-bottom: 15px;
       background-color: black;
-      max-height: 200px;
+      min-height: 220px;
       max-width: 100%;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s ease;
+      position: relative;
+      z-index: 2;
+      border: none;
+    }
+
+    .card:hover .game-player {
+      transform: scale(1.02);
     }
 
     .play-link {
       display: inline-block;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      padding: 8px 12px;
-      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 25px;
       text-decoration: none;
       font-weight: bold;
-      transition: background-color 0.2s ease;
+      font-size: 0.9rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
-      margin-top: auto; /* push to bottom */
-    }
-    .play-link:hover { background-color: #ff82ba; }
-
-    #chat-container {
-      max-width: 800px;
-      width: 100%;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      padding: 20px;
-      box-sizing: border-box;
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      height: 450px;
+      margin-top: auto;
+      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+      position: relative;
+      z-index: 2;
       overflow: hidden;
     }
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      padding-right: 10px;
-    }
-    #messages div { margin-bottom: 12px; }
-    #messages strong { color: #ff82ba; }
 
-    #chat-form {
+    .play-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .play-link:hover::before {
+      left: 100%;
+    }
+
+    .play-link:hover { 
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+    }
+
+    .game-controls {
       display: flex;
       gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    #msg-input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: #fff;
-    }
-    button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
+
+    .control-btn {
+      background: rgba(255, 79, 159, 0.8);
+      color: #ffffff;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: all 0.3s ease;
+      font-family: 'Rubik Mono One', sans-serif;
     }
-    button:hover { background-color: #ff82ba; }
+
+    .control-btn:hover {
+      background: rgba(255, 130, 186, 1);
+      transform: translateY(-1px);
+    }
+
+    .game-type-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 79, 159, 0.9);
+      color: #ffffff;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      z-index: 3;
+    }
+
+    #chat-container {
+      display: none;
+    }
 
     .no-content {
       font-size: 1.1rem;
@@ -663,25 +735,6 @@
     <div id="games" class="content-container">Loading games...</div>
   </section>
 
-  <section class="content-section" id="art-section">
-    <h2>Art</h2>
-    <div id="art" class="content-container">Loading art...</div>
-  </section>
-
-  <section class="content-section" id="videos-section">
-    <h2>Videos</h2>
-    <div id="videos" class="content-container">Loading videos...</div>
-  </section>
-
-  <section id="chat-container">
-    <h2>Chat with {username}</h2>
-    <div id="messages"><p>Loading messages...</p></div>
-    <form id="chat-form">
-      <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
-      <button type="submit">Send</button>
-    </form>
-  </section>
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -692,16 +745,250 @@
 
   const pageTitle = document.getElementById('pageTitle');
   const gamesContainer = document.getElementById('games');
-  const artContainer = document.getElementById('art');
-  const videosContainer = document.getElementById('videos');
-  const chatContainer = document.getElementById('chat-container');
-  const messagesDiv = document.getElementById('messages');
-  const form = document.getElementById('chat-form');
-  const msgInput = document.getElementById('msg-input');
-  const chatHeading = chatContainer.querySelector('h2');
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
+
+  // Game type detection
+  function detectGameType(url) {
+    if (!url) return 'unknown';
+    
+    const urlLower = url.toLowerCase();
+    
+    // Platform detection
+    if (urlLower.includes('itch.io')) return 'itch';
+    if (urlLower.includes('github.io') || urlLower.includes('netlify') || urlLower.includes('vercel')) return 'web';
+    if (urlLower.includes('scratch.mit.edu')) return 'scratch';
+    if (urlLower.includes('turbowarp.org')) return 'turbowarp';
+    if (urlLower.includes('newgrounds.com')) return 'newgrounds';
+    if (urlLower.includes('armor.ag') || urlLower.includes('armorgames.com')) return 'armor';
+    if (urlLower.includes('kongregate.com')) return 'kongregate';
+    if (urlLower.includes('addictinggames.com')) return 'addicting';
+    if (urlLower.includes('codecks.io')) return 'codecks';
+    if (urlLower.includes('gamejolt.com')) return 'gamejolt';
+    if (urlLower.includes('unity')) return 'unity';
+    if (urlLower.includes('construct')) return 'construct';
+    if (urlLower.includes('drive.google.com')) return 'drive';
+    if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+    
+    // File type detection
+    if (urlLower.includes('.html') || urlLower.includes('.htm')) return 'html';
+    if (urlLower.includes('.swf')) return 'flash';
+    if (urlLower.includes('.unity3d') || urlLower.includes('.unityweb')) return 'unity';
+    if (urlLower.includes('.zip') || urlLower.includes('.rar')) return 'download';
+    if (urlLower.includes('.exe') || urlLower.includes('.app') || urlLower.includes('.dmg')) return 'executable';
+    
+    return 'iframe';
+  }
+
+  function createGameEmbed(game) {
+    const gameType = detectGameType(game.embed_url);
+    let embedUrl = game.embed_url;
+
+    // Handle Google Drive links
+    if (embedUrl.includes('drive.google.com')) {
+      const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
+      const fileId = fileIdMatch ? fileIdMatch[1] : null;
+      if (fileId) {
+        embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+    }
+
+    // Handle different game types
+    switch (gameType) {
+      case 'itch':
+        return createItchEmbed(embedUrl);
+      case 'scratch':
+      case 'turbowarp':
+        return createScratchEmbed(embedUrl);
+      case 'unity':
+        return createUnityEmbed(embedUrl);
+      case 'youtube':
+        return createYouTubeEmbed(embedUrl);
+      case 'newgrounds':
+        return createNewgroundsEmbed(embedUrl);
+      case 'download':
+      case 'executable':
+        return createDownloadLink(embedUrl, gameType);
+      default:
+        return createIframeEmbed(embedUrl);
+    }
+  }
+
+  function createItchEmbed(url) {
+    // Extract game ID for better embedding
+    let embedUrl = url;
+    if (url.includes('/embed/')) {
+      embedUrl = url;
+    } else {
+      // Convert regular itch.io URL to embed URL
+      embedUrl = url.replace(/\/([^\/]+)$/, '/embed/$1');
+    }
+
+    const iframe = document.createElement('iframe');
+    iframe.src = embedUrl;
+    iframe.className = 'game-player';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; fullscreen');
+    iframe.loading = 'lazy';
+    iframe.width = "100%";
+    iframe.height = "400";
+    
+    return {
+      element: iframe,
+      controls: [
+        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
+        { text: 'Open on Itch.io', action: () => window.open(url.replace('/embed/', '/'), '_blank') }
+      ]
+    };
+  }
+
+  function createScratchEmbed(url) {
+    let projectId = '';
+    
+    // Extract project ID from various Scratch URL formats
+    if (url.includes('scratch.mit.edu')) {
+      const match = url.match(/\/projects\/(\d+)/);
+      projectId = match ? match[1] : '';
+    } else if (url.includes('turbowarp.org')) {
+      const match = url.match(/\/(\d+)/);
+      projectId = match ? match[1] : '';
+    }
+
+    const iframe = document.createElement('iframe');
+    if (url.includes('turbowarp.org')) {
+      iframe.src = `https://turbowarp.org/${projectId}/embed`;
+    } else {
+      iframe.src = `https://scratch.mit.edu/projects/${projectId}/embed`;
+    }
+    iframe.className = 'game-player';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.loading = 'lazy';
+    iframe.width = "100%";
+    iframe.height = "400";
+    
+    return {
+      element: iframe,
+      controls: [
+        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
+        { text: 'View Project', action: () => window.open(url, '_blank') }
+      ]
+    };
+  }
+
+  function createUnityEmbed(url) {
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.className = 'game-player';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking');
+    iframe.loading = 'lazy';
+    iframe.width = "100%";
+    iframe.height = "500"; // Unity games often need more height
+    
+    return {
+      element: iframe,
+      controls: [
+        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) }
+      ]
+    };
+  }
+
+  function createYouTubeEmbed(url) {
+    let videoId = '';
+    
+    // Extract video ID from various YouTube URL formats
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    } else if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    } else if (url.includes('youtube.com/embed/')) {
+      videoId = url.split('/embed/')[1].split('?')[0];
+    }
+
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${videoId}`;
+    iframe.className = 'game-player';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; fullscreen');
+    iframe.loading = 'lazy';
+    iframe.width = "100%";
+    iframe.height = "315";
+    
+    return {
+      element: iframe,
+      controls: [
+        { text: 'Watch on YouTube', action: () => window.open(url, '_blank') }
+      ]
+    };
+  }
+
+  function createNewgroundsEmbed(url) {
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.className = 'game-player';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.loading = 'lazy';
+    iframe.width = "100%";
+    iframe.height = "400";
+    
+    return {
+      element: iframe,
+      controls: [
+        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
+        { text: 'View on Newgrounds', action: () => window.open(url, '_blank') }
+      ]
+    };
+  }
+
+  function createDownloadLink(url, type) {
+    const div = document.createElement('div');
+    div.className = 'game-player';
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'center';
+    div.style.flexDirection = 'column';
+    div.style.gap = '10px';
+    div.style.padding = '40px';
+    div.style.textAlign = 'center';
+    
+    const icon = document.createElement('div');
+    icon.style.fontSize = '3rem';
+    icon.textContent = type === 'executable' ? '💻' : '📦';
+    div.appendChild(icon);
+    
+    const text = document.createElement('p');
+    text.textContent = `${type === 'executable' ? 'Executable' : 'Download'} Game`;
+    text.style.margin = '0';
+    text.style.color = '#e0e0e0';
+    div.appendChild(text);
+    
+    return {
+      element: div,
+      controls: [
+        { text: 'Download', action: () => window.open(url, '_blank') }
+      ]
+    };
+  }
+
+  function createIframeEmbed(url) {
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.className = 'game-player';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking');
+    iframe.loading = 'lazy';
+    iframe.width = "100%";
+    iframe.height = "400";
+    
+    return {
+      element: iframe,
+      controls: [
+        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
+        { text: 'Open Direct', action: () => window.open(url, '_blank') }
+      ]
+    };
+  }
 
   async function incrementVipPageView() {
     if (!username) return;
@@ -732,296 +1019,81 @@
     }
   }
 
-async function loadGames() {
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('*')
-    .eq('github_user', username)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  gamesContainer.innerHTML = '';
-  data.forEach((game, index) => {
-    const card = document.createElement('article');
-    card.className = 'card big-game-card';  // Add new class for bigger size
-    card.dataset.gameId = game.id || `game-${index}`;
-
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = game.title || 'Untitled Game';
-    card.appendChild(title);
-
-    if (game.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = game.description;
-      card.appendChild(desc);
-    }
-
-    if (game.screenshot_url) {
-      const img = document.createElement('img');
-      img.className = 'thumbnail';
-      img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-      img.alt = `Screenshot of ${game.title}`;
-      card.appendChild(img);
-    }
-
-if (game.embed_url) {
-  let embedUrl = game.embed_url;
-
-  // Detect Google Drive link and convert to preview URL
-  if (embedUrl.includes('drive.google.com')) {
-    const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-    }
-  }
-
-  // Create iframe for embeddable links like GitHub or non-Itch.io games
-  const iframe = document.createElement('iframe');
-  iframe.src = embedUrl;
-  iframe.className = 'video-player big-iframe';
-  iframe.style.border = 'none';
-  iframe.setAttribute('allowfullscreen', '');
-  iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking;');
-  iframe.loading = 'lazy';
-  iframe.width = "100%";
-  iframe.height = "400"; // Adjust as needed for better fit
-
-  // Check if it's an embeddable game (excluding Itch.io)
-  if (embedUrl.includes('itch.io')) {
-    const playLink = document.createElement('a');
-    playLink.className = 'play-link';
-    playLink.href = embedUrl;
-    playLink.target = '_blank';
-    playLink.rel = 'noopener noreferrer';
-    playLink.textContent = 'Play Game on Itch.io';
-    card.appendChild(playLink);
-  } else {
-    card.appendChild(iframe);
-
-    // Fullscreen button (ensure it's always displayed correctly)
-    const fsButton = document.createElement('button');
-    fsButton.textContent = 'Fullscreen';
-    fsButton.className = 'fullscreen-btn';
-    fsButton.onclick = () => {
-      if (iframe.requestFullscreen) {
-        iframe.requestFullscreen();
-      } else if (iframe.webkitRequestFullscreen) {
-        iframe.webkitRequestFullscreen();
-      } else if (iframe.msRequestFullscreen) {
-        iframe.msRequestFullscreen();
-      }
-    };
-
-    card.appendChild(fsButton);
-  }
-}
-
-    gamesContainer.appendChild(card);
-  });
-}
-
-  async function loadArt() {
+  async function loadGames() {
     const { data, error } = await supabase
-      .from('user_art')
+      .from('game_submissions')
       .select('*')
-      .eq('github_username', username)
+      .eq('github_user', username)
       .order('created_at', { ascending: false });
 
     if (error) {
-      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+      gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
       return;
     }
 
     if (!data.length) {
-      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+      gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
       return;
     }
 
-    artContainer.innerHTML = '';
-    data.forEach((art, index) => {
+    gamesContainer.innerHTML = '';
+    data.forEach((game, index) => {
       const card = document.createElement('article');
       card.className = 'card';
+      card.dataset.gameId = game.id || `game-${index}`;
+
+      // Add game type badge
+      if (game.embed_url) {
+        const gameType = detectGameType(game.embed_url);
+        const badge = document.createElement('div');
+        badge.className = 'game-type-badge';
+        badge.textContent = gameType.toUpperCase();
+        card.appendChild(badge);
+      }
 
       const title = document.createElement('h3');
       title.className = 'title';
-      title.textContent = art.title || 'Untitled Art';
+      title.textContent = game.title || 'Untitled Game';
       card.appendChild(title);
 
-      if (art.description) {
+      if (game.description) {
         const desc = document.createElement('p');
         desc.className = 'desc';
-        desc.textContent = art.description;
+        desc.textContent = game.description;
         card.appendChild(desc);
       }
 
-      if (art.image_url) {
+      if (game.screenshot_url) {
         const img = document.createElement('img');
         img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title}`;
+        img.src = convertDriveLinkToThumbnail(game.screenshot_url);
+        img.alt = `Screenshot of ${game.title}`;
         card.appendChild(img);
       }
 
-      artContainer.appendChild(card);
-    });
-  }
+      if (game.embed_url) {
+        const gameEmbed = createGameEmbed(game);
+        card.appendChild(gameEmbed.element);
 
-async function loadVideos() {
-  const { data, error } = await supabase
-    .from('game_videos')
-    .select('*')
-    .eq('github_username', username)
-    .order('created_at', { ascending: false });
+        if (gameEmbed.controls && gameEmbed.controls.length > 0) {
+          const controlsDiv = document.createElement('div');
+          controlsDiv.className = 'game-controls';
 
-  if (error) {
-    videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
-    return;
-  }
+          gameEmbed.controls.forEach(control => {
+            const btn = document.createElement('button');
+            btn.className = 'control-btn';
+            btn.textContent = control.text;
+            btn.addEventListener('click', control.action);
+            controlsDiv.appendChild(btn);
+          });
 
-  if (!data.length) {
-    videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  videosContainer.innerHTML = '';
-
-  data.forEach((video) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-
-    if (video.video_url) {
-      let mediaEl;
-
-      // Handle Google Drive video links
-      if (video.video_url.includes("drive.google.com")) {
-        const fileIdMatch = video.video_url.match(/\/d\/(.*?)(\/|$)/);
-        const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-        if (fileId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-          mediaEl.width = '100%';
-          mediaEl.height = '360';
-          mediaEl.allow = 'autoplay';
-          mediaEl.frameBorder = '0';
-          mediaEl.className = 'video-player';
-        } else {
-          mediaEl = document.createElement('p');
-          mediaEl.textContent = '⚠️ Invalid Google Drive link.';
-        }
-
-      } else {
-        // Determine file extension (lowercase)
-        const extMatch = video.video_url.match(/\.(\w+)(?:\?.*)?$/);
-        const ext = extMatch ? extMatch[1].toLowerCase() : '';
-
-        // Supported image extensions (including SVG)
-        const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
-
-        // Supported video extensions
-        const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-
-        // Check if URL is a GitHub raw image URL (optional, just treat as image)
-        const isGithubRawImage = video.video_url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
-
-        if (imageExts.includes(ext) || isGithubRawImage) {
-          // Render image
-          mediaEl = document.createElement('img');
-          mediaEl.src = video.video_url;
-          mediaEl.alt = video.title || 'Image';
-          mediaEl.className = 'video-player';
-
-        } else if (videoExts.includes(ext)) {
-          // Render video element
-          mediaEl = document.createElement('video');
-          mediaEl.controls = true;
-          mediaEl.className = 'video-player';
-          mediaEl.src = video.video_url;
-          mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
-
-        } else {
-          // Unknown file type
-          mediaEl = document.createElement('p');
-          mediaEl.textContent = '⚠️ Unsupported media format.';
+          card.appendChild(controlsDiv);
         }
       }
 
-      card.appendChild(mediaEl);
-    }
-
-    if (video.title) {
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = video.title;
-      card.appendChild(title);
-    }
-
-    if (video.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = video.description;
-      card.appendChild(desc);
-    }
-
-    videosContainer.appendChild(card);
-  });
-}
-  
-  async function loadChatMessages() {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-      console.error(error);
-      return;
-    }
-
-    if (!data.length) {
-      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
-      return;
-    }
-
-    messagesDiv.innerHTML = data.map(m => `
-      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
-    `).join('');
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      gamesContainer.appendChild(card);
+    });
   }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const message = msgInput.value.trim();
-    if (!message) return;
-
-    const { error } = await supabase
-      .from('messages')
-      .insert([{ github_username: username, content: message }]);
-
-    if (error) {
-      alert('Failed to send message: ' + error.message);
-      return;
-    }
-
-    msgInput.value = '';
-    loadChatMessages();
-  });
 
   function escapeHtml(text) {
     return text.replace(/[&<>"']/g, (m) => {
@@ -1036,10 +1108,8 @@ async function loadVideos() {
     });
   }
 
-  // Placeholder for your thumbnail conversion logic if needed:
   function convertDriveLinkToThumbnail(url) {
     if (!url) return '';
-    // Example: convert Google Drive share URL to thumbnail URL if needed
     const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
     if (fileId) {
@@ -1048,25 +1118,26 @@ async function loadVideos() {
     return url;
   }
 
-  // Main execution block
+  function toggleFullscreen(element) {
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.mozRequestFullScreen) { // Firefox
+      element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
+      element.webkitRequestFullscreen();
+    } else if (element.msRequestFullscreen) { // IE/Edge
+      element.msRequestFullscreen();
+    }
+  }
+
   if (!username) {
     pageTitle.textContent = 'Error';
-    chatHeading.textContent = 'Error';
     gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    artContainer.innerHTML = '';
-    videosContainer.innerHTML = '';
-    messagesDiv.innerHTML = '';
   } else {
     pageTitle.textContent = `${username}'s Content`;
-    chatHeading.textContent = `Chat with ${username}`;
 
-    // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
-
     loadGames();
-    loadArt();
-    loadVideos();
-    loadChatMessages();
   }
 </script>
 
