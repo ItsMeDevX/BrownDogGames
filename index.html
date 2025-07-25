@@ -353,6 +353,56 @@
       display: block;
     }
 
+    /* VIP Section */
+    .vip-section {
+      max-width: 400px;
+      margin: 40px auto;
+      background: #2a223a;
+      padding: 30px 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.3);
+    }
+
+    .vip-title {
+      font-size: 1.4rem;
+      color: #ff69b4;
+      text-shadow: 1px 1px 0 #000;
+      margin-bottom: 20px;
+    }
+
+    #vip-message {
+      display: none;
+      background: #2ecc71;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #27ae6011;
+      font-size: 1rem;
+      color: white;
+      user-select: none;
+    }
+
+    #refresh-vip {
+      display: none;
+      padding: 0.6rem 1rem;
+      background: #3498db;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #message-box {
+      display: none;
+      margin-top: 10px;
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      user-select: none;
+      box-shadow: 0 0 10px #e74c3caa;
+      color: white;
+    }
+
     /* Mobile Responsive */
     @media (max-width: 600px) {
       .brand-line {
@@ -421,6 +471,7 @@
       <a href="user-games.html">User Games</a>
       <a href="user-videos.html">User Video</a>
       <a href="user-art.html">User Art</a>
+      <a href="#vip-section">VIP</a>
     </div>
     <div class="taskbar-auth" id="taskbar-auth">
       <!-- Auth content injected by JS -->
@@ -449,7 +500,17 @@
     <li><a href="LustLab.html">LustLab</a></li>
   </ul>
 
+  <!-- VIP Section -->
+  <div class="vip-section" id="vip-section">
+    <h2 class="vip-title">VIP Subscription</h2>
+    <div id="paypal-button-container"></div>
+    <div id="vip-message">🌟 VIP Activated! Thank you for subscribing.</div>
+    <button id="refresh-vip">🔄 Refresh VIP Status</button>
+    <div id="message-box"></div>
+  </div>
+
   <!-- Scripts -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
   <script>
     // Age Gate
     document.addEventListener('DOMContentLoaded', () => {
@@ -589,6 +650,119 @@
       dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
     }
 
+    function showMessage(text, bgColor = '#e74c3c') {
+      const messageBox = document.getElementById('message-box');
+      messageBox.textContent = text;
+      messageBox.style.backgroundColor = bgColor;
+      messageBox.style.display = 'block';
+    }
+
+    function hideMessage() {
+      const messageBox = document.getElementById('message-box');
+      messageBox.style.display = 'none';
+      messageBox.textContent = '';
+    }
+
+    async function checkVIPStatus(userId) {
+      if (!userId) return false;
+
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching VIP status:', error);
+        return false;
+      }
+
+      return user?.is_vip ?? false;
+    }
+
+    async function initPayPal(user) {
+      const paypalContainer = document.getElementById('paypal-button-container');
+      paypalContainer.innerHTML = '';
+
+      paypal.Buttons({
+        style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+
+        createSubscription(data, actions) {
+          hideMessage();
+          return actions.subscription.create({
+            plan_id: 'P-20H197268N8973414NBIXE2I'
+          });
+        },
+
+        onApprove: async (data) => {
+          hideMessage();
+          const subscriptionID = data.subscriptionID;
+
+          const { error } = await supabase
+            .from('users')
+            .upsert({
+              id: user.id,
+              is_vip: true,
+              vip_expires_at: null,
+              paypal_transaction_id: subscriptionID
+            });
+
+          if (error) {
+            console.error('Failed to update Supabase:', error);
+            showMessage('Subscription saved, but VIP not activated. Contact support.', '#e67e22');
+            return;
+          }
+
+          document.getElementById('paypal-button-container').style.display = 'none';
+          document.getElementById('vip-message').style.display = 'block';
+          document.getElementById('refresh-vip').style.display = 'none';
+
+          setTimeout(() => {
+            window.location.href = '/index.html';
+          }, 3000);
+        },
+
+        onError: (err) => {
+          console.error('PayPal error:', err);
+          showMessage('PayPal error. Please try again.');
+        }
+      }).render('#paypal-button-container');
+    }
+
+    async function setupVIPSection(user) {
+      const paypalContainer = document.getElementById('paypal-button-container');
+      const vipMessage = document.getElementById('vip-message');
+      const refreshButton = document.getElementById('refresh-vip');
+
+      hideMessage();
+
+      if (!user) {
+        showMessage('You must log in before subscribing.', '#e67e22');
+        paypalContainer.style.display = 'none';
+        vipMessage.style.display = 'none';
+        refreshButton.style.display = 'none';
+        return;
+      }
+
+      const isVIP = await checkVIPStatus(user.id);
+
+      if (isVIP) {
+        paypalContainer.style.display = 'none';
+        vipMessage.style.display = 'block';
+        refreshButton.style.display = 'none';
+      } else {
+        paypalContainer.style.display = 'block';
+        vipMessage.style.display = 'none';
+        refreshButton.style.display = 'inline-block';
+        initPayPal(user);
+      }
+    }
+
     async function renderAuthBar() {
       const { data: { session } } = await supabase.auth.getSession();
       taskbarAuth.innerHTML = '';
@@ -689,6 +863,9 @@
             dropdown.style.display = 'none';
           }
         });
+
+        // Setup VIP section for logged in user
+        setupVIPSection(session.user);
       } else {
         const loginBtn = document.createElement('button');
         loginBtn.textContent = 'Login with GitHub';
@@ -696,8 +873,26 @@
           supabase.auth.signInWithOAuth({ provider: 'github' });
         });
         taskbarAuth.appendChild(loginBtn);
+
+        // Setup VIP section for non-logged in user
+        setupVIPSection(null);
       }
     }
+
+    // VIP refresh button handler
+    document.getElementById('refresh-vip').addEventListener('click', async () => {
+      hideMessage();
+      const { data } = await supabase.auth.getSession();
+      const isNowVIP = await checkVIPStatus(data?.session?.user?.id);
+      if (isNowVIP) {
+        document.getElementById('paypal-button-container').style.display = 'none';
+        document.getElementById('vip-message').style.display = 'block';
+        document.getElementById('refresh-vip').style.display = 'none';
+        showMessage('VIP status confirmed!', '#2ecc71');
+      } else {
+        showMessage('Still not VIP. If you subscribed, please log out and back in.');
+      }
+    });
 
     renderAuthBar();
 
