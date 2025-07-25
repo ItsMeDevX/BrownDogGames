@@ -486,20 +486,28 @@
       margin: 0; padding: 20px;
       display: flex; flex-direction: column; align-items: center;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
     h1, h2 {
       color: #ff4f9f;
-      text-shadow: 2px 2px 0 #000;
+      text-shadow: 2px 2px 0 #ff4f9f;
       margin: 1rem 0;
       width: 100%;
       max-width: 800px;
+      font-family: 'Rubik Mono One', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
     .back-link {
       align-self: flex-start;
       background-color: #ff4f9f;
-      color: #1b1b2e;
+      color: #fefefe;
       text-decoration: none;
       font-size: 0.9rem;
+      font-family: 'Rubik Mono One', sans-serif;
       padding: 10px 16px;
       border-radius: 999px;
       font-weight: bold;
@@ -507,6 +515,8 @@
       margin-bottom: 1rem;
       max-width: 800px;
       display: inline-block;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     .back-link:hover { background-color: #ff82ba; }
 
@@ -525,80 +535,176 @@
     }
 
     .card {
-      background-color: #2f1a39;
+      background: linear-gradient(145deg, #3a2147, #241834);
       border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 20px;
       width: 100%;
       box-sizing: border-box;
-      transition: border-color 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .card:hover::before {
+      left: 100%;
     }
 
     .card:hover {
       border-color: #ff82ba;
-      box-shadow: 0 0 10px #ff82ba;
+      box-shadow: 0 12px 40px rgba(255, 79, 159, 0.3), 0 0 20px rgba(255, 130, 186, 0.2);
+      transform: translateY(-8px) scale(1.02);
     }
 
     .card.selected {
       border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
+      box-shadow: 0 0 30px #ff4f9f, inset 0 0 20px rgba(255, 79, 159, 0.1);
+      transform: scale(1.05);
     }
 
     .title {
       margin-top: 0;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
       text-align: center;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      font-weight: bold;
+      position: relative;
+      z-index: 2;
     }
 
     .desc {
-      color: #ddd;
-      margin: 0.5rem 0 1rem 0;
+      color: #e0e0e0;
+      margin: 0.5rem 0 1.2rem 0;
       min-height: 3rem;
       text-align: center;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
+    }
+
+    .image-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 15px;
     }
 
     .thumbnail {
       width: 100%;
-      max-height: 150px;
+      max-height: 160px;
       object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 12px;
       display: block;
+      transition: transform 0.3s ease, filter 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
     }
 
-    .video-player {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background-color: black;
-      max-height: 200px;
-      max-width: 100%;
+    .card:hover .thumbnail {
+      transform: scale(1.05);
+      filter: brightness(1.1) contrast(1.1);
     }
 
-    .play-link {
-      display: inline-block;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      padding: 8px 12px;
+    .fullscreen-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 79, 159, 0.9);
+      color: #ffffff;
+      border: none;
       border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 3;
+      font-family: 'Rubik Mono One', sans-serif;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .image-container:hover .fullscreen-btn {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(255, 130, 186, 1);
+      transform: scale(1.1);
+    }
+
+    .view-link {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 25px;
       text-decoration: none;
       font-weight: bold;
-      transition: background-color 0.2s ease;
+      font-size: 0.9rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
-      margin-top: auto; /* push to bottom */
+      margin-top: auto;
+      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+      font-family: 'Rubik Mono One', sans-serif;
     }
-    .play-link:hover { background-color: #ff82ba; }
+
+    .view-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .view-link:hover::before {
+      left: 100%;
+    }
+
+    .view-link:hover { 
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+    }
 
     #chat-container {
       max-width: 800px;
       width: 100%;
       border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #3a2147, #241834);
       padding: 20px;
       box-sizing: border-box;
       margin-top: 20px;
@@ -606,6 +712,8 @@
       flex-direction: column;
       height: 450px;
       overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     #messages {
       flex: 1;
@@ -613,7 +721,11 @@
       margin-bottom: 20px;
       padding-right: 10px;
     }
-    #messages div { margin-bottom: 12px; }
+    #messages div { 
+      margin-bottom: 12px; 
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 0.9rem;
+    }
     #messages strong { color: #ff82ba; }
 
     #chat-form {
@@ -626,30 +738,107 @@
       font-size: 16px;
       border-radius: 8px;
       border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: #fff;
+      background: linear-gradient(145deg, #3a2147, #241834);
+      color: #fefefe;
+      font-family: 'Rubik Mono One', sans-serif;
+    }
+    #msg-input:focus {
+      outline: none;
+      border-color: #ff82ba;
+      box-shadow: 0 0 10px rgba(255, 79, 159, 0.3);
     }
     button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
       font-weight: bold;
       border: none;
       border-radius: 8px;
       padding: 10px 16px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: all 0.3s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 0.9rem;
     }
-    button:hover { background-color: #ff82ba; }
+    button:hover { 
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+    }
 
     .no-content {
       font-size: 1.1rem;
       text-align: center;
-      color: #ddd;
+      color: #e0e0e0;
       margin-top: 2rem;
       font-style: italic;
-      background-color: #2f1a39;
+      background: linear-gradient(145deg, #3a2147, #241834);
       padding: 1rem;
-      border-radius: 10px;
+      border-radius: 12px;
+      border: 2px solid #ff4f9f;
+      opacity: 0.8;
+    }
+
+    /* Fullscreen Modal */
+    .fullscreen-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .fullscreen-modal.active {
+      display: flex;
+    }
+
+    .fullscreen-image {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .close-fullscreen {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 79, 159, 0.9);
+      color: #ffffff;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+    }
+
+    .close-fullscreen:hover {
+      background: rgba(255, 130, 186, 1);
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        padding: 15px;
+      }
+      
+      .thumbnail {
+        max-height: 140px;
+      }
+      
+      .fullscreen-btn {
+        font-size: 0.6rem;
+        padding: 4px 6px;
+      }
     }
   </style>
 </head>
@@ -664,13 +853,19 @@
   </section>
 
   <section id="chat-container">
-    <h2>Chat with {username}</h2>
+    <h2>Chat with <span id="chat-username">User</span></h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
       <button type="submit">Send</button>
     </form>
   </section>
+
+  <!-- Fullscreen Modal -->
+  <div id="fullscreen-modal" class="fullscreen-modal">
+    <button class="close-fullscreen" onclick="closeFullscreen()">×</button>
+    <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
+  </div>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -681,17 +876,49 @@
   );
 
   const pageTitle = document.getElementById('pageTitle');
-  const gamesContainer = document.getElementById('games');
   const artContainer = document.getElementById('art');
-  const videosContainer = document.getElementById('videos');
   const chatContainer = document.getElementById('chat-container');
   const messagesDiv = document.getElementById('messages');
   const form = document.getElementById('chat-form');
   const msgInput = document.getElementById('msg-input');
-  const chatHeading = chatContainer.querySelector('h2');
+  const chatUsernameSpan = document.getElementById('chat-username');
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
+
+  // Fullscreen functionality
+  window.openFullscreen = function(imageSrc, altText) {
+    const modal = document.getElementById('fullscreen-modal');
+    const fullscreenImage = document.getElementById('fullscreen-image');
+    
+    fullscreenImage.src = imageSrc;
+    fullscreenImage.alt = altText;
+    modal.classList.add('active');
+    
+    // Prevent body scrolling
+    document.body.style.overflow = 'hidden';
+  }
+
+  window.closeFullscreen = function() {
+    const modal = document.getElementById('fullscreen-modal');
+    modal.classList.remove('active');
+    
+    // Restore body scrolling
+    document.body.style.overflow = 'auto';
+  }
+
+  // Close fullscreen on escape key or click outside image
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeFullscreen();
+    }
+  });
+
+  document.getElementById('fullscreen-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeFullscreen();
+    }
+  });
 
   async function incrementVipPageView() {
     if (!username) return;
@@ -722,6 +949,12 @@
     }
   }
 
+  function isImageFile(url) {
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico', 'avif', 'jfif'];
+    const urlLower = url.toLowerCase();
+    return imageExtensions.some(ext => urlLower.includes(`.${ext}`));
+  }
+
   async function loadArt() {
     const { data, error } = await supabase
       .from('user_art')
@@ -743,6 +976,7 @@
     data.forEach((art, index) => {
       const card = document.createElement('article');
       card.className = 'card';
+      card.dataset.artId = art.id || `art-${index}`;
 
       const title = document.createElement('h3');
       title.className = 'title';
@@ -757,12 +991,46 @@
       }
 
       if (art.image_url) {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
+
         const img = document.createElement('img');
         img.className = 'thumbnail';
+        
+        // Convert Google Drive links to thumbnail URLs
         const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
         img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title}`;
-        card.appendChild(img);
+        img.alt = `Artwork: ${art.title || 'Untitled'}`;
+        
+        // Add click to open fullscreen
+        img.addEventListener('click', () => {
+          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
+          openFullscreen(fullImageUrl, img.alt);
+        });
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'fullscreen-btn';
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
+          openFullscreen(fullImageUrl, img.alt);
+        });
+
+        imageContainer.appendChild(img);
+        imageContainer.appendChild(fullscreenBtn);
+        card.appendChild(imageContainer);
+
+        // Add view original link if it's an image
+        if (isImageFile(art.image_url)) {
+          const viewLink = document.createElement('a');
+          viewLink.className = 'view-link';
+          viewLink.href = art.image_url;
+          viewLink.target = '_blank';
+          viewLink.rel = 'noopener noreferrer';
+          viewLink.textContent = 'View Original';
+          card.appendChild(viewLink);
+        }
       }
 
       artContainer.appendChild(card);
@@ -825,10 +1093,8 @@
     });
   }
 
-  // Placeholder for your thumbnail conversion logic if needed:
   function convertDriveLinkToThumbnail(url) {
     if (!url) return '';
-    // Example: convert Google Drive share URL to thumbnail URL if needed
     const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
     if (fileId) {
@@ -837,17 +1103,25 @@
     return url;
   }
 
+  function convertDriveLinkToDirectView(url) {
+    if (!url) return '';
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+    return url;
+  }
+
   // Main execution block
   if (!username) {
     pageTitle.textContent = 'Error';
-    chatHeading.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    artContainer.innerHTML = '';
-    videosContainer.innerHTML = '';
+    chatUsernameSpan.textContent = 'Error';
+    artContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
     messagesDiv.innerHTML = '';
   } else {
     pageTitle.textContent = `${username}'s Content`;
-    chatHeading.textContent = `Chat with ${username}`;
+    chatUsernameSpan.textContent = username;
 
     // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
