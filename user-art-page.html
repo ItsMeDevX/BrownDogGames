@@ -486,9 +486,6 @@
       margin: 0; padding: 20px;
       display: flex; flex-direction: column; align-items: center;
       min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
     }
     h1, h2 {
       color: #ff4f9f;
@@ -496,18 +493,13 @@
       margin: 1rem 0;
       width: 100%;
       max-width: 800px;
-      font-family: 'Rubik Mono One', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
     }
     .back-link {
       align-self: flex-start;
       background-color: #ff4f9f;
-      color: #fefefe;
+      color: #1b1b2e;
       text-decoration: none;
       font-size: 0.9rem;
-      font-family: 'Rubik Mono One', sans-serif;
       padding: 10px 16px;
       border-radius: 999px;
       font-weight: bold;
@@ -515,8 +507,6 @@
       margin-bottom: 1rem;
       max-width: 800px;
       display: inline-block;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
     .back-link:hover { background-color: #ff82ba; }
 
@@ -535,98 +525,55 @@
     }
 
     .card {
-      background: linear-gradient(145deg, #3a2147, #241834);
+      background-color: #2f1a39;
       border: 2px solid #ff4f9f;
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 12px;
+      padding: 16px;
       width: 100%;
       box-sizing: border-box;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: border-color 0.3s ease;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .card:hover::before {
-      left: 100%;
     }
 
     .card:hover {
       border-color: #ff82ba;
-      box-shadow: 0 12px 40px rgba(255, 79, 159, 0.3), 0 0 20px rgba(255, 130, 186, 0.2);
-      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 0 10px #ff82ba;
     }
 
     .card.selected {
       border-color: #ff82ba;
-      box-shadow: 0 0 30px #ff4f9f, inset 0 0 20px rgba(255, 79, 159, 0.1);
-      transform: scale(1.05);
+      box-shadow: 0 0 15px #ff4f9f;
     }
 
     .title {
       margin-top: 0;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.5rem;
       text-align: center;
-      font-size: 1.1rem;
-      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
-      font-weight: bold;
-      position: relative;
-      z-index: 2;
     }
 
     .desc {
-      color: #e0e0e0;
-      margin: 0.5rem 0 1.2rem 0;
+      color: #ddd;
+      margin: 0.5rem 0 1rem 0;
       min-height: 3rem;
       text-align: center;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      opacity: 0.9;
-      position: relative;
-      z-index: 2;
     }
 
     .image-container {
       position: relative;
       width: 100%;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
     .thumbnail {
       width: 100%;
-      max-height: 160px;
+      max-height: 150px;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: 8px;
       display: block;
-      transition: transform 0.3s ease, filter 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      position: relative;
-      z-index: 2;
-    }
-
-    .card:hover .thumbnail {
-      transform: scale(1.05);
-      filter: brightness(1.1) contrast(1.1);
     }
 
     .fullscreen-btn {
@@ -658,7 +605,28 @@
       transform: scale(1.1);
     }
 
+    .video-player {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: black;
+      max-height: 200px;
+      max-width: 100%;
+    }
 
+    .play-link {
+      display: inline-block;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+      margin-top: auto; /* push to bottom */
+    }
+    .play-link:hover { background-color: #ff82ba; }
 
     #chat-container {
       max-width: 800px;
@@ -711,14 +679,12 @@
     .no-content {
       font-size: 1.1rem;
       text-align: center;
-      color: #e0e0e0;
+      color: #ddd;
       margin-top: 2rem;
       font-style: italic;
-      background: linear-gradient(145deg, #3a2147, #241834);
+      background-color: #2f1a39;
       padding: 1rem;
-      border-radius: 12px;
-      border: 2px solid #ff4f9f;
-      opacity: 0.8;
+      border-radius: 10px;
     }
 
     /* Fullscreen View */
@@ -765,21 +731,20 @@
     }
 
     .close-fullscreen {
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
+      background: #ff4f9f;
+      color: #1b1b2e;
       border: none;
-      border-radius: 25px;
+      border-radius: 6px;
       padding: 8px 16px;
       font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: background-color 0.2s ease;
       font-family: 'Rubik Mono One', sans-serif;
       font-weight: bold;
     }
 
     .close-fullscreen:hover {
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-2px);
+      background-color: #ff82ba;
     }
 
     .fullscreen-image {
@@ -789,21 +754,6 @@
       border-radius: 12px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       margin-top: 80px;
-    }
-
-    @media (max-width: 768px) {
-      .card {
-        padding: 15px;
-      }
-      
-      .thumbnail {
-        max-height: 140px;
-      }
-      
-      .fullscreen-btn {
-        font-size: 0.6rem;
-        padding: 4px 6px;
-      }
     }
   </style>
 </head>
@@ -818,7 +768,7 @@
   </section>
 
   <section id="chat-container">
-    <h2>Chat with <span id="chat-username">User</span></h2>
+    <h2>Chat with <span id="chat-username">{username}</span></h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
@@ -835,7 +785,6 @@
     <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
   </div>
 
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -850,7 +799,7 @@
   const messagesDiv = document.getElementById('messages');
   const form = document.getElementById('chat-form');
   const msgInput = document.getElementById('msg-input');
-  const chatUsernameSpan = document.getElementById('chat-username');
+  const chatHeading = document.getElementById('chat-username');
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
@@ -878,15 +827,9 @@
     document.body.style.overflow = 'auto';
   }
 
-  // Close fullscreen on escape key or click outside image
+  // Close fullscreen on escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-      closeFullscreen();
-    }
-  });
-
-  document.getElementById('fullscreen-view').addEventListener('click', function(e) {
-    if (e.target === this) {
       closeFullscreen();
     }
   });
@@ -920,12 +863,6 @@
     }
   }
 
-  function isImageFile(url) {
-    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico', 'avif', 'jfif'];
-    const urlLower = url.toLowerCase();
-    return imageExtensions.some(ext => urlLower.includes(`.${ext}`));
-  }
-
   async function loadArt() {
     const { data, error } = await supabase
       .from('user_art')
@@ -947,7 +884,6 @@
     data.forEach((art, index) => {
       const card = document.createElement('article');
       card.className = 'card';
-      card.dataset.artId = art.id || `art-${index}`;
 
       const title = document.createElement('h3');
       title.className = 'title';
@@ -967,18 +903,14 @@
 
         const img = document.createElement('img');
         img.className = 'thumbnail';
-        
-        // Convert Google Drive links to thumbnail URLs
         const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
         img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title || 'Untitled'}`;
+        img.alt = `Artwork: ${art.title}`;
 
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'fullscreen-btn';
         fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.title = 'View Fullscreen';
         fullscreenBtn.addEventListener('click', (e) => {
-          e.preventDefault();
           e.stopPropagation();
           const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
           openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
@@ -987,20 +919,10 @@
         imageContainer.appendChild(img);
         imageContainer.appendChild(fullscreenBtn);
         card.appendChild(imageContainer);
-
-        // Add view original link if it's an image
-        if (isImageFile(art.image_url)) {
-          const viewLink = document.createElement('a');
-          viewLink.className = 'view-link';
-          viewLink.href = art.image_url;
-          viewLink.textContent = 'View Original';
-          card.appendChild(viewLink);
-        }
       }
 
       artContainer.appendChild(card);
     });
-  }
   }
 
   async function loadChatMessages() {
@@ -1082,12 +1004,12 @@
   // Main execution block
   if (!username) {
     pageTitle.textContent = 'Error';
-    chatUsernameSpan.textContent = 'Error';
+    chatHeading.textContent = 'Error';
     artContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
     messagesDiv.innerHTML = '';
   } else {
     pageTitle.textContent = `${username}'s Content`;
-    chatUsernameSpan.textContent = username;
+    chatHeading.textContent = username;
 
     // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
