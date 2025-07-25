@@ -325,7 +325,7 @@
       object-fit: cover;
     }
 
-    /* VIP Modal - Single VIP system */
+    /* VIP Modal */
     .vip-modal {
       position: fixed;
       top: 0;
@@ -411,6 +411,8 @@
       color: white;
     }
 
+    /* Game List - Removed since games are search-only */
+
     @media (max-width: 900px) {
       .brand-line {
         font-size: 1.3rem;
@@ -489,7 +491,9 @@
     </div>
   </div>
 
-  <!-- Single VIP Modal -->
+
+
+  <!-- VIP Modal -->
   <div class="vip-modal" id="vip-modal">
     <div class="vip-modal-content">
       <h2>VIP Subscription</h2>
@@ -511,14 +515,14 @@
       const yesBtn = document.getElementById('yes-btn');
       const noBtn = document.getElementById('no-btn');
 
-      if (sessionStorage.getItem('isAdult') === 'true') {
+      if (localStorage.getItem('isAdult') === 'true') {
         ageGate.classList.remove('show');
       } else {
         ageGate.classList.add('show');
       }
 
       yesBtn.addEventListener('click', () => {
-        sessionStorage.setItem('isAdult', 'true');
+        localStorage.setItem('isAdult', 'true');
         ageGate.classList.remove('show');
       });
 
@@ -578,6 +582,36 @@
       }
     });
 
+    searchInput.addEventListener('keydown', (e) => {
+      const suggestions = suggestionsDropdown.querySelectorAll('div');
+
+      if (e.key === 'ArrowDown') {
+        if (highlightedIndex < suggestions.length - 1) {
+          highlightedIndex++;
+          updateHighlightedItem(suggestions);
+        }
+      } else if (e.key === 'ArrowUp') {
+        if (highlightedIndex > 0) {
+          highlightedIndex--;
+          updateHighlightedItem(suggestions);
+        }
+      } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+        suggestions[highlightedIndex].click();
+      }
+    });
+
+    function updateHighlightedItem(suggestions) {
+      suggestions.forEach((item, index) => {
+        if (index === highlightedIndex) {
+          item.style.backgroundColor = '#ff69b4';
+          item.style.color = '#1e1b2e';
+        } else {
+          item.style.backgroundColor = 'transparent';
+          item.style.color = '#fefefe';
+        }
+      });
+    }
+
     document.getElementById('search-button').addEventListener('click', () => {
       const query = searchInput.value.trim().toLowerCase();
       const result = gamePages.find(game => game.title.toLowerCase() === query);
@@ -592,6 +626,7 @@
     document.addEventListener('click', (event) => {
       if (!searchInput.contains(event.target) && !suggestionsDropdown.contains(event.target)) {
         suggestionsDropdown.style.display = 'none';
+        highlightedIndex = -1;
       }
     });
   </script>
@@ -601,14 +636,14 @@
 
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE7NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
     const taskbarNav = document.getElementById('taskbar-nav');
     const taskbarAuth = document.getElementById('taskbar-auth');
     const taskbarVip = document.getElementById('taskbar-vip');
 
-    // Global VIP status tracking
+    // Global state tracking
     let currentVIPStatus = false;
     let currentUser = null;
 
@@ -688,7 +723,6 @@
           document.getElementById('vip-message').style.display = 'block';
           document.getElementById('refresh-vip').style.display = 'none';
 
-          // Update VIP status and re-render
           currentVIPStatus = true;
           renderVip();
 
@@ -724,11 +758,9 @@
     }
 
     async function renderVip() {
-      // Clear the VIP section completely
       taskbarVip.innerHTML = '';
       
       if (!currentUser) {
-        // User not logged in - show login prompt
         const vipBtn = document.createElement('button');
         vipBtn.textContent = 'Get VIP';
         vipBtn.addEventListener('click', () => {
@@ -738,15 +770,12 @@
         return;
       }
 
-      // User is logged in - check VIP status
       if (currentVIPStatus) {
-        // Show VIP active status
         const vipStatus = document.createElement('div');
         vipStatus.className = 'vip-status';
         vipStatus.innerHTML = '⭐ VIP Active';
         taskbarVip.appendChild(vipStatus);
       } else {
-        // Show Get VIP button
         const vipBtn = document.createElement('button');
         vipBtn.textContent = 'Get VIP';
         vipBtn.addEventListener('click', () => {
@@ -759,11 +788,16 @@
 
     async function renderAuth() {
       const { data: { session } } = await supabase.auth.getSession();
+      
       taskbarAuth.innerHTML = '';
+      
+      const existingDropdown = document.getElementById('user-dropdown');
+      if (existingDropdown) {
+        existingDropdown.remove();
+      }
 
       if (session?.user) {
         currentUser = session.user;
-        // Update VIP status when user changes
         currentVIPStatus = await checkVIPStatus(session.user.id);
         
         const { user_metadata } = session.user;
@@ -846,6 +880,8 @@
         logoutBtn.textContent = 'Logout';
         logoutBtn.onclick = async () => {
           await supabase.auth.signOut();
+          currentUser = null;
+          currentVIPStatus = false;
           window.location.reload();
         };
 
@@ -854,13 +890,11 @@
         dropdown.appendChild(logoutBtn);
 
         taskbarAuth.appendChild(dropdown);
-        userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+        
+        userInfo.replaceWith(userInfo.cloneNode(true));
+        const newUserInfo = document.getElementById('user-info');
+        newUserInfo.addEventListener('click', () => toggleDropdown(dropdown));
 
-        document.addEventListener('click', (e) => {
-          if (!taskbarAuth.contains(e.target)) {
-            dropdown.style.display = 'none';
-          }
-        });
       } else {
         currentUser = null;
         currentVIPStatus = false;
@@ -871,6 +905,21 @@
           supabase.auth.signInWithOAuth({ provider: 'github' });
         });
         taskbarAuth.appendChild(loginBtn);
+      }
+    }
+
+    // Global click handler for dropdowns (only set once)
+    let globalClickHandlerAdded = false;
+    
+    function addGlobalClickHandler() {
+      if (!globalClickHandlerAdded) {
+        document.addEventListener('click', (e) => {
+          const dropdown = document.getElementById('user-dropdown');
+          if (dropdown && !taskbarAuth.contains(e.target)) {
+            dropdown.style.display = 'none';
+          }
+        });
+        globalClickHandlerAdded = true;
       }
     }
 
@@ -897,12 +946,18 @@
     // Initialize auth and VIP together
     renderAuth().then(() => {
       renderVip();
+      addGlobalClickHandler();
     });
 
+    // Auth state change handler with debouncing
+    let authChangeTimeout;
     supabase.auth.onAuthStateChange(() => {
-      renderAuth().then(() => {
-        renderVip();
-      });
+      clearTimeout(authChangeTimeout);
+      authChangeTimeout = setTimeout(() => {
+        renderAuth().then(() => {
+          renderVip();
+        });
+      }, 100);
     });
   </script>
 
