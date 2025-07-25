@@ -622,7 +622,6 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
       position: relative;
       z-index: 2;
-      cursor: pointer;
     }
 
     .card:hover .thumbnail {
@@ -703,8 +702,8 @@
       max-width: 800px;
       width: 100%;
       border: 2px solid #ff4f9f;
-      border-radius: 16px;
-      background: linear-gradient(145deg, #3a2147, #241834);
+      border-radius: 12px;
+      background-color: #2f1a39;
       padding: 20px;
       box-sizing: border-box;
       margin-top: 20px;
@@ -712,8 +711,6 @@
       flex-direction: column;
       height: 450px;
       overflow: hidden;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     #messages {
       flex: 1;
@@ -721,11 +718,7 @@
       margin-bottom: 20px;
       padding-right: 10px;
     }
-    #messages div { 
-      margin-bottom: 12px; 
-      font-family: 'Rubik Mono One', sans-serif;
-      font-size: 0.9rem;
-    }
+    #messages div { margin-bottom: 12px; }
     #messages strong { color: #ff82ba; }
 
     #chat-form {
@@ -738,32 +731,20 @@
       font-size: 16px;
       border-radius: 8px;
       border: 2px solid #ff4f9f;
-      background: linear-gradient(145deg, #3a2147, #241834);
-      color: #fefefe;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-    #msg-input:focus {
-      outline: none;
-      border-color: #ff82ba;
-      box-shadow: 0 0 10px rgba(255, 79, 159, 0.3);
+      background-color: #2f1a39;
+      color: #fff;
     }
     button {
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
       font-weight: bold;
       border: none;
       border-radius: 8px;
       padding: 10px 16px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
     }
-    button:hover { 
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-    }
+    button:hover { background-color: #ff82ba; }
 
     .no-content {
       font-size: 1.1rem;
@@ -778,52 +759,74 @@
       opacity: 0.8;
     }
 
-    /* Fullscreen Modal */
-    .fullscreen-modal {
-      display: none;
+    /* Fullscreen View */
+    .fullscreen-view {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.95);
+      background: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
       z-index: 1000;
-      justify-content: center;
+      display: none;
+      flex-direction: column;
       align-items: center;
-      backdrop-filter: blur(10px);
+      justify-content: center;
+      padding: 20px;
     }
 
-    .fullscreen-modal.active {
+    .fullscreen-view.active {
       display: flex;
     }
 
-    .fullscreen-image {
-      max-width: 95vw;
-      max-height: 95vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    .fullscreen-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(27, 27, 46, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1001;
+      border-bottom: 2px solid #ff4f9f;
+    }
+
+    .fullscreen-title {
+      color: #ff4f9f;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1.2rem;
+      margin: 0;
     }
 
     .close-fullscreen {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(255, 79, 159, 0.9);
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
       color: #ffffff;
       border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 1.5rem;
+      border-radius: 25px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: 'Rubik Mono One', sans-serif;
+      font-weight: bold;
     }
 
     .close-fullscreen:hover {
-      background: rgba(255, 130, 186, 1);
-      transform: scale(1.1);
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-2px);
+    }
+
+    .fullscreen-image {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      margin-top: 80px;
     }
 
     @media (max-width: 768px) {
@@ -861,11 +864,15 @@
     </form>
   </section>
 
-  <!-- Fullscreen Modal -->
-  <div id="fullscreen-modal" class="fullscreen-modal">
-    <button class="close-fullscreen" onclick="closeFullscreen()">×</button>
+  <!-- Fullscreen View -->
+  <div id="fullscreen-view" class="fullscreen-view">
+    <div class="fullscreen-header">
+      <h2 id="fullscreen-title" class="fullscreen-title">Artwork</h2>
+      <button class="close-fullscreen" onclick="closeFullscreen()">✕ Close</button>
+    </div>
     <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
   </div>
+
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -887,21 +894,23 @@
   const username = urlParams.get('user') || '';
 
   // Fullscreen functionality
-  window.openFullscreen = function(imageSrc, altText) {
-    const modal = document.getElementById('fullscreen-modal');
+  window.openFullscreen = function(imageSrc, altText, title) {
+    const fullscreenView = document.getElementById('fullscreen-view');
     const fullscreenImage = document.getElementById('fullscreen-image');
+    const fullscreenTitle = document.getElementById('fullscreen-title');
     
     fullscreenImage.src = imageSrc;
     fullscreenImage.alt = altText;
-    modal.classList.add('active');
+    fullscreenTitle.textContent = title || 'Artwork';
+    fullscreenView.classList.add('active');
     
     // Prevent body scrolling
     document.body.style.overflow = 'hidden';
   }
 
   window.closeFullscreen = function() {
-    const modal = document.getElementById('fullscreen-modal');
-    modal.classList.remove('active');
+    const fullscreenView = document.getElementById('fullscreen-view');
+    fullscreenView.classList.remove('active');
     
     // Restore body scrolling
     document.body.style.overflow = 'auto';
@@ -914,7 +923,7 @@
     }
   });
 
-  document.getElementById('fullscreen-modal').addEventListener('click', function(e) {
+  document.getElementById('fullscreen-view').addEventListener('click', function(e) {
     if (e.target === this) {
       closeFullscreen();
     }
@@ -1001,12 +1010,6 @@
         const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
         img.src = thumbUrl || art.image_url;
         img.alt = `Artwork: ${art.title || 'Untitled'}`;
-        
-        // Add click to open fullscreen
-        img.addEventListener('click', () => {
-          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
-          openFullscreen(fullImageUrl, img.alt);
-        });
 
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'fullscreen-btn';
@@ -1014,7 +1017,7 @@
         fullscreenBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
-          openFullscreen(fullImageUrl, img.alt);
+          openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
         });
 
         imageContainer.appendChild(img);
