@@ -411,8 +411,6 @@
       color: white;
     }
 
-    /* Game List - Removed since games are search-only */
-
     @media (max-width: 900px) {
       .brand-line {
         font-size: 1.3rem;
@@ -491,8 +489,6 @@
     </div>
   </div>
 
-
-
   <!-- VIP Modal -->
   <div class="vip-modal" id="vip-modal">
     <div class="vip-modal-content">
@@ -509,20 +505,19 @@
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
   <script>
-    // Age Gate
+    // Age Gate - Using JavaScript variables instead of localStorage
+    const ageState = { isAdult: false };
+    
     document.addEventListener('DOMContentLoaded', () => {
       const ageGate = document.getElementById('age-gate');
       const yesBtn = document.getElementById('yes-btn');
       const noBtn = document.getElementById('no-btn');
 
-      if (localStorage.getItem('isAdult') === 'true') {
-        ageGate.classList.remove('show');
-      } else {
-        ageGate.classList.add('show');
-      }
+      // Always show age gate initially
+      ageGate.classList.add('show');
 
       yesBtn.addEventListener('click', () => {
-        localStorage.setItem('isAdult', 'true');
+        ageState.isAdult = true;
         ageGate.classList.remove('show');
       });
 
@@ -636,16 +631,18 @@
 
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE7NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
     const taskbarNav = document.getElementById('taskbar-nav');
     const taskbarAuth = document.getElementById('taskbar-auth');
     const taskbarVip = document.getElementById('taskbar-vip');
 
-    // Global state tracking
+    // Global state tracking - SINGLE INSTANCE
     let currentVIPStatus = false;
     let currentUser = null;
+    let isInitialized = false;
+    let renderingInProgress = false;
 
     function toggleDropdown(dropdown) {
       dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
@@ -667,23 +664,33 @@
     async function checkVIPStatus(userId) {
       if (!userId) return false;
 
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('id', userId)
-        .single();
+      try {
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('is_vip')
+          .eq('id', userId)
+          .single();
 
-      if (error) {
-        console.error('Error fetching VIP status:', error);
+        if (error) {
+          console.error('Error fetching VIP status:', error);
+          return false;
+        }
+
+        return user?.is_vip ?? false;
+      } catch (error) {
+        console.error('Exception in checkVIPStatus:', error);
         return false;
       }
-
-      return user?.is_vip ?? false;
     }
 
     async function initPayPal(user) {
       const paypalContainer = document.getElementById('paypal-button-container');
       paypalContainer.innerHTML = '';
+
+      if (typeof paypal === 'undefined') {
+        console.error('PayPal SDK not loaded');
+        return;
+      }
 
       paypal.Buttons({
         style: {
@@ -704,31 +711,36 @@
           hideMessage();
           const subscriptionID = data.subscriptionID;
 
-          const { error } = await supabase
-            .from('users')
-            .upsert({
-              id: user.id,
-              is_vip: true,
-              vip_expires_at: null,
-              paypal_transaction_id: subscriptionID
-            });
+          try {
+            const { error } = await supabase
+              .from('users')
+              .upsert({
+                id: user.id,
+                is_vip: true,
+                vip_expires_at: null,
+                paypal_transaction_id: subscriptionID
+              });
 
-          if (error) {
-            console.error('Failed to update Supabase:', error);
-            showMessage('Subscription saved, but VIP not activated. Contact support.', '#e67e22');
-            return;
+            if (error) {
+              console.error('Failed to update Supabase:', error);
+              showMessage('Subscription saved, but VIP not activated. Contact support.', '#e67e22');
+              return;
+            }
+
+            document.getElementById('paypal-button-container').style.display = 'none';
+            document.getElementById('vip-message').style.display = 'block';
+            document.getElementById('refresh-vip').style.display = 'none';
+
+            currentVIPStatus = true;
+            await renderVip();
+
+            setTimeout(() => {
+              document.getElementById('vip-modal').classList.remove('show');
+            }, 2000);
+          } catch (error) {
+            console.error('Error in onApprove:', error);
+            showMessage('An error occurred. Please try again.');
           }
-
-          document.getElementById('paypal-button-container').style.display = 'none';
-          document.getElementById('vip-message').style.display = 'block';
-          document.getElementById('refresh-vip').style.display = 'none';
-
-          currentVIPStatus = true;
-          renderVip();
-
-          setTimeout(() => {
-            document.getElementById('vip-modal').classList.remove('show');
-          }, 2000);
         },
 
         onError: (err) => {
@@ -738,7 +750,8 @@
       }).render('#paypal-button-container');
     }
 
-    async function renderNav() {
+    function renderNav() {
+      // Clear existing content
       taskbarNav.innerHTML = '';
 
       const userGamesBtn = document.createElement('button');
@@ -758,6 +771,9 @@
     }
 
     async function renderVip() {
+      if (renderingInProgress) return;
+      
+      // Clear existing content completely
       taskbarVip.innerHTML = '';
       
       if (!currentUser) {
@@ -787,128 +803,146 @@
     }
 
     async function renderAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      taskbarAuth.innerHTML = '';
-      
-      const existingDropdown = document.getElementById('user-dropdown');
-      if (existingDropdown) {
-        existingDropdown.remove();
-      }
+      if (renderingInProgress) return;
+      renderingInProgress = true;
 
-      if (session?.user) {
-        currentUser = session.user;
-        currentVIPStatus = await checkVIPStatus(session.user.id);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         
-        const { user_metadata } = session.user;
-        const name = user_metadata.full_name || 'GitHub User';
-        const avatar = user_metadata.avatar_url || '';
-        const githubUsername = user_metadata.user_name;
-
-        const userInfo = document.createElement('div');
-        userInfo.id = 'user-info';
-
-        if (avatar) {
-          const img = document.createElement('img');
-          img.src = avatar;
-          img.alt = name;
-          userInfo.appendChild(img);
+        // Clear existing content completely
+        taskbarAuth.innerHTML = '';
+        
+        // Remove any existing dropdown
+        const existingDropdown = document.getElementById('user-dropdown');
+        if (existingDropdown) {
+          existingDropdown.remove();
         }
 
-        const nameDiv = document.createElement('div');
-        nameDiv.innerHTML = `
-          <strong style="
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background-color: #ff69b4;
-            color: #1e1b2e;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            box-shadow: 0 0 10px #ff8edb;
-            cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
-          " title="Click for options">
-            ${name}
-            <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
-          </strong>
-        `;
-        userInfo.appendChild(nameDiv);
-        taskbarAuth.appendChild(userInfo);
+        if (session?.user) {
+          currentUser = session.user;
+          currentVIPStatus = await checkVIPStatus(session.user.id);
+          
+          const { user_metadata } = session.user;
+          const name = user_metadata.full_name || 'GitHub User';
+          const avatar = user_metadata.avatar_url || '';
+          const githubUsername = user_metadata.user_name;
 
-        const dropdown = document.createElement('div');
-        dropdown.id = 'user-dropdown';
+          const userInfo = document.createElement('div');
+          userInfo.id = 'user-info';
 
-        const myPageBtn = document.createElement('button');
-        myPageBtn.textContent = 'My Page';
-        myPageBtn.onclick = async () => {
-          dropdown.style.display = 'none';
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (userError || !user) {
-            console.error('Unable to get user:', userError);
-            return;
+          if (avatar) {
+            const img = document.createElement('img');
+            img.src = avatar;
+            img.alt = name;
+            userInfo.appendChild(img);
           }
 
-          const { data, error } = await supabase
-            .from('game_submissions')
-            .select('id')
-            .eq('user_id', user.id)
-            .limit(1);
+          const nameDiv = document.createElement('div');
+          nameDiv.innerHTML = `
+            <strong style="
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              background-color: #ff69b4;
+              color: #1e1b2e;
+              padding: 6px 12px;
+              border-radius: 20px;
+              font-size: 0.85rem;
+              font-weight: bold;
+              box-shadow: 0 0 10px #ff8edb;
+              cursor: pointer;
+              transition: background-color 0.2s, box-shadow 0.2s;
+            " title="Click for options">
+              ${name}
+              <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
+            </strong>
+          `;
+          userInfo.appendChild(nameDiv);
+          taskbarAuth.appendChild(userInfo);
 
-          if (error) {
-            console.error('Error checking submission:', error);
-            return;
-          }
+          const dropdown = document.createElement('div');
+          dropdown.id = 'user-dropdown';
 
-          if (data && data.length > 0 && githubUsername) {
-            window.location.href = `user.html?user=${githubUsername}`;
-          } else {
+          const myPageBtn = document.createElement('button');
+          myPageBtn.textContent = 'My Page';
+          myPageBtn.onclick = async () => {
+            dropdown.style.display = 'none';
+            try {
+              const { data: { user }, error: userError } = await supabase.auth.getUser();
+              if (userError || !user) {
+                console.error('Unable to get user:', userError);
+                return;
+              }
+
+              const { data, error } = await supabase
+                .from('game_submissions')
+                .select('id')
+                .eq('user_id', user.id)
+                .limit(1);
+
+              if (error) {
+                console.error('Error checking submission:', error);
+                return;
+              }
+
+              if (data && data.length > 0 && githubUsername) {
+                window.location.href = `user.html?user=${githubUsername}`;
+              } else {
+                window.location.href = 'dashboard.html';
+              }
+            } catch (error) {
+              console.error('Error in myPageBtn click:', error);
+            }
+          };
+
+          const dashboardBtn = document.createElement('button');
+          dashboardBtn.textContent = 'Dashboard';
+          dashboardBtn.onclick = () => {
+            dropdown.style.display = 'none';
             window.location.href = 'dashboard.html';
-          }
-        };
+          };
 
-        const dashboardBtn = document.createElement('button');
-        dashboardBtn.textContent = 'Dashboard';
-        dashboardBtn.onclick = () => {
-          dropdown.style.display = 'none';
-          window.location.href = 'dashboard.html';
-        };
+          const logoutBtn = document.createElement('button');
+          logoutBtn.textContent = 'Logout';
+          logoutBtn.onclick = async () => {
+            try {
+              await supabase.auth.signOut();
+              currentUser = null;
+              currentVIPStatus = false;
+              window.location.reload();
+            } catch (error) {
+              console.error('Error during logout:', error);
+            }
+          };
 
-        const logoutBtn = document.createElement('button');
-        logoutBtn.textContent = 'Logout';
-        logoutBtn.onclick = async () => {
-          await supabase.auth.signOut();
+          dropdown.appendChild(myPageBtn);
+          dropdown.appendChild(dashboardBtn);
+          dropdown.appendChild(logoutBtn);
+
+          taskbarAuth.appendChild(dropdown);
+          
+          // Add click handler for user info
+          userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+
+        } else {
           currentUser = null;
           currentVIPStatus = false;
-          window.location.reload();
-        };
-
-        dropdown.appendChild(myPageBtn);
-        dropdown.appendChild(dashboardBtn);
-        dropdown.appendChild(logoutBtn);
-
-        taskbarAuth.appendChild(dropdown);
-        
-        userInfo.replaceWith(userInfo.cloneNode(true));
-        const newUserInfo = document.getElementById('user-info');
-        newUserInfo.addEventListener('click', () => toggleDropdown(dropdown));
-
-      } else {
-        currentUser = null;
-        currentVIPStatus = false;
-        
-        const loginBtn = document.createElement('button');
-        loginBtn.textContent = 'Login with GitHub';
-        loginBtn.addEventListener('click', () => {
-          supabase.auth.signInWithOAuth({ provider: 'github' });
-        });
-        taskbarAuth.appendChild(loginBtn);
+          
+          const loginBtn = document.createElement('button');
+          loginBtn.textContent = 'Login with GitHub';
+          loginBtn.addEventListener('click', () => {
+            supabase.auth.signInWithOAuth({ provider: 'github' });
+          });
+          taskbarAuth.appendChild(loginBtn);
+        }
+      } catch (error) {
+        console.error('Error in renderAuth:', error);
+      } finally {
+        renderingInProgress = false;
       }
     }
 
-    // Global click handler for dropdowns (only set once)
+    // Global click handler for dropdowns - SET ONLY ONCE
     let globalClickHandlerAdded = false;
     
     function addGlobalClickHandler() {
@@ -923,42 +957,68 @@
       }
     }
 
+    // Refresh VIP button handler - SET ONLY ONCE
     document.getElementById('refresh-vip').addEventListener('click', async () => {
       hideMessage();
       if (currentUser) {
-        const isNowVIP = await checkVIPStatus(currentUser.id);
-        if (isNowVIP) {
-          currentVIPStatus = true;
-          document.getElementById('paypal-button-container').style.display = 'none';
-          document.getElementById('vip-message').style.display = 'block';
-          document.getElementById('refresh-vip').style.display = 'none';
-          showMessage('VIP status confirmed!', '#2ecc71');
-          renderVip();
-        } else {
-          showMessage('Still not VIP. If you subscribed, please log out and back in.');
+        try {
+          const isNowVIP = await checkVIPStatus(currentUser.id);
+          if (isNowVIP) {
+            currentVIPStatus = true;
+            document.getElementById('paypal-button-container').style.display = 'none';
+            document.getElementById('vip-message').style.display = 'block';
+            document.getElementById('refresh-vip').style.display = 'none';
+            showMessage('VIP status confirmed!', '#2ecc71');
+            await renderVip();
+          } else {
+            showMessage('Still not VIP. If you subscribed, please log out and back in.');
+          }
+        } catch (error) {
+          console.error('Error refreshing VIP:', error);
+          showMessage('Error checking VIP status. Please try again.');
         }
       }
     });
 
-    // Initialize everything
-    renderNav();
-    
-    // Initialize auth and VIP together
-    renderAuth().then(() => {
-      renderVip();
-      addGlobalClickHandler();
-    });
+    // Initialize everything - SINGLE INITIALIZATION
+    async function initializeApp() {
+      if (isInitialized) return;
+      isInitialized = true;
 
-    // Auth state change handler with debouncing
-    let authChangeTimeout;
-    supabase.auth.onAuthStateChange(() => {
-      clearTimeout(authChangeTimeout);
-      authChangeTimeout = setTimeout(() => {
-        renderAuth().then(() => {
-          renderVip();
+      try {
+        // Render navigation first
+        renderNav();
+        
+        // Initialize auth and VIP together
+        await renderAuth();
+        await renderVip();
+        
+        // Add global click handler
+        addGlobalClickHandler();
+
+        // Auth state change handler with proper debouncing
+        let authChangeTimeout;
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          clearTimeout(authChangeTimeout);
+          authChangeTimeout = setTimeout(async () => {
+            if (!renderingInProgress) {
+              await renderAuth();
+              await renderVip();
+            }
+          }, 100);
         });
-      }, 100);
-    });
+
+      } catch (error) {
+        console.error('Error initializing app:', error);
+      }
+    }
+
+    // Start the app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
   </script>
 
 </body>
