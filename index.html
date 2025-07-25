@@ -468,7 +468,7 @@
     </h1>
   </header>
 
-  <!-- Taskbar with everything -->
+  <!-- Unified Taskbar with everything -->
   <div id="taskbar">
     <div class="taskbar-nav" id="taskbar-nav">
       <!-- Navigation buttons injected by JS -->
@@ -505,19 +505,22 @@
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
   <script>
-    // Age Gate - Using JavaScript variables instead of localStorage
-    const ageState = { isAdult: false };
-    
+    // Age Gate - Fixed with localStorage
     document.addEventListener('DOMContentLoaded', () => {
       const ageGate = document.getElementById('age-gate');
       const yesBtn = document.getElementById('yes-btn');
       const noBtn = document.getElementById('no-btn');
 
-      // Always show age gate initially
-      ageGate.classList.add('show');
+      // Check if user has already verified their age
+      const isVerified = localStorage.getItem('ageVerified') === 'true';
+
+      // Only show age gate if not verified
+      if (!isVerified) {
+        ageGate.classList.add('show');
+      }
 
       yesBtn.addEventListener('click', () => {
-        ageState.isAdult = true;
+        localStorage.setItem('ageVerified', 'true');
         ageGate.classList.remove('show');
       });
 
@@ -638,7 +641,7 @@
     const taskbarAuth = document.getElementById('taskbar-auth');
     const taskbarVip = document.getElementById('taskbar-vip');
 
-    // Global state tracking - SINGLE INSTANCE
+    // Global state tracking
     let currentVIPStatus = false;
     let currentUser = null;
     let isInitialized = false;
@@ -751,7 +754,6 @@
     }
 
     function renderNav() {
-      // Clear existing content
       taskbarNav.innerHTML = '';
 
       const userGamesBtn = document.createElement('button');
@@ -773,7 +775,6 @@
     async function renderVip() {
       if (renderingInProgress) return;
       
-      // Clear existing content completely
       taskbarVip.innerHTML = '';
       
       if (!currentUser) {
@@ -809,10 +810,8 @@
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        // Clear existing content completely
         taskbarAuth.innerHTML = '';
         
-        // Remove any existing dropdown
         const existingDropdown = document.getElementById('user-dropdown');
         if (existingDropdown) {
           existingDropdown.remove();
@@ -920,8 +919,6 @@
           dropdown.appendChild(logoutBtn);
 
           taskbarAuth.appendChild(dropdown);
-          
-          // Add click handler for user info
           userInfo.addEventListener('click', () => toggleDropdown(dropdown));
 
         } else {
@@ -942,7 +939,7 @@
       }
     }
 
-    // Global click handler for dropdowns - SET ONLY ONCE
+    // Global click handler for dropdowns
     let globalClickHandlerAdded = false;
     
     function addGlobalClickHandler() {
@@ -957,7 +954,7 @@
       }
     }
 
-    // Refresh VIP button handler - SET ONLY ONCE
+    // Refresh VIP button handler
     document.getElementById('refresh-vip').addEventListener('click', async () => {
       hideMessage();
       if (currentUser) {
@@ -980,23 +977,17 @@
       }
     });
 
-    // Initialize everything - SINGLE INITIALIZATION
+    // Initialize everything
     async function initializeApp() {
       if (isInitialized) return;
       isInitialized = true;
 
       try {
-        // Render navigation first
         renderNav();
-        
-        // Initialize auth and VIP together
         await renderAuth();
         await renderVip();
-        
-        // Add global click handler
         addGlobalClickHandler();
 
-        // Auth state change handler with proper debouncing
         let authChangeTimeout;
         supabase.auth.onAuthStateChange(async (event, session) => {
           clearTimeout(authChangeTimeout);
