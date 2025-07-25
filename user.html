@@ -1145,277 +1145,451 @@
 </html>
 
 </html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Show Love to VIP Member</title>
- <style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+  <meta charset="UTF-8" />
+  <title>User Content Art - BrownDogGames</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      color: #fefefe;
+      margin: 0; padding: 20px;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh;
+    }
+    h1, h2 {
+      color: #ff4f9f;
+      text-shadow: 2px 2px 0 #ff4f9f;
+      margin: 1rem 0;
+      width: 100%;
+      max-width: 800px;
+    }
+    .back-link {
+      align-self: flex-start;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+      margin-bottom: 1rem;
+      max-width: 800px;
+      display: inline-block;
+    }
+    .back-link:hover { background-color: #ff82ba; }
 
-  body {
-    font-family: 'Rubik Mono One', sans-serif;
-    background-color: #1b1b2e;
-    color: #fefefe;
-    margin: 0;
-    padding: 0 20px 40px;
-    background-image: linear-gradient(135deg, #361c3e, #1a1328);
-  }
+    .content-section {
+      max-width: 800px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
 
-  header {
-    text-align: center;
-    padding: 2rem 1rem;
-  }
+    .content-container {
+      display: grid;
+      gap: 20px;
+      justify-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      width: 100%;
+    }
 
-  header h1 {
-    font-size: 2.5rem;
-    color: #ff4f9f;
-    text-shadow: 2px 2px 0 #000;
-  }
+    .card {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 16px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
 
-  #status {
-    margin-top: 10px;
-    font-size: 18px;
-    color: #fefefe;
-  }
+    .card:hover {
+      border-color: #ff82ba;
+      box-shadow: 0 0 10px #ff82ba;
+    }
 
-  #like-btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: #ff4f9f; /* Pink background */
-    color: #fff; /* White text */
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 25px; /* Round button edges */
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: 2px solid #ff4f9f;
-    cursor: pointer;
-    transition: all 0.3s ease; /* Smooth transitions */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Soft shadow */
-  }
+    .card.selected {
+      border-color: #ff82ba;
+      box-shadow: 0 0 15px #ff4f9f;
+    }
 
-  #like-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    border-color: #ccc;
-  }
+    .title {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
 
-  #like-btn:hover {
-    background-color: #ff82ba; /* Lighter pink */
-    transform: scale(1.1); /* Slight zoom effect */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* More prominent shadow */
-    border-color: #ff82ba; /* Light border on hover */
-  }
+    .desc {
+      color: #ddd;
+      margin: 0.5rem 0 1rem 0;
+      min-height: 3rem;
+      text-align: center;
+    }
 
-  #like-btn:active {
-    transform: scale(1); /* Snap back when clicked */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow when active */
-  }
-</style>
+    .image-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .thumbnail {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .fullscreen-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 79, 159, 0.9);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 3;
+      font-family: 'Rubik Mono One', sans-serif;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .image-container:hover .fullscreen-btn {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(255, 130, 186, 1);
+      transform: scale(1.1);
+    }
+
+    .video-player {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: black;
+      max-height: 200px;
+      max-width: 100%;
+    }
+
+    .play-link {
+      display: inline-block;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+      margin-top: auto; /* push to bottom */
+    }
+    .play-link:hover { background-color: #ff82ba; }
+
+    #chat-container {
+      display: none;
+    }
+
+    .no-content {
+      font-size: 1.1rem;
+      text-align: center;
+      color: #ddd;
+      margin-top: 2rem;
+      font-style: italic;
+      background-color: #2f1a39;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+
+    /* Fullscreen View */
+    .fullscreen-view {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .fullscreen-view.active {
+      display: flex;
+    }
+
+    .fullscreen-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(27, 27, 46, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1001;
+      border-bottom: 2px solid #ff4f9f;
+    }
+
+    .fullscreen-title {
+      color: #ff4f9f;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .close-fullscreen {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-weight: bold;
+    }
+
+    .close-fullscreen:hover {
+      background-color: #ff82ba;
+    }
+
+    .fullscreen-image {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      margin-top: 80px;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1 id="heading">Show Some Love ❤️</h1>
-  </header>
-  <p id="status"></p>
-  <button id="like-btn">Like</button>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <a href="user-art.html" class="back-link">⬅️ Back to All Users</a>
+  <h1 id="pageTitle">User Content</h1>
 
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+  <section class="content-section" id="art-section">
+    <h2>Art</h2>
+    <div id="art" class="content-container">Loading art...</div>
+  </section>
 
-    const likeBtn = document.getElementById('like-btn');
-    const status = document.getElementById('status');
+  <!-- Fullscreen View -->
+  <div id="fullscreen-view" class="fullscreen-view">
+    <div class="fullscreen-header">
+      <h2 id="fullscreen-title" class="fullscreen-title">Artwork</h2>
+      <button class="close-fullscreen" onclick="closeFullscreen()">✕ Close</button>
+    </div>
+    <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
+  </div>
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const pageOwner = urlParams.get('user');
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Handle error if no user in the URL
-    if (!pageOwner) {
-      document.title = 'Error';
-      document.getElementById('heading').textContent = '❌ No username in URL.';
-      likeBtn.style.display = 'none';
-      status.textContent = '';
-    } else {
-      document.title = `Show Love to ${pageOwner}`;
-      document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  const pageTitle = document.getElementById('pageTitle');
+  const artContainer = document.getElementById('art');
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get('user') || '';
+
+  // Fullscreen functionality
+  window.openFullscreen = function(imageSrc, altText, title) {
+    const fullscreenView = document.getElementById('fullscreen-view');
+    const fullscreenImage = document.getElementById('fullscreen-image');
+    const fullscreenTitle = document.getElementById('fullscreen-title');
+    
+    fullscreenImage.src = imageSrc;
+    fullscreenImage.alt = altText;
+    fullscreenTitle.textContent = title || 'Artwork';
+    fullscreenView.classList.add('active');
+    
+    // Prevent body scrolling
+    document.body.style.overflow = 'hidden';
+  }
+
+  window.closeFullscreen = function() {
+    const fullscreenView = document.getElementById('fullscreen-view');
+    fullscreenView.classList.remove('active');
+    
+    // Restore body scrolling
+    document.body.style.overflow = 'auto';
+  }
+
+  // Close fullscreen on escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeFullscreen();
+    }
+  });
+
+  async function incrementVipPageView() {
+    if (!username) return;
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single();
+
+    if (userError || !userData) {
+      console.error('User not found for VIP increment:', userError);
+      return;
     }
 
-    // Function to get logged-in user
-    async function getUser() {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) return null;
-      return user;
-    }
+    const now = new Date().toISOString();
 
-    // Check if the user is VIP
-    async function isVip(userId) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('is_vip')
-        .eq('id', userId)  // Query by user ID, not username
-        .single();
-
-      if (error) {
-        console.error('Error fetching VIP status:', error);
-        return false;
-      }
-
-      return data ? data.is_vip : false;
-    }
-
-    // Check if the user has already liked the page
-    async function hasLiked(userId) {
-      if (!userId || !pageOwner) return false;
-      const { data, error } = await supabase
-        .from('vip_page_views')
-        .select('user_id')
-        .eq('user_id', userId)
-        .eq('username', pageOwner)
-        .maybeSingle();
-      return !!data;
-    }
-
-    // Get the total like count for the page
-    async function getLikeCount() {
-      if (!pageOwner) return 0;
-      const { count, error } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', pageOwner);
-      return count || 0;
-    }
-
-    // Update the status and like button based on the user's status
-    async function updateStatus() {
-      const user = await getUser();
-      if (!user) {
-        status.textContent = '❌ Please log in to like this page.';
-        likeBtn.style.display = 'none';  // Hide like button if not logged in
-        return;
-      }
-
-      const isPageOwnerVip = await isVip(user.id);  // Pass logged-in user's ID
-
-      if (!isPageOwnerVip) {
-        status.textContent = `❌ You can only like ${pageOwner}'s page if they are a VIP member.`;
-        likeBtn.style.display = 'none';  // Hide like button if not VIP
-        return;
-      }
-
-      const liked = await hasLiked(user.id);
-      const count = await getLikeCount();
-
-      if (liked) {
-        status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
-        likeBtn.disabled = true;  // Disable the button if already liked
-      } else {
-        status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
-        likeBtn.disabled = false;  // Enable button if not liked
-      }
-
-      likeBtn.style.display = 'inline-block';  // Show the like button if VIP
-    }
-
-    // Like the page when the button is clicked
-    likeBtn.addEventListener('click', async () => {
-      const user = await getUser();
-      if (!user) {
-        status.textContent = '❌ You must be logged in to like this page.';
-        return;
-      }
-
-      const liked = await hasLiked(user.id);
-      if (liked) {
-        status.textContent = `❤️ You've already liked ${pageOwner}'s page.`;
-        likeBtn.disabled = true;
-        return;
-      }
-
-      const now = new Date().toISOString();
-
-      // Check if the user has already liked the page
-      const { data: existingLike, error: likeError } = await supabase
-        .from('vip_page_views')
-        .select('view_count, first_viewed_at')
-        .eq('user_id', user.id)
-        .eq('username', pageOwner)
-        .single();
-
-      if (existingLike) {
-        // If the user already liked, update the view count and last viewed timestamp
-        const { error: updateError } = await supabase
-          .from('vip_page_views')
-          .update({
-            view_count: existingLike.view_count + 1,
-            last_viewed_at: now,
-          })
-          .eq('user_id', user.id)
-          .eq('username', pageOwner);
-
-        if (updateError) {
-          console.error('Error updating like count:', updateError);
-          status.textContent = '❌ Error updating like count.';
-          return;
-        }
-
-        status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${existingLike.view_count + 1}`;
-        return;
-      }
-
-      // If the user hasn't liked, insert a new row with the current timestamp
-      const { error: insertError } = await supabase
-        .from('vip_page_views')
-        .insert([{
-          user_id: user.id,
-          username: pageOwner,
-          view_count: 1,
-          first_viewed_at: now,  // Set the first view time only when they like the page for the first time
-          last_viewed_at: now,
-        }]);
-
-
-      if (insertError) {
-        console.error('Insert error:', insertError);
-        status.textContent = '❌ Error liking page. Please try again.';
-        return;
-      }
-
-      const count = await getLikeCount();
-      likeBtn.disabled = true;
-      status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
+    const { data, error } = await supabase.rpc('increment_vip_page_view', {
+      in_user_id: userData.id,
+      in_username: username,
+      in_now: now
     });
 
-    // Initialize the page status and like button
-    updateStatus();
-  </script>
+    if (error) {
+      console.error('Error incrementing VIP page views:', error);
+    } else {
+      console.log(`Incremented VIP page views for ${username}`);
+    }
+  }
 
-<footer style="background-color: #222; color: #fefefe; padding: 40px 20px;">
-  <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-    <p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">💡 Join the community and unlock exclusive perks!</p>
-    <p style="font-size: 16px; margin-bottom: 20px;">By signing up as a VIP member, you can support your favorite creators and get access to special content and rewards. Your likes help the creators grow and earn rewards, too!</p>
-    <p style="font-size: 16px; margin-bottom: 15px;">Become a VIP today and enjoy:</p>
-    <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 14px; text-align: left;">
-      <li>🔓 Access to exclusive content</li>
-      <li>💎 VIP-only features</li>
-      <li>💖 Direct impact on the creators you love</li>
-    </ul>
-    <p style="font-size: 16px; margin-top: 20px;">Ready to make a difference?</p>
-    <a href="javascript:void(0);" onclick="window.scrollTo(0, 0);" style="display: inline-block; background-color: #ff4f9f; color: #fff; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 5px; transition: background-color 0.3s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
-      Sign in now with GitHub!
-    </a>
-  </div>
-</footer>
+  async function loadArt() {
+    const { data, error } = await supabase
+      .from('user_art')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: false });
 
-<!-- Add this in your sign-in section -->
-<section id="signin" style="padding: 50px 0;">
-  <!-- Your sign-in form goes here -->
-</section>
+    if (error) {
+      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
+      return;
+    }
+
+    if (!data.length) {
+      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+      return;
+    }
+
+    artContainer.innerHTML = '';
+    data.forEach((art, index) => {
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = art.title || 'Untitled Art';
+      card.appendChild(title);
+
+      if (art.description) {
+        const desc = document.createElement('p');
+        desc.className = 'desc';
+        desc.textContent = art.description;
+        card.appendChild(desc);
+      }
+
+      if (art.image_url) {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
+
+        const img = document.createElement('img');
+        img.className = 'thumbnail';
+        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+        img.src = thumbUrl || art.image_url;
+        img.alt = `Artwork: ${art.title}`;
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'fullscreen-btn';
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
+          openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
+        });
+
+        imageContainer.appendChild(img);
+        imageContainer.appendChild(fullscreenBtn);
+        card.appendChild(imageContainer);
+      }
+
+      artContainer.appendChild(card);
+    });
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, (m) => {
+      switch(m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#39;';
+        default: return m;
+      }
+    });
+  }
+
+  function convertDriveLinkToThumbnail(url) {
+    if (!url) return '';
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      return `https://drive.google.com/thumbnail?id=${fileId}`;
+    }
+    return url;
+  }
+
+  function convertDriveLinkToDirectView(url) {
+    if (!url) return '';
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    if (fileId) {
+      return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+    return url;
+  }
+
+  // Main execution block
+  if (!username) {
+    pageTitle.textContent = 'Error';
+    artContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
+  } else {
+    pageTitle.textContent = `${username}'s Content`;
+
+    // Increment the VIP page views count each time this page loads for this user
+    incrementVipPageView();
+
+    loadArt();
+  }
+</script>
 
 </body>
 </html>
