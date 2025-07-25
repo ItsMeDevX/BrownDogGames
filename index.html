@@ -222,6 +222,14 @@
       background-color: #ff8edb;
     }
 
+    .vip-status {
+      color: #2ecc71;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     /* Auth in taskbar */
     .taskbar-auth {
       display: flex;
@@ -473,7 +481,7 @@
     </div>
 
     <div class="taskbar-vip" id="taskbar-vip">
-      <!-- VIP button injected by JS -->
+      <!-- VIP button/status injected by JS -->
     </div>
     
     <div class="taskbar-auth" id="taskbar-auth">
@@ -600,6 +608,10 @@
     const taskbarAuth = document.getElementById('taskbar-auth');
     const taskbarVip = document.getElementById('taskbar-vip');
 
+    // Global VIP status tracking
+    let currentVIPStatus = false;
+    let currentUser = null;
+
     function toggleDropdown(dropdown) {
       dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
     }
@@ -676,6 +688,8 @@
           document.getElementById('vip-message').style.display = 'block';
           document.getElementById('refresh-vip').style.display = 'none';
 
+          // Update VIP status and re-render
+          currentVIPStatus = true;
           renderVip();
 
           setTimeout(() => {
@@ -710,10 +724,11 @@
     }
 
     async function renderVip() {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Clear the VIP section completely
       taskbarVip.innerHTML = '';
       
-      if (!session?.user) {
+      if (!currentUser) {
+        // User not logged in - show login prompt
         const vipBtn = document.createElement('button');
         vipBtn.textContent = 'Get VIP';
         vipBtn.addEventListener('click', () => {
@@ -723,20 +738,20 @@
         return;
       }
 
-      const isVIP = await checkVIPStatus(session.user.id);
-      
-      if (isVIP) {
-        const vipStatus = document.createElement('span');
-        vipStatus.textContent = '⭐ VIP Active';
-        vipStatus.style.color = '#2ecc71';
-        vipStatus.style.fontWeight = 'bold';
+      // User is logged in - check VIP status
+      if (currentVIPStatus) {
+        // Show VIP active status
+        const vipStatus = document.createElement('div');
+        vipStatus.className = 'vip-status';
+        vipStatus.innerHTML = '⭐ VIP Active';
         taskbarVip.appendChild(vipStatus);
       } else {
+        // Show Get VIP button
         const vipBtn = document.createElement('button');
         vipBtn.textContent = 'Get VIP';
         vipBtn.addEventListener('click', () => {
           document.getElementById('vip-modal').classList.add('show');
-          initPayPal(session.user);
+          initPayPal(currentUser);
         });
         taskbarVip.appendChild(vipBtn);
       }
@@ -747,6 +762,10 @@
       taskbarAuth.innerHTML = '';
 
       if (session?.user) {
+        currentUser = session.user;
+        // Update VIP status when user changes
+        currentVIPStatus = await checkVIPStatus(session.user.id);
+        
         const { user_metadata } = session.user;
         const name = user_metadata.full_name || 'GitHub User';
         const avatar = user_metadata.avatar_url || '';
@@ -843,6 +862,9 @@
           }
         });
       } else {
+        currentUser = null;
+        currentVIPStatus = false;
+        
         const loginBtn = document.createElement('button');
         loginBtn.textContent = 'Login with GitHub';
         loginBtn.addEventListener('click', () => {
@@ -854,27 +876,33 @@
 
     document.getElementById('refresh-vip').addEventListener('click', async () => {
       hideMessage();
-      const { data } = await supabase.auth.getSession();
-      const isNowVIP = await checkVIPStatus(data?.session?.user?.id);
-      if (isNowVIP) {
-        document.getElementById('paypal-button-container').style.display = 'none';
-        document.getElementById('vip-message').style.display = 'block';
-        document.getElementById('refresh-vip').style.display = 'none';
-        showMessage('VIP status confirmed!', '#2ecc71');
-        renderVip();
-      } else {
-        showMessage('Still not VIP. If you subscribed, please log out and back in.');
+      if (currentUser) {
+        const isNowVIP = await checkVIPStatus(currentUser.id);
+        if (isNowVIP) {
+          currentVIPStatus = true;
+          document.getElementById('paypal-button-container').style.display = 'none';
+          document.getElementById('vip-message').style.display = 'block';
+          document.getElementById('refresh-vip').style.display = 'none';
+          showMessage('VIP status confirmed!', '#2ecc71');
+          renderVip();
+        } else {
+          showMessage('Still not VIP. If you subscribed, please log out and back in.');
+        }
       }
     });
 
     // Initialize everything
     renderNav();
-    renderAuth();
-    renderVip();
+    
+    // Initialize auth and VIP together
+    renderAuth().then(() => {
+      renderVip();
+    });
 
     supabase.auth.onAuthStateChange(() => {
-      renderAuth();
-      renderVip();
+      renderAuth().then(() => {
+        renderVip();
+      });
     });
   </script>
 
