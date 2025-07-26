@@ -684,17 +684,30 @@
         }
       });
 
-      // Listen for login success
-      window.addEventListener('vip-user-logged-in', (event) => {
-        gateUser = event.detail;
-        showPaymentStep();
-      });
+      // Listen for login success - but only once
+      let loginHandlerAdded = false;
+      
+      function addLoginHandler() {
+        if (!loginHandlerAdded) {
+          window.addEventListener('vip-user-logged-in', (event) => {
+            gateUser = event.detail;
+            showPaymentStep();
+          });
+          loginHandlerAdded = true;
+        }
+      }
+      
+      addLoginHandler();
 
       function showPaymentStep() {
         loginStep.classList.add('completed');
         loginStep.style.display = 'none';
         paymentStep.style.display = 'block';
-        initVIPPayPal();
+        
+        // Small delay to ensure DOM is ready before PayPal init
+        setTimeout(() => {
+          initVIPPayPal();
+        }, 500);
       }
 
       vipExitBtn.addEventListener('click', () => {
@@ -721,6 +734,12 @@
         if (!gateUser) {
           showVIPMessage('Please login first before subscribing.', true);
           return;
+        }
+
+        // Clear any existing PayPal buttons first
+        const container = document.getElementById('vip-paypal-container');
+        if (container) {
+          container.innerHTML = '';
         }
 
         paypal.Buttons({
@@ -1049,8 +1068,11 @@
           currentUser = session.user;
           currentVIPStatus = await checkVIPStatus(session.user.id);
           
-          // Notify VIP gate that user logged in
-          window.dispatchEvent(new CustomEvent('vip-user-logged-in', { detail: session.user }));
+          // Only notify VIP gate if it's currently showing and user isn't already set
+          const vipGate = document.getElementById('vip-access-gate');
+          if (vipGate && vipGate.classList.contains('show') && !gateUser) {
+            window.dispatchEvent(new CustomEvent('vip-user-logged-in', { detail: session.user }));
+          }
           
           const { user_metadata } = session.user;
           const name = user_metadata.full_name || 'GitHub User';
