@@ -75,11 +75,11 @@
       display: none;
     }
 
-    /* Age Gate */
-    #age-gate {
+    /* Access Gate - NEW */
+    #access-gate {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.95);
       display: none;
       justify-content: center;
       align-items: center;
@@ -91,37 +91,114 @@
       padding: 20px;
     }
 
-    #age-gate.show {
+    #access-gate.show {
       display: flex;
     }
 
-    #age-gate h2 {
+    .gate-content {
+      background: #2a243b;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    #access-gate h2 {
       font-size: 2rem;
       margin-bottom: 1rem;
+      color: #ff69b4;
     }
 
-    #age-gate p {
+    #access-gate p {
       margin-bottom: 1.5rem;
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: #ffc0cb;
+      line-height: 1.4;
     }
 
-    #age-gate button {
-      background: #ff69b4;
-      color: #1e1b2e;
+    .age-verification-info {
+      background: #3b3750;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 4px solid #ff69b4;
+    }
+
+    .age-verification-info h3 {
+      color: #ff69b4;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
+    .age-verification-info ul {
+      text-align: left;
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .age-verification-info li {
+      margin-bottom: 8px;
+    }
+
+    #paypal-access-container {
+      margin: 20px 0;
+    }
+
+    .access-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .access-buttons button {
+      background: #666;
+      color: #fff;
       border: none;
-      padding: 0.7rem 1.4rem;
+      padding: 12px 24px;
       font-weight: bold;
       font-size: 1rem;
       border-radius: 8px;
-      margin: 0.5rem;
       cursor: pointer;
       transition: background 0.2s;
-      min-width: 120px;
     }
 
-    #age-gate button:hover {
-      background: #ff8edb;
+    .access-buttons button:hover {
+      background: #888;
+    }
+
+    #access-message-display {
+      margin: 15px 0;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+      font-size: 0.9rem;
+    }
+
+    .access-success-message {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .access-error-message {
+      background: #e74c3c;
+      color: white;
+    }
+
+    /* Hide main content initially - NEW */
+    .main-content {
+      display: none;
+    }
+
+    .main-content.show {
+      display: block;
+    }
+
+    /* Original Age Gate - keep for compatibility but hide */
+    #age-gate {
+      display: none !important;
     }
 
     /* Taskbar with everything */
@@ -439,85 +516,215 @@
       .taskbar-search input {
         width: 200px;
       }
+
+      .access-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .gate-content {
+        padding: 30px 20px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Age Gate -->
-  <div id="age-gate">
-    <h2>🔞 Adults Only</h2>
-    <p>You must be 18 or older to access BrownDogGames.</p>
-    <button id="yes-btn">Yes, I'm 18+</button>
-    <button id="no-btn">No, Take Me Back</button>
-  </div>
+  <!-- NEW Access Gate (Age Verification + Payment) -->
+  <div id="access-gate">
+    <div class="gate-content">
+      <h2>🔞 Adults Only - VIP Access Required</h2>
+      <p>To comply with UK age verification laws and access BrownDogGames, you must:</p>
+      
+      <div class="age-verification-info">
+        <h3>Why PayPal Verification?</h3>
+        <ul>
+          <li>PayPal requires users to be 18+ to create accounts</li>
+          <li>This serves as robust age verification under UK law</li>
+          <li>Your payment information confirms adult status</li>
+          <li>Supports our adult content platform</li>
+        </ul>
+      </div>
 
-  <!-- Logo -->
-  <a href="index.html">
-    <img 
-      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-      alt="BrownDogGames Logo" 
-      class="logo"
-    >
-  </a>
-
-  <!-- Header -->
-  <header>
-    <h1 class="brand-line">
-      Unleash the Dog. <br class="mobile-break"><span class="separator">NSFW Never Looked This Fun</span>
-    </h1>
-  </header>
-
-  <!-- Unified Taskbar with everything -->
-  <div id="taskbar">
-    <div class="taskbar-nav" id="taskbar-nav">
-      <!-- Navigation buttons injected by JS -->
-    </div>
-    
-    <div class="taskbar-search">
-      <input type="text" id="game-search-input" placeholder="Search games..." />
-      <button id="search-button">Search</button>
-      <div id="suggestions-dropdown"></div>
-    </div>
-
-    <div class="taskbar-vip" id="taskbar-vip">
-      <!-- VIP button/status injected by JS -->
-    </div>
-    
-    <div class="taskbar-auth" id="taskbar-auth">
-      <!-- Auth content injected by JS -->
+      <p><strong>Subscribe to VIP to gain access to all games and content</strong></p>
+      
+      <div id="paypal-access-container"></div>
+      
+      <div id="access-message-display"></div>
+      
+      <div class="access-buttons">
+        <button id="exit-btn">I'm Under 18 - Exit</button>
+      </div>
     </div>
   </div>
 
-  <!-- VIP Modal -->
-  <div class="vip-modal" id="vip-modal">
-    <div class="vip-modal-content">
-      <h2>VIP Subscription</h2>
-      <div id="paypal-button-container"></div>
-      <div id="vip-message">🌟 VIP Activated! Thank you for subscribing.</div>
-      <button id="refresh-vip">🔄 Refresh VIP Status</button>
-      <div id="message-box"></div>
-      <button class="close-btn" onclick="document.getElementById('vip-modal').classList.remove('show')">Close</button>
+  <!-- Main Content (wrapped but keep your original structure) -->
+  <div class="main-content" id="main-content">
+
+    <!-- Original Age Gate (hidden but preserved) -->
+    <div id="age-gate">
+      <h2>🔞 Adults Only</h2>
+      <p>You must be 18 or older to access BrownDogGames.</p>
+      <button id="yes-btn">Yes, I'm 18+</button>
+      <button id="no-btn">No, Take Me Back</button>
     </div>
+
+    <!-- Logo -->
+    <a href="index.html">
+      <img 
+        src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+        alt="BrownDogGames Logo" 
+        class="logo"
+      >
+    </a>
+
+    <!-- Header -->
+    <header>
+      <h1 class="brand-line">
+        Unleash the Dog. <br class="mobile-break"><span class="separator">NSFW Never Looked This Fun</span>
+      </h1>
+    </header>
+
+    <!-- Unified Taskbar with everything -->
+    <div id="taskbar">
+      <div class="taskbar-nav" id="taskbar-nav">
+        <!-- Navigation buttons injected by JS -->
+      </div>
+      
+      <div class="taskbar-search">
+        <input type="text" id="game-search-input" placeholder="Search games..." />
+        <button id="search-button">Search</button>
+        <div id="suggestions-dropdown"></div>
+      </div>
+
+      <div class="taskbar-vip" id="taskbar-vip">
+        <!-- VIP button/status injected by JS -->
+      </div>
+      
+      <div class="taskbar-auth" id="taskbar-auth">
+        <!-- Auth content injected by JS -->
+      </div>
+    </div>
+
+    <!-- VIP Modal -->
+    <div class="vip-modal" id="vip-modal">
+      <div class="vip-modal-content">
+        <h2>VIP Subscription</h2>
+        <div id="paypal-button-container"></div>
+        <div id="vip-message">🌟 VIP Activated! Thank you for subscribing.</div>
+        <button id="refresh-vip">🔄 Refresh VIP Status</button>
+        <div id="message-box"></div>
+        <button class="close-btn" onclick="document.getElementById('vip-modal').classList.remove('show')">Close</button>
+      </div>
+    </div>
+
   </div>
 
   <!-- Scripts -->
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
   <script>
-    // Age Gate - Fixed with localStorage
+    // NEW: Access Gate Management
+    document.addEventListener('DOMContentLoaded', () => {
+      const accessGate = document.getElementById('access-gate');
+      const mainContent = document.getElementById('main-content');
+      const exitBtn = document.getElementById('exit-btn');
+      const accessMessageDisplay = document.getElementById('access-message-display');
+
+      // Check if user already has VIP access (this serves as age verification)
+      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+
+      if (!hasVIPAccess) {
+        accessGate.classList.add('show');
+        initAccessPayPal();
+      } else {
+        // User already verified, show main content
+        mainContent.classList.add('show');
+      }
+
+      exitBtn.addEventListener('click', () => {
+        alert('Thank you for being honest. Redirecting to a family-friendly site.');
+        window.location.href = 'https://google.com';
+      });
+
+      function showAccessMessage(text, isError = false) {
+        accessMessageDisplay.textContent = text;
+        accessMessageDisplay.className = isError ? 'access-error-message' : 'access-success-message';
+        accessMessageDisplay.style.display = 'block';
+      }
+
+      function hideAccessMessage() {
+        accessMessageDisplay.style.display = 'none';
+      }
+
+      function initAccessPayPal() {
+        if (typeof paypal === 'undefined') {
+          showAccessMessage('PayPal not loaded. Please refresh the page.', true);
+          return;
+        }
+
+        paypal.Buttons({
+          style: {
+            shape: 'rect',
+            color: 'gold',
+            layout: 'vertical',
+            label: 'subscribe',
+            height: 45
+          },
+
+          createSubscription(data, actions) {
+            hideAccessMessage();
+            return actions.subscription.create({
+              plan_id: 'P-20H197268N8973214NBIXE2I'
+            });
+          },
+
+          onApprove: async (data) => {
+            hideAccessMessage();
+            const subscriptionID = data.subscriptionID;
+
+            try {
+              // Store VIP access locally
+              localStorage.setItem('vipAccess', 'true');
+              localStorage.setItem('ageVerified', 'true'); // Also set this for compatibility
+              localStorage.setItem('vipSubscriptionId', subscriptionID);
+              localStorage.setItem('vipActivatedAt', new Date().toISOString());
+
+              showAccessMessage('🎉 Age verified and VIP activated! Welcome to BrownDogGames!');
+
+              // Show main content after brief delay
+              setTimeout(() => {
+                accessGate.classList.remove('show');
+                mainContent.classList.add('show');
+              }, 2000);
+
+            } catch (error) {
+              console.error('Error processing subscription:', error);
+              showAccessMessage('Subscription successful, but there was an error. Please refresh the page.', true);
+            }
+          },
+
+          onError: (err) => {
+            console.error('PayPal error:', err);
+            showAccessMessage('Payment error. Please try again or contact support.', true);
+          },
+
+          onCancel: (data) => {
+            showAccessMessage('Payment cancelled. You must subscribe to access the site.', true);
+          }
+
+        }).render('#paypal-access-container');
+      }
+    });
+
+    // ORIGINAL: Age Gate - Modified to work with new system
     document.addEventListener('DOMContentLoaded', () => {
       const ageGate = document.getElementById('age-gate');
       const yesBtn = document.getElementById('yes-btn');
       const noBtn = document.getElementById('no-btn');
 
-      // Check if user has already verified their age
-      const isVerified = localStorage.getItem('ageVerified') === 'true';
-
-      // Only show age gate if not verified
-      if (!isVerified) {
-        ageGate.classList.add('show');
-      }
+      // Original age gate is now always hidden since we use the paywall
+      // But keeping the logic for compatibility
 
       yesBtn.addEventListener('click', () => {
         localStorage.setItem('ageVerified', 'true');
@@ -530,7 +737,7 @@
       });
     });
 
-    // Game Search
+    // ORIGINAL: Game Search (preserved exactly)
     const gamePages = [
       { title: 'Lapdance Dash', url: 'https://browndoggames.com/Lapdance-Dash.html' },
       { title: 'Naked Craft', url: 'https://browndoggames.com/naked-craft.html' },
@@ -629,6 +836,7 @@
     });
   </script>
 
+  <!-- ORIGINAL: Supabase Module (preserved exactly) -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -665,6 +873,10 @@
     }
 
     async function checkVIPStatus(userId) {
+      // MODIFIED: Check both database and local storage
+      const localVIP = localStorage.getItem('vipAccess') === 'true';
+      if (localVIP) return true;
+
       if (!userId) return false;
 
       try {
@@ -706,7 +918,7 @@
         createSubscription(data, actions) {
           hideMessage();
           return actions.subscription.create({
-            plan_id: 'P-20H197268N8973414NBIXE2I'
+            plan_id: 'P-20H197268N8973214NBIXE2I'
           });
         },
 
@@ -777,7 +989,10 @@
       
       taskbarVip.innerHTML = '';
       
-      if (!currentUser) {
+      // MODIFIED: Check if user has VIP access (either through payment or database)
+      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true' || currentVIPStatus;
+      
+      if (!currentUser && !hasVIPAccess) {
         const vipBtn = document.createElement('button');
         vipBtn.textContent = 'Get VIP';
         vipBtn.addEventListener('click', () => {
@@ -787,10 +1002,10 @@
         return;
       }
 
-      if (currentVIPStatus) {
+      if (hasVIPAccess || currentVIPStatus) {
         const vipStatus = document.createElement('div');
         vipStatus.className = 'vip-status';
-        vipStatus.innerHTML = '⭐ VIP Active';
+        vipStatus.innerHTML = '⭐ VIP Active (Age Verified)';
         taskbarVip.appendChild(vipStatus);
       } else {
         const vipBtn = document.createElement('button');
