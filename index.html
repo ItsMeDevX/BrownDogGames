@@ -768,9 +768,17 @@
         </ul>
       </div>
 
-      <p><strong>Subscribe to VIP to gain access to all games and content</strong></p>
-      
-      <div id="paypal-access-container"></div>
+      <p><strong>Step 1: Login with GitHub to create your account</strong></p>
+      <div id="paypal-login-section">
+        <button id="paypal-github-login" style="background: #333; color: #fff; padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 10px 0;">
+          🔑 Login with GitHub First
+        </button>
+      </div>
+
+      <div id="paypal-payment-section" style="display: none;">
+        <p><strong>Step 2: Subscribe to VIP for age verification and site access</strong></p>
+        <div id="paypal-access-container"></div>
+      </div>
       
       <div id="paypal-access-message"></div>
       
@@ -846,14 +854,55 @@
       const paypalAccessGate = document.getElementById('paypal-access-gate');
       const paypalExitBtn = document.getElementById('paypal-exit-btn');
       const paypalAccessMessage = document.getElementById('paypal-access-message');
+      const paypalLoginSection = document.getElementById('paypal-login-section');
+      const paypalPaymentSection = document.getElementById('paypal-payment-section');
+      const paypalGithubLogin = document.getElementById('paypal-github-login');
 
       // Check if user already has VIP access
       const hasLocalVIPAccess = localStorage.getItem('vipAccess') === 'true';
 
       if (!hasLocalVIPAccess) {
         paypalAccessGate.classList.add('show');
+        
+        // Wait for Supabase to load, then check auth status
+        setTimeout(checkAuthAndSetupGate, 1000);
+      }
+
+      function checkAuthAndSetupGate() {
+        // Check if user is already logged in
+        if (window.currentPaywallUser) {
+          showPaymentSection();
+        } else {
+          showLoginSection();
+        }
+      }
+
+      function showLoginSection() {
+        paypalLoginSection.style.display = 'block';
+        paypalPaymentSection.style.display = 'none';
+      }
+
+      function showPaymentSection() {
+        paypalLoginSection.style.display = 'none';
+        paypalPaymentSection.style.display = 'block';
         initPayPalAccessGate();
       }
+
+      // GitHub login for paywall
+      paypalGithubLogin.addEventListener('click', () => {
+        // Trigger the same login as the main site
+        if (window.triggerGitHubLogin) {
+          window.triggerGitHubLogin();
+        } else {
+          showPayPalMessage('Loading login system...', true);
+        }
+      });
+
+      // Listen for successful login
+      window.addEventListener('paywall-user-logged-in', (event) => {
+        window.currentPaywallUser = event.detail;
+        showPaymentSection();
+      });
 
       paypalExitBtn.addEventListener('click', () => {
         alert('Thank you for being honest. Redirecting to a family-friendly site.');
@@ -873,6 +922,11 @@
       function initPayPalAccessGate() {
         if (typeof paypal === 'undefined') {
           showPayPalMessage('PayPal not loaded. Please refresh the page.', true);
+          return;
+        }
+
+        if (!window.currentPaywallUser) {
+          showPayPalMessage('Please login first before subscribing.', true);
           return;
         }
 
@@ -901,6 +955,11 @@
               localStorage.setItem('ageVerified', 'true');
               localStorage.setItem('vipSubscriptionId', subscriptionID);
               localStorage.setItem('vipActivatedAt', new Date().toISOString());
+
+              // Also save to database via the main Supabase connection
+              if (window.saveVIPToDatabase) {
+                window.saveVIPToDatabase(window.currentPaywallUser.id, subscriptionID);
+              }
 
               showPayPalMessage('🎉 Age verified and VIP activated! Welcome to BrownDogGames!');
 
@@ -1262,6 +1321,10 @@
           currentUser = session.user;
           currentVIPStatus = await checkVIPStatus(session.user.id);
           
+          // Set global user for paywall
+          window.currentPaywallUser = session.user;
+          window.dispatchEvent(new CustomEvent('paywall-user-logged-in', { detail: session.user }));
+          
           const { user_metadata } = session.user;
           const name = user_metadata.full_name || 'GitHub User';
           const avatar = user_metadata.avatar_url || '';
@@ -1349,6 +1412,7 @@
               await supabase.auth.signOut();
               currentUser = null;
               currentVIPStatus = false;
+              window.currentPaywallUser = null;
               window.location.reload();
             } catch (error) {
               console.error('Error during logout:', error);
@@ -1365,6 +1429,7 @@
         } else {
           currentUser = null;
           currentVIPStatus = false;
+          window.currentPaywallUser = null;
           
           const loginBtn = document.createElement('button');
           loginBtn.textContent = 'Login with GitHub';
@@ -1372,6 +1437,11 @@
             supabase.auth.signInWithOAuth({ provider: 'github' });
           });
           taskbarAuth.appendChild(loginBtn);
+
+          // Set up global login trigger for paywall
+          window.triggerGitHubLogin = () => {
+            supabase.auth.signInWithOAuth({ provider: 'github' });
+          };
         }
       } catch (error) {
         console.error('Error in renderAuth:', error);
@@ -1379,6 +1449,28 @@
         renderingInProgress = false;
       }
     }
+
+    // Function to save VIP status to database
+    window.saveVIPToDatabase = async (userId, subscriptionId) => {
+      try {
+        const { error } = await supabase
+          .from('users')
+          .upsert({
+            id: userId,
+            is_vip: true,
+            vip_expires_at: null,
+            paypal_transaction_id: subscriptionId
+          });
+
+        if (error) {
+          console.error('Failed to update Supabase:', error);
+        } else {
+          console.log('VIP status saved to database successfully');
+        }
+      } catch (error) {
+        console.error('Error saving VIP to database:', error);
+      }
+    };
 
     // Global click handler for dropdowns
     let globalClickHandlerAdded = false;
