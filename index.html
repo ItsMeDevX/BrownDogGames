@@ -48,33 +48,6 @@
       text-align: center;
     }
 
-    .logo {
-      height: 150px;
-      width: auto;
-      display: block;
-      margin: 20px auto;
-      max-width: 100%;
-    }
-
-    .brand-line {
-      font-family: 'Chakra Petch', sans-serif;
-      font-weight: 700;
-      font-size: 2rem;
-      color: #ff69b4;
-      text-shadow: 2px 2px 0 #000;
-      text-align: center;
-      margin: 2rem 1rem;
-      line-height: 1.3;
-    }
-
-    .separator {
-      white-space: nowrap;
-    }
-
-    .mobile-break {
-      display: none;
-    }
-
     /* VIP Access Gate */
     #vip-access-gate {
       position: fixed;
@@ -275,7 +248,7 @@
       background: #ff8edb;
     }
 
-    /* Taskbar with everything */
+    /* Taskbar with logo and everything */
     #taskbar {
       max-width: 1200px;
       margin: 20px auto;
@@ -292,6 +265,23 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 20px;
+    }
+
+    /* Logo in taskbar */
+    .taskbar-logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .taskbar-logo img {
+      height: 40px;
+      width: auto;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .taskbar-logo img:hover {
+      transform: scale(1.1);
     }
 
     /* Navigation */
@@ -476,19 +466,7 @@
       object-fit: cover;
     }
 
-    /* VIP Modal styles removed since access gate handles everything */
-
     @media (max-width: 900px) {
-      .brand-line {
-        font-size: 1.3rem;
-        line-height: 1.4;
-        margin: 1.5rem 0.5rem;
-      }
-
-      .mobile-break {
-        display: inline;
-      }
-
       #taskbar {
         max-width: 95%;
         flex-direction: column;
@@ -564,6 +542,10 @@
         padding: 10px;
       }
 
+      .taskbar-logo img {
+        height: 30px;
+      }
+
       .vip-gate-content {
         padding: 15px 10px;
         margin: 5px;
@@ -634,24 +616,16 @@
     <button id="no-btn">No, Take Me Back</button>
   </div>
 
-  <!-- Logo -->
-  <a href="index.html">
-    <img 
-      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-      alt="BrownDogGames Logo" 
-      class="logo"
-    >
-  </a>
-
-  <!-- Header -->
-  <header>
-    <h1 class="brand-line">
-      Unleash the Dog. <br class="mobile-break"><span class="separator">NSFW Never Looked This Fun</span>
-    </h1>
-  </header>
-
-  <!-- Unified Taskbar with everything -->
+  <!-- Unified Taskbar with logo and everything -->
   <div id="taskbar">
+    <div class="taskbar-logo">
+      <img 
+        src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+        alt="BrownDogGames Logo"
+        onclick="window.location.href='index.html'"
+      >
+    </div>
+
     <div class="taskbar-nav" id="taskbar-nav">
       <!-- Navigation buttons injected by JS -->
     </div>
@@ -670,8 +644,6 @@
       <!-- Auth content injected by JS -->
     </div>
   </div>
-
-  <!-- VIP Modal completely removed -->
 
   <!-- Scripts -->
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
