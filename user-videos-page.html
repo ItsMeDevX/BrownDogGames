@@ -1020,24 +1020,42 @@
       background-color: #1b1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
-      margin: 0; padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
+      margin: 0; 
+      padding: 10px;
+      display: flex; 
+      flex-direction: column; 
+      align-items: center;
       min-height: 100vh;
     }
+    
+    @media (min-width: 768px) {
+      body {
+        padding: 20px;
+      }
+    }
+    
     h1, h2 {
       color: #ff4f9f;
       text-shadow: 2px 2px 0 #000;
       margin: 1rem 0;
       width: 100%;
       max-width: 800px;
+      font-size: 1.2em;
     }
+    
+    @media (min-width: 768px) {
+      h1, h2 {
+        font-size: 1.5em;
+      }
+    }
+    
     .back-link {
       align-self: flex-start;
       background-color: #ff4f9f;
       color: #1b1b2e;
       text-decoration: none;
-      font-size: 0.9rem;
-      padding: 10px 16px;
+      font-size: 0.8rem;
+      padding: 8px 12px;
       border-radius: 999px;
       font-weight: bold;
       transition: background-color 0.2s ease;
@@ -1045,34 +1063,68 @@
       max-width: 800px;
       display: inline-block;
     }
+    
+    @media (min-width: 768px) {
+      .back-link {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+      }
+    }
+    
     .back-link:hover { background-color: #ff82ba; }
 
     .content-section {
       max-width: 800px;
       width: 100%;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
+    }
+    
+    @media (min-width: 768px) {
+      .content-section {
+        margin-bottom: 40px;
+      }
     }
 
     .content-container {
       display: grid;
-      gap: 20px;
+      gap: 15px;
       justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: 1fr;
       width: 100%;
+    }
+    
+    @media (min-width: 480px) {
+      .content-container {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      .content-container {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      }
     }
 
     .card {
       background-color: #2f1a39;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
-      padding: 16px;
+      padding: 12px;
       width: 100%;
+      max-width: 100%;
       box-sizing: border-box;
       transition: border-color 0.3s ease;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+    
+    @media (min-width: 768px) {
+      .card {
+        padding: 16px;
+      }
     }
 
     .card:hover {
@@ -1089,6 +1141,13 @@
       margin-top: 0;
       margin-bottom: 0.5rem;
       text-align: center;
+      font-size: 0.9em;
+    }
+    
+    @media (min-width: 768px) {
+      .title {
+        font-size: 1em;
+      }
     }
 
     .desc {
@@ -1096,15 +1155,29 @@
       margin: 0.5rem 0 1rem 0;
       min-height: 3rem;
       text-align: center;
+      font-size: 0.8em;
+      line-height: 1.3;
+    }
+    
+    @media (min-width: 768px) {
+      .desc {
+        font-size: 0.9em;
+      }
     }
 
     .thumbnail {
       width: 100%;
-      max-height: 150px;
+      max-height: 120px;
       object-fit: cover;
       border-radius: 8px;
       margin-bottom: 10px;
       display: block;
+    }
+    
+    @media (min-width: 768px) {
+      .thumbnail {
+        max-height: 150px;
+      }
     }
 
     .video-player {
@@ -1112,17 +1185,115 @@
       border-radius: 8px;
       margin-bottom: 10px;
       background-color: black;
-      max-height: 200px;
+      max-height: 180px;
       max-width: 100%;
     }
+    
+    @media (min-width: 768px) {
+      .video-player {
+        max-height: 200px;
+      }
+    }
 
+    /* Enhanced adult video player with mobile detection */
     .adult-video-player {
       width: 100%;
       border-radius: 8px;
       margin-bottom: 10px;
       background-color: black;
-      height: 340px;
+      height: 200px;
       max-width: 100%;
+      position: relative;
+    }
+    
+    @media (min-width: 768px) {
+      .adult-video-player {
+        height: 340px;
+      }
+    }
+    
+    /* Mobile fallback for adult content */
+    .adult-video-fallback {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #2f1a39, #1a1328);
+      border: 2px solid #ff4f9f;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
+      .adult-video-fallback {
+        height: 340px;
+      }
+    }
+    
+    .adult-video-fallback::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .adult-video-fallback:hover::before {
+      left: 100%;
+    }
+    
+    .adult-video-fallback:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 79, 159, 0.4);
+      border-color: #ff82ba;
+    }
+    
+    .adult-video-fallback .platform-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      opacity: 0.9;
+    }
+    
+    .adult-video-fallback .platform-name {
+      color: #ff4f9f;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    
+    .adult-video-fallback .platform-description {
+      color: #ddd;
+      font-size: 0.8rem;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+    
+    .adult-video-fallback .platform-button {
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      color: #1b1b2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .adult-video-fallback .platform-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(255, 79, 159, 0.5);
     }
 
     .preview-card {
@@ -1131,12 +1302,18 @@
       margin-bottom: 10px;
       background: linear-gradient(135deg, #2f1a39, #1a1328);
       border: 2px solid #ff4f9f;
-      padding: 20px;
+      padding: 15px;
       text-align: center;
       transition: all 0.3s ease;
       cursor: pointer;
       position: relative;
       overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
+      .preview-card {
+        padding: 20px;
+      }
     }
 
     .preview-card::before {
@@ -1162,16 +1339,24 @@
 
     .preview-thumbnail {
       width: 100%;
-      height: 120px;
+      height: 100px;
       background: linear-gradient(45deg, #ff4f9f, #ff82ba);
       border-radius: 6px;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
+      font-size: 1.8rem;
       position: relative;
       overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
+      .preview-thumbnail {
+        height: 120px;
+        font-size: 2rem;
+        margin-bottom: 15px;
+      }
     }
 
     .preview-thumbnail img {
@@ -1183,29 +1368,51 @@
 
     .preview-title {
       color: #ff4f9f;
-      font-size: 1rem;
-      margin-bottom: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
       font-weight: bold;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    
+    @media (min-width: 768px) {
+      .preview-title {
+        font-size: 1rem;
+        margin-bottom: 8px;
+      }
     }
 
     .preview-platform {
       color: #ddd;
-      font-size: 0.8rem;
-      margin-bottom: 12px;
+      font-size: 0.7rem;
+      margin-bottom: 10px;
+    }
+    
+    @media (min-width: 768px) {
+      .preview-platform {
+        font-size: 0.8rem;
+        margin-bottom: 12px;
+      }
     }
 
     .preview-link {
       display: inline-block;
       background: linear-gradient(135deg, #ff4f9f, #ff82ba);
       color: #1b1b2e;
-      padding: 8px 16px;
+      padding: 6px 12px;
       border-radius: 20px;
       text-decoration: none;
       font-weight: bold;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      font-size: 0.8rem;
+    }
+    
+    @media (min-width: 768px) {
+      .preview-link {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
     }
 
     .preview-link::before {
@@ -1233,14 +1440,23 @@
       display: inline-block;
       background-color: #ff4f9f;
       color: #1b1b2e;
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
       text-decoration: none;
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
-      margin-top: auto; /* push to bottom */
+      margin-top: auto;
+      font-size: 0.8rem;
     }
+    
+    @media (min-width: 768px) {
+      .play-link {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+    }
+    
     .play-link:hover { background-color: #ff82ba; }
 
     #chat-container {
@@ -1249,57 +1465,110 @@
       border: 2px solid #ff4f9f;
       border-radius: 12px;
       background-color: #2f1a39;
-      padding: 20px;
+      padding: 15px;
       box-sizing: border-box;
       margin-top: 20px;
       display: flex;
       flex-direction: column;
-      height: 450px;
+      height: 350px;
       overflow: hidden;
     }
+    
+    @media (min-width: 768px) {
+      #chat-container {
+        padding: 20px;
+        height: 450px;
+      }
+    }
+    
     #messages {
       flex: 1;
       overflow-y: auto;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       padding-right: 10px;
+      font-size: 0.8rem;
     }
-    #messages div { margin-bottom: 12px; }
+    
+    @media (min-width: 768px) {
+      #messages {
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+      }
+    }
+    
+    #messages div { margin-bottom: 10px; }
+    
+    @media (min-width: 768px) {
+      #messages div { margin-bottom: 12px; }
+    }
+    
     #messages strong { color: #ff82ba; }
 
     #chat-form {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
+    
+    @media (min-width: 768px) {
+      #chat-form {
+        gap: 10px;
+      }
+    }
+    
     #msg-input {
       flex: 1;
-      padding: 10px;
-      font-size: 16px;
+      padding: 8px;
+      font-size: 14px;
       border-radius: 8px;
       border: 2px solid #ff4f9f;
       background-color: #2f1a39;
       color: #fff;
     }
+    
+    @media (min-width: 768px) {
+      #msg-input {
+        padding: 10px;
+        font-size: 16px;
+      }
+    }
+    
     button {
       background-color: #ff4f9f;
       color: #1b1b2e;
       font-weight: bold;
       border: none;
       border-radius: 8px;
-      padding: 10px 16px;
+      padding: 8px 12px;
       cursor: pointer;
       transition: background-color 0.2s ease;
+      font-size: 0.8rem;
     }
+    
+    @media (min-width: 768px) {
+      button {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
+    }
+    
     button:hover { background-color: #ff82ba; }
 
     .no-content {
-      font-size: 1.1rem;
+      font-size: 1rem;
       text-align: center;
       color: #ddd;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       font-style: italic;
       background-color: #2f1a39;
       padding: 1rem;
       border-radius: 10px;
+    }
+    
+    @media (min-width: 768px) {
+      .no-content {
+        font-size: 1.1rem;
+        margin-top: 2rem;
+      }
     }
 
     /* Modal styles for in-site viewer */
@@ -1314,6 +1583,7 @@
       z-index: 1000;
       align-items: center;
       justify-content: center;
+      padding: 10px;
     }
 
     .modal-overlay.active {
@@ -1324,27 +1594,49 @@
       background-color: #2f1a39;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
-      padding: 20px;
-      max-width: 90vw;
-      max-height: 90vh;
+      padding: 15px;
+      max-width: 95vw;
+      max-height: 95vh;
+      width: 100%;
       overflow: auto;
       position: relative;
       box-shadow: 0 0 20px rgba(255, 79, 159, 0.5);
+    }
+    
+    @media (min-width: 768px) {
+      .modal-content {
+        padding: 20px;
+        max-width: 90vw;
+        max-height: 90vh;
+      }
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       border-bottom: 1px solid #ff4f9f;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
+    }
+    
+    @media (min-width: 768px) {
+      .modal-header {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+      }
     }
 
     .modal-title {
       color: #ff4f9f;
-      font-size: 1.2rem;
+      font-size: 1rem;
       margin: 0;
+    }
+    
+    @media (min-width: 768px) {
+      .modal-title {
+        font-size: 1.2rem;
+      }
     }
 
     .modal-close {
@@ -1352,14 +1644,22 @@
       color: #1b1b2e;
       border: none;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    
+    @media (min-width: 768px) {
+      .modal-close {
+        width: 30px;
+        height: 30px;
+        font-size: 18px;
+      }
     }
 
     .modal-close:hover {
@@ -1368,35 +1668,77 @@
 
     .modal-iframe {
       width: 100%;
-      height: 70vh;
+      height: 60vh;
       border: none;
       border-radius: 8px;
       background-color: #000;
     }
+    
+    @media (min-width: 768px) {
+      .modal-iframe {
+        height: 70vh;
+      }
+    }
 
     .modal-actions {
-      margin-top: 15px;
+      margin-top: 12px;
       display: flex;
-      gap: 10px;
+      gap: 8px;
       justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    @media (min-width: 768px) {
+      .modal-actions {
+        margin-top: 15px;
+        gap: 10px;
+      }
     }
 
     .modal-action-btn {
       background: linear-gradient(135deg, #ff4f9f, #ff82ba);
       color: #1b1b2e;
       border: none;
-      padding: 8px 16px;
+      padding: 6px 12px;
       border-radius: 20px;
       cursor: pointer;
       font-weight: bold;
       text-decoration: none;
       display: inline-block;
       transition: all 0.3s ease;
+      font-size: 0.8rem;
+    }
+    
+    @media (min-width: 768px) {
+      .modal-action-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
     }
 
     .modal-action-btn:hover {
       transform: scale(1.05);
       box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
+    }
+    
+    /* Touch-friendly improvements */
+    @media (hover: none) {
+      .card:hover, .preview-card:hover, .adult-video-fallback:hover {
+        transform: none;
+        box-shadow: 0 0 10px #ff82ba;
+      }
+      
+      .card:active, .preview-card:active, .adult-video-fallback:active {
+        transform: scale(0.98);
+      }
+      
+      .preview-link:hover, .modal-action-btn:hover {
+        transform: none;
+      }
+      
+      .preview-link:active, .modal-action-btn:active {
+        transform: scale(0.95);
+      }
     }
   </style>
 </head>
@@ -1443,8 +1785,6 @@
   );
 
   const pageTitle = document.getElementById('pageTitle');
-  const gamesContainer = document.getElementById('games');
-  const artContainer = document.getElementById('art');
   const videosContainer = document.getElementById('videos');
   const chatContainer = document.getElementById('chat-container');
   const messagesDiv = document.getElementById('messages');
@@ -1454,6 +1794,39 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
+
+  // Mobile detection
+  function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           window.innerWidth < 768;
+  }
+
+  // Check if device supports adult content iframes
+  function supportsAdultIframes() {
+    // Most mobile browsers and some desktop browsers block adult content iframes
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileDevice = isMobile();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isAndroid = /android/.test(userAgent);
+    const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+    const isChrome = /chrome/.test(userAgent);
+    const isFirefox = /firefox/.test(userAgent);
+    
+    // iOS devices typically block adult content iframes
+    if (isIOS) return false;
+    
+    // Android devices may block depending on browser
+    if (isAndroid && !isChrome) return false;
+    
+    // Safari often blocks adult content
+    if (isSafari) return false;
+    
+    // On mobile, even if browser might support it, many sites block mobile access
+    if (isMobileDevice) return false;
+    
+    // Desktop browsers generally support iframes better
+    return !isMobileDevice;
+  }
 
   // Modal elements
   const modalOverlay = document.getElementById('modal-overlay');
@@ -1469,19 +1842,15 @@
     modalIframe.src = url;
     modalOpenExternal.href = url;
     modalOverlay.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
     
-    // Handle iframe load errors
     modalIframe.onload = function() {
-      // Check if iframe loaded successfully
       try {
-        // This will throw an error if the site blocks iframe embedding
         const iframeDoc = modalIframe.contentDocument || modalIframe.contentWindow.document;
         if (!iframeDoc) {
           throw new Error('Blocked by X-Frame-Options');
         }
       } catch (e) {
-        // If iframe is blocked, show fallback message
         showIframeBlockedMessage(url, title);
       }
     };
@@ -1499,9 +1868,9 @@
       background: linear-gradient(135deg, #2f1a39, #1a1328);
       border: 2px solid #ff4f9f;
       border-radius: 8px;
-      padding: 40px;
+      padding: 30px;
       text-align: center;
-      height: 70vh;
+      height: ${isMobile() ? '60vh' : '70vh'};
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -1509,21 +1878,20 @@
     `;
     
     blockedMessage.innerHTML = `
-      <div style="font-size: 3rem; margin-bottom: 20px;">🚫</div>
-      <h3 style="color: #ff4f9f; margin-bottom: 15px;">Content Blocked</h3>
-      <p style="color: #ddd; margin-bottom: 25px; max-width: 400px;">
+      <div style="font-size: ${isMobile() ? '2.5rem' : '3rem'}; margin-bottom: 20px;">🚫</div>
+      <h3 style="color: #ff4f9f; margin-bottom: 15px; font-size: ${isMobile() ? '1rem' : '1.2rem'};">Content Blocked</h3>
+      <p style="color: #ddd; margin-bottom: 25px; max-width: 400px; font-size: ${isMobile() ? '0.8rem' : '0.9rem'};">
         This site doesn't allow embedding. We'll open it in a new tab for you instead.
       </p>
       <button onclick="window.open('${url}', '_blank'); closeModal();" 
               style="background: linear-gradient(135deg, #ff4f9f, #ff82ba); 
-                     color: #1b1b2e; border: none; padding: 12px 24px; 
+                     color: #1b1b2e; border: none; padding: ${isMobile() ? '10px 20px' : '12px 24px'}; 
                      border-radius: 25px; font-weight: bold; cursor: pointer;
-                     transition: all 0.3s ease;">
+                     transition: all 0.3s ease; font-size: ${isMobile() ? '0.8rem' : '0.9rem'};">
         Open in New Tab →
       </button>
     `;
     
-    // Replace iframe with blocked message
     const existingMessage = document.querySelector('.iframe-blocked-message');
     if (existingMessage) {
       existingMessage.remove();
@@ -1535,9 +1903,8 @@
     modalOverlay.classList.remove('active');
     modalIframe.src = 'about:blank';
     modalIframe.style.display = 'block';
-    document.body.style.overflow = ''; // Restore scrolling
+    document.body.style.overflow = '';
     
-    // Remove any blocked message or custom content
     const blockedMessage = document.querySelector('.iframe-blocked-message');
     if (blockedMessage) {
       blockedMessage.remove();
@@ -1567,7 +1934,7 @@
     }
   });
 
-  // List of sites that typically block iframe embedding (removed twitter/x since they support official embeds)
+  // List of sites that typically block iframe embedding
   const blockedSites = [
     'facebook.com',
     'instagram.com',
@@ -1591,173 +1958,6 @@
     return specialEmbedSites.some(site => url.includes(site));
   }
 
-  // Create Twitter embed content
-  function createTwitterEmbed(url) {
-    const embedContainer = document.createElement('div');
-    embedContainer.style.cssText = `
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 400px;
-      padding: 20px;
-    `;
-    
-    // Extract tweet ID from URL for better embedding
-    const tweetIdMatch = url.match(/status\/(\d+)/);
-    const tweetId = tweetIdMatch ? tweetIdMatch[1] : null;
-    
-    if (tweetId) {
-      // Use the official Twitter oEmbed API approach
-      embedContainer.innerHTML = `
-        <div id="tweet-${tweetId}" style="max-width: 550px; width: 100%;">
-          <div style="background: #000; color: #fff; padding: 40px; text-align: center; border-radius: 8px;">
-            <div style="font-size: 2rem; margin-bottom: 10px;">🐦</div>
-            <p>Loading tweet...</p>
-          </div>
-        </div>
-      `;
-      
-      // Try to load the tweet using Twitter's oEmbed API
-      loadTweetEmbed(tweetId, url, embedContainer);
-    } else {
-      // Fallback for invalid URLs
-      embedContainer.innerHTML = createFallbackEmbed(url, 'X (Twitter)', '🐦').innerHTML;
-    }
-    
-    return embedContainer;
-  }
-
-  // Load tweet using oEmbed API
-  function loadTweetEmbed(tweetId, url, container) {
-    // First try to use existing Twitter widgets if available
-    if (window.twttr && window.twttr.widgets) {
-      createTwitterWidget(tweetId, url, container);
-      return;
-    }
-    
-    // Load Twitter widgets script
-    const script = document.createElement('script');
-    script.src = 'https://platform.twitter.com/widgets.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.twttr && window.twttr.widgets) {
-        createTwitterWidget(tweetId, url, container);
-      } else {
-        showTwitterFallback(url, container);
-      }
-    };
-    script.onerror = () => {
-      showTwitterFallback(url, container);
-    };
-    
-    document.head.appendChild(script);
-  }
-
-  // Create the actual Twitter widget
-  function createTwitterWidget(tweetId, url, container) {
-    const targetDiv = container.querySelector(`#tweet-${tweetId}`);
-    if (targetDiv && window.twttr && window.twttr.widgets) {
-      // Clear loading message
-      targetDiv.innerHTML = '';
-      
-      // Create the tweet embed
-      window.twttr.widgets.createTweet(tweetId, targetDiv, {
-        theme: 'dark',
-        width: 550,
-        align: 'center',
-        conversation: 'none',
-        cards: 'visible'
-      }).then((el) => {
-        if (!el) {
-          // If tweet creation failed, show fallback
-          showTwitterFallback(url, container);
-        }
-      }).catch(() => {
-        showTwitterFallback(url, container);
-      });
-    } else {
-      showTwitterFallback(url, container);
-    }
-  }
-
-  // Show fallback when Twitter embed fails
-  function showTwitterFallback(url, container) {
-    container.innerHTML = `
-      <div style="background: linear-gradient(135deg, #2f1a39, #1a1328); border: 2px solid #ff4f9f; border-radius: 8px; padding: 40px; text-align: center; max-width: 550px; width: 100%;">
-        <div style="font-size: 3rem; margin-bottom: 20px;">🐦</div>
-        <h3 style="color: #ff4f9f; margin-bottom: 15px;">X (Twitter) Post</h3>
-        <p style="color: #ddd; margin-bottom: 25px;">
-          Unable to embed this tweet. Click below to view it on X.
-        </p>
-        <button onclick="window.open('${url}', '_blank');" 
-                style="background: linear-gradient(135deg, #ff4f9f, #ff82ba); color: #1b1b2e; border: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
-          View on X →
-        </button>
-      </div>
-    `;
-  }
-
-  // Create TikTok embed content  
-  function createTikTokEmbed(url) {
-    const videoId = extractTikTokId(url);
-    if (!videoId) {
-      return createFallbackEmbed(url, 'TikTok', '🎵');
-    }
-    
-    const embedContainer = document.createElement('div');
-    embedContainer.innerHTML = `
-      <blockquote class="tiktok-embed" cite="${url}" data-video-id="${videoId}" style="max-width: 550px; min-width: 325px; margin: 0 auto;">
-        <section>
-          <a href="${url}">Loading TikTok...</a>
-        </section>
-      </blockquote>
-    `;
-    
-    // Load TikTok embed script if not already loaded
-    if (!document.querySelector('script[src*="tiktok.com/embed"]')) {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://www.tiktok.com/embed.js';
-      document.head.appendChild(script);
-    }
-    
-    return embedContainer;
-  }
-
-  // Create fallback embed for blocked sites
-  function createFallbackEmbed(url, platformName, emoji) {
-    const embedContainer = document.createElement('div');
-    embedContainer.style.cssText = `
-      background: linear-gradient(135deg, #2f1a39, #1a1328);
-      border: 2px solid #ff4f9f;
-      border-radius: 8px;
-      padding: 40px;
-      text-align: center;
-      height: 400px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    `;
-    
-    embedContainer.innerHTML = `
-      <div style="font-size: 3rem; margin-bottom: 20px;">${emoji}</div>
-      <h3 style="color: #ff4f9f; margin-bottom: 15px;">${platformName} Content</h3>
-      <p style="color: #ddd; margin-bottom: 25px; max-width: 400px;">
-        This content is best viewed on ${platformName}. Click below to open it.
-      </p>
-      <button onclick="window.open('${url}', '_blank');" 
-              style="background: linear-gradient(135deg, #ff4f9f, #ff82ba); 
-                     color: #1b1b2e; border: none; padding: 12px 24px; 
-                     border-radius: 25px; font-weight: bold; cursor: pointer;
-                     transition: all 0.3s ease;">
-        Open on ${platformName} →
-      </button>
-    `;
-    
-    return embedContainer;
-  }
-
   // Open URL with appropriate embedding method
   function openContent(url, title = 'External Content') {
     if (isBlockedSite(url)) {
@@ -1769,36 +1969,32 @@
     }
   }
 
-  // Open modal with custom embed content instead of iframe
-  function openModalWithCustomContent(url, title) {
-    modalTitle.textContent = title;
-    modalOpenExternal.href = url;
-    modalOverlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+  // Create enhanced adult video fallback for mobile
+  function createAdultVideoFallback(url, platform, emoji, platformName) {
+    const fallbackEl = document.createElement('div');
+    fallbackEl.className = 'adult-video-fallback';
     
-    // Hide the iframe and show custom content
-    modalIframe.style.display = 'none';
+    fallbackEl.innerHTML = `
+      <div class="platform-icon">${emoji}</div>
+      <div class="platform-name">${platformName}</div>
+      <div class="platform-description">
+        ${isMobile() ? 
+          'Tap to open in browser app' : 
+          'Click to view on ' + platformName
+        }
+      </div>
+      <button class="platform-button">
+        ${isMobile() ? 'Open in App' : 'View Content'} →
+      </button>
+    `;
     
-    let customContent;
-    if (url.includes('twitter.com') || url.includes('x.com')) {
-      customContent = createTwitterEmbed(url);
-    } else if (url.includes('tiktok.com')) {
-      customContent = createTikTokEmbed(url);
-    } else {
-      customContent = createFallbackEmbed(url, 'External Site', '🌐');
-    }
+    // Add click event to open in new tab/app
+    fallbackEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.open(url, '_blank');
+    });
     
-    // Remove any existing custom content
-    const existingCustom = document.querySelector('.modal-custom-content');
-    if (existingCustom) {
-      existingCustom.remove();
-    }
-    
-    customContent.className = 'modal-custom-content';
-    customContent.style.height = '70vh';
-    customContent.style.overflow = 'auto';
-    
-    modalIframe.parentNode.insertBefore(customContent, modalIframe.nextSibling);
+    return fallbackEl;
   }
 
   async function incrementVipPageView() {
@@ -1880,11 +2076,9 @@
   }
 
   function extractPornHubId(url) {
-    // Handle both view_video.php and embed URLs
     let match = url.match(/pornhub\.com\/view_video\.php\?viewkey=([a-zA-Z0-9]+)/);
     if (match) return match[1];
     
-    // Handle direct embed URLs
     match = url.match(/pornhub\.com\/embed\/([a-zA-Z0-9]+)/);
     if (match) return match[1];
     
@@ -1903,10 +2097,10 @@
     return match ? match[1] : null;
   }
 
-  function extractTwitterVideoId(url) {
-    const regExp = /(twitter\.com|x\.com)\/\w*\/?.*\/status\/(\d+)/;
+  function extractSpankBangId(url) {
+    const regExp = /spankbang\.com\/([a-zA-Z0-9]+)\/video/;
     const match = url.match(regExp);
-    return match ? match[2] : null;
+    return match ? match[1] : null;
   }
 
   function extractWistiaId(url) {
@@ -1925,85 +2119,6 @@
     const regExp = /rumble\.com\/([a-zA-Z0-9]+)/;
     const match = url.match(regExp);
     return match ? match[1] : null;
-  }
-
-  function extractSpankBangId(url) {
-    const regExp = /spankbang\.com\/([a-zA-Z0-9]+)\/video/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractFacebookVideoId(url) {
-    const regExp = /facebook\.com\/.*\/videos\/(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractRedditVideoId(url) {
-    const regExp = /reddit\.com\/r\/[\w]+\/comments\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractJWPlayerId(url) {
-    const regExp = /jwplatform\.com\/players\/([a-zA-Z0-9-]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractBrightcoveId(url) {
-    const regExp = /players\.brightcove\.net\/(\d+)\/.*\/index\.html\?videoId=(\d+)/;
-    const match = url.match(regExp);
-    return match ? { accountId: match[1], videoId: match[2] } : null;
-  }
-
-  function extractKalturaId(url) {
-    const regExp = /kaltura\.com\/p\/(\d+)\/sp\/(\d+)00\/.*\/uiconf_id\/(\d+)\/.*entry_id\/([a-zA-Z0-9_-]+)/;
-    const match = url.match(regExp);
-    return match ? { 
-      partnerId: match[1], 
-      uiconfId: match[3], 
-      entryId: match[4] 
-    } : null;
-  }
-
-  // Function to create enhanced preview cards (MODIFIED: opens in modal)
-  function createPreviewCard(url, platform, emoji, platformName) {
-    const mediaEl = document.createElement('div');
-    mediaEl.className = 'preview-card';
-    
-    // Try to extract thumbnail if possible
-    let thumbnailUrl = null;
-    if (platform === 'pornhub') {
-      // PornHub thumbnail extraction (if video ID available)
-      const match = url.match(/viewkey=([a-zA-Z0-9]+)/);
-      if (match) {
-        thumbnailUrl = `https://ci.phncdn.com/videos/201501/25/36944322/original/(m=eafTGgaaaa)(mh=jOakqk_rBQwZcBOb)1.jpg`;
-      }
-    }
-    
-    mediaEl.innerHTML = `
-      <div class="preview-thumbnail">
-        ${thumbnailUrl ? 
-          `<img src="${thumbnailUrl}" alt="${platformName} thumbnail" onerror="this.style.display='none'; this.parentNode.innerHTML='${emoji}';" />` : 
-          emoji
-        }
-      </div>
-      <div class="preview-title">${platformName} Content</div>
-      <div class="preview-platform">Click to view on ${platformName}</div>
-      <a href="#" class="preview-link" data-url="${url}" data-title="${platformName} Content">
-        View Content →
-      </a>
-    `;
-    
-    // Add click event to open in modal or new tab based on site
-    const link = mediaEl.querySelector('.preview-link');
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      openContent(url, `${platformName} Content`);
-    });
-    
-    return mediaEl;
   }
 
 async function loadVideos() {
@@ -2040,7 +2155,7 @@ async function loadVideos() {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://www.youtube.com/embed/${videoId}`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
           mediaEl.allowFullscreen = true;
@@ -2055,7 +2170,7 @@ async function loadVideos() {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://player.vimeo.com/video/${videoId}`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
           mediaEl.allowFullscreen = true;
@@ -2070,7 +2185,7 @@ async function loadVideos() {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://player.twitch.tv/?video=${videoId}&parent=${window.location.hostname}`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-player';
@@ -2084,7 +2199,7 @@ async function loadVideos() {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://www.dailymotion.com/embed/video/${videoId}`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-player';
@@ -2098,21 +2213,7 @@ async function loadVideos() {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://streamable.com/e/${videoId}`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Mmme.me videos
-      else if (url.includes('mmme.me/')) {
-        const videoId = extractMmmeId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://mmme.me/embed/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-player';
@@ -2121,120 +2222,102 @@ async function loadVideos() {
       
       // TikTok videos
       else if (url.includes('tiktok.com/')) {
-        const videoId = extractTikTokId(url);
-        if (videoId) {
-          mediaEl = document.createElement('blockquote');
-          mediaEl.className = 'tiktok-embed video-player';
-          mediaEl.setAttribute('cite', url);
-          mediaEl.setAttribute('data-video-id', videoId);
-          mediaEl.style.maxWidth = '100%';
-          mediaEl.style.minWidth = '325px';
-          mediaEl.style.margin = '0';
+        if (isMobile()) {
+          // Mobile: Show fallback card that opens in TikTok app
+          mediaEl = document.createElement('div');
+          mediaEl.className = 'preview-card';
+          mediaEl.innerHTML = `
+            <div class="preview-thumbnail">🎵</div>
+            <div class="preview-title">TikTok Video</div>
+            <div class="preview-platform">Tap to open in TikTok app</div>
+            <a href="#" class="preview-link">Open TikTok →</a>
+          `;
           
-          // Load TikTok embed script if not already loaded
-          if (!document.querySelector('script[src*="tiktok.com/embed"]')) {
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://www.tiktok.com/embed.js';
-            document.head.appendChild(script);
+          const link = mediaEl.querySelector('.preview-link');
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open(url, '_blank');
+          });
+        } else {
+          // Desktop: Try to embed
+          const videoId = extractTikTokId(url);
+          if (videoId) {
+            mediaEl = document.createElement('blockquote');
+            mediaEl.className = 'tiktok-embed video-player';
+            mediaEl.setAttribute('cite', url);
+            mediaEl.setAttribute('data-video-id', videoId);
+            mediaEl.style.maxWidth = '100%';
+            mediaEl.style.minWidth = '325px';
+            mediaEl.style.margin = '0';
+            
+            if (!document.querySelector('script[src*="tiktok.com/embed"]')) {
+              const script = document.createElement('script');
+              script.async = true;
+              script.src = 'https://www.tiktok.com/embed.js';
+              document.head.appendChild(script);
+            }
           }
         }
       }
       
       // Instagram videos
       else if (url.includes('instagram.com/p/')) {
-        const videoId = extractInstagramId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.instagram.com/p/${videoId}/embed/`;
-          mediaEl.width = '100%';
-          mediaEl.height = '400';
-          mediaEl.frameBorder = '0';
-          mediaEl.scrolling = 'no';
-          mediaEl.allowTransparency = 'true';
-          mediaEl.className = 'video-player';
+        if (isMobile()) {
+          // Mobile: Show fallback card
+          mediaEl = document.createElement('div');
+          mediaEl.className = 'preview-card';
+          mediaEl.innerHTML = `
+            <div class="preview-thumbnail">📷</div>
+            <div class="preview-title">Instagram Post</div>
+            <div class="preview-platform">Tap to open in Instagram app</div>
+            <a href="#" class="preview-link">Open Instagram →</a>
+          `;
+          
+          const link = mediaEl.querySelector('.preview-link');
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open(url, '_blank');
+          });
+        } else {
+          // Desktop: Try to embed
+          const videoId = extractInstagramId(url);
+          if (videoId) {
+            mediaEl = document.createElement('iframe');
+            mediaEl.src = `https://www.instagram.com/p/${videoId}/embed/`;
+            mediaEl.width = '100%';
+            mediaEl.height = '400';
+            mediaEl.frameBorder = '0';
+            mediaEl.scrolling = 'no';
+            mediaEl.allowTransparency = 'true';
+            mediaEl.className = 'video-player';
+          }
         }
       }
       
-      // Twitter/X videos (MODIFIED: opens in modal)
+      // Twitter/X videos
       else if ((url.includes('twitter.com/') && url.includes('/status/')) || 
                (url.includes('x.com/') && url.includes('/status/'))) {
         mediaEl = document.createElement('div');
         mediaEl.className = 'preview-card';
+        mediaEl.innerHTML = `
+          <div class="preview-thumbnail">🐦</div>
+          <div class="preview-title">X (Twitter) Video</div>
+          <div class="preview-platform">${isMobile() ? 'Tap to open in X app' : 'Click to view on X'}</div>
+          <a href="#" class="preview-link">View Post →</a>
+        `;
         
-        const thumbnailDiv = document.createElement('div');
-        thumbnailDiv.className = 'preview-thumbnail';
-        thumbnailDiv.textContent = '🐦';
-        
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'preview-title';
-        titleDiv.textContent = 'X (Twitter) Video';
-        
-        const platformDiv = document.createElement('div');
-        platformDiv.className = 'preview-platform';
-        platformDiv.textContent = 'Click to view on X';
-        
-        const linkEl = document.createElement('a');
-        linkEl.href = '#';
-        linkEl.className = 'preview-link';
-        linkEl.textContent = 'View Post →';
-        linkEl.addEventListener('click', (e) => {
+        const link = mediaEl.querySelector('.preview-link');
+        link.addEventListener('click', (e) => {
           e.preventDefault();
-          openContent(url, 'X (Twitter) Post');
+          window.open(url, '_blank');
         });
-        
-        mediaEl.appendChild(thumbnailDiv);
-        mediaEl.appendChild(titleDiv);
-        mediaEl.appendChild(platformDiv);
-        mediaEl.appendChild(linkEl);
       }
       
-      // Wistia videos
-      else if (url.includes('wistia.com/medias/')) {
-        const videoId = extractWistiaId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://fast.wistia.net/embed/iframe/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // BitChute videos
-      else if (url.includes('bitchute.com/video/')) {
-        const videoId = extractBitChuteId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.bitchute.com/embed/${videoId}/`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Rumble videos
-      else if (url.includes('rumble.com/')) {
-        const videoId = extractRumbleId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://rumble.com/embed/${videoId}/`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Adult content platforms - NOW WITH DIRECT IFRAME EMBEDDING
+      // ADULT CONTENT PLATFORMS - Enhanced mobile handling
       else if (url.includes('pornhub.com/')) {
         const videoId = extractPornHubId(url);
-        if (videoId) {
+        if (videoId && supportsAdultIframes()) {
+          // Desktop: Try iframe embed
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://www.pornhub.com/embed/${videoId}`;
           mediaEl.width = '100%';
@@ -2243,12 +2326,21 @@ async function loadVideos() {
           mediaEl.scrolling = 'no';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'adult-video-player';
+          
+          // Add error handling for iframe blocking
+          mediaEl.onerror = function() {
+            const fallback = createAdultVideoFallback(url, 'pornhub', '🔞', 'PornHub');
+            mediaEl.parentNode.replaceChild(fallback, mediaEl);
+          };
+        } else {
+          // Mobile or blocked: Show enhanced fallback
+          mediaEl = createAdultVideoFallback(url, 'pornhub', '🔞', 'PornHub');
         }
       }
       
       else if (url.includes('redtube.com/')) {
         const videoId = extractRedTubeId(url);
-        if (videoId) {
+        if (videoId && supportsAdultIframes()) {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://embed.redtube.com/?id=${videoId}`;
           mediaEl.width = '100%';
@@ -2257,12 +2349,19 @@ async function loadVideos() {
           mediaEl.scrolling = 'no';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'adult-video-player';
+          
+          mediaEl.onerror = function() {
+            const fallback = createAdultVideoFallback(url, 'redtube', '🔞', 'RedTube');
+            mediaEl.parentNode.replaceChild(fallback, mediaEl);
+          };
+        } else {
+          mediaEl = createAdultVideoFallback(url, 'redtube', '🔞', 'RedTube');
         }
       }
       
       else if (url.includes('xvideos.com/')) {
         const videoId = extractXVideosId(url);
-        if (videoId) {
+        if (videoId && supportsAdultIframes()) {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://www.xvideos.com/embedframe/${videoId}`;
           mediaEl.width = '100%';
@@ -2271,12 +2370,19 @@ async function loadVideos() {
           mediaEl.scrolling = 'no';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'adult-video-player';
+          
+          mediaEl.onerror = function() {
+            const fallback = createAdultVideoFallback(url, 'xvideos', '🔞', 'XVideos');
+            mediaEl.parentNode.replaceChild(fallback, mediaEl);
+          };
+        } else {
+          mediaEl = createAdultVideoFallback(url, 'xvideos', '🔞', 'XVideos');
         }
       }
       
       else if (url.includes('spankbang.com/')) {
         const videoId = extractSpankBangId(url);
-        if (videoId) {
+        if (videoId && supportsAdultIframes()) {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://spankbang.com/${videoId}/embed/`;
           mediaEl.width = '100%';
@@ -2285,104 +2391,57 @@ async function loadVideos() {
           mediaEl.scrolling = 'no';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'adult-video-player';
+          
+          mediaEl.onerror = function() {
+            const fallback = createAdultVideoFallback(url, 'spankbang', '🔞', 'SpankBang');
+            mediaEl.parentNode.replaceChild(fallback, mediaEl);
+          };
+        } else {
+          mediaEl = createAdultVideoFallback(url, 'spankbang', '🔞', 'SpankBang');
         }
       }
       
-      // Facebook Videos
-      else if (url.includes('facebook.com/') && url.includes('/videos/')) {
-        const videoId = extractFacebookVideoId(url);
+      // Other video platforms
+      else if (url.includes('wistia.com/medias/')) {
+        const videoId = extractWistiaId(url);
         if (videoId) {
           mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&width=500`;
+          mediaEl.src = `https://fast.wistia.net/embed/iframe/${videoId}`;
           mediaEl.width = '100%';
-          mediaEl.height = '280';
-          mediaEl.style.border = 'none';
-          mediaEl.scrolling = 'no';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-player';
         }
       }
       
-      // Reddit Videos (MODIFIED: opens in modal)
-      else if (url.includes('reddit.com/r/') && url.includes('/comments/')) {
-        mediaEl = document.createElement('div');
-        mediaEl.className = 'preview-card';
-        mediaEl.innerHTML = `
-          <div class="preview-thumbnail">📱</div>
-          <div class="preview-title">Reddit Video</div>
-          <div class="preview-platform">Click to view on Reddit</div>
-          <a href="#" class="preview-link">View Post →</a>
-        `;
-        
-        const link = mediaEl.querySelector('.preview-link');
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          openContent(url, 'Reddit Post');
-        });
-      }
-      
-      // JW Player
-      else if (url.includes('jwplatform.com/players/')) {
-        const playerId = extractJWPlayerId(url);
-        if (playerId) {
+      else if (url.includes('bitchute.com/video/')) {
+        const videoId = extractBitChuteId(url);
+        if (videoId) {
           mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://cdn.jwplayer.com/players/${playerId}`;
+          mediaEl.src = `https://www.bitchute.com/embed/${videoId}/`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-player';
         }
       }
       
-      // Brightcove
-      else if (url.includes('players.brightcove.net/')) {
-        const brightcoveData = extractBrightcoveId(url);
-        if (brightcoveData) {
+      else if (url.includes('rumble.com/')) {
+        const videoId = extractRumbleId(url);
+        if (videoId) {
           mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://players.brightcove.net/${brightcoveData.accountId}/default_default/index.html?videoId=${brightcoveData.videoId}`;
+          mediaEl.src = `https://rumble.com/embed/${videoId}/`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.frameBorder = '0';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-player';
         }
-      }
-      
-      // Kaltura
-      else if (url.includes('kaltura.com/')) {
-        const kalturaData = extractKalturaId(url);
-        if (kalturaData) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://cdnapisec.kaltura.com/p/${kalturaData.partnerId}/sp/${kalturaData.partnerId}00/embedIframeJs/uiconf_id/${kalturaData.uiconfId}/partner_id/${kalturaData.partnerId}?iframeembed=true&entry_id=${kalturaData.entryId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // LinkedIn Videos (MODIFIED: opens in modal)
-      else if (url.includes('linkedin.com/') && (url.includes('/feed/update/') || url.includes('/posts/'))) {
-        mediaEl = document.createElement('div');
-        mediaEl.className = 'preview-card';
-        mediaEl.innerHTML = `
-          <div class="preview-thumbnail">💼</div>
-          <div class="preview-title">LinkedIn Video</div>
-          <div class="preview-platform">Click to view on LinkedIn</div>
-          <a href="#" class="preview-link">View Post →</a>
-        `;
-        
-        const link = mediaEl.querySelector('.preview-link');
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          openContent(url, 'LinkedIn Post');
-        });
       }
 
-      // Handle Google Drive video links (your original code)
+      // Handle Google Drive video links
       else if (url.includes("drive.google.com")) {
         const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
         const fileId = fileIdMatch ? fileIdMatch[1] : null;
@@ -2391,7 +2450,7 @@ async function loadVideos() {
           mediaEl = document.createElement('iframe');
           mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
           mediaEl.width = '100%';
-          mediaEl.height = '200';
+          mediaEl.height = isMobile() ? '180' : '200';
           mediaEl.allow = 'autoplay';
           mediaEl.frameBorder = '0';
           mediaEl.className = 'video-player';
@@ -2401,28 +2460,22 @@ async function loadVideos() {
         }
 
       } else {
-        // Determine file extension (lowercase) - your original code
+        // Handle direct video/image files
         const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
         const ext = extMatch ? extMatch[1].toLowerCase() : '';
 
-        // Supported image extensions (including SVG)
         const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
-
-        // Supported video extensions
         const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
 
-        // Check if URL is a GitHub raw image URL (optional, just treat as image)
         const isGithubRawImage = url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
 
         if (imageExts.includes(ext) || isGithubRawImage) {
-          // Render image
           mediaEl = document.createElement('img');
           mediaEl.src = url;
           mediaEl.alt = video.title || 'Image';
           mediaEl.className = 'video-player';
 
         } else if (videoExts.includes(ext)) {
-          // Render video element
           mediaEl = document.createElement('video');
           mediaEl.controls = true;
           mediaEl.className = 'video-player';
@@ -2430,17 +2483,20 @@ async function loadVideos() {
           mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
 
         } else {
-          // Unknown file type - show link to original instead of error (MODIFIED: opens in modal)
+          // Unknown file type
           mediaEl = document.createElement('div');
           mediaEl.className = 'video-player';
-          mediaEl.style.display = 'flex';
-          mediaEl.style.alignItems = 'center';
-          mediaEl.style.justifyContent = 'center';
-          mediaEl.style.backgroundColor = '#333';
-          mediaEl.style.color = '#fff';
-          mediaEl.style.padding = '20px';
+          mediaEl.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+          `;
           mediaEl.innerHTML = `
-            <div style="text-align: center;">
+            <div>
               <p>⚠️ Unsupported format</p>
               <a href="#" style="color: #ff4f9f;" class="open-link-modal">Open Link</a>
             </div>
@@ -2449,7 +2505,7 @@ async function loadVideos() {
           const link = mediaEl.querySelector('.open-link-modal');
           link.addEventListener('click', (e) => {
             e.preventDefault();
-            openContent(url, 'External File');
+            window.open(url, '_blank');
           });
         }
       }
@@ -2533,33 +2589,17 @@ async function loadVideos() {
     });
   }
 
-  // Placeholder for your thumbnail conversion logic if needed:
-  function convertDriveLinkToThumbnail(url) {
-    if (!url) return '';
-    // Example: convert Google Drive share URL to thumbnail URL if needed
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
-    }
-    return url;
-  }
-
   // Main execution block
   if (!username) {
     pageTitle.textContent = 'Error';
     chatHeading.textContent = 'Error';
-    if (gamesContainer) gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-    if (artContainer) artContainer.innerHTML = '';
-    videosContainer.innerHTML = '';
+    videosContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
     messagesDiv.innerHTML = '';
   } else {
     pageTitle.textContent = `${username}'s Content`;
     chatHeading.textContent = `Chat with ${username}`;
 
-    // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
-
     loadVideos();
     loadChatMessages();
   }
