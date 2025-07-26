@@ -154,6 +154,12 @@
       background: #555;
     }
 
+    #github-login-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
     #vip-paypal-container {
       margin: 20px 0;
     }
@@ -197,6 +203,17 @@
     .vip-error {
       background: #e74c3c;
       color: white;
+    }
+
+    .login-status {
+      color: #2ecc71;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .login-status.show {
+      display: block;
     }
 
     /* Age Gate */
@@ -267,14 +284,14 @@
       gap: 20px;
     }
 
-    /* Logo in taskbar */
+    /* Logo in taskbar - Made Bigger */
     .taskbar-logo {
       display: flex;
       align-items: center;
     }
 
     .taskbar-logo img {
-      height: 40px;
+      height: 60px; /* Increased from 40px */
       width: auto;
       cursor: pointer;
       transition: transform 0.2s;
@@ -475,6 +492,10 @@
         padding: 20px;
       }
 
+      .taskbar-logo img {
+        height: 50px; /* Slightly smaller on mobile but still bigger than original */
+      }
+
       .taskbar-nav {
         flex-wrap: wrap;
         justify-content: center;
@@ -543,7 +564,7 @@
       }
 
       .taskbar-logo img {
-        height: 30px;
+        height: 45px; /* Even on small screens, bigger than original 30px */
       }
 
       .vip-gate-content {
@@ -592,6 +613,7 @@
         <h4>Step 1: Create Account</h4>
         <p>Login with GitHub to create your account</p>
         <button id="github-login-btn">🔑 Login with GitHub</button>
+        <div class="login-status" id="login-status">✅ Successfully logged in!</div>
       </div>
 
       <div class="vip-step" id="payment-step" style="display: none;">
@@ -652,6 +674,7 @@
     // Global variables for gate management
     let gateUser = null;
     let supabaseClient = null;
+    let authInitialized = false;
 
     // VIP Access Gate
     document.addEventListener('DOMContentLoaded', () => {
@@ -661,6 +684,7 @@
       const githubLoginBtn = document.getElementById('github-login-btn');
       const loginStep = document.getElementById('login-step');
       const paymentStep = document.getElementById('payment-step');
+      const loginStatus = document.getElementById('login-status');
 
       // Check if user already has VIP access
       const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
@@ -671,6 +695,9 @@
 
       // GitHub login button in gate
       githubLoginBtn.addEventListener('click', () => {
+        githubLoginBtn.disabled = true;
+        githubLoginBtn.textContent = 'Connecting...';
+        
         // Wait for Supabase to be available
         if (window.supabaseClient) {
           window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
@@ -679,19 +706,23 @@
           setTimeout(() => {
             if (window.supabaseClient) {
               window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
+            } else {
+              githubLoginBtn.disabled = false;
+              githubLoginBtn.textContent = '🔑 Login with GitHub';
+              showVIPMessage('Login system failed to load. Please refresh the page.', true);
             }
-          }, 1000);
+          }, 2000);
         }
       });
 
-      // Listen for login success - but only once
+      // Listen for login success
       let loginHandlerAdded = false;
       
       function addLoginHandler() {
         if (!loginHandlerAdded) {
           window.addEventListener('vip-user-logged-in', (event) => {
             gateUser = event.detail;
-            showPaymentStep();
+            showLoginSuccess();
           });
           loginHandlerAdded = true;
         }
@@ -699,9 +730,19 @@
       
       addLoginHandler();
 
-      function showPaymentStep() {
+      function showLoginSuccess() {
+        // Update login step to show success
         loginStep.classList.add('completed');
-        loginStep.style.display = 'none';
+        githubLoginBtn.style.display = 'none';
+        loginStatus.classList.add('show');
+        
+        // Wait a moment, then show payment step
+        setTimeout(() => {
+          showPaymentStep();
+        }, 1500);
+      }
+
+      function showPaymentStep() {
         paymentStep.style.display = 'block';
         
         // Small delay to ensure DOM is ready before PayPal init
@@ -1006,8 +1047,6 @@
       }
     }
 
-    // Removed duplicate PayPal and VIP modal functions since access gate handles everything
-
     function renderNav() {
       taskbarNav.innerHTML = '';
 
@@ -1206,8 +1245,6 @@
         globalClickHandlerAdded = true;
       }
     }
-
-    // Removed VIP modal refresh handler since access gate handles everything
 
     // Initialize everything
     async function initializeApp() {
