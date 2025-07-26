@@ -848,9 +848,9 @@
       const paypalAccessMessage = document.getElementById('paypal-access-message');
 
       // Check if user already has VIP access
-      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+      const hasLocalVIPAccess = localStorage.getItem('vipAccess') === 'true';
 
-      if (!hasVIPAccess) {
+      if (!hasLocalVIPAccess) {
         paypalAccessGate.classList.add('show');
         initPayPalAccessGate();
       }
@@ -1103,6 +1103,18 @@
         if (error) {
           console.error('Error fetching VIP status:', error);
           return false;
+        }
+
+        // If user is VIP in database, grant local access too
+        if (user?.is_vip) {
+          localStorage.setItem('vipAccess', 'true');
+          localStorage.setItem('ageVerified', 'true');
+          
+          // Hide paywall if it's showing
+          const paypalGate = document.getElementById('paypal-access-gate');
+          if (paypalGate) {
+            paypalGate.classList.remove('show');
+          }
         }
 
         return user?.is_vip ?? false;
