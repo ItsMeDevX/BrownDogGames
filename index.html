@@ -755,8 +755,8 @@
     </div>
   </div>
 
-  <!-- VIP Modal -->
-  <div class="vip-modal" id="vip-modal">
+  <!-- VIP Modal - Removed since access gate handles everything -->
+  <!-- <div class="vip-modal" id="vip-modal">
     <div class="vip-modal-content">
       <h2>VIP Subscription</h2>
       <div id="paypal-button-container"></div>
@@ -765,7 +765,7 @@
       <div id="message-box"></div>
       <button class="close-btn" onclick="document.getElementById('vip-modal').classList.remove('show')">Close</button>
     </div>
-  </div>
+  </div> -->
 
   <!-- Scripts -->
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
@@ -1113,72 +1113,7 @@
       }
     }
 
-    async function initPayPal(user) {
-      const paypalContainer = document.getElementById('paypal-button-container');
-      paypalContainer.innerHTML = '';
-
-      if (typeof paypal === 'undefined') {
-        console.error('PayPal SDK not loaded');
-        return;
-      }
-
-      paypal.Buttons({
-        style: {
-          shape: 'rect',
-          color: 'gold',
-          layout: 'vertical',
-          label: 'subscribe'
-        },
-
-        createSubscription(data, actions) {
-          hideMessage();
-          return actions.subscription.create({
-            plan_id: 'P-20H197268N8973414NBIXE2I'
-          });
-        },
-
-        onApprove: async (data) => {
-          hideMessage();
-          const subscriptionID = data.subscriptionID;
-
-          try {
-            const { error } = await supabase
-              .from('users')
-              .upsert({
-                id: user.id,
-                is_vip: true,
-                vip_expires_at: null,
-                paypal_transaction_id: subscriptionID
-              });
-
-            if (error) {
-              console.error('Failed to update Supabase:', error);
-              showMessage('Subscription saved, but VIP not activated. Contact support.', '#e67e22');
-              return;
-            }
-
-            document.getElementById('paypal-button-container').style.display = 'none';
-            document.getElementById('vip-message').style.display = 'block';
-            document.getElementById('refresh-vip').style.display = 'none';
-
-            currentVIPStatus = true;
-            await renderVip();
-
-            setTimeout(() => {
-              document.getElementById('vip-modal').classList.remove('show');
-            }, 2000);
-          } catch (error) {
-            console.error('Error in onApprove:', error);
-            showMessage('An error occurred. Please try again.');
-          }
-        },
-
-        onError: (err) => {
-          console.error('PayPal error:', err);
-          showMessage('PayPal error. Please try again.');
-        }
-      }).render('#paypal-button-container');
-    }
+    // Removed duplicate PayPal and VIP modal functions since access gate handles everything
 
     function renderNav() {
       taskbarNav.innerHTML = '';
@@ -1207,29 +1142,18 @@
       // Check if user has VIP access (local or database)
       const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
       
-      if (!currentUser && !hasVIPAccess) {
-        const vipBtn = document.createElement('button');
-        vipBtn.textContent = 'Get VIP';
-        vipBtn.addEventListener('click', () => {
-          alert('Please log in first to get VIP access.');
-        });
-        taskbarVip.appendChild(vipBtn);
-        return;
-      }
-
       if (hasVIPAccess || currentVIPStatus) {
         const vipStatus = document.createElement('div');
         vipStatus.className = 'vip-status';
         vipStatus.innerHTML = hasVIPAccess ? '⭐ VIP Active (Age Verified)' : '⭐ VIP Active';
         taskbarVip.appendChild(vipStatus);
       } else {
-        const vipBtn = document.createElement('button');
-        vipBtn.textContent = 'Get VIP';
-        vipBtn.addEventListener('click', () => {
-          document.getElementById('vip-modal').classList.add('show');
-          initPayPal(currentUser);
-        });
-        taskbarVip.appendChild(vipBtn);
+        // No VIP button since access gate handles everything
+        const vipNote = document.createElement('div');
+        vipNote.style.color = '#888';
+        vipNote.style.fontSize = '0.8rem';
+        vipNote.textContent = 'VIP Required';
+        taskbarVip.appendChild(vipNote);
       }
     }
 
@@ -1387,28 +1311,7 @@
       }
     }
 
-    // Refresh VIP button handler
-    document.getElementById('refresh-vip').addEventListener('click', async () => {
-      hideMessage();
-      if (currentUser) {
-        try {
-          const isNowVIP = await checkVIPStatus(currentUser.id);
-          if (isNowVIP) {
-            currentVIPStatus = true;
-            document.getElementById('paypal-button-container').style.display = 'none';
-            document.getElementById('vip-message').style.display = 'block';
-            document.getElementById('refresh-vip').style.display = 'none';
-            showMessage('VIP status confirmed!', '#2ecc71');
-            await renderVip();
-          } else {
-            showMessage('Still not VIP. If you subscribed, please log out and back in.');
-          }
-        } catch (error) {
-          console.error('Error refreshing VIP:', error);
-          showMessage('Error checking VIP status. Please try again.');
-        }
-      }
-    });
+    // Removed VIP modal refresh handler since access gate handles everything
 
     // Initialize everything
     async function initializeApp() {
