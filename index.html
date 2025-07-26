@@ -75,8 +75,8 @@
       display: none;
     }
 
-    /* NEW: PayPal Access Gate */
-    #paypal-access-gate {
+    /* VIP Access Gate */
+    #vip-access-gate {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.95);
@@ -91,11 +91,11 @@
       padding: 20px;
     }
 
-    #paypal-access-gate.show {
+    #vip-access-gate.show {
       display: flex;
     }
 
-    .paypal-gate-content {
+    .vip-gate-content {
       background: #2a243b;
       padding: 40px;
       border-radius: 16px;
@@ -104,13 +104,13 @@
       width: 90%;
     }
 
-    #paypal-access-gate h2 {
+    #vip-access-gate h2 {
       font-size: 2rem;
       margin-bottom: 1rem;
       color: #ff69b4;
     }
 
-    #paypal-access-gate p {
+    #vip-access-gate p {
       margin-bottom: 1.5rem;
       font-size: 1rem;
       color: #ffc0cb;
@@ -142,18 +142,57 @@
       margin-bottom: 8px;
     }
 
-    #paypal-access-container {
+    .vip-step {
+      background: #3b3750;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 2px solid #ff69b4;
+    }
+
+    .vip-step.completed {
+      background: #2a4d3a;
+      border-color: #2ecc71;
+    }
+
+    .vip-step h4 {
+      color: #ff69b4;
+      margin-bottom: 10px;
+    }
+
+    .vip-step.completed h4 {
+      color: #2ecc71;
+    }
+
+    #github-login-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin: 10px 0;
+    }
+
+    #github-login-btn:hover {
+      background: #555;
+    }
+
+    #vip-paypal-container {
       margin: 20px 0;
     }
 
-    .paypal-access-buttons {
+    .vip-access-buttons {
       display: flex;
       gap: 15px;
       justify-content: center;
       margin-top: 20px;
     }
 
-    .paypal-access-buttons button {
+    .vip-access-buttons button {
       background: #666;
       color: #fff;
       border: none;
@@ -165,11 +204,11 @@
       transition: background 0.2s;
     }
 
-    .paypal-access-buttons button:hover {
+    .vip-access-buttons button:hover {
       background: #888;
     }
 
-    #paypal-access-message {
+    #vip-access-message {
       margin: 15px 0;
       padding: 12px;
       border-radius: 8px;
@@ -177,12 +216,12 @@
       font-size: 0.9rem;
     }
 
-    .paypal-success {
+    .vip-success {
       background: #2ecc71;
       color: white;
     }
 
-    .paypal-error {
+    .vip-error {
       background: #e74c3c;
       color: white;
     }
@@ -552,24 +591,23 @@
         width: 200px;
       }
 
-      .paypal-access-buttons {
+      .vip-access-buttons {
         flex-direction: column;
         align-items: center;
       }
 
-      .paypal-gate-content {
+      .vip-gate-content {
         padding: 20px 15px;
         margin: 10px;
         max-width: 95%;
       }
 
-      /* Mobile-friendly PayPal gate */
-      #paypal-access-gate h2 {
+      #vip-access-gate h2 {
         font-size: 1.4rem;
         margin-bottom: 0.8rem;
       }
 
-      #paypal-access-gate p {
+      #vip-access-gate p {
         font-size: 0.9rem;
         margin-bottom: 1rem;
       }
@@ -587,7 +625,7 @@
         font-size: 0.8rem;
       }
 
-      .paypal-access-buttons button {
+      .vip-access-buttons button {
         width: 100%;
         max-width: 280px;
         padding: 15px 20px;
@@ -595,110 +633,13 @@
         margin: 5px 0;
       }
 
-      #paypal-access-container {
+      #vip-paypal-container {
         margin: 15px 0;
         width: 100%;
       }
 
-      /* Ensure PayPal buttons are mobile-friendly */
-      #paypal-access-container > div {
+      #vip-paypal-container > div {
         width: 100% !important;
-      }
-
-      /* Age gate mobile improvements */
-      #age-gate h2 {
-        font-size: 1.6rem;
-      }
-
-      #age-gate button {
-        width: 100%;
-        max-width: 200px;
-        padding: 12px 20px;
-        margin: 8px 0;
-      }
-
-      /* VIP Modal mobile improvements */
-      .vip-modal-content {
-        margin: 20px;
-        padding: 25px 20px;
-        max-width: 90%;
-      }
-
-      .vip-modal h2 {
-        font-size: 1.2rem;
-      }
-
-      .vip-modal button {
-        width: 100%;
-        max-width: 200px;
-        padding: 12px 16px;
-        margin: 8px 0;
-      }
-
-      /* User info mobile adjustments */
-      #user-info {
-        flex-direction: column;
-        gap: 5px;
-      }
-
-      #user-info img {
-        width: 35px;
-        height: 35px;
-      }
-
-      /* Dropdown mobile improvements */
-      #user-dropdown {
-        position: fixed;
-        top: auto;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        width: auto;
-        max-width: none;
-      }
-
-      #user-dropdown button {
-        padding: 15px 20px;
-        font-size: 1rem;
-        border-bottom: 1px solid #555;
-      }
-
-      #user-dropdown button:last-child {
-        border-bottom: none;
-      }
-
-      /* Search dropdown mobile */
-      #suggestions-dropdown {
-        position: fixed;
-        top: auto;
-        bottom: 80px;
-        left: 20px;
-        right: 20px;
-        width: auto;
-        max-height: 200px;
-        overflow-y: auto;
-      }
-
-      #suggestions-dropdown > div {
-        padding: 12px 16px;
-        font-size: 1rem;
-        border-bottom: 1px solid #555;
-      }
-
-      /* Touch-friendly button sizes */
-      .taskbar-nav button,
-      .taskbar-search button,
-      .taskbar-vip button,
-      .taskbar-auth button {
-        min-height: 44px;
-        padding: 8px 16px;
-        font-size: 0.9rem;
-      }
-
-      /* Logo mobile sizing */
-      .logo {
-        height: 120px;
-        margin: 15px auto;
       }
     }
 
@@ -707,16 +648,16 @@
         padding: 10px;
       }
 
-      .paypal-gate-content {
+      .vip-gate-content {
         padding: 15px 10px;
         margin: 5px;
       }
 
-      #paypal-access-gate h2 {
+      #vip-access-gate h2 {
         font-size: 1.2rem;
       }
 
-      #paypal-access-gate p {
+      #vip-access-gate p {
         font-size: 0.85rem;
       }
 
@@ -728,35 +669,16 @@
       .age-verification-info ul {
         font-size: 0.75rem;
       }
-
-      .taskbar-search input {
-        width: 150px;
-        font-size: 0.9rem;
-      }
-
-      .brand-line {
-        font-size: 1.1rem;
-        margin: 1rem 0.25rem;
-      }
-
-      #taskbar {
-        padding: 15px 10px;
-        gap: 10px;
-      }
-
-      .logo {
-        height: 100px;
-      }
     }
   </style>
 </head>
 <body>
 
-  <!-- NEW: PayPal Access Gate -->
-  <div id="paypal-access-gate">
-    <div class="paypal-gate-content">
+  <!-- VIP Access Gate -->
+  <div id="vip-access-gate">
+    <div class="vip-gate-content">
       <h2>🔞 Adults Only - VIP Access Required</h2>
-      <p>To comply with UK age verification laws and access BrownDogGames, you must:</p>
+      <p>To comply with UK age verification laws and access BrownDogGames, complete these steps:</p>
       
       <div class="age-verification-info">
         <h3>Why PayPal Verification?</h3>
@@ -768,27 +690,27 @@
         </ul>
       </div>
 
-      <p><strong>Step 1: Login with GitHub to create your account</strong></p>
-      <div id="paypal-login-section">
-        <button id="paypal-github-login" style="background: #333; color: #fff; padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 10px 0;">
-          🔑 Login with GitHub First
-        </button>
+      <div class="vip-step" id="login-step">
+        <h4>Step 1: Create Account</h4>
+        <p>Login with GitHub to create your account</p>
+        <button id="github-login-btn">🔑 Login with GitHub</button>
       </div>
 
-      <div id="paypal-payment-section" style="display: none;">
-        <p><strong>Step 2: Subscribe to VIP for age verification and site access</strong></p>
-        <div id="paypal-access-container"></div>
+      <div class="vip-step" id="payment-step" style="display: none;">
+        <h4>Step 2: Subscribe for Age Verification</h4>
+        <p>Subscribe to VIP for age verification and site access</p>
+        <div id="vip-paypal-container"></div>
       </div>
       
-      <div id="paypal-access-message"></div>
+      <div id="vip-access-message"></div>
       
-      <div class="paypal-access-buttons">
-        <button id="paypal-exit-btn">I'm Under 18 - Exit</button>
+      <div class="vip-access-buttons">
+        <button id="vip-exit-btn">I'm Under 18 - Exit</button>
       </div>
     </div>
   </div>
 
-  <!-- Original Age Gate -->
+  <!-- Age Gate -->
   <div id="age-gate">
     <h2>🔞 Adults Only</h2>
     <p>You must be 18 or older to access BrownDogGames.</p>
@@ -849,84 +771,77 @@
   <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
   <script>
-    // NEW: PayPal Access Gate
+    // Global variables for gate management
+    let gateUser = null;
+    let supabaseClient = null;
+
+    // VIP Access Gate
     document.addEventListener('DOMContentLoaded', () => {
-      const paypalAccessGate = document.getElementById('paypal-access-gate');
-      const paypalExitBtn = document.getElementById('paypal-exit-btn');
-      const paypalAccessMessage = document.getElementById('paypal-access-message');
-      const paypalLoginSection = document.getElementById('paypal-login-section');
-      const paypalPaymentSection = document.getElementById('paypal-payment-section');
-      const paypalGithubLogin = document.getElementById('paypal-github-login');
+      const vipAccessGate = document.getElementById('vip-access-gate');
+      const vipExitBtn = document.getElementById('vip-exit-btn');
+      const vipAccessMessage = document.getElementById('vip-access-message');
+      const githubLoginBtn = document.getElementById('github-login-btn');
+      const loginStep = document.getElementById('login-step');
+      const paymentStep = document.getElementById('payment-step');
 
       // Check if user already has VIP access
-      const hasLocalVIPAccess = localStorage.getItem('vipAccess') === 'true';
+      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
 
-      if (!hasLocalVIPAccess) {
-        paypalAccessGate.classList.add('show');
-        
-        // Wait for Supabase to load, then check auth status
-        setTimeout(checkAuthAndSetupGate, 1000);
+      if (!hasVIPAccess) {
+        vipAccessGate.classList.add('show');
       }
 
-      function checkAuthAndSetupGate() {
-        // Check if user is already logged in
-        if (window.currentPaywallUser) {
-          showPaymentSection();
+      // GitHub login button in gate
+      githubLoginBtn.addEventListener('click', () => {
+        // Wait for Supabase to be available
+        if (window.supabaseClient) {
+          window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
         } else {
-          showLoginSection();
-        }
-      }
-
-      function showLoginSection() {
-        paypalLoginSection.style.display = 'block';
-        paypalPaymentSection.style.display = 'none';
-      }
-
-      function showPaymentSection() {
-        paypalLoginSection.style.display = 'none';
-        paypalPaymentSection.style.display = 'block';
-        initPayPalAccessGate();
-      }
-
-      // GitHub login for paywall
-      paypalGithubLogin.addEventListener('click', () => {
-        // Trigger the same login as the main site
-        if (window.triggerGitHubLogin) {
-          window.triggerGitHubLogin();
-        } else {
-          showPayPalMessage('Loading login system...', true);
+          showVIPMessage('Loading login system...', true);
+          setTimeout(() => {
+            if (window.supabaseClient) {
+              window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
+            }
+          }, 1000);
         }
       });
 
-      // Listen for successful login
-      window.addEventListener('paywall-user-logged-in', (event) => {
-        window.currentPaywallUser = event.detail;
-        showPaymentSection();
+      // Listen for login success
+      window.addEventListener('vip-user-logged-in', (event) => {
+        gateUser = event.detail;
+        showPaymentStep();
       });
 
-      paypalExitBtn.addEventListener('click', () => {
+      function showPaymentStep() {
+        loginStep.classList.add('completed');
+        loginStep.style.display = 'none';
+        paymentStep.style.display = 'block';
+        initVIPPayPal();
+      }
+
+      vipExitBtn.addEventListener('click', () => {
         alert('Thank you for being honest. Redirecting to a family-friendly site.');
         window.location.href = 'https://google.com';
       });
 
-      function showPayPalMessage(text, isError = false) {
-        paypalAccessMessage.textContent = text;
-        paypalAccessMessage.className = isError ? 'paypal-error' : 'paypal-success';
-        paypalAccessMessage.style.display = 'block';
+      function showVIPMessage(text, isError = false) {
+        vipAccessMessage.textContent = text;
+        vipAccessMessage.className = isError ? 'vip-error' : 'vip-success';
+        vipAccessMessage.style.display = 'block';
       }
 
-      function hidePayPalMessage() {
-        paypalAccessMessage.style.display = 'none';
+      function hideVIPMessage() {
+        vipAccessMessage.style.display = 'none';
       }
 
-      function initPayPalAccessGate() {
+      function initVIPPayPal() {
         if (typeof paypal === 'undefined') {
-          showPayPalMessage('PayPal not loaded. Please refresh the page.', true);
+          showVIPMessage('PayPal not loaded. Please refresh the page.', true);
           return;
         }
 
-        if (!window.currentPaywallUser) {
-          showPayPalMessage('Please login first before subscribing.', true);
+        if (!gateUser) {
+          showVIPMessage('Please login first before subscribing.', true);
           return;
         }
 
@@ -940,49 +855,61 @@
           },
 
           createSubscription(data, actions) {
-            hidePayPalMessage();
+            hideVIPMessage();
             return actions.subscription.create({
               plan_id: 'P-20H197268N8973414NBIXE2I'
             });
           },
 
           onApprove: async (data) => {
-            hidePayPalMessage();
+            hideVIPMessage();
             const subscriptionID = data.subscriptionID;
 
             try {
+              // Save to database
+              if (window.supabaseClient && gateUser) {
+                const { error } = await window.supabaseClient
+                  .from('users')
+                  .upsert({
+                    id: gateUser.id,
+                    is_vip: true,
+                    vip_expires_at: null,
+                    paypal_transaction_id: subscriptionID
+                  });
+
+                if (error) {
+                  console.error('Failed to update database:', error);
+                }
+              }
+
+              // Save locally
               localStorage.setItem('vipAccess', 'true');
               localStorage.setItem('ageVerified', 'true');
               localStorage.setItem('vipSubscriptionId', subscriptionID);
               localStorage.setItem('vipActivatedAt', new Date().toISOString());
 
-              // Also save to database via the main Supabase connection
-              if (window.saveVIPToDatabase) {
-                window.saveVIPToDatabase(window.currentPaywallUser.id, subscriptionID);
-              }
-
-              showPayPalMessage('🎉 Age verified and VIP activated! Welcome to BrownDogGames!');
+              showVIPMessage('🎉 Age verified and VIP activated! Welcome to BrownDogGames!');
 
               setTimeout(() => {
-                paypalAccessGate.classList.remove('show');
+                vipAccessGate.classList.remove('show');
               }, 2000);
 
             } catch (error) {
               console.error('Error processing subscription:', error);
-              showPayPalMessage('Subscription successful, but there was an error. Please refresh the page.', true);
+              showVIPMessage('Subscription successful, but there was an error. Please refresh the page.', true);
             }
           },
 
           onError: (err) => {
             console.error('PayPal error:', err);
-            showPayPalMessage('Payment error. Please try again or contact support.', true);
+            showVIPMessage('Payment error. Please try again or contact support.', true);
           },
 
           onCancel: (data) => {
-            showPayPalMessage('Payment cancelled. You must subscribe to access the site.', true);
+            showVIPMessage('Payment cancelled. You must subscribe to access the site.', true);
           }
 
-        }).render('#paypal-access-container');
+        }).render('#vip-paypal-container');
       }
     });
 
@@ -1118,6 +1045,9 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
+    // Make supabase available globally for the gate
+    window.supabaseClient = supabase;
+
     const taskbarNav = document.getElementById('taskbar-nav');
     const taskbarAuth = document.getElementById('taskbar-auth');
     const taskbarVip = document.getElementById('taskbar-vip');
@@ -1169,10 +1099,10 @@
           localStorage.setItem('vipAccess', 'true');
           localStorage.setItem('ageVerified', 'true');
           
-          // Hide paywall if it's showing
-          const paypalGate = document.getElementById('paypal-access-gate');
-          if (paypalGate) {
-            paypalGate.classList.remove('show');
+          // Hide VIP gate if it's showing
+          const vipGate = document.getElementById('vip-access-gate');
+          if (vipGate) {
+            vipGate.classList.remove('show');
           }
         }
 
@@ -1321,9 +1251,8 @@
           currentUser = session.user;
           currentVIPStatus = await checkVIPStatus(session.user.id);
           
-          // Set global user for paywall
-          window.currentPaywallUser = session.user;
-          window.dispatchEvent(new CustomEvent('paywall-user-logged-in', { detail: session.user }));
+          // Notify VIP gate that user logged in
+          window.dispatchEvent(new CustomEvent('vip-user-logged-in', { detail: session.user }));
           
           const { user_metadata } = session.user;
           const name = user_metadata.full_name || 'GitHub User';
@@ -1412,7 +1341,6 @@
               await supabase.auth.signOut();
               currentUser = null;
               currentVIPStatus = false;
-              window.currentPaywallUser = null;
               window.location.reload();
             } catch (error) {
               console.error('Error during logout:', error);
@@ -1429,7 +1357,6 @@
         } else {
           currentUser = null;
           currentVIPStatus = false;
-          window.currentPaywallUser = null;
           
           const loginBtn = document.createElement('button');
           loginBtn.textContent = 'Login with GitHub';
@@ -1437,11 +1364,6 @@
             supabase.auth.signInWithOAuth({ provider: 'github' });
           });
           taskbarAuth.appendChild(loginBtn);
-
-          // Set up global login trigger for paywall
-          window.triggerGitHubLogin = () => {
-            supabase.auth.signInWithOAuth({ provider: 'github' });
-          };
         }
       } catch (error) {
         console.error('Error in renderAuth:', error);
@@ -1449,28 +1371,6 @@
         renderingInProgress = false;
       }
     }
-
-    // Function to save VIP status to database
-    window.saveVIPToDatabase = async (userId, subscriptionId) => {
-      try {
-        const { error } = await supabase
-          .from('users')
-          .upsert({
-            id: userId,
-            is_vip: true,
-            vip_expires_at: null,
-            paypal_transaction_id: subscriptionId
-          });
-
-        if (error) {
-          console.error('Failed to update Supabase:', error);
-        } else {
-          console.log('VIP status saved to database successfully');
-        }
-      } catch (error) {
-        console.error('Error saving VIP to database:', error);
-      }
-    };
 
     // Global click handler for dropdowns
     let globalClickHandlerAdded = false;
