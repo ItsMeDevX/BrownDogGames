@@ -1942,6 +1942,97 @@
       box-shadow: 0 2px 8px rgba(141, 255, 161, 0.4);
     }
 
+    .delete-button {
+      background: linear-gradient(135deg, #ff6b6b, #ff5252);
+      color: #fff;
+      border: none;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 0.6rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .delete-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    }
+
+    .delete-confirmation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .delete-modal {
+      background: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .delete-modal h3 {
+      color: #ff4f9f;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .delete-modal p {
+      color: #ddd;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .delete-modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .confirm-delete-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ff5252);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .confirm-delete-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+    }
+
+    .cancel-delete-btn {
+      background: #666;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .cancel-delete-btn:hover {
+      background: #777;
+    }
+
     .message-time {
       font-size: 0.6rem;
       opacity: 0.6;
@@ -2238,6 +2329,7 @@
   let conversations = [];
   let replyToMessageId = null;
   let replyToUsername = null;
+  let messageToDelete = null;
 
   // Get elements
   const pageTitle = document.getElementById('pageTitle');
@@ -2264,6 +2356,74 @@
   const replyIndicator = document.getElementById('replyIndicator');
   const replyToUser = document.getElementById('replyToUser');
   const replyToMessage = document.getElementById('replyToMessage');
+
+  // Delete functionality
+  window.deleteMessage = function(messageId, messageContent) {
+    console.log('Delete message requested:', messageId);
+    messageToDelete = messageId;
+    
+    // Create and show confirmation modal
+    const modal = document.createElement('div');
+    modal.className = 'delete-confirmation';
+    modal.innerHTML = `
+      <div class="delete-modal">
+        <h3>🗑️ Delete Message</h3>
+        <p>Are you sure you want to delete this message?</p>
+        <p style="font-style: italic; font-size: 0.8rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">"${messageContent.length > 100 ? messageContent.substring(0, 100) + '...' : messageContent}"</p>
+        <p style="color: #ff8d8d; font-size: 0.8rem;">This action cannot be undone.</p>
+        <div class="delete-modal-actions">
+          <button class="cancel-delete-btn" onclick="cancelDelete()">Cancel</button>
+          <button class="confirm-delete-btn" onclick="confirmDelete()">Delete Message</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  };
+
+  window.cancelDelete = function() {
+    console.log('Delete cancelled');
+    messageToDelete = null;
+    const modal = document.querySelector('.delete-confirmation');
+    if (modal) {
+      modal.remove();
+    }
+  };
+
+  window.confirmDelete = async function() {
+    if (!messageToDelete) return;
+    
+    console.log('Confirming delete for message:', messageToDelete);
+    
+    try {
+      const { error } = await supabase
+        .from('direct_messages')
+        .delete()
+        .eq('id', messageToDelete);
+
+      if (error) {
+        console.error('Error deleting message:', error);
+        alert('Failed to delete message. Please try again.');
+        return;
+      }
+
+      console.log('Message deleted successfully');
+      
+      // Close modal
+      cancelDelete();
+      
+      // Reload messages and conversations
+      if (activeConversation) {
+        await loadMessages(activeConversation);
+        await loadConversations();
+        await loadProfileMessages();
+      }
+      
+    } catch (error) {
+      console.error('Exception deleting message:', error);
+      alert('Failed to delete message. Please try again.');
+    }
+  };
 
   // Reply functionality
   window.replyToMessage = function(messageId, senderUsername, messageContent) {
@@ -2952,6 +3112,7 @@
         const avatar = isSent ? myAvatar : partnerAvatar;
         const time = new Date(message.created_at).toLocaleString();
         const showReplyButton = !isSent; // Only show reply for received messages
+        const showDeleteButton = isSent; // Only show delete for sent messages
         
         return `
           <div class="message ${isSent ? 'sent' : ''}">
@@ -2961,6 +3122,7 @@
               <div class="message-content">${message.message_content}</div>
               <div class="message-actions">
                 ${showReplyButton ? `<button class="reply-button" onclick="replyToMessage('${message.id}', '${message.sender_username}', '${message.message_content.replace(/'/g, '\\\'').replace(/"/g, '&quot;')}')">Reply</button>` : ''}
+                ${showDeleteButton ? `<button class="delete-button" onclick="deleteMessage('${message.id}', '${message.message_content.replace(/'/g, '\\\'').replace(/"/g, '&quot;')}')">Delete</button>` : ''}
                 <div class="message-time">${time}</div>
               </div>
             </div>
