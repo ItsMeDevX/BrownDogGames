@@ -2116,16 +2116,16 @@
         .from('game_submissions')
         .select('user_id, github_user, avatar_url')
         .eq('github_user', username)
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (gameData) {
+      if (gameData && gameData.length > 0) {
+        const game = gameData[0];
         return {
-          id: gameData.user_id,
+          id: game.user_id,
           user_metadata: {
-            user_name: gameData.github_user,
-            full_name: gameData.github_user,
-            avatar_url: gameData.avatar_url
+            user_name: game.github_user,
+            full_name: game.github_user,
+            avatar_url: game.avatar_url
           }
         };
       }
@@ -2135,16 +2135,16 @@
         .from('game_videos')
         .select('github_username, avatar_url')
         .eq('github_username', username)
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (videoData) {
+      if (videoData && videoData.length > 0) {
+        const video = videoData[0];
         return {
           id: `video_user_${username}`,
           user_metadata: {
-            user_name: videoData.github_username,
-            full_name: videoData.github_username,
-            avatar_url: videoData.avatar_url
+            user_name: video.github_username,
+            full_name: video.github_username,
+            avatar_url: video.avatar_url
           }
         };
       }
@@ -2154,20 +2154,21 @@
         .from('user_art')
         .select('github_username, avatar_url')
         .eq('github_username', username)
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (artData) {
+      if (artData && artData.length > 0) {
+        const art = artData[0];
         return {
           id: `art_user_${username}`,
           user_metadata: {
-            user_name: artData.github_username,
-            full_name: artData.github_username,
-            avatar_url: artData.avatar_url
+            user_name: art.github_username,
+            full_name: art.github_username,
+            avatar_url: art.avatar_url
           }
         };
       }
 
+      console.log('No user data found in any table for:', username);
       return null;
     } catch (error) {
       console.error('Error getting user data:', error);
@@ -2391,22 +2392,33 @@
   // Load games
   async function loadGames() {
     try {
+      console.log('Loading games for username:', username);
+      
       const { data, error } = await supabase
         .from('game_submissions')
         .select('*')
         .eq('github_user', username)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Games query result:', { data, error });
 
-      if (!data.length) {
+      if (error) {
+        console.error('Error loading games:', error);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No games found for user:', username);
         gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
         return;
       }
 
+      console.log('Found games:', data.length);
       gamesContainer.innerHTML = '';
 
       data.forEach(game => {
+        console.log('Processing game:', game);
+        
         const card = document.createElement('div');
         card.className = 'card';
 
@@ -2431,22 +2443,33 @@
   // Load videos
   async function loadVideos() {
     try {
+      console.log('Loading videos for username:', username);
+      
       const { data, error } = await supabase
         .from('game_videos')
         .select('*')
         .eq('github_username', username)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Videos query result:', { data, error });
 
-      if (!data.length) {
+      if (error) {
+        console.error('Error loading videos:', error);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No videos found for user:', username);
         videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
         return;
       }
 
+      console.log('Found videos:', data.length);
       videosContainer.innerHTML = '';
 
       data.forEach(video => {
+        console.log('Processing video:', video);
+        
         const card = document.createElement('div');
         card.className = 'card';
 
@@ -2482,22 +2505,33 @@
   // Load art
   async function loadArt() {
     try {
+      console.log('Loading art for username:', username);
+      
       const { data, error } = await supabase
         .from('user_art')
         .select('*')
         .eq('github_username', username)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Art query result:', { data, error });
 
-      if (!data.length) {
+      if (error) {
+        console.error('Error loading art:', error);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No art found for user:', username);
         artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
         return;
       }
 
+      console.log('Found art pieces:', data.length);
       artContainer.innerHTML = '';
 
       data.forEach(art => {
+        console.log('Processing art:', art);
+        
         const card = document.createElement('div');
         card.className = 'card';
 
