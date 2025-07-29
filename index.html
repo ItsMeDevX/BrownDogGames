@@ -790,14 +790,24 @@
       const paymentStep = document.getElementById('payment-step');
       const loginStatus = document.getElementById('login-status');
 
-      // Check if user already has VIP access
-      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+      // Function to check and enforce access
+      function checkAndEnforceAccess() {
+        const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+        const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
 
-      // Show VIP gate if no VIP access OR no age verification
-      if (!hasVIPAccess || !isAgeVerified) {
-        vipAccessGate.classList.add('show');
+        // Show VIP gate if no VIP access OR no age verification
+        if (!hasVIPAccess || !isAgeVerified) {
+          vipAccessGate.classList.add('show');
+          return false;
+        }
+        return true;
       }
+
+      // Check access immediately
+      checkAndEnforceAccess();
+
+      // Check access every 2 seconds to catch any manual localStorage manipulation
+      setInterval(checkAndEnforceAccess, 2000);
 
       // GitHub login button in gate
       githubLoginBtn.addEventListener('click', () => {
@@ -936,6 +946,10 @@
 
               setTimeout(() => {
                 vipAccessGate.classList.remove('show');
+                // Force re-render of VIP status
+                if (window.renderVip) {
+                  window.renderVip();
+                }
               }, 2000);
 
             } catch (error) {
@@ -1383,6 +1397,18 @@
       isInitialized = true;
 
       try {
+        // Check access status immediately on app init
+        const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+        const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+        
+        // If no VIP access or age verification, show gate immediately
+        if (!hasVIPAccess || !isAgeVerified) {
+          const vipAccessGate = document.getElementById('vip-access-gate');
+          if (vipAccessGate) {
+            vipAccessGate.classList.add('show');
+          }
+        }
+
         renderNav();
         await renderAuth();
         await renderVip();
@@ -1395,6 +1421,17 @@
             if (!renderingInProgress) {
               await renderAuth();
               await renderVip();
+              
+              // Check access after auth change
+              const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+              const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+              
+              if (!hasVIPAccess || !isAgeVerified) {
+                const vipAccessGate = document.getElementById('vip-access-gate');
+                if (vipAccessGate) {
+                  vipAccessGate.classList.add('show');
+                }
+              }
             }
           }, 100);
         });
@@ -1403,6 +1440,23 @@
         console.error('Error initializing app:', error);
       }
     }
+
+    // Make render functions globally accessible for debugging
+    window.renderVip = renderVip;
+    window.renderAuth = renderAuth;
+    window.checkAndEnforceAccess = () => {
+      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+      const vipAccessGate = document.getElementById('vip-access-gate');
+      
+      if (!hasVIPAccess || !isAgeVerified) {
+        if (vipAccessGate) {
+          vipAccessGate.classList.add('show');
+        }
+        return false;
+      }
+      return true;
+    };
 
     // Start the app when DOM is ready
     if (document.readyState === 'loading') {
