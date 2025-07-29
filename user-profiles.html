@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All User Profiles - BrownDogGames</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 3rem 1rem;
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+      user-select: none;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #ff69b4;
+      text-shadow: 2px 2px 0 #000;
+      margin-bottom: 2rem;
+      user-select: text;
+      letter-spacing: 0.1em;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      color: #ff69b4;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      border: 2px solid #ff69b4;
+      padding: 0.65rem 1.4rem;
+      border-radius: 16px;
+      letter-spacing: 0.1em;
+      box-shadow: 0 0 12px #ff69b4aa;
+      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .back-link:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      box-shadow: 0 0 25px #ff8bd8ff, 0 5px 15px #ff8bd8cc;
+      text-decoration: none;
+    }
+
+    #sortButtons {
+      margin-bottom: 2rem;
+    }
+
+    #sortButtons .back-link {
+      margin-right: 1rem;
+    }
+
+    #userList {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      user-select: none;
+    }
+
+    .user-card {
+      background-color: #2d1a3a;
+      border-radius: 20px;
+      padding: 1.4rem 1rem 2rem 1rem;
+      box-shadow: 0 0 20px #ff69b4cc, inset 0 0 12px #ff69b4bb;
+      color: #ffc0cb;
+      text-align: center;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
+    }
+
+    .user-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 25px #ff8bd8ff;
+    }
+
+    .avatar-img {
+      width: 72px;
+      height: 72px;
+      overflow: hidden;
+      background: #1e1b2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      border: 3px solid #ff69b4;
+      margin-bottom: 0.5rem;
+      border-radius: 50%;
+      color: #ff69b4;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .avatar-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .username-text {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      color: #ffc0cb;
+      word-break: break-word;
+      user-select: text;
+    }
+
+    .user-bio {
+      font-size: 0.8rem;
+      color: #ddd;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+      max-height: 3.5em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    .user-details {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      color: #ff82ba;
+      margin-bottom: 1rem;
+    }
+
+    .user-detail {
+      background: #3b2750;
+      padding: 0.3rem 0.6rem;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .stat-item {
+      background-color: #3b2750;
+      padding: 0.7rem 0.3rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      color: #8dffa1;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 0.2rem;
+    }
+
+    .stat-label {
+      color: #ffc0cb;
+      font-size: 0.6rem;
+      opacity: 0.8;
+    }
+
+    /* Featured user section styling */
+    #featuredUser {
+      max-width: 600px;
+      margin: 2rem auto 3rem;
+      background: #3d2460;
+      border: 3px solid #ff69b4;
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 0 30px #ff69b4cc;
+      user-select: none;
+      display: none;
+      cursor: pointer;
+    }
+
+    #featuredUser h2 {
+      color: #ff8bd8;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    #featuredAvatar {
+      margin: 0 auto 1rem auto;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #ff8bd8;
+      overflow: hidden;
+      background: #2d1a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #ff69b4;
+      user-select: none;
+    }
+
+    #featuredAvatar img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    #featuredUsername {
+      color: #ffc0cb;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      word-break: break-word;
+      user-select: text;
+    }
+
+    #featuredBio {
+      color: #ddd;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+      max-height: 4em;
+      overflow: hidden;
+    }
+
+    #featuredDetails {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    #featuredDetails .user-detail {
+      font-size: 0.8rem;
+    }
+
+    .loading {
+      color: #ff82ba;
+      font-size: 1.2rem;
+    }
+
+    .error {
+      color: #ff8d8d;
+      font-size: 1.2rem;
+    }
+
+    .no-users {
+      color: #ddd;
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      #userList {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+      
+      .user-card {
+        padding: 1rem 0.7rem 1.5rem 0.7rem;
+      }
+      
+      .user-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-link">⬅️ Back to Home</a>
+
+  <h1>All User Profiles</h1>
+
+  <!-- Featured User Section -->
+  <section id="featuredUser" aria-label="Featured User Profile" tabindex="0" role="button" aria-pressed="false">
+    <h2>🌟 Featured User Profile</h2>
+    <div id="featuredAvatar"></div>
+    <div id="featuredUsername"></div>
+    <div id="featuredBio"></div>
+    <div id="featuredDetails"></div>
+  </section>
+
+  <div id="sortButtons">
+    <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
+    <button class="back-link" id="sortNewest">🆕 Newest</button>
+    <button class="back-link" id="sortMostActive">📊 Most Active</button>
+  </div>
+
+  <div id="userList">Loading user profiles...</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  const userListEl = document.getElementById('userList');
+  const featuredSection = document.getElementById('featuredUser');
+  const featuredAvatar = document.getElementById('featuredAvatar');
+  const featuredUsername = document.getElementById('featuredUsername');
+  const featuredBio = document.getElementById('featuredBio');
+  const featuredDetails = document.getElementById('featuredDetails');
+
+  let currentSort = 'alphabetical';
+  let allUsers = [];
+
+  function createAvatar(user) {
+    const div = document.createElement('div');
+    div.className = 'avatar-img';
+
+    if (user.avatar_url) {
+      const img = document.createElement('img');
+      img.src = user.avatar_url;
+      img.alt = `${user.username}'s avatar`;
+      img.onerror = () => {
+        div.innerHTML = user.username.charAt(0).toUpperCase();
+      };
+      div.appendChild(img);
+    } else {
+      div.textContent = user.username.charAt(0).toUpperCase();
+    }
+    return div;
+  }
+
+  function createUserDetails(profile) {
+    const details = [];
+    
+    if (profile?.location) {
+      details.push({ icon: '📍', text: profile.location });
+    }
+    
+    if (profile?.favorite_genre) {
+      details.push({ icon: '🎮', text: profile.favorite_genre });
+    }
+    
+    if (profile?.website) {
+      details.push({ icon: '🌐', text: 'Website' });
+    }
+    
+    if (profile?.twitter) {
+      details.push({ icon: '🐦', text: 'Twitter' });
+    }
+
+    return details;
+  }
+
+  function createUserCard(user) {
+    const card = document.createElement('div');
+    card.className = 'user-card';
+
+    // Avatar
+    card.appendChild(createAvatar(user));
+
+    // Username
+    const usernameDiv = document.createElement('div');
+    usernameDiv.className = 'username-text';
+    usernameDiv.textContent = user.username;
+    card.appendChild(usernameDiv);
+
+    // Bio
+    if (user.profile?.bio) {
+      const bioDiv = document.createElement('div');
+      bioDiv.className = 'user-bio';
+      bioDiv.textContent = user.profile.bio;
+      card.appendChild(bioDiv);
+    }
+
+    // Details
+    const details = createUserDetails(user.profile);
+    if (details.length > 0) {
+      const detailsDiv = document.createElement('div');
+      detailsDiv.className = 'user-details';
+      
+      details.forEach(detail => {
+        const detailSpan = document.createElement('span');
+        detailSpan.className = 'user-detail';
+        detailSpan.innerHTML = `${detail.icon} ${detail.text}`;
+        detailsDiv.appendChild(detailSpan);
+      });
+      
+      card.appendChild(detailsDiv);
+    }
+
+    // Stats
+    const statsDiv = document.createElement('div');
+    statsDiv.className = 'user-stats';
+    
+    const stats = [
+      { value: user.stats.games, label: 'Games' },
+      { value: user.stats.videos, label: 'Videos' },
+      { value: user.stats.art, label: 'Art' },
+      { value: user.stats.likes, label: 'Likes' }
+    ];
+    
+    stats.forEach(stat => {
+      const statDiv = document.createElement('div');
+      statDiv.className = 'stat-item';
+      statDiv.innerHTML = `
+        <div class="stat-value">${stat.value}</div>
+        <div class="stat-label">${stat.label}</div>
+      `;
+      statsDiv.appendChild(statDiv);
+    });
+    
+    card.appendChild(statsDiv);
+
+    // Click handler to open user profile
+    card.onclick = () => {
+      window.location.href = `user-profile.html?user=${user.username}`;
+    };
+
+    return card;
+  }
+
+  async function getUserStats(username) {
+    try {
+      // Get games count
+      const { count: gamesCount } = await supabase
+        .from('game_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('github_user', username);
+
+      // Get videos count  
+      const { count: videosCount } = await supabase
+        .from('game_videos')
+        .select('*', { count: 'exact', head: true })
+        .eq('github_username', username);
+
+      // Get art count
+      const { count: artCount } = await supabase
+        .from('user_art')
+        .select('*', { count: 'exact', head: true })
+        .eq('github_username', username);
+
+      // Get page likes count
+      const { count: likesCount } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      return {
+        games: gamesCount || 0,
+        videos: videosCount || 0,
+        art: artCount || 0,
+        likes: likesCount || 0,
+        total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0)
+      };
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      return { games: 0, videos: 0, art: 0, likes: 0, total: 0 };
+    }
+  }
+
+  async function getUserData(username) {
+    try {
+      // Try to find user through their game submissions first
+      const { data: gameData } = await supabase
+        .from('game_submissions')
+        .select('user_id, github_user, avatar_url')
+        .eq('github_user', username)
+        .limit(1);
+
+      if (gameData && gameData.length > 0) {
+        return {
+          username: gameData[0].github_user,
+          avatar_url: gameData[0].avatar_url,
+          user_id: gameData[0].user_id
+        };
+      }
+
+      // If no games, try videos
+      const { data: videoData } = await supabase
+        .from('game_videos')
+        .select('github_username, avatar_url')
+        .eq('github_username', username)
+        .limit(1);
+
+      if (videoData && videoData.length > 0) {
+        return {
+          username: videoData[0].github_username,
+          avatar_url: videoData[0].avatar_url,
+          user_id: null
+        };
+      }
+
+      // If no videos, try art
+      const { data: artData } = await supabase
+        .from('user_art')
+        .select('github_username, avatar_url')
+        .eq('github_username', username)
+        .limit(1);
+
+      if (artData && artData.length > 0) {
+        return {
+          username: artData[0].github_username,
+          avatar_url: artData[0].avatar_url,
+          user_id: null
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error getting user data:', error);
+      return null;
+    }
+  }
+
+  async function loadUserProfiles() {
+    userListEl.innerHTML = '<div class="loading">Loading user profiles...</div>';
+
+    try {
+      // Get all profiles
+      const { data: profiles, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        userListEl.innerHTML = '<div class="error">Error loading profiles: ' + error.message + '</div>';
+        featuredSection.style.display = 'none';
+        return;
+      }
+
+      if (!profiles || profiles.length === 0) {
+        userListEl.innerHTML = '<div class="no-users">No user profiles created yet.</div>';
+        featuredSection.style.display = 'none';
+        return;
+      }
+
+      // Get user data and stats for each profile
+      const usersWithData = await Promise.all(
+        profiles.map(async (profile) => {
+          // Find username by looking for content submissions with this user_id
+          let username = null;
+          
+          // Try games first
+          const { data: gameData } = await supabase
+            .from('game_submissions')
+            .select('github_user, avatar_url')
+            .eq('user_id', profile.user_id)
+            .limit(1);
+
+          if (gameData && gameData.length > 0) {
+            username = gameData[0].github_user;
+          }
+
+          if (!username) {
+            // Try to get username from auth or other sources
+            // For now, we'll skip profiles without discoverable usernames
+            return null;
+          }
+
+          const userData = await getUserData(username);
+          const stats = await getUserStats(username);
+
+          return {
+            username,
+            avatar_url: userData?.avatar_url,
+            profile,
+            stats,
+            created_at: profile.created_at
+          };
+        })
+      );
+
+      // Filter out null entries
+      allUsers = usersWithData.filter(user => user !== null);
+
+      if (allUsers.length === 0) {
+        userListEl.innerHTML = '<div class="no-users">No user profiles with discoverable usernames found.</div>';
+        featuredSection.style.display = 'none';
+        return;
+      }
+
+      sortAndDisplayUsers();
+      displayFeaturedUser();
+
+    } catch (error) {
+      console.error('Error loading user profiles:', error);
+      userListEl.innerHTML = '<div class="error">Error loading profiles</div>';
+      featuredSection.style.display = 'none';
+    }
+  }
+
+  function sortAndDisplayUsers() {
+    let sortedUsers = [...allUsers];
+
+    switch (currentSort) {
+      case 'alphabetical':
+        sortedUsers.sort((a, b) => a.username.localeCompare(b.username));
+        break;
+      case 'newest':
+        sortedUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        break;
+      case 'mostActive':
+        sortedUsers.sort((a, b) => b.stats.total - a.stats.total);
+        break;
+    }
+
+    userListEl.innerHTML = '';
+    sortedUsers.forEach(user => {
+      const card = createUserCard(user);
+      userListEl.appendChild(card);
+    });
+  }
+
+  function displayFeaturedUser() {
+    if (allUsers.length === 0) return;
+
+    // Featured user is the most recently created profile
+    const featuredUser = allUsers.reduce((latest, current) => {
+      return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+    }, allUsers[0]);
+
+    featuredSection.style.display = 'block';
+    
+    // Avatar
+    featuredAvatar.innerHTML = '';
+    featuredAvatar.appendChild(createAvatar(featuredUser));
+    
+    // Username
+    featuredUsername.textContent = featuredUser.username;
+    
+    // Bio
+    featuredBio.textContent = featuredUser.profile?.bio || 'No bio provided yet.';
+    
+    // Details
+    featuredDetails.innerHTML = '';
+    const details = createUserDetails(featuredUser.profile);
+    details.forEach(detail => {
+      const detailSpan = document.createElement('span');
+      detailSpan.className = 'user-detail';
+      detailSpan.innerHTML = `${detail.icon} ${detail.text}`;
+      featuredDetails.appendChild(detailSpan);
+    });
+    
+    // Click handler for featured section
+    featuredSection.onclick = () => {
+      window.location.href = `user-profile.html?user=${featuredUser.username}`;
+    };
+  }
+
+  // Sort button event listeners
+  document.getElementById('sortAlpha').onclick = () => {
+    currentSort = 'alphabetical';
+    sortAndDisplayUsers();
+  };
+
+  document.getElementById('sortNewest').onclick = () => {
+    currentSort = 'newest';
+    sortAndDisplayUsers();
+  };
+
+  document.getElementById('sortMostActive').onclick = () => {
+    currentSort = 'mostActive';
+    sortAndDisplayUsers();
+  };
+
+  // Load profiles on page load
+  loadUserProfiles();
+</script>
+</body>
+</html>
