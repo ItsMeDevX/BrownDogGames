@@ -1847,28 +1847,37 @@
     usernameDiv.textContent = user.username;
     card.appendChild(usernameDiv);
 
-    // Bio
-    if (user.profile?.bio) {
+    // Bio (only if user has a profile)
+    if (user.hasProfile && user.profile?.bio) {
       const bioDiv = document.createElement('div');
       bioDiv.className = 'user-bio';
       bioDiv.textContent = user.profile.bio;
       card.appendChild(bioDiv);
+    } else if (!user.hasProfile) {
+      const bioDiv = document.createElement('div');
+      bioDiv.className = 'user-bio';
+      bioDiv.textContent = 'No profile created yet - click to view content';
+      bioDiv.style.fontStyle = 'italic';
+      bioDiv.style.opacity = '0.7';
+      card.appendChild(bioDiv);
     }
 
-    // Details
-    const details = createUserDetails(user.profile);
-    if (details.length > 0) {
-      const detailsDiv = document.createElement('div');
-      detailsDiv.className = 'user-details';
-      
-      details.forEach(detail => {
-        const detailSpan = document.createElement('span');
-        detailSpan.className = 'user-detail';
-        detailSpan.innerHTML = `${detail.icon} ${detail.text}`;
-        detailsDiv.appendChild(detailSpan);
-      });
-      
-      card.appendChild(detailsDiv);
+    // Details (only if user has a profile)
+    if (user.hasProfile && user.profile) {
+      const details = createUserDetails(user.profile);
+      if (details.length > 0) {
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'user-details';
+        
+        details.forEach(detail => {
+          const detailSpan = document.createElement('span');
+          detailSpan.className = 'user-detail';
+          detailSpan.innerHTML = `${detail.icon} ${detail.text}`;
+          detailsDiv.appendChild(detailSpan);
+        });
+        
+        card.appendChild(detailsDiv);
+      }
     }
 
     // Stats
@@ -1893,6 +1902,25 @@
     });
     
     card.appendChild(statsDiv);
+
+    // Add a small indicator if user has a profile
+    if (user.hasProfile) {
+      const profileBadge = document.createElement('div');
+      profileBadge.style.cssText = `
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #8dffa1;
+        color: #1e1b2e;
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: bold;
+      `;
+      profileBadge.textContent = 'PROFILE';
+      card.style.position = 'relative';
+      card.appendChild(profileBadge);
+    }
 
     // Click handler to open user profile
     card.onclick = () => {
@@ -1999,21 +2027,27 @@
     userListEl.innerHTML = '<div class="loading">Loading user profiles...</div>';
 
     try {
-      // Get all profiles
-      const { data: profiles, error } = await supabase
+      console.log('Starting to load user profiles...');
+      
+      // First, let's check what's in the user_profiles table
+      const { data: profiles, error: profilesError } = await supabase
         .from('user_profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        userListEl.innerHTML = '<div class="error">Error loading profiles: ' + error.message + '</div>';
+      console.log('Profiles query result:', { profiles, error: profilesError });
+
+      if (profilesError) {
+        console.error('Error loading profiles:', profilesError);
+        userListEl.innerHTML = '<div class="error">Error loading profiles: ' + profilesError.message + '</div>';
         featuredSection.style.display = 'none';
         return;
       }
 
+      // If no profiles exist, let's show all users who have submitted content instead
       if (!profiles || profiles.length === 0) {
-        userListEl.innerHTML = '<div class="no-users">No user profiles created yet.</div>';
-        featuredSection.style.display = 'none';
+        console.log('No profiles found, loading all users with content...');
+        await loadAllUsersWithContent();
         return;
       }
 
@@ -2060,7 +2094,8 @@
             avatar_url,
             profile,
             stats,
-            created_at: profile.created_at
+            created_at: profile.created_at,
+            hasProfile: true
           };
         })
       );
@@ -2071,8 +2106,8 @@
       console.log('Users with discoverable data:', allUsers.length);
 
       if (allUsers.length === 0) {
-        userListEl.innerHTML = '<div class="no-users">No user profiles with content submissions found.</div>';
-        featuredSection.style.display = 'none';
+        console.log('No users with profiles and content, falling back to all content users...');
+        await loadAllUsersWithContent();
         return;
       }
 
@@ -2082,6 +2117,99 @@
     } catch (error) {
       console.error('Error loading user profiles:', error);
       userListEl.innerHTML = '<div class="error">Error loading profiles: ' + error.message + '</div>';
+      featuredSection.style.display = 'none';
+    }
+  }
+
+  // Fallback function to load all users with content (even without profiles)
+  async function loadAllUsersWithContent() {
+    try {
+      console.log('Loading all users with any content...');
+      
+      // Get all unique users from all content tables
+      const [gamesResult, videosResult, artResult] = await Promise.all([
+        supabase.from('game_submissions').select('github_user, avatar_url, created_at'),
+        supabase.from('game_videos').select('github_username, avatar_url, created_at'),
+        supabase.from('user_art').select('github_username, avatar_url, created_at')
+      ]);
+
+      console.log('Content queries results:', { 
+        games: gamesResult.data?.length || 0, 
+        videos: videosResult.data?.length || 0, 
+        art: artResult.data?.length || 0 
+      });
+
+      const usersMap = new Map();
+
+      // Process games
+      if (gamesResult.data) {
+        gamesResult.data.forEach(game => {
+          if (game.github_user && !usersMap.has(game.github_user)) {
+            usersMap.set(game.github_user, {
+              username: game.github_user,
+              avatar_url: game.avatar_url,
+              created_at: game.created_at,
+              hasProfile: false
+            });
+          }
+        });
+      }
+
+      // Process videos
+      if (videosResult.data) {
+        videosResult.data.forEach(video => {
+          if (video.github_username && !usersMap.has(video.github_username)) {
+            usersMap.set(video.github_username, {
+              username: video.github_username,
+              avatar_url: video.avatar_url,
+              created_at: video.created_at,
+              hasProfile: false
+            });
+          }
+        });
+      }
+
+      // Process art
+      if (artResult.data) {
+        artResult.data.forEach(art => {
+          if (art.github_username && !usersMap.has(art.github_username)) {
+            usersMap.set(art.github_username, {
+              username: art.github_username,
+              avatar_url: art.avatar_url,
+              created_at: art.created_at,
+              hasProfile: false
+            });
+          }
+        });
+      }
+
+      if (usersMap.size === 0) {
+        userListEl.innerHTML = '<div class="no-users">No users with content submissions found.</div>';
+        featuredSection.style.display = 'none';
+        return;
+      }
+
+      // Get stats for each user
+      const usersWithStats = await Promise.all(
+        Array.from(usersMap.values()).map(async (user) => {
+          const stats = await getUserStats(user.username);
+          return {
+            ...user,
+            stats,
+            profile: null // No profile data
+          };
+        })
+      );
+
+      allUsers = usersWithStats;
+      console.log('Total users with content:', allUsers.length);
+
+      sortAndDisplayUsers();
+      displayFeaturedUser();
+
+    } catch (error) {
+      console.error('Error loading users with content:', error);
+      userListEl.innerHTML = '<div class="error">Error loading users: ' + error.message + '</div>';
       featuredSection.style.display = 'none';
     }
   }
