@@ -3160,7 +3160,7 @@
     }
   }
 
-  // Send message
+  // Send message - FIXED VERSION with proper created_at handling
   async function sendMessage(messageContent) {
     if (!activeConversation || !messageContent.trim()) return false;
 
@@ -3169,7 +3169,9 @@
         sender_id: currentUser.id,
         sender_username: currentUsername,
         recipient_username: activeConversation,
-        message_content: messageContent.trim()
+        message_content: messageContent.trim(),
+        created_at: new Date().toISOString(), // FIXED: Explicitly set created_at
+        is_read: false // FIXED: Explicitly set is_read
       };
 
       // Add reply information if this is a reply
