@@ -1497,11 +1497,24 @@
       gap: 1rem;
     }
 
-    .header-info h1 {
-      font-size: 2.8rem;
+    .earnings-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #vipLikeCount {
       color: #ff69b4;
-      text-shadow: 2px 2px 0 #000;
+      font-weight: bold;
+      font-size: 1.1rem;
       margin: 0;
+    }
+
+    #vipEarnings {
+      color: #8dffa1;
+      font-weight: bold;
+      font-size: 1rem;
+      margin: 0;
+      display: none;
     }
 
     .terms-link {
@@ -1520,6 +1533,28 @@
 
     .terms-link:hover {
       background-color: #ff85c1;
+    }
+
+    /* Payout Section */
+    .payout-section {
+      margin-bottom: 2rem;
+    }
+
+    #payoutRequestBtn {
+      display: none;
+      background-color: #8dffa1;
+      color: #1e1b2e;
+      font-weight: bold;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+    }
+
+    #payoutStatus {
+      margin: 0;
+      font-size: 0.9rem;
     }
 
     /* Tab Navigation */
@@ -1545,7 +1580,7 @@
       font-size: 1rem;
       font-weight: bold;
       transition: all 0.3s ease;
-      min-width: 120px;
+      min-width: 100px;
     }
 
     .tab-button.active {
@@ -1827,32 +1862,6 @@
       color: #8dffa1;
     }
 
-    /* Debug Panel */
-    .debug-panel {
-      background-color: #2d1a3a;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-top: 1rem;
-      border: 2px solid #ffc0cb;
-      font-family: monospace;
-      font-size: 0.8rem;
-    }
-
-    .debug-panel h4 {
-      color: #ffc0cb;
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-    }
-
-    .debug-log {
-      background-color: #3b2750;
-      padding: 0.5rem;
-      border-radius: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-
     /* Responsive */
     @media (max-width: 600px) {
       .header-info {
@@ -1863,10 +1872,6 @@
 
       .tab-nav {
         flex-direction: column;
-      }
-
-      .tab-button {
-        min-width: auto;
       }
 
       .content-list li {
@@ -1896,13 +1901,24 @@
 </head>
 <body>
 
-<!-- Header with Terms -->
+<!-- Header with Earnings and Terms -->
 <div class="header-info">
-  <h1>Your Dashboard</h1>
+  <div class="earnings-section">
+    <p id="vipLikeCount">Loading Likes...</p>
+    <p id="vipEarnings">Earnings: £0.00</p>
+  </div>
   <a href="submission-terms.html" class="terms-link">
     Submission Terms
   </a>
 </div>
+
+<!-- Payout Section -->
+<div class="payout-section">
+  <button id="payoutRequestBtn">Request Payout</button>
+  <p id="payoutStatus"></p>
+</div>
+
+<h1>Your Dashboard</h1>
 
 <!-- Tab Navigation -->
 <div class="tab-nav">
@@ -1986,12 +2002,6 @@
     </form>
 
     <p class="message" id="profileMessage" aria-live="polite"></p>
-
-    <!-- Debug Panel -->
-    <div class="debug-panel">
-      <h4>🐛 Debug Log</h4>
-      <div class="debug-log" id="debugLog">Profile debugging enabled...</div>
-    </div>
   </div>
 </div>
 
@@ -2098,6 +2108,44 @@
       </div>
     </div>
   </div>
+
+  <!-- Payment Testing Section -->
+  <div class="payment-section" style="background-color: #2d1a3a; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border: 2px solid #ff69b4;">
+    <h2 style="color: #ff69b4; margin-top: 0; margin-bottom: 1rem; font-size: 1.5rem;">🧪 Payment Testing</h2>
+    
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+      <button id="testPayoutBtn" style="background-color: #8dffa1; color: #1e1b2e; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
+        💰 Request Real Payout
+      </button>
+      
+      <button id="viewPayoutsBtn" style="background-color: #ffc0cb; color: #1e1b2e; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
+        📋 View All Payouts
+      </button>
+      
+      <button id="clearPayoutsBtn" style="background-color: #ff4c4c; color: white; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
+        🗑️ Clear Test Data
+      </button>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+      <div>
+        <div style="color: #ffc0cb; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: bold;">📜 Activity Log</div>
+        <div id="payoutTestStatus" style="background-color: #3b2750; padding: 1rem; border-radius: 8px; min-height: 150px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;"></div>
+      </div>
+      
+      <div>
+        <div style="color: #ffc0cb; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: bold;">💳 Recent Requests</div>
+        <div id="payoutsList" style="background-color: #3b2750; padding: 1rem; border-radius: 8px; min-height: 150px; max-height: 200px; overflow-y: auto;">
+          <div id="payoutsContent" style="font-size: 0.85rem;">Click "View All Payouts" to load...</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="background-color: #3b2750; padding: 1rem; border-radius: 8px; font-size: 0.85rem; opacity: 0.9;">
+      <strong style="color: #ff69b4;">ℹ️ Testing Info:</strong> This section allows you to test the payout system without affecting real earnings. 
+      Use the test button to create sample payout requests and verify database functionality.
+    </div>
+  </div>
 </div>
 
 <script type="module">
@@ -2105,30 +2153,10 @@
 
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE7NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
 
   let currentUser;
-
-  // Debug logging function
-  function debugLog(message, type = 'info') {
-    const debugLogEl = document.getElementById('debugLog');
-    const timestamp = new Date().toLocaleTimeString();
-    const colors = {
-      'info': '#8dffa1',
-      'error': '#ff8d8d', 
-      'success': '#8dffa1',
-      'warning': '#ffc0cb'
-    };
-    
-    const logEntry = `[${timestamp}] ${message}\n`;
-    console.log(logEntry);
-    
-    if (debugLogEl) {
-      debugLogEl.innerHTML += `<div style="color: ${colors[type] || '#fefefe'}">${logEntry}</div>`;
-      debugLogEl.scrollTop = debugLogEl.scrollHeight;
-    }
-  }
 
   // Tab Management
   window.showTab = function(tabName) {
@@ -2152,41 +2180,25 @@
   // Utility Functions
   function showMessage(elementId, text, type = '') {
     const element = document.getElementById(elementId);
-    if (element) {
-      element.textContent = text;
-      element.className = `message ${type}`;
-      debugLog(`Message: ${text} (${type})`, type === 'error' ? 'error' : 'info');
-    }
+    element.textContent = text;
+    element.className = `message ${type}`;
   }
 
   async function checkAuth() {
-    try {
-      debugLog('🔍 Checking authentication...');
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session?.user) {
-        debugLog('❌ Not authenticated, redirecting...', 'error');
-        window.location.href = 'index.html';
-        return false;
-      }
-      currentUser = session.user;
-      debugLog(`✅ Authenticated as: ${currentUser.email} (ID: ${currentUser.id})`);
-      return true;
-    } catch (error) {
-      debugLog(`💥 Auth check error: ${error.message}`, 'error');
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session?.user) {
+      window.location.href = 'login.html';
       return false;
     }
+    currentUser = session.user;
+    return true;
   }
 
   // Profile Functions
   async function loadProfile() {
-    if (!currentUser) {
-      debugLog('❌ No current user for profile load', 'error');
-      return;
-    }
+    if (!currentUser) return;
 
     try {
-      debugLog('📋 Loading profile data...');
-      
       // Load basic user info
       const profileName = document.getElementById('profileName');
       const profileAvatar = document.getElementById('profileAvatar');
@@ -2196,17 +2208,14 @@
 
       if (profileName) {
         profileName.textContent = githubName;
-        debugLog(`👤 Profile name set: ${githubName}`);
       }
 
       if (avatarUrl && profileAvatar) {
         profileAvatar.src = avatarUrl;
         profileAvatar.style.display = 'block';
-        debugLog('🖼️ Avatar loaded');
       }
 
       // Load profile data from database
-      debugLog('🔍 Fetching profile from database...');
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
@@ -2214,11 +2223,8 @@
         .single();
 
       if (profileError && profileError.code !== 'PGRST116') {
-        debugLog(`❌ Profile fetch error: ${profileError.message}`, 'error');
+        console.error('Profile fetch error:', profileError);
       } else if (profileData) {
-        debugLog('✅ Profile data found, populating form...');
-        debugLog(`📝 Profile data: ${JSON.stringify(profileData)}`);
-        
         // Populate form with existing data
         const locationInput = document.getElementById('location');
         const websiteInput = document.getElementById('website');
@@ -2231,17 +2237,13 @@
         if (twitterInput) twitterInput.value = profileData.twitter || '';
         if (favGenreSelect) favGenreSelect.value = profileData.favorite_genre || '';
         if (bioTextarea) bioTextarea.value = profileData.bio || '';
-        
-        debugLog('✅ Form populated with existing data');
-      } else {
-        debugLog('ℹ️ No existing profile data found');
       }
 
       // Load and display stats
       await loadProfileStats();
 
     } catch (error) {
-      debugLog(`💥 Profile load error: ${error.message}`, 'error');
+      console.error('Profile load error:', error);
       showMessage('profileMessage', 'Error loading profile: ' + error.message, 'error');
     }
   }
@@ -2250,7 +2252,6 @@
     if (!currentUser) return;
 
     try {
-      debugLog('📊 Loading profile statistics...');
       const username = currentUser.user_metadata?.user_name || currentUser.email;
 
       // Get games count
@@ -2288,22 +2289,17 @@
       if (statArt) statArt.textContent = artCount || 0;
       if (statLikes) statLikes.textContent = likesCount || 0;
 
-      debugLog(`📊 Stats loaded - Games: ${gamesCount}, Videos: ${videosCount}, Art: ${artCount}, Likes: ${likesCount}`);
-
     } catch (error) {
-      debugLog(`💥 Stats load error: ${error.message}`, 'error');
+      console.error('Stats load error:', error);
     }
   }
 
   async function saveProfile() {
     if (!currentUser) {
-      debugLog('❌ No current user for profile save', 'error');
       showMessage('profileMessage', 'Error: Not logged in', 'error');
       return;
     }
 
-    debugLog('💾 Starting profile save process...');
-    
     // Disable save button
     const saveBtn = document.getElementById('profileSaveBtn');
     if (saveBtn) {
@@ -2329,10 +2325,7 @@
         updated_at: new Date().toISOString()
       };
 
-      debugLog(`📝 Profile data to save: ${JSON.stringify(profileData)}`);
-
       // First check if profile exists
-      debugLog('🔍 Checking if profile exists...');
       const { data: existingProfile, error: checkError } = await supabase
         .from('user_profiles')
         .select('id')
@@ -2340,29 +2333,20 @@
         .single();
 
       if (checkError && checkError.code !== 'PGRST116') {
-        debugLog(`❌ Error checking existing profile: ${checkError.message}`, 'error');
         throw checkError;
       }
 
       if (existingProfile) {
         // Profile exists, update it
-        debugLog('🔄 Profile exists, updating...');
         const { data: updateData, error: updateError } = await supabase
           .from('user_profiles')
           .update(profileData)
           .eq('user_id', currentUser.id)
           .select();
 
-        if (updateError) {
-          debugLog(`❌ Update error: ${updateError.message}`, 'error');
-          throw updateError;
-        }
-        
-        debugLog('✅ Profile updated successfully');
-        debugLog(`📄 Updated data: ${JSON.stringify(updateData)}`);
+        if (updateError) throw updateError;
       } else {
         // Profile doesn't exist, create it
-        debugLog('➕ Profile doesn\'t exist, creating new...');
         profileData.created_at = new Date().toISOString();
         
         const { data: insertData, error: insertError } = await supabase
@@ -2370,20 +2354,13 @@
           .insert([profileData])
           .select();
 
-        if (insertError) {
-          debugLog(`❌ Insert error: ${insertError.message}`, 'error');
-          throw insertError;
-        }
-        
-        debugLog('✅ Profile created successfully');
-        debugLog(`📄 Created data: ${JSON.stringify(insertData)}`);
+        if (insertError) throw insertError;
       }
 
       showMessage('profileMessage', 'Profile saved successfully!', 'success');
-      debugLog('🎉 Profile save completed successfully', 'success');
 
     } catch (error) {
-      debugLog(`💥 Profile save failed: ${error.message}`, 'error');
+      console.error('Profile save error:', error);
       showMessage('profileMessage', `Error saving profile: ${error.message}`, 'error');
     } finally {
       // Re-enable save button
@@ -2394,31 +2371,87 @@
     }
   }
 
-  // Games Functions
-  async function fetchGames() {
+  // VIP/Earnings Functions
+  async function loadVipPageLikes() {
+    if (!currentUser) return;
+
     try {
-      const { data, error } = await supabase
-        .from('game_submissions')
+      const vipLikeCountEl = document.getElementById('vipLikeCount');
+      const vipEarningsEl = document.getElementById('vipEarnings');
+      const payoutBtn = document.getElementById('payoutRequestBtn');
+      const payoutStatus = document.getElementById('payoutStatus');
+
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+
+      if (!username) {
+        vipLikeCountEl.textContent = `Page Likes: 0 (No username)`;
+        vipEarningsEl.style.display = 'none';
+        payoutBtn.style.display = 'none';
+        payoutStatus.textContent = '';
+        return;
+      }
+
+      const { count, error: countError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      if (countError) throw countError;
+
+      const totalLikes = count || 0;
+      vipLikeCountEl.textContent = `Page Likes: ${totalLikes}`;
+
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+
+      if (earningsValue > 0) {
+        vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)}`;
+        vipEarningsEl.style.display = 'block';
+      } else {
+        vipEarningsEl.style.display = 'none';
+      }
+
+      const { data: existingRequests, error: reqError } = await supabase
+        .from('payout_requests')
         .select('*')
         .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
+        .eq('status', 'pending');
 
-      if (error) {
-        showMessage('gameFormMessage', 'Failed to load games: ' + error.message, 'error');
-        return [];
+      if (reqError) throw reqError;
+
+      if (existingRequests.length > 0) {
+        payoutBtn.style.display = 'none';
+        payoutStatus.textContent = 'You have a pending payout request.';
+      } else if (earningsValue >= 5.0) {
+        payoutBtn.style.display = 'inline-block';
+        payoutStatus.textContent = '';
+      } else {
+        payoutBtn.style.display = 'none';
+        payoutStatus.textContent = `Earnings (£${earningsValue.toFixed(2)}) must reach £5.00 to request payout.`;
       }
-      return data || [];
     } catch (error) {
-      console.error('Error fetching games:', error);
+      console.error('Error loading data:', error.message);
+      document.getElementById('payoutStatus').textContent = 'Error loading stats.';
+    }
+  }
+
+  // Games Functions
+  async function fetchGames() {
+    const { data, error } = await supabase
+      .from('game_submissions')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showMessage('gameFormMessage', 'Failed to load games: ' + error.message, 'error');
       return [];
     }
+    return data;
   }
 
   async function loadGames() {
     const games = await fetchGames();
     const gamesList = document.getElementById('games-list');
-    if (!gamesList) return;
-    
     gamesList.innerHTML = '';
     
     if (!games || games.length === 0) {
@@ -2469,30 +2502,23 @@
 
   // Videos Functions
   async function fetchVideos() {
-    try {
-      const username = currentUser.user_metadata?.user_name || currentUser.email;
-      const { data, error } = await supabase
-        .from('game_videos')
-        .select('*')
-        .eq('github_username', username)
-        .order('created_at', { ascending: false });
+    const username = currentUser.user_metadata?.user_name || currentUser.email;
+    const { data, error } = await supabase
+      .from('game_videos')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: false });
 
-      if (error) {
-        showMessage('videoFormMessage', 'Failed to load videos: ' + error.message, 'error');
-        return [];
-      }
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching videos:', error);
+    if (error) {
+      showMessage('videoFormMessage', 'Failed to load videos: ' + error.message, 'error');
       return [];
     }
+    return data;
   }
 
   async function loadVideos() {
     const videos = await fetchVideos();
     const videosList = document.getElementById('videos-list');
-    if (!videosList) return;
-    
     videosList.innerHTML = '';
     
     if (videos.length === 0) {
@@ -2540,29 +2566,22 @@
 
   // Art Functions
   async function fetchArt() {
-    try {
-      const { data, error } = await supabase
-        .from('user_art')
-        .select('*')
-        .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('user_art')
+      .select('*')
+      .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
+      .order('created_at', { ascending: false });
 
-      if (error) {
-        showMessage('artFormMessage', 'Failed to load art: ' + error.message, 'error');
-        return [];
-      }
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching art:', error);
+    if (error) {
+      showMessage('artFormMessage', 'Failed to load art: ' + error.message, 'error');
       return [];
     }
+    return data;
   }
 
   async function loadArt() {
     const artPieces = await fetchArt();
     const artList = document.getElementById('art-list');
-    if (!artList) return;
-
     artList.innerHTML = '';
 
     if (artPieces.length === 0) {
@@ -2604,6 +2623,26 @@
     });
   }
 
+  // Payment Testing Functions
+  function logToTestStatus(message, type = 'info') {
+    const statusDiv = document.getElementById('payoutTestStatus');
+    const timestamp = new Date().toLocaleTimeString();
+    const colorMap = {
+      'info': '#8dffa1',
+      'error': '#ff8d8d',
+      'success': '#8dffa1',
+      'warning': '#ffc0cb'
+    };
+    
+    const logEntry = document.createElement('div');
+    logEntry.style.color = colorMap[type] || '#fefefe';
+    logEntry.style.marginBottom = '0.25rem';
+    logEntry.innerHTML = `<span style="opacity: 0.7;">[${timestamp}]</span> ${message}`;
+    
+    statusDiv.appendChild(logEntry);
+    statusDiv.scrollTop = statusDiv.scrollHeight;
+  }
+
   async function updatePaymentsTabDisplay() {
     if (!currentUser) return;
 
@@ -2611,13 +2650,9 @@
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
       
       if (!username) {
-        const paymentsPageLikes = document.getElementById('paymentsPageLikes');
-        const paymentsEarnings = document.getElementById('paymentsEarnings');
-        const paymentsStatus = document.getElementById('paymentsStatus');
-        
-        if (paymentsPageLikes) paymentsPageLikes.textContent = '0';
-        if (paymentsEarnings) paymentsEarnings.textContent = '£0.00';
-        if (paymentsStatus) paymentsStatus.textContent = 'No Username';
+        document.getElementById('paymentsPageLikes').textContent = '0';
+        document.getElementById('paymentsEarnings').textContent = '£0.00';
+        document.getElementById('paymentsStatus').textContent = 'No Username';
         return;
       }
 
@@ -2631,11 +2666,8 @@
       const totalLikes = count || 0;
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
-      const paymentsPageLikes = document.getElementById('paymentsPageLikes');
-      const paymentsEarnings = document.getElementById('paymentsEarnings');
-
-      if (paymentsPageLikes) paymentsPageLikes.textContent = totalLikes;
-      if (paymentsEarnings) paymentsEarnings.textContent = `£${earningsValue.toFixed(2)}`;
+      document.getElementById('paymentsPageLikes').textContent = totalLikes;
+      document.getElementById('paymentsEarnings').textContent = `£${earningsValue.toFixed(2)}`;
 
       const { data: existingRequests, error: reqError } = await supabase
         .from('payout_requests')
@@ -2647,45 +2679,210 @@
 
       const mainPayoutBtn = document.getElementById('mainPayoutBtn');
       const mainPayoutStatus = document.getElementById('paymentsStatus');
-      const mainPayoutStatusText = document.getElementById('mainPayoutStatus');
 
       if (existingRequests.length > 0) {
-        if (mainPayoutBtn) mainPayoutBtn.style.display = 'none';
-        if (mainPayoutStatus) {
-          mainPayoutStatus.textContent = 'Pending Request';
-          mainPayoutStatus.style.color = '#ffc0cb';
-        }
-        if (mainPayoutStatusText) mainPayoutStatusText.textContent = 'You have a pending payout request.';
+        mainPayoutBtn.style.display = 'none';
+        mainPayoutStatus.textContent = 'Pending Request';
+        mainPayoutStatus.style.color = '#ffc0cb';
+        document.getElementById('mainPayoutStatus').textContent = 'You have a pending payout request.';
       } else if (earningsValue >= 5.0) {
-        if (mainPayoutBtn) mainPayoutBtn.style.display = 'inline-block';
-        if (mainPayoutStatus) {
-          mainPayoutStatus.textContent = 'Ready for Payout';
-          mainPayoutStatus.style.color = '#8dffa1';
-        }
-        if (mainPayoutStatusText) mainPayoutStatusText.textContent = '';
-        debugLog(`💰 Payout button visible - earnings: £${earningsValue.toFixed(2)}`, 'success');
+        mainPayoutBtn.style.display = 'inline-block';
+        mainPayoutStatus.textContent = 'Ready for Payout';
+        mainPayoutStatus.style.color = '#8dffa1';
+        document.getElementById('mainPayoutStatus').textContent = '';
       } else {
-        if (mainPayoutBtn) mainPayoutBtn.style.display = 'none';
-        if (mainPayoutStatus) {
-          mainPayoutStatus.textContent = 'Below Minimum';
-          mainPayoutStatus.style.color = '#ff8d8d';
-        }
-        if (mainPayoutStatusText) mainPayoutStatusText.textContent = `Need £${(5 - earningsValue).toFixed(2)} more to request payout.`;
-        debugLog(`💸 Payout button hidden - earnings: £${earningsValue.toFixed(2)}, need £${(5 - earningsValue).toFixed(2)} more`);
+        mainPayoutBtn.style.display = 'none';
+        mainPayoutStatus.textContent = 'Below Minimum';
+        mainPayoutStatus.style.color = '#ff8d8d';
+        document.getElementById('mainPayoutStatus').textContent = `Need £${(5 - earningsValue).toFixed(2)} more to request payout.`;
       }
 
     } catch (error) {
-      debugLog(`💥 Payment display error: ${error.message}`, 'error');
+      console.error('Error updating payments display:', error);
     }
   }
 
-  // Main payout request function
+  async function testPayoutRequest() {
+    const testBtn = document.getElementById('testPayoutBtn');
+    testBtn.disabled = true;
+    
+    try {
+      logToTestStatus('💰 Starting real payout request...', 'info');
+      
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) {
+        logToTestStatus(`❌ Error: Username not found`, 'error');
+        testBtn.disabled = false;
+        return;
+      }
+
+      // Calculate actual earnings
+      const { count, error: countError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      if (countError) {
+        logToTestStatus(`❌ Error fetching likes: ${countError.message}`, 'error');
+        throw countError;
+      }
+
+      const totalLikes = count || 0;
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+      
+      logToTestStatus(`📊 Current likes: ${totalLikes}, Earnings: £${earningsValue.toFixed(2)}`, 'info');
+
+      if (earningsValue < 5.0) {
+        logToTestStatus(`❌ Insufficient earnings: Need £5.00 minimum, have £${earningsValue.toFixed(2)}`, 'error');
+        testBtn.disabled = false;
+        return;
+      }
+
+      // Check for existing pending requests
+      const { data: existingRequests, error: reqError } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (reqError) {
+        logToTestStatus(`❌ Error checking pending requests: ${reqError.message}`, 'error');
+        throw reqError;
+      }
+
+      if (existingRequests.length > 0) {
+        logToTestStatus(`❌ Already have pending payout request`, 'error');
+        testBtn.disabled = false;
+        return;
+      }
+      
+      // Insert real payout request based on actual earnings
+      const payoutData = {
+        user_id: currentUser.id,
+        amount: earningsValue,
+        status: 'pending',
+        requested_at: new Date().toISOString()
+      };
+      
+      logToTestStatus(`📝 Submitting real payout: £${payoutData.amount} for user ${currentUser.email}`, 'info');
+      
+      const { data, error } = await supabase
+        .from('payout_requests')
+        .insert([payoutData])
+        .select();
+      
+      if (error) {
+        logToTestStatus(`❌ Error: ${error.message}`, 'error');
+        throw error;
+      }
+      
+      logToTestStatus(`✅ Real payout request created successfully!`, 'success');
+      logToTestStatus(`📊 Request ID: ${data[0].id}, Amount: £${parseFloat(data[0].amount).toFixed(2)}`, 'success');
+      
+      // Refresh the payouts list and main display
+      await viewAllPayouts();
+      await updatePaymentsTabDisplay();
+      await loadVipPageLikes(); // Update header display too
+      
+    } catch (err) {
+      logToTestStatus(`💥 Request failed: ${err.message}`, 'error');
+    }
+    
+    testBtn.disabled = false;
+  }
+
+  async function viewAllPayouts() {
+    try {
+      logToTestStatus('📋 Fetching all payout requests...', 'info');
+      
+      const { data, error } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('requested_at', { ascending: false })
+        .limit(10);
+      
+      if (error) {
+        logToTestStatus(`❌ Error fetching payouts: ${error.message}`, 'error');
+        throw error;
+      }
+      
+      const payoutsContent = document.getElementById('payoutsContent');
+      
+      if (data.length === 0) {
+        payoutsContent.innerHTML = '<div style="opacity: 0.7; text-align: center; padding: 1rem;">No payout requests found.</div>';
+        logToTestStatus('📭 No payout requests found for this user', 'info');
+      } else {
+        let html = '';
+        data.forEach((payout, index) => {
+          const statusColor = payout.status === 'pending' ? '#ffc0cb' : 
+                            payout.status === 'completed' ? '#8dffa1' : '#ff8d8d';
+          
+          html += `
+            <div style="margin-bottom: 0.75rem; padding: 0.75rem; background-color: #2d1a3a; border-radius: 6px; border-left: 3px solid ${statusColor};">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <strong style="color: #ff69b4;">#${payout.id}</strong>
+                <span style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">${payout.status}</span>
+              </div>
+              <div style="color: #8dffa1; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.25rem;">£${parseFloat(payout.amount).toFixed(2)}</div>
+              <div style="font-size: 0.8rem; opacity: 0.8;">Requested: ${new Date(payout.requested_at).toLocaleDateString()}</div>
+              ${payout.completed_at ? `<div style="font-size: 0.8rem; opacity: 0.8;">Completed: ${new Date(payout.completed_at).toLocaleDateString()}</div>` : ''}
+            </div>
+          `;
+        });
+        
+        payoutsContent.innerHTML = html;
+        logToTestStatus(`📊 Found ${data.length} payout request(s)`, 'success');
+      }
+      
+    } catch (err) {
+      logToTestStatus(`💥 Failed to fetch payouts: ${err.message}`, 'error');
+    }
+  }
+
+  async function clearTestPayouts() {
+    const clearBtn = document.getElementById('clearPayoutsBtn');
+    
+    if (!confirm('⚠️ This will delete ALL your payout requests. Are you sure?')) {
+      return;
+    }
+    
+    clearBtn.disabled = true;
+    
+    try {
+      logToTestStatus('🗑️ Clearing all payout requests...', 'warning');
+      
+      const { error } = await supabase
+        .from('payout_requests')
+        .delete()
+        .eq('user_id', currentUser.id);
+      
+      if (error) {
+        logToTestStatus(`❌ Error clearing payouts: ${error.message}`, 'error');
+        throw error;
+      }
+      
+      logToTestStatus('✅ All payout requests cleared successfully!', 'success');
+      
+      // Refresh the display
+      document.getElementById('payoutsContent').innerHTML = '<div style="opacity: 0.7; text-align: center; padding: 1rem;">No payout requests found.</div>';
+      await updatePaymentsTabDisplay();
+      await loadVipPageLikes(); // Refresh the header payout button status
+      
+    } catch (err) {
+      logToTestStatus(`💥 Failed to clear payouts: ${err.message}`, 'error');
+    }
+    
+    clearBtn.disabled = false;
+  }
+
+  // Main payout request function for the payments tab
   async function requestMainPayout() {
     const mainPayoutBtn = document.getElementById('mainPayoutBtn');
     const mainPayoutStatus = document.getElementById('mainPayoutStatus');
     
-    if (mainPayoutBtn) mainPayoutBtn.disabled = true;
-    if (mainPayoutStatus) mainPayoutStatus.textContent = '';
+    mainPayoutBtn.disabled = true;
+    mainPayoutStatus.textContent = '';
 
     try {
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
@@ -2701,8 +2898,8 @@
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
       if (earningsValue < 5) {
-        if (mainPayoutStatus) mainPayoutStatus.textContent = 'Minimum £5 earnings required for payout.';
-        if (mainPayoutBtn) mainPayoutBtn.disabled = false;
+        mainPayoutStatus.textContent = 'Minimum £5 earnings required for payout.';
+        mainPayoutBtn.disabled = false;
         return;
       }
 
@@ -2714,8 +2911,8 @@
         .eq('status', 'pending');
 
       if (existingRequests.length > 0) {
-        if (mainPayoutStatus) mainPayoutStatus.textContent = 'You have a pending payout request.';
-        if (mainPayoutBtn) mainPayoutBtn.disabled = false;
+        mainPayoutStatus.textContent = 'You have a pending payout request.';
+        mainPayoutBtn.disabled = false;
         return;
       }
 
@@ -2729,145 +2926,187 @@
 
       if (error) throw error;
 
-      if (mainPayoutStatus) {
-        mainPayoutStatus.textContent = 'Payout request submitted successfully!';
-        mainPayoutStatus.style.color = '#8dffa1';
-      }
+      mainPayoutStatus.textContent = 'Payout request submitted successfully!';
+      mainPayoutStatus.style.color = '#8dffa1';
       
       // Refresh displays
       await updatePaymentsTabDisplay();
+      await loadVipPageLikes();
+      
+      // Log to test status if visible
+      if (document.getElementById('payments-tab').classList.contains('active')) {
+        logToTestStatus(`💰 Real payout request submitted: £${earningsValue.toFixed(2)}`, 'success');
+        await viewAllPayouts();
+      }
       
     } catch (err) {
-      if (mainPayoutStatus) {
-        mainPayoutStatus.textContent = 'Error submitting payout request: ' + err.message;
-        mainPayoutStatus.style.color = '#ff8d8d';
-      }
+      mainPayoutStatus.textContent = 'Error submitting payout request: ' + err.message;
+      mainPayoutStatus.style.color = '#ff8d8d';
     }
 
-    if (mainPayoutBtn) mainPayoutBtn.disabled = false;
+    mainPayoutBtn.disabled = false;
   }
 
   // Form Event Listeners
-  const profileForm = document.getElementById('profileForm');
-  if (profileForm) {
-    profileForm.onsubmit = async (e) => {
-      e.preventDefault();
-      debugLog('📝 Profile form submitted');
-      await saveProfile();
+  document.getElementById('profileForm').onsubmit = async (e) => {
+    e.preventDefault();
+    await saveProfile();
+  };
+
+  document.getElementById('addGameForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('gameSubmitBtn');
+    submitBtn.disabled = true;
+    showMessage('gameFormMessage', '');
+
+    const data = {
+      user_id: currentUser.id,
+      github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+      avatar_url: currentUser.user_metadata?.avatar_url || null,
+      title: document.getElementById('gameTitle').value.trim(),
+      description: document.getElementById('gameDescription').value.trim(),
+      embed_url: document.getElementById('embedUrl').value.trim(),
+      screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
+      cover_url: document.getElementById('coverUrl').value.trim() || null,
+      created_at: new Date().toISOString()
     };
-  }
 
-  const addGameForm = document.getElementById('addGameForm');
-  if (addGameForm) {
-    addGameForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const submitBtn = document.getElementById('gameSubmitBtn');
-      if (submitBtn) submitBtn.disabled = true;
-      showMessage('gameFormMessage', '');
+    const { error } = await supabase.from('game_submissions').insert([data]);
+    if (error) {
+      showMessage('gameFormMessage', 'Adding game failed: ' + error.message, 'error');
+    } else {
+      showMessage('gameFormMessage', 'Game added successfully!', 'success');
+      document.getElementById('addGameForm').reset();
+      loadGames();
+      loadProfileStats(); // Update stats
+    }
+    submitBtn.disabled = false;
+  };
 
-      const data = {
+  document.getElementById('addVideoForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('videoSubmitBtn');
+    submitBtn.disabled = true;
+    showMessage('videoFormMessage', '');
+
+    const data = {
+      github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
+      avatar_url: currentUser.user_metadata?.avatar_url || null,
+      title: document.getElementById('videoTitle').value.trim(),
+      content: document.getElementById('videoContent').value.trim(),
+      video_url: document.getElementById('videoUrl').value.trim(),
+      created_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase.from('game_videos').insert([data]);
+    if (error) {
+      showMessage('videoFormMessage', 'Adding video failed: ' + error.message, 'error');
+    } else {
+      showMessage('videoFormMessage', 'Video added successfully!', 'success');
+      document.getElementById('addVideoForm').reset();
+      loadVideos();
+      loadProfileStats(); // Update stats
+    }
+    submitBtn.disabled = false;
+  };
+
+  document.getElementById('addArtForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('artSubmitBtn');
+    submitBtn.disabled = true;
+    showMessage('artFormMessage', '');
+
+    const data = {
+      github_username: currentUser.user_metadata?.user_name || currentUser.email,
+      avatar_url: currentUser.user_metadata?.avatar_url || '',
+      title: document.getElementById('artTitle').value.trim(),
+      description: document.getElementById('artDescription').value.trim(),
+      image_url: document.getElementById('artImageUrl').value.trim(),
+      created_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase.from('user_art').insert([data]);
+    if (error) {
+      showMessage('artFormMessage', 'Adding art failed: ' + error.message, 'error');
+    } else {
+      showMessage('artFormMessage', 'Art added successfully!', 'success');
+      document.getElementById('addArtForm').reset();
+      loadArt();
+      loadProfileStats(); // Update stats
+    }
+    submitBtn.disabled = false;
+  };
+
+  // Payment Testing Event Listeners
+  document.getElementById('testPayoutBtn').addEventListener('click', testPayoutRequest);
+  document.getElementById('viewPayoutsBtn').addEventListener('click', viewAllPayouts);
+  document.getElementById('clearPayoutsBtn').addEventListener('click', clearTestPayouts);
+  document.getElementById('mainPayoutBtn').addEventListener('click', requestMainPayout);
+  document.getElementById('payoutRequestBtn').addEventListener('click', async () => {
+    const payoutBtn = document.getElementById('payoutRequestBtn');
+    const payoutStatus = document.getElementById('payoutStatus');
+    
+    payoutBtn.disabled = true;
+    payoutStatus.textContent = '';
+
+    try {
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) throw new Error('Username not found.');
+
+      const { count } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      const totalLikes = count || 0;
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+
+      if (earningsValue < 5) {
+        payoutStatus.textContent = 'Minimum £5 earnings required for payout.';
+        payoutBtn.disabled = false;
+        return;
+      }
+
+      const { data: existingRequests } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (existingRequests.length > 0) {
+        payoutStatus.textContent = 'You have a pending payout request.';
+        payoutBtn.disabled = false;
+        return;
+      }
+
+      const { error } = await supabase.from('payout_requests').insert([{
         user_id: currentUser.id,
-        github_user: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
-        avatar_url: currentUser.user_metadata?.avatar_url || null,
-        title: document.getElementById('gameTitle').value.trim(),
-        description: document.getElementById('gameDescription').value.trim(),
-        embed_url: document.getElementById('embedUrl').value.trim(),
-        screenshot_url: document.getElementById('screenshotUrl').value.trim() || null,
-        cover_url: document.getElementById('coverUrl').value.trim() || null,
-        created_at: new Date().toISOString()
-      };
+        amount: earningsValue,
+        status: 'pending',
+        requested_at: new Date().toISOString()
+      }]);
 
-      const { error } = await supabase.from('game_submissions').insert([data]);
-      if (error) {
-        showMessage('gameFormMessage', 'Adding game failed: ' + error.message, 'error');
-      } else {
-        showMessage('gameFormMessage', 'Game added successfully!', 'success');
-        addGameForm.reset();
-        loadGames();
-        loadProfileStats(); // Update stats
-      }
-      if (submitBtn) submitBtn.disabled = false;
-    };
-  }
+      if (error) throw error;
 
-  const addVideoForm = document.getElementById('addVideoForm');
-  if (addVideoForm) {
-    addVideoForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const submitBtn = document.getElementById('videoSubmitBtn');
-      if (submitBtn) submitBtn.disabled = true;
-      showMessage('videoFormMessage', '');
+      payoutStatus.textContent = 'Payout request submitted!';
+      payoutBtn.style.display = 'none';
+    } catch (err) {
+      payoutStatus.textContent = 'Error submitting payout request: ' + err.message;
+    }
 
-      const data = {
-        github_username: currentUser.user_metadata?.user_name || currentUser.email || 'unknown',
-        avatar_url: currentUser.user_metadata?.avatar_url || null,
-        title: document.getElementById('videoTitle').value.trim(),
-        content: document.getElementById('videoContent').value.trim(),
-        video_url: document.getElementById('videoUrl').value.trim(),
-        created_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase.from('game_videos').insert([data]);
-      if (error) {
-        showMessage('videoFormMessage', 'Adding video failed: ' + error.message, 'error');
-      } else {
-        showMessage('videoFormMessage', 'Video added successfully!', 'success');
-        addVideoForm.reset();
-        loadVideos();
-        loadProfileStats(); // Update stats
-      }
-      if (submitBtn) submitBtn.disabled = false;
-    };
-  }
-
-  const addArtForm = document.getElementById('addArtForm');
-  if (addArtForm) {
-    addArtForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const submitBtn = document.getElementById('artSubmitBtn');
-      if (submitBtn) submitBtn.disabled = true;
-      showMessage('artFormMessage', '');
-
-      const data = {
-        github_username: currentUser.user_metadata?.user_name || currentUser.email,
-        avatar_url: currentUser.user_metadata?.avatar_url || '',
-        title: document.getElementById('artTitle').value.trim(),
-        description: document.getElementById('artDescription').value.trim(),
-        image_url: document.getElementById('artImageUrl').value.trim(),
-        created_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase.from('user_art').insert([data]);
-      if (error) {
-        showMessage('artFormMessage', 'Adding art failed: ' + error.message, 'error');
-      } else {
-        showMessage('artFormMessage', 'Art added successfully!', 'success');
-        addArtForm.reset();
-        loadArt();
-        loadProfileStats(); // Update stats
-      }
-      if (submitBtn) submitBtn.disabled = false;
-    };
-  }
-
-  // Main payout button event listener
-  const mainPayoutBtn = document.getElementById('mainPayoutBtn');
-  if (mainPayoutBtn) {
-    mainPayoutBtn.addEventListener('click', requestMainPayout);
-  }
+    payoutBtn.disabled = false;
+  });
 
   // Initialize
   (async () => {
-    debugLog('🚀 Dashboard initializing...');
     if (!(await checkAuth())) return;
 
-    debugLog('📋 Loading dashboard components...');
+    await loadVipPageLikes();
     await loadProfile();
     await loadGames();
     await loadVideos();
     await loadArt();
     await updatePaymentsTabDisplay();
-    debugLog('✅ Dashboard initialization complete!', 'success');
   })();
 
 </script>
