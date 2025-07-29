@@ -2019,64 +2019,6 @@
       box-shadow: none;
     }
 
-    /* Login Required Message */
-    .login-required-message {
-      text-align: center;
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .login-required-message h3 {
-      color: #ff4f9f;
-      margin-bottom: 1rem;
-    }
-
-    .login-required-message p {
-      color: #ddd;
-      margin-bottom: 1.5rem;
-      line-height: 1.4;
-    }
-
-    .login-required-message button {
-      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
-      color: #1b1b2e;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 1rem;
-    }
-
-    .login-required-message button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
-    }
-
-    /* New conversation button */
-    .new-conversation-button {
-      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
-      color: #1b1b2e;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.8rem;
-      margin-bottom: 15px;
-      width: 100%;
-    }
-
-    .new-conversation-button:hover {
-      transform: scale(1.02);
-      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
-    }
-
     /* Responsive improvements */
     @media (max-width: 480px) {
       .profile-header {
@@ -2131,36 +2073,11 @@
         <!-- Quick Message Area -->
         <div class="chat-area">
           <div class="chat-header">
-            <h3 style="margin: 0; color: #ff4f9f;">💬 Send Message</h3>
+            <h3 style="margin: 0; color: #ff4f9f;">💬 Direct Messages</h3>
           </div>
           
           <div class="messages-area" id="profileMessagesArea">
-            <div id="loginRequiredMessage" class="login-required-message" style="display: none;">
-              <h3>🔑 Login Required to Send Messages</h3>
-              <p>You must be logged in with GitHub to send messages to this user.</p>
-              <button onclick="loginWithGitHub()">Login with GitHub</button>
-            </div>
-            <div id="messageToProfileOwnerArea" style="display: none;">
-              <div style="text-align: center; padding: 1rem; margin-bottom: 1rem; background: rgba(255, 79, 159, 0.1); border-radius: 8px; border: 1px solid #ff4f9f;">
-                <p style="color: #ff82ba; margin: 0;">💬 Send a message to <strong id="profileOwnerName"></strong></p>
-              </div>
-              <form id="quickMessageForm">
-                <textarea 
-                  id="quickMessageInput" 
-                  class="message-input" 
-                  placeholder="Type your message..."
-                  rows="3"
-                  maxlength="1000"
-                  required
-                  style="width: 100%; margin-bottom: 10px;"
-                ></textarea>
-                <button type="submit" class="send-button" id="quickSendButton" style="width: 100%; justify-content: center;">
-                  <span>📩</span>
-                  Send Message
-                </button>
-              </form>
-            </div>
-            <div id="defaultMessageArea" style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">
+            <div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">
               Recent message activity will appear here
             </div>
           </div>
@@ -2174,9 +2091,6 @@
         <!-- Conversations List -->
         <div class="conversations-list">
           <h3>Conversations</h3>
-          <button class="new-conversation-button" onclick="startNewConversation()" style="display: none;" id="newConversationBtn">
-            ➕ Start New Conversation
-          </button>
           <div id="conversationsList">
             <div class="loading">Loading conversations...</div>
           </div>
@@ -2240,13 +2154,6 @@
   // Profile messages elements
   const profileConversationsList = document.getElementById('profileConversationsList');
   const profileMessagesArea = document.getElementById('profileMessagesArea');
-  const loginRequiredMessage = document.getElementById('loginRequiredMessage');
-  const messageToProfileOwnerArea = document.getElementById('messageToProfileOwnerArea');
-  const defaultMessageArea = document.getElementById('defaultMessageArea');
-  const profileOwnerName = document.getElementById('profileOwnerName');
-  const quickMessageForm = document.getElementById('quickMessageForm');
-  const quickMessageInput = document.getElementById('quickMessageInput');
-  const quickSendButton = document.getElementById('quickSendButton');
 
   // Messages elements
   const conversationsList = document.getElementById('conversationsList');
@@ -2258,17 +2165,15 @@
   const messageForm = document.getElementById('messageForm');
   const messageInput = document.getElementById('messageInput');
   const sendButton = document.getElementById('sendButton');
-  const newConversationBtn = document.getElementById('newConversationBtn');
 
-  // Global login function
-  window.loginWithGitHub = function() {
-    supabase.auth.signInWithOAuth({ 
-      provider: 'github',
-      options: {
-        redirectTo: window.location.href
-      }
-    });
-  };
+  // DM Modal elements - REMOVED
+  // const dmModal = document.getElementById('dmModal');
+  // const dmModalTitle = document.getElementById('dmModalTitle');
+  // const dmCloseBtn = document.getElementById('dmCloseBtn');
+  // const dmForm = document.getElementById('dmForm');
+  // const dmMessage = document.getElementById('dmMessage');
+  // const dmSendBtn = document.getElementById('dmSendBtn');
+  // const dmSuccessMessage = document.getElementById('dmSuccessMessage');
 
   // Tab functionality
   window.showTab = function(tabName) {
@@ -2293,24 +2198,9 @@
       loadConversations();
     }
     
-    // If switching to profile tab, update message area
-    if (tabName === 'profile') {
-      updateProfileMessageArea();
-    }
-  };
-
-  // Start new conversation functionality
-  window.startNewConversation = function() {
-    const targetUsername = prompt('Enter the GitHub username to start a conversation with:');
-    if (targetUsername && targetUsername.trim()) {
-      // Start conversation with target user
-      activeConversation = targetUsername.trim();
-      
-      // Show chat interface
-      showChatInterface(targetUsername.trim());
-      
-      // Mark conversation as active
-      selectConversation(targetUsername.trim());
+    // If switching to profile tab, load recent messages
+    if (tabName === 'profile' && currentUser) {
+      loadProfileMessages();
     }
   };
 
@@ -2323,26 +2213,21 @@
         currentUser = session.user;
         console.log('User logged in:', currentUser.id);
         
-        // FIXED: Get GitHub username from user metadata instead of falling back to email
-        currentUsername = session.user.user_metadata?.user_name || session.user.user_metadata?.preferred_username;
+        // Get current user's username
+        const { data: gameData } = await supabase
+          .from('game_submissions')
+          .select('github_user')
+          .eq('user_id', currentUser.id)
+          .limit(1);
         
-        if (!currentUsername) {
-          // Try to get from game submissions as backup
-          const { data: gameData } = await supabase
-            .from('game_submissions')
-            .select('github_user')
-            .eq('user_id', currentUser.id)
-            .limit(1);
-          
-          if (gameData && gameData.length > 0) {
-            currentUsername = gameData[0].github_user;
-          } else {
-            console.error('No GitHub username found for user');
-            currentUsername = 'unknown_user';
-          }
+        if (gameData && gameData.length > 0) {
+          currentUsername = gameData[0].github_user;
+          console.log('Found username from games:', currentUsername);
+        } else {
+          // Fallback to email if no game submissions
+          currentUsername = currentUser.email;
+          console.log('Using email as username:', currentUsername);
         }
-        
-        console.log('Using GitHub username:', currentUsername);
 
         // Show messages tab if user is logged in and viewing their own profile
         if (currentUsername === username) {
@@ -2503,9 +2388,15 @@
         <div class="profile-details">
           ${detailsHTML}
         </div>
-        ${showDMButton ? '<button id="dmButton" class="dm-button" onclick="showTab(\'profile\')">💬 Send Message</button>' : ''}
+        ${showDMButton ? '<button id="dmButton" class="dm-button" onclick="showTab(\'messages\')">💬 Send Message</button>' : ''}
       </div>
     `;
+
+    // Add direct message button event listener
+    const dmButton = document.getElementById('dmButton');
+    if (dmButton) {
+      console.log('DM button will switch to messages tab');
+    }
   }
 
   // Load and render stats
@@ -2563,35 +2454,14 @@
     }
   }
 
-  // Update profile message area based on auth status
-  function updateProfileMessageArea() {
-    if (!currentUser || !currentUsername) {
-      // Show login required message
-      loginRequiredMessage.style.display = 'block';
-      messageToProfileOwnerArea.style.display = 'none';
-      defaultMessageArea.style.display = 'none';
-    } else if (currentUsername === username) {
-      // User is viewing their own profile - show recent messages
-      loginRequiredMessage.style.display = 'none';
-      messageToProfileOwnerArea.style.display = 'none';
-      defaultMessageArea.style.display = 'block';
-      loadProfileMessages();
-    } else {
-      // User is viewing someone else's profile - show message form
-      loginRequiredMessage.style.display = 'none';
-      messageToProfileOwnerArea.style.display = 'block';
-      defaultMessageArea.style.display = 'none';
-      profileOwnerName.textContent = username;
-    }
-  }
-
-  // Load recent messages for profile owner
+  // Load recent messages for profile tab
   async function loadProfileMessages() {
     try {
       console.log('Loading recent messages for profile...');
       
       if (!currentUser || !currentUsername) {
         profileConversationsList.innerHTML = '<div class="no-messages">Please log in to see messages</div>';
+        profileMessagesArea.innerHTML = '<div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">Log in to view your recent messages</div>';
         return;
       }
 
@@ -2613,6 +2483,7 @@
 
       if (!messages || messages.length === 0) {
         profileConversationsList.innerHTML = '<div class="no-messages">No messages yet</div>';
+        profileMessagesArea.innerHTML = '<div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">Start a conversation to see messages here</div>';
         return;
       }
 
@@ -2664,61 +2535,28 @@
 
       profileConversationsList.innerHTML = conversationsHtml.join('');
 
+      // Show recent messages in the area
+      const recentMessagesHtml = messages.slice(0, 5).map(message => {
+        const time = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const isSent = message.sender_username === currentUsername;
+        
+        return `
+          <div style="padding: 8px; margin-bottom: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; border-left: 3px solid ${isSent ? '#ff4f9f' : '#8dffa1'};">
+            <div style="font-size: 0.7rem; color: ${isSent ? '#ff82ba' : '#8dffa1'}; margin-bottom: 3px;">
+              ${isSent ? 'To' : 'From'} ${isSent ? message.recipient_username : message.sender_username} • ${time}
+            </div>
+            <div style="font-size: 0.8rem; color: #fefefe;">${message.message_content}</div>
+          </div>
+        `;
+      }).join('');
+
+      profileMessagesArea.innerHTML = recentMessagesHtml;
+
     } catch (error) {
       console.error('Error loading profile messages:', error);
       profileConversationsList.innerHTML = '<div class="error">❌ Error loading messages</div>';
     }
   }
-
-  // Send quick message to profile owner
-  async function sendQuickMessage(messageContent) {
-    if (!messageContent.trim() || !currentUser || !currentUsername) return false;
-
-    try {
-      const { error } = await supabase
-        .from('direct_messages')
-        .insert([{
-          sender_id: currentUser.id,
-          sender_username: currentUsername,
-          recipient_username: username,
-          message_content: messageContent.trim()
-        }]);
-
-      if (error) {
-        console.error('Error sending quick message:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error sending quick message:', error);
-      return false;
-    }
-  }
-
-  // Quick message form submission
-  quickMessageForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const message = quickMessageInput.value.trim();
-    if (!message) return;
-
-    quickSendButton.disabled = true;
-    quickSendButton.innerHTML = '<span>⏳</span> Sending...';
-
-    const success = await sendQuickMessage(message);
-    
-    if (success) {
-      quickMessageInput.value = '';
-      alert('Message sent successfully!');
-    } else {
-      alert('Failed to send message. Please try again.');
-    }
-    
-    quickSendButton.disabled = false;
-    quickSendButton.innerHTML = '<span>📩</span> Send Message';
-  });
-
   async function incrementVipPageView() {
     if (!username) return;
 
@@ -2817,11 +2655,8 @@
 
       console.log('Found messages:', messages.length);
 
-      // Show new conversation button
-      newConversationBtn.style.display = 'block';
-
       if (!messages || messages.length === 0) {
-        conversationsList.innerHTML = '<div class="no-messages">No conversations yet. Click "Start New Conversation" to begin!</div>';
+        conversationsList.innerHTML = '<div class="no-messages">No conversations yet</div>';
         return;
       }
 
@@ -2891,11 +2726,24 @@
       `;
     }));
 
-    conversationsList.innerHTML = html.join('');
+    conversationsList.innerHTML = '<h3>Conversations</h3>' + html.join('');
   }
 
-  // Show chat interface for a user
-  async function showChatInterface(partner) {
+  // Select conversation
+  window.selectConversation = async function(partner) {
+    console.log('Selecting conversation with:', partner);
+    
+    // Remove active class from all conversations
+    document.querySelectorAll('.conversation-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    
+    // Add active class to selected conversation
+    document.querySelector(`[data-partner="${partner}"]`).classList.add('active');
+    
+    activeConversation = partner;
+    
+    // Show chat header and input area
     chatHeader.style.display = 'flex';
     messageInputArea.style.display = 'block';
     
@@ -2910,26 +2758,6 @@
     
     // Load messages for this conversation
     await loadMessages(partner);
-  }
-
-  // Select conversation
-  window.selectConversation = async function(partner) {
-    console.log('Selecting conversation with:', partner);
-    
-    // Remove active class from all conversations
-    document.querySelectorAll('.conversation-item').forEach(item => {
-      item.classList.remove('active');
-    });
-    
-    // Add active class to selected conversation
-    const conversationElement = document.querySelector(`[data-partner="${partner}"]`);
-    if (conversationElement) {
-      conversationElement.classList.add('active');
-    }
-    
-    activeConversation = partner;
-    
-    await showChatInterface(partner);
     
     // Mark messages as read
     await markMessagesAsRead(partner);
@@ -2953,7 +2781,7 @@
       console.log('Loaded messages for conversation:', messages.length);
 
       if (!messages || messages.length === 0) {
-        messagesArea.innerHTML = '<div class="no-messages">No messages in this conversation yet. Start chatting!</div>';
+        messagesArea.innerHTML = '<div class="no-messages">No messages in this conversation yet</div>';
         return;
       }
 
@@ -3063,19 +2891,6 @@
     this.style.height = Math.min(this.scrollHeight, 100) + 'px';
   });
 
-  quickMessageInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-  });
-
-  // Listen for auth changes
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      // Reload the page to update everything with the new auth state
-      window.location.reload();
-    }
-  });
-
   // Main initialization
   async function init() {
     console.log('Starting user profile page initialization...');
@@ -3118,8 +2933,10 @@
       renderProfileHeader();
       await loadStats();
 
-      // Update message area based on auth status
-      updateProfileMessageArea();
+      // Load recent messages if user is logged in
+      if (currentUser) {
+        await loadProfileMessages();
+      }
 
       // Increment page view
       await incrementVipPageView();
