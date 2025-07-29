@@ -792,8 +792,10 @@
 
       // Check if user already has VIP access
       const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
 
-      if (!hasVIPAccess) {
+      // Show VIP gate if no VIP access OR no age verification
+      if (!hasVIPAccess || !isAgeVerified) {
         vipAccessGate.classList.add('show');
       }
 
@@ -1116,7 +1118,10 @@
     async function checkVIPStatus(userId) {
       // Check local VIP access first
       const localVIP = localStorage.getItem('vipAccess') === 'true';
-      if (localVIP) return true;
+      const localAgeVerified = localStorage.getItem('ageVerified') === 'true';
+      
+      // Must have both VIP access AND age verification
+      if (localVIP && localAgeVerified) return true;
 
       if (!userId) return false;
 
@@ -1181,13 +1186,15 @@
       
       taskbarVip.innerHTML = '';
       
-      // Check if user has VIP access (local or database)
+      // Check if user has VIP access (local or database) AND age verification
       const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+      const hasFullAccess = hasVIPAccess && isAgeVerified;
       
-      if (hasVIPAccess || currentVIPStatus) {
+      if (hasFullAccess || currentVIPStatus) {
         const vipStatus = document.createElement('div');
         vipStatus.className = 'vip-status';
-        vipStatus.innerHTML = hasVIPAccess ? '⭐ VIP Active (Age Verified)' : '⭐ VIP Active';
+        vipStatus.innerHTML = hasFullAccess ? '⭐ VIP Active (Age Verified)' : '⭐ VIP Active';
         taskbarVip.appendChild(vipStatus);
       } else {
         // No VIP button since access gate handles everything
@@ -1308,8 +1315,22 @@
           logoutBtn.onclick = async () => {
             try {
               await supabase.auth.signOut();
+              
+              // Clear all local storage data on logout
+              localStorage.removeItem('vipAccess');
+              localStorage.removeItem('ageVerified');
+              localStorage.removeItem('vipSubscriptionId');
+              localStorage.removeItem('vipActivatedAt');
+              
               currentUser = null;
               currentVIPStatus = false;
+              
+              // Show VIP gate again after logout
+              const vipAccessGate = document.getElementById('vip-access-gate');
+              if (vipAccessGate) {
+                vipAccessGate.classList.add('show');
+              }
+              
               window.location.reload();
             } catch (error) {
               console.error('Error during logout:', error);
