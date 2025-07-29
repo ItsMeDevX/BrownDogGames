@@ -2061,10 +2061,26 @@
 
     <!-- Profile Tab Content -->
     <div id="profileTab" class="tab-content active">
-      <div style="background-color: #2f1a39; border: 2px solid #ff4f9f; border-radius: 12px; padding: 20px;">
-        <h3 style="color: #ff4f9f; margin-top: 0;">🎮 About ${username || 'User'}</h3>
-        <div id="profileContent">
-          <div class="loading">Loading profile information...</div>
+      <div class="messages-container">
+        <!-- Conversations List -->
+        <div class="conversations-list">
+          <h3>Recent Messages</h3>
+          <div id="profileConversationsList">
+            <div class="loading">Loading recent messages...</div>
+          </div>
+        </div>
+
+        <!-- Quick Message Area -->
+        <div class="chat-area">
+          <div class="chat-header">
+            <h3 style="margin: 0; color: #ff4f9f;">💬 Direct Messages</h3>
+          </div>
+          
+          <div class="messages-area" id="profileMessagesArea">
+            <div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">
+              Recent message activity will appear here
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2134,7 +2150,10 @@
   const pageTitle = document.getElementById('pageTitle');
   const profileHeader = document.getElementById('profileHeader');
   const profileStats = document.getElementById('profileStats');
-  const profileContent = document.getElementById('profileContent');
+
+  // Profile messages elements
+  const profileConversationsList = document.getElementById('profileConversationsList');
+  const profileMessagesArea = document.getElementById('profileMessagesArea');
 
   // Messages elements
   const conversationsList = document.getElementById('conversationsList');
@@ -2179,9 +2198,9 @@
       loadConversations();
     }
     
-    // If switching to profile tab, load profile content
-    if (tabName === 'profile') {
-      loadProfileContent();
+    // If switching to profile tab, load recent messages
+    if (tabName === 'profile' && currentUser) {
+      loadProfileMessages();
     }
   };
 
@@ -2435,75 +2454,107 @@
     }
   }
 
-  // Load profile content for profile tab
-  async function loadProfileContent() {
+  // Load recent messages for profile tab
+  async function loadProfileMessages() {
     try {
-      console.log('Loading profile content...');
+      console.log('Loading recent messages for profile...');
       
-      let contentHTML = '';
+      if (!currentUser || !currentUsername) {
+        profileConversationsList.innerHTML = '<div class="no-messages">Please log in to see messages</div>';
+        profileMessagesArea.innerHTML = '<div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">Log in to view your recent messages</div>';
+        return;
+      }
+
+      // Get recent messages for current user
+      const { data: messages, error } = await supabase
+        .from('direct_messages')
+        .select('*')
+        .or(`sender_username.eq.${currentUsername},recipient_username.eq.${currentUsername}`)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error loading recent messages:', error);
+        profileConversationsList.innerHTML = '<div class="error">❌ Error loading messages</div>';
+        return;
+      }
+
+      console.log('Found recent messages:', messages.length);
+
+      if (!messages || messages.length === 0) {
+        profileConversationsList.innerHTML = '<div class="no-messages">No messages yet</div>';
+        profileMessagesArea.innerHTML = '<div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">Start a conversation to see messages here</div>';
+        return;
+      }
+
+      // Group by conversation partners for the list
+      const conversationsMap = new Map();
       
-      // Show basic profile info
-      if (profileData) {
-        if (profileData.bio) {
-          contentHTML += `<div style="margin-bottom: 15px;"><strong style="color: #ff82ba;">Bio:</strong><br>${profileData.bio}</div>`;
+      for (const message of messages) {
+        const partner = message.sender_username === currentUsername 
+          ? message.recipient_username 
+          : message.sender_username;
+        
+        if (!conversationsMap.has(partner)) {
+          conversationsMap.set(partner, {
+            partner,
+            lastMessage: message,
+            unreadCount: 0
+          });
         }
-        if (profileData.location) {
-          contentHTML += `<div style="margin-bottom: 10px;"><strong style="color: #ff82ba;">📍 Location:</strong> ${profileData.location}</div>`;
-        }
-        if (profileData.website) {
-          contentHTML += `<div style="margin-bottom: 10px;"><strong style="color: #ff82ba;">🌐 Website:</strong> <a href="${profileData.website}" target="_blank" style="color: #8dffa1;">${profileData.website}</a></div>`;
-        }
-        if (profileData.favorite_genre) {
-          contentHTML += `<div style="margin-bottom: 10px;"><strong style="color: #ff82ba;">🎮 Favorite Genre:</strong> ${profileData.favorite_genre}</div>`;
+        
+        // Count unread messages
+        if (message.recipient_username === currentUsername && !message.is_read) {
+          conversationsMap.get(partner).unreadCount++;
         }
       }
 
-      // Get user's recent content
-      const [games, videos, art] = await Promise.all([
-        supabase.from('game_submissions').select('title, created_at').eq('github_user', username).order('created_at', { ascending: false }).limit(3),
-        supabase.from('game_videos').select('title, created_at').eq('github_username', username).order('created_at', { ascending: false }).limit(3),
-        supabase.from('user_art').select('title, created_at').eq('github_username', username).order('created_at', { ascending: false }).limit(3)
-      ]);
+      const recentConversations = Array.from(conversationsMap.values()).slice(0, 5);
 
-      // Show recent games
-      if (games.data && games.data.length > 0) {
-        contentHTML += `<div style="margin-top: 20px;"><strong style="color: #ff82ba;">🎮 Recent Games:</strong><ul style="margin: 10px 0; padding-left: 20px;">`;
-        games.data.forEach(game => {
-          const date = new Date(game.created_at).toLocaleDateString();
-          contentHTML += `<li style="margin-bottom: 5px; color: #ddd;">${game.title} <span style="opacity: 0.7; font-size: 0.8rem;">(${date})</span></li>`;
-        });
-        contentHTML += `</ul></div>`;
-      }
+      // Render conversations list
+      const conversationsHtml = await Promise.all(recentConversations.map(async (conv) => {
+        const avatar = await getAvatarForUsername(conv.partner);
+        const time = new Date(conv.lastMessage.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const preview = conv.lastMessage.message_content.substring(0, 30) + (conv.lastMessage.message_content.length > 30 ? '...' : '');
+        
+        return `
+          <div class="conversation-item ${conv.unreadCount > 0 ? 'unread' : ''}" style="cursor: pointer; margin-bottom: 8px;">
+            ${avatar ? `<img src="${avatar}" alt="${conv.partner}" class="conversation-avatar" style="width: 30px; height: 30px;">` : 
+                      `<div class="conversation-avatar" style="width: 30px; height: 30px; background: #ff4f9f; display: flex; align-items: center; justify-content: center; color: #1b1b2e; font-weight: bold; font-size: 0.8rem;">${conv.partner.charAt(0).toUpperCase()}</div>`}
+            <div class="conversation-info" style="margin-left: 40px;">
+              <div class="conversation-name" style="font-size: 0.8rem;">
+                ${conv.partner}
+                ${conv.unreadCount > 0 ? `<span style="background: #8dffa1; color: #1b1b2e; padding: 1px 4px; border-radius: 8px; font-size: 0.6rem; margin-left: 5px;">${conv.unreadCount}</span>` : ''}
+              </div>
+              <div class="conversation-preview" style="font-size: 0.6rem; opacity: 0.7;">${preview}</div>
+              <div class="conversation-time" style="font-size: 0.6rem; opacity: 0.6;">${time}</div>
+            </div>
+          </div>
+        `;
+      }));
 
-      // Show recent videos
-      if (videos.data && videos.data.length > 0) {
-        contentHTML += `<div style="margin-top: 15px;"><strong style="color: #ff82ba;">🎬 Recent Videos:</strong><ul style="margin: 10px 0; padding-left: 20px;">`;
-        videos.data.forEach(video => {
-          const date = new Date(video.created_at).toLocaleDateString();
-          contentHTML += `<li style="margin-bottom: 5px; color: #ddd;">${video.title} <span style="opacity: 0.7; font-size: 0.8rem;">(${date})</span></li>`;
-        });
-        contentHTML += `</ul></div>`;
-      }
+      profileConversationsList.innerHTML = conversationsHtml.join('');
 
-      // Show recent art
-      if (art.data && art.data.length > 0) {
-        contentHTML += `<div style="margin-top: 15px;"><strong style="color: #ff82ba;">🎨 Recent Art:</strong><ul style="margin: 10px 0; padding-left: 20px;">`;
-        art.data.forEach(artwork => {
-          const date = new Date(artwork.created_at).toLocaleDateString();
-          contentHTML += `<li style="margin-bottom: 5px; color: #ddd;">${artwork.title} <span style="opacity: 0.7; font-size: 0.8rem;">(${date})</span></li>`;
-        });
-        contentHTML += `</ul></div>`;
-      }
+      // Show recent messages in the area
+      const recentMessagesHtml = messages.slice(0, 5).map(message => {
+        const time = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const isSent = message.sender_username === currentUsername;
+        
+        return `
+          <div style="padding: 8px; margin-bottom: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; border-left: 3px solid ${isSent ? '#ff4f9f' : '#8dffa1'};">
+            <div style="font-size: 0.7rem; color: ${isSent ? '#ff82ba' : '#8dffa1'}; margin-bottom: 3px;">
+              ${isSent ? 'To' : 'From'} ${isSent ? message.recipient_username : message.sender_username} • ${time}
+            </div>
+            <div style="font-size: 0.8rem; color: #fefefe;">${message.message_content}</div>
+          </div>
+        `;
+      }).join('');
 
-      if (!contentHTML) {
-        contentHTML = '<div style="color: #ddd; font-style: italic;">No additional profile information available.</div>';
-      }
-
-      profileContent.innerHTML = contentHTML;
+      profileMessagesArea.innerHTML = recentMessagesHtml;
 
     } catch (error) {
-      console.error('Error loading profile content:', error);
-      profileContent.innerHTML = '<div class="error">❌ Error loading profile content</div>';
+      console.error('Error loading profile messages:', error);
+      profileConversationsList.innerHTML = '<div class="error">❌ Error loading messages</div>';
     }
   }
   async function incrementVipPageView() {
@@ -2882,8 +2933,10 @@
       renderProfileHeader();
       await loadStats();
 
-      // Load profile content
-      await loadProfileContent();
+      // Load recent messages if user is logged in
+      if (currentUser) {
+        await loadProfileMessages();
+      }
 
       // Increment page view
       await incrementVipPageView();
