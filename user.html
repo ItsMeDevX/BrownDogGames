@@ -1665,6 +1665,57 @@
       margin-bottom: 20px;
     }
 
+    .messages-display {
+      background-color: #3b2750;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .message-item {
+      background-color: #2f1a39;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 3px solid #8dffa1;
+    }
+
+    .message-item.sent {
+      border-left-color: #ff4f9f;
+      background-color: #4a3061;
+    }
+
+    .message-header {
+      font-size: 0.7rem;
+      color: #8dffa1;
+      margin-bottom: 5px;
+    }
+
+    .message-item.sent .message-header {
+      color: #ff82ba;
+    }
+
+    .message-content {
+      color: #fefefe;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .message-time {
+      font-size: 0.6rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+
+    .no-messages-display {
+      text-align: center;
+      color: #ddd;
+      font-style: italic;
+      padding: 20px;
+    }
+
     .message-form {
       display: flex;
       flex-direction: column;
@@ -1734,7 +1785,14 @@
 
     <!-- Message Area -->
     <div class="message-area" id="messageArea">
-      <h3 style="color: #ff4f9f; margin-top: 0;">💬 Send Message</h3>
+      <h3 style="color: #ff4f9f; margin-top: 0;">💬 Messages</h3>
+      
+      <!-- Messages Display -->
+      <div id="messagesDisplay" class="messages-display" style="display: none;">
+        <div id="messagesList">
+          <div class="no-messages-display">No messages yet</div>
+        </div>
+      </div>
       
       <div id="loginRequiredMessage" class="login-required-message" style="display: none;">
         <h3>🔑 Login Required to Send Messages</h3>
@@ -2021,13 +2079,95 @@
     }
   }
 
+  // Load messages between current user and profile owner
+  async function loadMessages() {
+    if (!supabase || !currentUser || !currentUsername) return;
+    
+    try {
+      debug('Loading messages between', currentUsername, 'and', username);
+      
+      const { data: messages, error } = await supabase
+        .from('direct_messages')
+        .select('*')
+        .or(`and(sender_username.eq.${currentUsername},recipient_username.eq.${username}),and(sender_username.eq.${username},recipient_username.eq.${currentUsername})`)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        debug('Error loading messages:', error);
+        return;
+      }
+
+      debug('Found messages:', messages.length);
+      
+      const messagesList = document.getElementById('messagesList');
+      
+      if (!messages || messages.length === 0) {
+        messagesList.innerHTML = '<div class="no-messages-display">No messages yet</div>';
+        return;
+      }
+
+      const messagesHtml = messages.map(message => {
+        const isSent = message.sender_username === currentUsername;
+        const time = new Date(message.created_at).toLocaleString();
+        
+        return `
+          <div class="message-item ${isSent ? 'sent' : ''}">
+            <div class="message-header">
+              ${isSent ? `You → ${message.recipient_username}` : `${message.sender_username} → You`}
+            </div>
+            <div class="message-content">${message.message_content}</div>
+            <div class="message-time">${time}</div>
+          </div>
+        `;
+      }).join('');
+
+      messagesList.innerHTML = messagesHtml;
+      
+      // Scroll to bottom
+      const messagesDisplay = document.getElementById('messagesDisplay');
+      messagesDisplay.scrollTop = messagesDisplay.scrollHeight;
+      
+      // Mark received messages as read
+      await markMessagesAsRead();
+      
+    } catch (error) {
+      debug('Exception loading messages:', error);
+    }
+  }
+
+  // Mark messages as read
+  async function markMessagesAsRead() {
+    if (!supabase || !currentUser || !currentUsername) return;
+    
+    try {
+      const { error } = await supabase
+        .from('direct_messages')
+        .update({ is_read: true })
+        .eq('sender_username', username)
+        .eq('recipient_username', currentUsername)
+        .eq('is_read', false);
+
+      if (error) {
+        debug('Error marking messages as read:', error);
+      } else {
+        debug('Messages marked as read');
+      }
+    } catch (error) {
+      debug('Exception marking messages as read:', error);
+    }
+  }
+
   // Show message form
   window.showMessageForm = function() {
     debug('Showing message form');
     document.getElementById('loginRequiredMessage').style.display = 'none';
     document.getElementById('messageForm').style.display = 'block';
     document.getElementById('defaultMessage').style.display = 'none';
+    document.getElementById('messagesDisplay').style.display = 'block';
     document.getElementById('profileOwnerName').textContent = username;
+    
+    // Load existing messages
+    loadMessages();
   };
 
   // Update message area
@@ -2039,18 +2179,73 @@
       document.getElementById('loginRequiredMessage').style.display = 'block';
       document.getElementById('messageForm').style.display = 'none';
       document.getElementById('defaultMessage').style.display = 'none';
+      document.getElementById('messagesDisplay').style.display = 'none';
     } else if (currentUsername === username) {
-      debug('User viewing own profile');
+      debug('User viewing own profile - showing recent messages');
       document.getElementById('loginRequiredMessage').style.display = 'none';
       document.getElementById('messageForm').style.display = 'none';
-      document.getElementById('defaultMessage').style.display = 'block';
-      document.getElementById('defaultMessage').innerHTML = '<p style="text-align: center; color: #ddd; font-style: italic;">This is your profile page</p>';
+      document.getElementById('defaultMessage').style.display = 'none';
+      document.getElementById('messagesDisplay').style.display = 'block';
+      
+      // Load messages where this user is involved
+      loadAllUserMessages();
     } else {
       debug('User can message this profile');
       document.getElementById('loginRequiredMessage').style.display = 'none';
       document.getElementById('messageForm').style.display = 'none';
       document.getElementById('defaultMessage').style.display = 'block';
-      document.getElementById('defaultMessage').innerHTML = '<p style="text-align: center; color: #ddd; font-style: italic;">Click "Send Message" button above to message this user</p>';
+      document.getElementById('messagesDisplay').style.display = 'none';
+      document.getElementById('defaultMessage').innerHTML = '<p style="text-align: center; color: #ddd; font-style: italic;">Click "Send Message" button above to start a conversation</p>';
+    }
+  }
+
+  // Load all messages for profile owner
+  async function loadAllUserMessages() {
+    if (!supabase || !currentUser || !currentUsername) return;
+    
+    try {
+      debug('Loading all messages for user:', currentUsername);
+      
+      const { data: messages, error } = await supabase
+        .from('direct_messages')
+        .select('*')
+        .or(`sender_username.eq.${currentUsername},recipient_username.eq.${currentUsername}`)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) {
+        debug('Error loading user messages:', error);
+        return;
+      }
+
+      debug('Found user messages:', messages.length);
+      
+      const messagesList = document.getElementById('messagesList');
+      
+      if (!messages || messages.length === 0) {
+        messagesList.innerHTML = '<div class="no-messages-display">No messages yet</div>';
+        return;
+      }
+
+      const messagesHtml = messages.map(message => {
+        const isSent = message.sender_username === currentUsername;
+        const time = new Date(message.created_at).toLocaleString();
+        
+        return `
+          <div class="message-item ${isSent ? 'sent' : ''}">
+            <div class="message-header">
+              ${isSent ? `You → ${message.recipient_username}` : `${message.sender_username} → You`}
+            </div>
+            <div class="message-content">${message.message_content}</div>
+            <div class="message-time">${time}</div>
+          </div>
+        `;
+      }).join('');
+
+      messagesList.innerHTML = messagesHtml;
+      
+    } catch (error) {
+      debug('Exception loading user messages:', error);
     }
   }
 
@@ -2179,6 +2374,8 @@
         
         if (success) {
           input.value = '';
+          // Reload messages to show the new one
+          await loadMessages();
           alert('Message sent successfully!');
         } else {
           alert('Failed to send message. Please try again.');
