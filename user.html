@@ -2089,6 +2089,8 @@
       return null;
     }
   }
+
+  // Load profile data from database
   async function loadProfileData() {
     try {
       // For public profiles, try to find by user_id from userData
@@ -2335,42 +2337,65 @@
 
   // Main initialization
   async function init() {
+    console.log('Starting user profile page initialization...');
+    
     if (!username) {
+      console.error('No username provided in URL');
       pageTitle.textContent = 'Error';
       profileHeader.innerHTML = '<div class="error">❌ No username provided in URL.</div>';
       profileStats.innerHTML = '';
       return;
     }
 
+    console.log('Loading profile for username:', username);
     pageTitle.textContent = `${username}'s Profile`;
 
-    // Check authentication first
-    await checkAuth();
+    try {
+      // Check authentication first
+      console.log('Checking authentication...');
+      await checkAuth();
+      console.log('Current user:', currentUser ? 'Logged in' : 'Not logged in');
 
-    // Get user data (find through content submissions)
-    userData = await getUserData();
-    
-    // If we still can't find user data, create minimal fallback
-    if (!userData && username) {
-      userData = {
-        id: `unknown_user_${username}`,
-        user_metadata: {
-          user_name: username,
-          full_name: username,
-          avatar_url: null
-        }
-      };
+      // Get user data (find through content submissions)
+      console.log('Getting user data...');
+      userData = await getUserData();
+      console.log('User data found:', userData ? 'Yes' : 'No');
+      
+      // If we still can't find user data, create minimal fallback
+      if (!userData && username) {
+        console.log('Creating fallback user data');
+        userData = {
+          id: `unknown_user_${username}`,
+          user_metadata: {
+            user_name: username,
+            full_name: username,
+            avatar_url: null
+          }
+        };
+      }
+
+      // Load profile data
+      console.log('Loading profile data...');
+      profileData = await loadProfileData();
+      console.log('Profile data found:', profileData ? 'Yes' : 'No');
+
+      // Render components
+      console.log('Rendering profile header...');
+      renderProfileHeader();
+      
+      console.log('Loading stats...');
+      await loadStats();
+
+      // Increment page view
+      console.log('Incrementing page view...');
+      await incrementVipPageView();
+      
+      console.log('Profile page initialization complete!');
+    } catch (error) {
+      console.error('Error during initialization:', error);
+      profileHeader.innerHTML = '<div class="error">❌ Error loading profile</div>';
+      profileStats.innerHTML = '<div class="error">❌ Error loading stats</div>';
     }
-
-    // Load profile data
-    profileData = await loadProfileData();
-
-    // Render components
-    renderProfileHeader();
-    await loadStats();
-
-    // Increment page view
-    await incrementVipPageView();
   }
 
   // Start the application
