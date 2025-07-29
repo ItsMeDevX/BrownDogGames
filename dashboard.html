@@ -1522,28 +1522,6 @@
       background-color: #ff85c1;
     }
 
-    /* Payout Section */
-    .payout-section {
-      margin-bottom: 2rem;
-    }
-
-    #payoutRequestBtn {
-      display: none;
-      background-color: #8dffa1;
-      color: #1e1b2e;
-      font-weight: bold;
-      padding: 0.7rem 1.2rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 0.5rem;
-    }
-
-    #payoutStatus {
-      margin: 0;
-      font-size: 0.9rem;
-    }
-
     /* Tab Navigation */
     .tab-nav {
       display: flex;
@@ -1707,6 +1685,12 @@
       background-color: #ff8edb;
     }
 
+    .profile-save-btn:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
     /* Lists */
     .content-list {
       list-style: none;
@@ -1843,6 +1827,32 @@
       color: #8dffa1;
     }
 
+    /* Debug Panel */
+    .debug-panel {
+      background-color: #2d1a3a;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      border: 2px solid #ffc0cb;
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+
+    .debug-panel h4 {
+      color: #ffc0cb;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+
+    .debug-log {
+      background-color: #3b2750;
+      padding: 0.5rem;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       .header-info {
@@ -1972,10 +1982,16 @@
         <textarea id="bio" placeholder="Tell others about yourself and your games..." rows="4"></textarea>
       </div>
 
-      <button type="submit" class="profile-save-btn">💾 Save Profile</button>
+      <button type="submit" class="profile-save-btn" id="profileSaveBtn">💾 Save Profile</button>
     </form>
 
     <p class="message" id="profileMessage" aria-live="polite"></p>
+
+    <!-- Debug Panel -->
+    <div class="debug-panel">
+      <h4>🐛 Debug Log</h4>
+      <div class="debug-log" id="debugLog">Profile debugging enabled...</div>
+    </div>
   </div>
 </div>
 
@@ -2089,10 +2105,30 @@
 
   const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE7NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
 
   let currentUser;
+
+  // Debug logging function
+  function debugLog(message, type = 'info') {
+    const debugLogEl = document.getElementById('debugLog');
+    const timestamp = new Date().toLocaleTimeString();
+    const colors = {
+      'info': '#8dffa1',
+      'error': '#ff8d8d', 
+      'success': '#8dffa1',
+      'warning': '#ffc0cb'
+    };
+    
+    const logEntry = `[${timestamp}] ${message}\n`;
+    console.log(logEntry);
+    
+    if (debugLogEl) {
+      debugLogEl.innerHTML += `<div style="color: ${colors[type] || '#fefefe'}">${logEntry}</div>`;
+      debugLogEl.scrollTop = debugLogEl.scrollHeight;
+    }
+  }
 
   // Tab Management
   window.showTab = function(tabName) {
@@ -2119,29 +2155,38 @@
     if (element) {
       element.textContent = text;
       element.className = `message ${type}`;
+      debugLog(`Message: ${text} (${type})`, type === 'error' ? 'error' : 'info');
     }
   }
 
   async function checkAuth() {
     try {
+      debugLog('🔍 Checking authentication...');
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error || !session?.user) {
+        debugLog('❌ Not authenticated, redirecting...', 'error');
         window.location.href = 'index.html';
         return false;
       }
       currentUser = session.user;
+      debugLog(`✅ Authenticated as: ${currentUser.email} (ID: ${currentUser.id})`);
       return true;
     } catch (error) {
-      console.error('Error checking auth:', error);
+      debugLog(`💥 Auth check error: ${error.message}`, 'error');
       return false;
     }
   }
 
   // Profile Functions
   async function loadProfile() {
-    if (!currentUser) return;
+    if (!currentUser) {
+      debugLog('❌ No current user for profile load', 'error');
+      return;
+    }
 
     try {
+      debugLog('📋 Loading profile data...');
+      
       // Load basic user info
       const profileName = document.getElementById('profileName');
       const profileAvatar = document.getElementById('profileAvatar');
@@ -2149,14 +2194,19 @@
       const githubName = currentUser.user_metadata?.full_name || 'GitHub User';
       const avatarUrl = currentUser.user_metadata?.avatar_url;
 
-      if (profileName) profileName.textContent = githubName;
+      if (profileName) {
+        profileName.textContent = githubName;
+        debugLog(`👤 Profile name set: ${githubName}`);
+      }
 
       if (avatarUrl && profileAvatar) {
         profileAvatar.src = avatarUrl;
         profileAvatar.style.display = 'block';
+        debugLog('🖼️ Avatar loaded');
       }
 
       // Load profile data from database
+      debugLog('🔍 Fetching profile from database...');
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
@@ -2164,11 +2214,12 @@
         .single();
 
       if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error loading profile:', profileError);
-      }
-
-      // Populate form with existing data
-      if (profileData) {
+        debugLog(`❌ Profile fetch error: ${profileError.message}`, 'error');
+      } else if (profileData) {
+        debugLog('✅ Profile data found, populating form...');
+        debugLog(`📝 Profile data: ${JSON.stringify(profileData)}`);
+        
+        // Populate form with existing data
         const locationInput = document.getElementById('location');
         const websiteInput = document.getElementById('website');
         const twitterInput = document.getElementById('twitter');
@@ -2180,13 +2231,17 @@
         if (twitterInput) twitterInput.value = profileData.twitter || '';
         if (favGenreSelect) favGenreSelect.value = profileData.favorite_genre || '';
         if (bioTextarea) bioTextarea.value = profileData.bio || '';
+        
+        debugLog('✅ Form populated with existing data');
+      } else {
+        debugLog('ℹ️ No existing profile data found');
       }
 
       // Load and display stats
       await loadProfileStats();
 
     } catch (error) {
-      console.error('Error loading profile:', error);
+      debugLog(`💥 Profile load error: ${error.message}`, 'error');
       showMessage('profileMessage', 'Error loading profile: ' + error.message, 'error');
     }
   }
@@ -2195,6 +2250,7 @@
     if (!currentUser) return;
 
     try {
+      debugLog('📊 Loading profile statistics...');
       const username = currentUser.user_metadata?.user_name || currentUser.email;
 
       // Get games count
@@ -2232,15 +2288,31 @@
       if (statArt) statArt.textContent = artCount || 0;
       if (statLikes) statLikes.textContent = likesCount || 0;
 
+      debugLog(`📊 Stats loaded - Games: ${gamesCount}, Videos: ${videosCount}, Art: ${artCount}, Likes: ${likesCount}`);
+
     } catch (error) {
-      console.error('Error loading profile stats:', error);
+      debugLog(`💥 Stats load error: ${error.message}`, 'error');
     }
   }
 
   async function saveProfile() {
-    if (!currentUser) return;
+    if (!currentUser) {
+      debugLog('❌ No current user for profile save', 'error');
+      showMessage('profileMessage', 'Error: Not logged in', 'error');
+      return;
+    }
+
+    debugLog('💾 Starting profile save process...');
+    
+    // Disable save button
+    const saveBtn = document.getElementById('profileSaveBtn');
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = '⏳ Saving...';
+    }
 
     try {
+      // Get form values
       const locationInput = document.getElementById('location');
       const websiteInput = document.getElementById('website');
       const twitterInput = document.getElementById('twitter');
@@ -2257,34 +2329,70 @@
         updated_at: new Date().toISOString()
       };
 
-      // Try to update first, if it fails, insert
-      const { error: updateError } = await supabase
+      debugLog(`📝 Profile data to save: ${JSON.stringify(profileData)}`);
+
+      // First check if profile exists
+      debugLog('🔍 Checking if profile exists...');
+      const { data: existingProfile, error: checkError } = await supabase
         .from('user_profiles')
-        .update(profileData)
-        .eq('user_id', currentUser.id);
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .single();
 
-      if (updateError && updateError.code === 'PGRST116') {
-        // Record doesn't exist, insert it
-        profileData.created_at = new Date().toISOString();
-        const { error: insertError } = await supabase
+      if (checkError && checkError.code !== 'PGRST116') {
+        debugLog(`❌ Error checking existing profile: ${checkError.message}`, 'error');
+        throw checkError;
+      }
+
+      if (existingProfile) {
+        // Profile exists, update it
+        debugLog('🔄 Profile exists, updating...');
+        const { data: updateData, error: updateError } = await supabase
           .from('user_profiles')
-          .insert([profileData]);
+          .update(profileData)
+          .eq('user_id', currentUser.id)
+          .select();
 
-        if (insertError) throw insertError;
-      } else if (updateError) {
-        throw updateError;
+        if (updateError) {
+          debugLog(`❌ Update error: ${updateError.message}`, 'error');
+          throw updateError;
+        }
+        
+        debugLog('✅ Profile updated successfully');
+        debugLog(`📄 Updated data: ${JSON.stringify(updateData)}`);
+      } else {
+        // Profile doesn't exist, create it
+        debugLog('➕ Profile doesn\'t exist, creating new...');
+        profileData.created_at = new Date().toISOString();
+        
+        const { data: insertData, error: insertError } = await supabase
+          .from('user_profiles')
+          .insert([profileData])
+          .select();
+
+        if (insertError) {
+          debugLog(`❌ Insert error: ${insertError.message}`, 'error');
+          throw insertError;
+        }
+        
+        debugLog('✅ Profile created successfully');
+        debugLog(`📄 Created data: ${JSON.stringify(insertData)}`);
       }
 
       showMessage('profileMessage', 'Profile saved successfully!', 'success');
+      debugLog('🎉 Profile save completed successfully', 'success');
 
     } catch (error) {
-      console.error('Error saving profile:', error);
-      showMessage('profileMessage', 'Error saving profile: ' + error.message, 'error');
+      debugLog(`💥 Profile save failed: ${error.message}`, 'error');
+      showMessage('profileMessage', `Error saving profile: ${error.message}`, 'error');
+    } finally {
+      // Re-enable save button
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save Profile';
+      }
     }
   }
-
-  // VIP/Earnings Functions - Simplified (removed header loading)
-  // Only used for payments tab now
 
   // Games Functions
   async function fetchGames() {
@@ -2555,6 +2663,7 @@
           mainPayoutStatus.style.color = '#8dffa1';
         }
         if (mainPayoutStatusText) mainPayoutStatusText.textContent = '';
+        debugLog(`💰 Payout button visible - earnings: £${earningsValue.toFixed(2)}`, 'success');
       } else {
         if (mainPayoutBtn) mainPayoutBtn.style.display = 'none';
         if (mainPayoutStatus) {
@@ -2562,10 +2671,11 @@
           mainPayoutStatus.style.color = '#ff8d8d';
         }
         if (mainPayoutStatusText) mainPayoutStatusText.textContent = `Need £${(5 - earningsValue).toFixed(2)} more to request payout.`;
+        debugLog(`💸 Payout button hidden - earnings: £${earningsValue.toFixed(2)}, need £${(5 - earningsValue).toFixed(2)} more`);
       }
 
     } catch (error) {
-      console.error('Error updating payments display:', error);
+      debugLog(`💥 Payment display error: ${error.message}`, 'error');
     }
   }
 
@@ -2637,22 +2747,16 @@
     if (mainPayoutBtn) mainPayoutBtn.disabled = false;
   }
 
-  // Profile Form Event Listener
+  // Form Event Listeners
   const profileForm = document.getElementById('profileForm');
   if (profileForm) {
     profileForm.onsubmit = async (e) => {
       e.preventDefault();
-      const submitBtn = document.querySelector('.profile-save-btn');
-      if (submitBtn) submitBtn.disabled = true;
-      showMessage('profileMessage', 'Saving profile...', '');
-
+      debugLog('📝 Profile form submitted');
       await saveProfile();
-
-      if (submitBtn) submitBtn.disabled = false;
     };
   }
 
-  // Form Event Listeners
   const addGameForm = document.getElementById('addGameForm');
   if (addGameForm) {
     addGameForm.onsubmit = async (e) => {
@@ -2752,17 +2856,18 @@
     mainPayoutBtn.addEventListener('click', requestMainPayout);
   }
 
-  // Header payout button event listener - REMOVED (no longer exists)
-
   // Initialize
   (async () => {
+    debugLog('🚀 Dashboard initializing...');
     if (!(await checkAuth())) return;
 
+    debugLog('📋 Loading dashboard components...');
     await loadProfile();
     await loadGames();
     await loadVideos();
     await loadArt();
     await updatePaymentsTabDisplay();
+    debugLog('✅ Dashboard initialization complete!', 'success');
   })();
 
 </script>
