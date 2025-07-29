@@ -73,7 +73,7 @@
       padding: 40px;
       border-radius: 16px;
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
-      max-width: 500px;
+      max-width: 600px;
       width: 90%;
     }
 
@@ -113,6 +113,54 @@
 
     .age-verification-info li {
       margin-bottom: 8px;
+    }
+
+    .vip-benefits-section {
+      background: #2d4a3a;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 4px solid #2ecc71;
+    }
+
+    .vip-benefits-section h3 {
+      color: #2ecc71;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .vip-benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .vip-benefit-item {
+      background: #3b4d42;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #2ecc71;
+      text-align: left;
+    }
+
+    .vip-benefit-item h4 {
+      color: #2ecc71;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vip-benefit-item p {
+      color: #a8d4b8;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      margin: 0;
     }
 
     .vip-step {
@@ -306,6 +354,7 @@
       display: flex;
       gap: 15px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .taskbar-nav button {
@@ -318,6 +367,7 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
+      white-space: nowrap;
     }
 
     .taskbar-nav button:hover {
@@ -540,6 +590,11 @@
         font-size: 0.8rem;
       }
 
+      .vip-benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
       .vip-access-buttons button {
         width: 100%;
         max-width: 280px;
@@ -588,6 +643,14 @@
       .age-verification-info ul {
         font-size: 0.75rem;
       }
+
+      .vip-benefit-item h4 {
+        font-size: 0.8rem;
+      }
+
+      .vip-benefit-item p {
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
@@ -609,6 +672,36 @@
         </ul>
       </div>
 
+      <div class="vip-benefits-section">
+        <h3>⭐ What You Get With VIP Access - Just £2/month!</h3>
+        <p style="color: #2ecc71; font-size: 1.1rem; margin-bottom: 15px; font-weight: bold;">
+          🎉 Incredible value at only £2 per month for full VIP membership and age verification!
+        </p>
+        <div class="vip-benefits-grid">
+          <div class="vip-benefit-item">
+            <h4>🎮 VIP Games</h4>
+            <p>Access exclusive adult games only available to VIP members - worth much more than £2/month alone!</p>
+          </div>
+          <div class="vip-benefit-item">
+            <h4>✅ Verified Chats</h4>
+            <p>Join verified-only chat rooms and communities with other VIP members</p>
+          </div>
+          <div class="vip-benefit-item">
+            <h4>💰 Earn Money</h4>
+            <p>Get paid when posting content, games, and participating in the community - earn back your £2/month quickly!</p>
+          </div>
+          <div class="vip-benefit-item">
+            <h4>🏅 VIP Badges</h4>
+            <p>Show off your VIP status with exclusive badges and recognition throughout the site</p>
+          </div>
+        </div>
+        <div style="background: #2d4a3a; padding: 15px; border-radius: 8px; margin-top: 15px; border: 2px solid #2ecc71;">
+          <p style="color: #2ecc71; font-size: 0.9rem; margin: 0; text-align: center; font-weight: bold;">
+            💡 At just £2 per month, this is less than a coffee and gives you ongoing access to premium adult gaming content!
+          </p>
+        </div>
+      </div>
+
       <div class="vip-step" id="login-step">
         <h4>Step 1: Create Account</h4>
         <p>Login with GitHub to create your account</p>
@@ -617,8 +710,13 @@
       </div>
 
       <div class="vip-step" id="payment-step" style="display: none;">
-        <h4>Step 2: Subscribe for Age Verification</h4>
-        <p>Subscribe to VIP for age verification and site access</p>
+        <h4>Step 2: Subscribe for Age Verification & VIP Access</h4>
+        <p>Subscribe to VIP for just £2/month - includes age verification and unlocks all premium features!</p>
+        <div style="background: #2d4a3a; padding: 10px; border-radius: 6px; margin: 10px 0; border: 1px solid #2ecc71;">
+          <p style="color: #2ecc71; font-size: 0.85rem; margin: 0; text-align: center;">
+            💸 Only £2 per month - That's less than a cup of coffee for ongoing VIP access!
+          </p>
+        </div>
         <div id="vip-paypal-container"></div>
       </div>
       
@@ -1064,6 +1162,12 @@
       userArtBtn.textContent = 'User Art';
       userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
       taskbarNav.appendChild(userArtBtn);
+
+      // Add the User Profiles button
+      const userProfilesBtn = document.createElement('button');
+      userProfilesBtn.textContent = 'User Profiles';
+      userProfilesBtn.addEventListener('click', () => window.location.href = 'user-profiles.html');
+      taskbarNav.appendChild(userProfilesBtn);
     }
 
     async function renderVip() {
