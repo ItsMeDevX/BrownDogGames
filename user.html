@@ -2019,6 +2019,44 @@
       box-shadow: none;
     }
 
+    /* Login Required Message */
+    .login-required-message {
+      text-align: center;
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .login-required-message h3 {
+      color: #ff4f9f;
+      margin-bottom: 1rem;
+    }
+
+    .login-required-message p {
+      color: #ddd;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+
+    .login-required-message button {
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      color: #1b1b2e;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .login-required-message button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
+    }
+
     /* Responsive improvements */
     @media (max-width: 480px) {
       .profile-header {
@@ -2062,7 +2100,7 @@
     <!-- Profile Tab Content -->
     <div id="profileTab" class="tab-content active">
       <div class="messages-container">
-        <!-- Conversations List -->
+        <!-- Recent Messages -->
         <div class="conversations-list">
           <h3>Recent Messages</h3>
           <div id="profileConversationsList">
@@ -2070,14 +2108,41 @@
           </div>
         </div>
 
-        <!-- Quick Message Area -->
+        <!-- Send Message Area -->
         <div class="chat-area">
           <div class="chat-header">
-            <h3 style="margin: 0; color: #ff4f9f;">💬 Direct Messages</h3>
+            <h3 style="margin: 0; color: #ff4f9f;">💬 Send Message</h3>
           </div>
           
           <div class="messages-area" id="profileMessagesArea">
-            <div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">
+            <div id="loginRequiredMessage" class="login-required-message" style="display: none;">
+              <h3>🔑 Login Required to Send Messages</h3>
+              <p>You must be logged in with GitHub to send messages to this user.</p>
+              <button onclick="loginWithGitHub()">Login with GitHub</button>
+            </div>
+            
+            <div id="messageToProfileOwnerArea" style="display: none;">
+              <div style="text-align: center; padding: 1rem; margin-bottom: 1rem; background: rgba(255, 79, 159, 0.1); border-radius: 8px; border: 1px solid #ff4f9f;">
+                <p style="color: #ff82ba; margin: 0;">💬 Send a message to <strong id="profileOwnerName"></strong></p>
+              </div>
+              <form id="quickMessageForm">
+                <textarea 
+                  id="quickMessageInput" 
+                  class="message-input" 
+                  placeholder="Type your message..."
+                  rows="3"
+                  maxlength="1000"
+                  required
+                  style="width: 100%; margin-bottom: 10px;"
+                ></textarea>
+                <button type="submit" class="send-button" id="quickSendButton" style="width: 100%; justify-content: center;">
+                  <span>📩</span>
+                  Send Message
+                </button>
+              </form>
+            </div>
+            
+            <div id="defaultMessageArea" style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">
               Recent message activity will appear here
             </div>
           </div>
@@ -2150,12 +2215,15 @@
   const pageTitle = document.getElementById('pageTitle');
   const profileHeader = document.getElementById('profileHeader');
   const profileStats = document.getElementById('profileStats');
-
-  // Profile messages elements
   const profileConversationsList = document.getElementById('profileConversationsList');
   const profileMessagesArea = document.getElementById('profileMessagesArea');
-
-  // Messages elements
+  const loginRequiredMessage = document.getElementById('loginRequiredMessage');
+  const messageToProfileOwnerArea = document.getElementById('messageToProfileOwnerArea');
+  const defaultMessageArea = document.getElementById('defaultMessageArea');
+  const profileOwnerName = document.getElementById('profileOwnerName');
+  const quickMessageForm = document.getElementById('quickMessageForm');
+  const quickMessageInput = document.getElementById('quickMessageInput');
+  const quickSendButton = document.getElementById('quickSendButton');
   const conversationsList = document.getElementById('conversationsList');
   const chatHeader = document.getElementById('chatHeader');
   const chatAvatar = document.getElementById('chatAvatar');
@@ -2166,17 +2234,26 @@
   const messageInput = document.getElementById('messageInput');
   const sendButton = document.getElementById('sendButton');
 
-  // DM Modal elements - REMOVED
-  // const dmModal = document.getElementById('dmModal');
-  // const dmModalTitle = document.getElementById('dmModalTitle');
-  // const dmCloseBtn = document.getElementById('dmCloseBtn');
-  // const dmForm = document.getElementById('dmForm');
-  // const dmMessage = document.getElementById('dmMessage');
-  // const dmSendBtn = document.getElementById('dmSendBtn');
-  // const dmSuccessMessage = document.getElementById('dmSuccessMessage');
+  // Debug function
+  function debug(message, data = null) {
+    console.log(`[Profile Debug] ${message}`, data || '');
+  }
+
+  // Global login function
+  window.loginWithGitHub = function() {
+    debug('Initiating GitHub login');
+    supabase.auth.signInWithOAuth({ 
+      provider: 'github',
+      options: {
+        redirectTo: window.location.href
+      }
+    });
+  };
 
   // Tab functionality
   window.showTab = function(tabName) {
+    debug('Switching to tab:', tabName);
+    
     // Hide all tab content
     document.querySelectorAll('.tab-content').forEach(content => {
       content.classList.remove('active');
@@ -2198,53 +2275,68 @@
       loadConversations();
     }
     
-    // If switching to profile tab, load recent messages
-    if (tabName === 'profile' && currentUser) {
-      loadProfileMessages();
+    // If switching to profile tab, update message area
+    if (tabName === 'profile') {
+      updateProfileMessageArea();
     }
   };
 
   // Check authentication and get current user
   async function checkAuth() {
     try {
-      console.log('Checking authentication...');
+      debug('Checking authentication...');
       const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        debug('Auth check error:', error);
+        return;
+      }
+      
       if (session?.user) {
         currentUser = session.user;
-        console.log('User logged in:', currentUser.id);
+        debug('User logged in:', currentUser.id);
         
-        // Get current user's username
-        const { data: gameData } = await supabase
-          .from('game_submissions')
-          .select('github_user')
-          .eq('user_id', currentUser.id)
-          .limit(1);
+        // Get GitHub username from user metadata
+        currentUsername = session.user.user_metadata?.user_name || 
+                         session.user.user_metadata?.preferred_username;
         
-        if (gameData && gameData.length > 0) {
-          currentUsername = gameData[0].github_user;
-          console.log('Found username from games:', currentUsername);
+        if (!currentUsername) {
+          debug('No GitHub username in metadata, checking game submissions...');
+          // Try to get from game submissions as backup
+          const { data: gameData } = await supabase
+            .from('game_submissions')
+            .select('github_user')
+            .eq('user_id', currentUser.id)
+            .limit(1);
+          
+          if (gameData && gameData.length > 0) {
+            currentUsername = gameData[0].github_user;
+            debug('Found username from games:', currentUsername);
+          } else {
+            debug('No GitHub username found anywhere');
+            currentUsername = 'unknown_user';
+          }
         } else {
-          // Fallback to email if no game submissions
-          currentUsername = currentUser.email;
-          console.log('Using email as username:', currentUsername);
+          debug('Using GitHub username from metadata:', currentUsername);
         }
 
         // Show messages tab if user is logged in and viewing their own profile
         if (currentUsername === username) {
+          debug('User viewing own profile, showing messages tab');
           document.getElementById('messagesTab').style.display = 'block';
         }
       } else {
-        console.log('No user logged in');
+        debug('No user logged in');
       }
     } catch (error) {
-      console.error('Auth check error:', error);
+      debug('Auth check exception:', error);
     }
   }
 
   // Get user data from content submissions
   async function getUserData() {
     try {
-      console.log('Getting user data for:', username);
+      debug('Getting user data for:', username);
       
       // Try to find user through their game submissions first
       const { data: gameData, error: gameError } = await supabase
@@ -2255,7 +2347,7 @@
 
       if (gameData && gameData.length > 0) {
         const game = gameData[0];
-        console.log('Found user in games:', game);
+        debug('Found user in games:', game);
         return {
           id: game.user_id,
           user_metadata: {
@@ -2275,7 +2367,7 @@
 
       if (videoData && videoData.length > 0) {
         const video = videoData[0];
-        console.log('Found user in videos:', video);
+        debug('Found user in videos:', video);
         return {
           id: `video_user_${username}`,
           user_metadata: {
@@ -2295,7 +2387,7 @@
 
       if (artData && artData.length > 0) {
         const art = artData[0];
-        console.log('Found user in art:', art);
+        debug('Found user in art:', art);
         return {
           id: `art_user_${username}`,
           user_metadata: {
@@ -2306,10 +2398,10 @@
         };
       }
 
-      console.log('No user data found');
+      debug('No user data found');
       return null;
     } catch (error) {
-      console.error('Error getting user data:', error);
+      debug('Error getting user data:', error);
       return null;
     }
   }
@@ -2317,7 +2409,7 @@
   // Load profile data from database
   async function loadProfileData() {
     try {
-      console.log('Loading profile data...');
+      debug('Loading profile data...');
       
       // For public profiles, try to find by user_id from userData
       if (userData && userData.id && !userData.id.startsWith('video_user_') && !userData.id.startsWith('art_user_')) {
@@ -2328,25 +2420,25 @@
           .single();
 
         if (error && error.code !== 'PGRST116') {
-          console.error('Error loading profile:', error);
+          debug('Error loading profile:', error);
           return null;
         }
         
-        console.log('Profile data loaded:', data);
+        debug('Profile data loaded:', data);
         return data;
       }
 
-      console.log('No valid user_id for profile lookup');
+      debug('No valid user_id for profile lookup');
       return null;
     } catch (error) {
-      console.error('Error loading profile data:', error);
+      debug('Error loading profile data:', error);
       return null;
     }
   }
 
   // Render profile header
   function renderProfileHeader() {
-    console.log('Rendering profile header...');
+    debug('Rendering profile header...');
     
     if (!userData) {
       profileHeader.innerHTML = '<div class="error">❌ User not found</div>';
@@ -2378,7 +2470,7 @@
     }
 
     const showDMButton = currentUser && currentUsername !== username;
-    console.log('Show DM button:', showDMButton, 'Current user:', !!currentUser, 'Current username:', currentUsername, 'Target username:', username);
+    debug('Show DM button:', showDMButton);
 
     profileHeader.innerHTML = `
       ${avatarUrl ? `<img src="${avatarUrl}" alt="${fullName}" class="profile-avatar">` : ''}
@@ -2388,21 +2480,15 @@
         <div class="profile-details">
           ${detailsHTML}
         </div>
-        ${showDMButton ? '<button id="dmButton" class="dm-button" onclick="showTab(\'messages\')">💬 Send Message</button>' : ''}
+        ${showDMButton ? '<button id="dmButton" class="dm-button" onclick="showTab(\'profile\')">💬 Send Message</button>' : ''}
       </div>
     `;
-
-    // Add direct message button event listener
-    const dmButton = document.getElementById('dmButton');
-    if (dmButton) {
-      console.log('DM button will switch to messages tab');
-    }
   }
 
   // Load and render stats
   async function loadStats() {
     try {
-      console.log('Loading stats...');
+      debug('Loading stats...');
       
       // Get games count
       const { count: gamesCount } = await supabase
@@ -2428,7 +2514,7 @@
         .select('*', { count: 'exact', head: true })
         .eq('username', username);
 
-      console.log('Stats loaded:', { gamesCount, videosCount, artCount, likesCount });
+      debug('Stats loaded:', { gamesCount, videosCount, artCount, likesCount });
 
       profileStats.innerHTML = `
         <div class="stat-item">
@@ -2449,19 +2535,42 @@
         </div>
       `;
     } catch (error) {
-      console.error('Error loading stats:', error);
+      debug('Error loading stats:', error);
       profileStats.innerHTML = '<div class="error">❌ Error loading stats</div>';
     }
   }
 
-  // Load recent messages for profile tab
+  // Update profile message area based on auth status
+  function updateProfileMessageArea() {
+    debug('Updating profile message area');
+    
+    if (!currentUser || !currentUsername) {
+      debug('Not logged in - showing login required');
+      loginRequiredMessage.style.display = 'block';
+      messageToProfileOwnerArea.style.display = 'none';
+      defaultMessageArea.style.display = 'none';
+    } else if (currentUsername === username) {
+      debug('User viewing own profile - showing recent messages');
+      loginRequiredMessage.style.display = 'none';
+      messageToProfileOwnerArea.style.display = 'none';
+      defaultMessageArea.style.display = 'block';
+      loadProfileMessages();
+    } else {
+      debug('User viewing others profile - showing message form');
+      loginRequiredMessage.style.display = 'none';
+      messageToProfileOwnerArea.style.display = 'block';
+      defaultMessageArea.style.display = 'none';
+      profileOwnerName.textContent = username;
+    }
+  }
+
+  // Load recent messages for profile owner
   async function loadProfileMessages() {
     try {
-      console.log('Loading recent messages for profile...');
+      debug('Loading recent messages for profile...');
       
       if (!currentUser || !currentUsername) {
         profileConversationsList.innerHTML = '<div class="no-messages">Please log in to see messages</div>';
-        profileMessagesArea.innerHTML = '<div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">Log in to view your recent messages</div>';
         return;
       }
 
@@ -2474,16 +2583,15 @@
         .limit(10);
 
       if (error) {
-        console.error('Error loading recent messages:', error);
+        debug('Error loading recent messages:', error);
         profileConversationsList.innerHTML = '<div class="error">❌ Error loading messages</div>';
         return;
       }
 
-      console.log('Found recent messages:', messages.length);
+      debug('Found recent messages:', messages.length);
 
       if (!messages || messages.length === 0) {
         profileConversationsList.innerHTML = '<div class="no-messages">No messages yet</div>';
-        profileMessagesArea.innerHTML = '<div style="text-align: center; color: #ddd; padding: 2rem; font-style: italic;">Start a conversation to see messages here</div>';
         return;
       }
 
@@ -2535,62 +2643,64 @@
 
       profileConversationsList.innerHTML = conversationsHtml.join('');
 
-      // Show recent messages in the area
-      const recentMessagesHtml = messages.slice(0, 5).map(message => {
-        const time = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const isSent = message.sender_username === currentUsername;
-        
-        return `
-          <div style="padding: 8px; margin-bottom: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; border-left: 3px solid ${isSent ? '#ff4f9f' : '#8dffa1'};">
-            <div style="font-size: 0.7rem; color: ${isSent ? '#ff82ba' : '#8dffa1'}; margin-bottom: 3px;">
-              ${isSent ? 'To' : 'From'} ${isSent ? message.recipient_username : message.sender_username} • ${time}
-            </div>
-            <div style="font-size: 0.8rem; color: #fefefe;">${message.message_content}</div>
-          </div>
-        `;
-      }).join('');
-
-      profileMessagesArea.innerHTML = recentMessagesHtml;
-
     } catch (error) {
-      console.error('Error loading profile messages:', error);
+      debug('Error loading profile messages:', error);
       profileConversationsList.innerHTML = '<div class="error">❌ Error loading messages</div>';
     }
   }
-  async function incrementVipPageView() {
-    if (!username) return;
+
+  // Send quick message to profile owner
+  async function sendQuickMessage(messageContent) {
+    if (!messageContent.trim() || !currentUser || !currentUsername) return false;
 
     try {
-      console.log('Incrementing VIP page view...');
+      debug('Sending quick message to:', username);
       
-      // Get the actual user_id from the userData we found
-      let targetUserId = null;
-      
-      if (userData && userData.id && !userData.id.startsWith('video_user_') && !userData.id.startsWith('art_user_')) {
-        targetUserId = userData.id;
-      }
-
-      if (!targetUserId) {
-        console.log('No valid user ID found for VIP increment');
-        return;
-      }
-
-      const now = new Date().toISOString();
-
-      const { error } = await supabase.rpc('increment_vip_page_view', {
-        in_user_id: targetUserId,
-        in_username: username,
-        in_now: now
-      });
+      const { error } = await supabase
+        .from('direct_messages')
+        .insert([{
+          sender_id: currentUser.id,
+          sender_username: currentUsername,
+          recipient_username: username,
+          message_content: messageContent.trim()
+        }]);
 
       if (error) {
-        console.error('Error incrementing VIP page views:', error);
-      } else {
-        console.log(`Incremented VIP page views for ${username}`);
+        debug('Error sending quick message:', error);
+        return false;
       }
+
+      debug('Quick message sent successfully');
+      return true;
     } catch (error) {
-      console.error('Error in VIP increment:', error);
+      debug('Exception sending quick message:', error);
+      return false;
     }
+  }
+
+  // Quick message form submission
+  if (quickMessageForm) {
+    quickMessageForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const message = quickMessageInput.value.trim();
+      if (!message) return;
+
+      quickSendButton.disabled = true;
+      quickSendButton.innerHTML = '<span>⏳</span> Sending...';
+
+      const success = await sendQuickMessage(message);
+      
+      if (success) {
+        quickMessageInput.value = '';
+        alert('Message sent successfully!');
+      } else {
+        alert('Failed to send message. Please try again.');
+      }
+      
+      quickSendButton.disabled = false;
+      quickSendButton.innerHTML = '<span>📩</span> Send Message';
+    });
   }
 
   // Get avatar for a username
@@ -2631,7 +2741,7 @@
 
       return null;
     } catch (error) {
-      console.error('Error getting avatar:', error);
+      debug('Error getting avatar:', error);
       return null;
     }
   }
@@ -2639,7 +2749,7 @@
   // Load conversations
   async function loadConversations() {
     try {
-      console.log('Loading conversations for:', currentUsername);
+      debug('Loading conversations for:', currentUsername);
       
       const { data: messages, error } = await supabase
         .from('direct_messages')
@@ -2648,12 +2758,12 @@
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading messages:', error);
+        debug('Error loading messages:', error);
         conversationsList.innerHTML = '<div class="error">❌ Error loading conversations</div>';
         return;
       }
 
-      console.log('Found messages:', messages.length);
+      debug('Found messages:', messages.length);
 
       if (!messages || messages.length === 0) {
         conversationsList.innerHTML = '<div class="no-messages">No conversations yet</div>';
@@ -2696,7 +2806,7 @@
 
       await renderConversations();
     } catch (error) {
-      console.error('Error loading conversations:', error);
+      debug('Error loading conversations:', error);
       conversationsList.innerHTML = '<div class="error">❌ Error loading conversations</div>';
     }
   }
@@ -2731,7 +2841,7 @@
 
   // Select conversation
   window.selectConversation = async function(partner) {
-    console.log('Selecting conversation with:', partner);
+    debug('Selecting conversation with:', partner);
     
     // Remove active class from all conversations
     document.querySelectorAll('.conversation-item').forEach(item => {
@@ -2739,7 +2849,10 @@
     });
     
     // Add active class to selected conversation
-    document.querySelector(`[data-partner="${partner}"]`).classList.add('active');
+    const conversationElement = document.querySelector(`[data-partner="${partner}"]`);
+    if (conversationElement) {
+      conversationElement.classList.add('active');
+    }
     
     activeConversation = partner;
     
@@ -2773,12 +2886,12 @@
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error loading messages:', error);
+        debug('Error loading messages:', error);
         messagesArea.innerHTML = '<div class="error">❌ Error loading messages</div>';
         return;
       }
 
-      console.log('Loaded messages for conversation:', messages.length);
+      debug('Loaded messages for conversation:', messages.length);
 
       if (!messages || messages.length === 0) {
         messagesArea.innerHTML = '<div class="no-messages">No messages in this conversation yet</div>';
@@ -2808,7 +2921,7 @@
       messagesArea.innerHTML = html;
       messagesArea.scrollTop = messagesArea.scrollHeight;
     } catch (error) {
-      console.error('Error loading messages:', error);
+      debug('Error loading messages:', error);
       messagesArea.innerHTML = '<div class="error">❌ Error loading messages</div>';
     }
   }
@@ -2824,13 +2937,13 @@
         .eq('is_read', false);
 
       if (error) {
-        console.error('Error marking messages as read:', error);
+        debug('Error marking messages as read:', error);
       } else {
         // Refresh conversations to update unread counts
         await loadConversations();
       }
     } catch (error) {
-      console.error('Error marking messages as read:', error);
+      debug('Error marking messages as read:', error);
     }
   }
 
@@ -2849,7 +2962,7 @@
         }]);
 
       if (error) {
-        console.error('Error sending message:', error);
+        debug('Error sending message:', error);
         return false;
       }
 
@@ -2859,51 +2972,108 @@
       
       return true;
     } catch (error) {
-      console.error('Error sending message:', error);
+      debug('Error sending message:', error);
       return false;
     }
   }
 
   // Form submission
-  messageForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const message = messageInput.value.trim();
-    if (!message) return;
+  if (messageForm) {
+    messageForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const message = messageInput.value.trim();
+      if (!message) return;
 
-    sendButton.disabled = true;
-    sendButton.innerHTML = '<span>⏳</span> Sending...';
+      sendButton.disabled = true;
+      sendButton.innerHTML = '<span>⏳</span> Sending...';
 
-    const success = await sendMessage(message);
-    
-    if (success) {
-      messageInput.value = '';
-    }
-    
-    sendButton.disabled = false;
-    sendButton.innerHTML = '<span>📩</span> Send';
-    messageInput.focus();
-  });
+      const success = await sendMessage(message);
+      
+      if (success) {
+        messageInput.value = '';
+      }
+      
+      sendButton.disabled = false;
+      sendButton.innerHTML = '<span>📩</span> Send';
+      messageInput.focus();
+    });
+  }
 
   // Auto-resize textarea
-  messageInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  if (messageInput) {
+    messageInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+  }
+
+  if (quickMessageInput) {
+    quickMessageInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+  }
+
+  // Increment VIP page view
+  async function incrementVipPageView() {
+    if (!username) return;
+
+    try {
+      debug('Incrementing VIP page view...');
+      
+      // Get the actual user_id from the userData we found
+      let targetUserId = null;
+      
+      if (userData && userData.id && !userData.id.startsWith('video_user_') && !userData.id.startsWith('art_user_')) {
+        targetUserId = userData.id;
+      }
+
+      if (!targetUserId) {
+        debug('No valid user ID found for VIP increment');
+        return;
+      }
+
+      const now = new Date().toISOString();
+
+      const { error } = await supabase.rpc('increment_vip_page_view', {
+        in_user_id: targetUserId,
+        in_username: username,
+        in_now: now
+      });
+
+      if (error) {
+        debug('Error incrementing VIP page views:', error);
+      } else {
+        debug(`Incremented VIP page views for ${username}`);
+      }
+    } catch (error) {
+      debug('Error in VIP increment:', error);
+    }
+  }
+
+  // Listen for auth changes
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    debug('Auth state changed:', event);
+    if (event === 'SIGNED_IN' && session) {
+      // Reload the page to update everything with the new auth state
+      window.location.reload();
+    }
   });
 
   // Main initialization
   async function init() {
-    console.log('Starting user profile page initialization...');
+    debug('Starting user profile page initialization...');
     
     if (!username) {
-      console.error('No username provided in URL');
+      debug('No username provided in URL');
       pageTitle.textContent = 'Error';
       profileHeader.innerHTML = '<div class="error">❌ No username provided in URL.</div>';
       profileStats.innerHTML = '';
       return;
     }
 
-    console.log('Loading profile for username:', username);
+    debug('Loading profile for username:', username);
     pageTitle.textContent = `${username}'s Profile`;
 
     try {
@@ -2915,7 +3085,7 @@
       
       // If we still can't find user data, create minimal fallback
       if (!userData && username) {
-        console.log('Creating fallback user data');
+        debug('Creating fallback user data');
         userData = {
           id: `unknown_user_${username}`,
           user_metadata: {
@@ -2933,24 +3103,24 @@
       renderProfileHeader();
       await loadStats();
 
-      // Load recent messages if user is logged in
-      if (currentUser) {
-        await loadProfileMessages();
-      }
+      // Update message area based on auth status
+      updateProfileMessageArea();
 
       // Increment page view
       await incrementVipPageView();
       
-      console.log('Profile page initialization complete!');
+      debug('Profile page initialization complete!');
     } catch (error) {
-      console.error('Error during initialization:', error);
+      debug('Error during initialization:', error);
       profileHeader.innerHTML = '<div class="error">❌ Error loading profile</div>';
       profileStats.innerHTML = '<div class="error">❌ Error loading stats</div>';
     }
   }
 
   // Start the application
-  init().catch(console.error);
+  init().catch((error) => {
+    debug('Init failed:', error);
+  });
 </script>
 
 </body>
