@@ -1695,7 +1695,165 @@
       padding: 2rem;
     }
 
-    /* Responsive improvements */
+    /* Direct Message Button */
+  .dm-button {
+    background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+    color: #1b1b2e;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    .dm-button {
+      padding: 10px 20px;
+      font-size: 0.9rem;
+    }
+  }
+
+  .dm-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
+  }
+
+  .dm-button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Direct Message Modal */
+  .dm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .dm-modal.active {
+    display: flex;
+  }
+
+  .dm-modal-content {
+    background-color: #2f1a39;
+    border: 2px solid #ff4f9f;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: auto;
+  }
+
+  .dm-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ff4f9f;
+    padding-bottom: 10px;
+  }
+
+  .dm-modal-title {
+    color: #ff4f9f;
+    font-size: 1.2rem;
+    margin: 0;
+  }
+
+  .dm-close-btn {
+    background: #ff4f9f;
+    color: #1b1b2e;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .dm-close-btn:hover {
+    background: #ff82ba;
+  }
+
+  .dm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .dm-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ff4f9f;
+    border-radius: 8px;
+    background-color: #3b2750;
+    color: #fefefe;
+    font-family: 'Rubik Mono One', sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 100px;
+    box-sizing: border-box;
+  }
+
+  .dm-form textarea:focus {
+    outline: none;
+    border-color: #ff82ba;
+    box-shadow: 0 0 10px rgba(255, 79, 159, 0.3);
+  }
+
+  .dm-send-btn {
+    background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+    color: #1b1b2e;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    align-self: center;
+  }
+
+  .dm-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
+  }
+
+  .dm-send-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .dm-success {
+    background-color: #2f1a39;
+    border: 2px solid #8dffa1;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    color: #8dffa1;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
     @media (max-width: 480px) {
       .profile-header {
         flex-direction: column;
@@ -1714,7 +1872,7 @@
 </head>
 <body>
 
-  <a href="user-profiles.html" class="back-link">⬅️ Back to All Users</a>
+  <a href="user-videos.html" class="back-link">⬅️ Back to All Users</a>
   
   <div class="profile-container">
     <h1 id="pageTitle">User Profile</h1>
@@ -1727,6 +1885,23 @@
     <!-- Profile Stats -->
     <div class="profile-stats" id="profileStats">
       <div class="loading">Loading stats...</div>
+    </div>
+  </div>
+
+  <!-- Direct Message Modal -->
+  <div id="dmModal" class="dm-modal">
+    <div class="dm-modal-content">
+      <div class="dm-modal-header">
+        <h3 id="dmModalTitle" class="dm-modal-title">Send Direct Message</h3>
+        <button id="dmCloseBtn" class="dm-close-btn">&times;</button>
+      </div>
+      <div id="dmSuccessMessage" class="dm-success" style="display: none;">
+        Message sent successfully! ✅
+      </div>
+      <form id="dmForm" class="dm-form">
+        <textarea id="dmMessage" placeholder="Type your message here..." required maxlength="1000"></textarea>
+        <button type="submit" id="dmSendBtn" class="dm-send-btn">📩 Send Message</button>
+      </form>
     </div>
   </div>
 
@@ -1743,14 +1918,113 @@
 
   let userData = null;
   let profileData = null;
+  let currentUser = null;
+  let currentUsername = null;
 
   // Get elements
   const pageTitle = document.getElementById('pageTitle');
   const profileHeader = document.getElementById('profileHeader');
   const profileStats = document.getElementById('profileStats');
 
+  // DM Modal elements
+  const dmModal = document.getElementById('dmModal');
+  const dmModalTitle = document.getElementById('dmModalTitle');
+  const dmCloseBtn = document.getElementById('dmCloseBtn');
+  const dmForm = document.getElementById('dmForm');
+  const dmMessage = document.getElementById('dmMessage');
+  const dmSendBtn = document.getElementById('dmSendBtn');
+  const dmSuccessMessage = document.getElementById('dmSuccessMessage');
+
+  // Check authentication and get current user
+  async function checkAuth() {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session?.user) {
+        currentUser = session.user;
+        // Get current user's username
+        const { data: gameData } = await supabase
+          .from('game_submissions')
+          .select('github_user')
+          .eq('user_id', currentUser.id)
+          .limit(1);
+        
+        if (gameData && gameData.length > 0) {
+          currentUsername = gameData[0].github_user;
+        } else {
+          // Fallback to email if no game submissions
+          currentUsername = currentUser.email;
+        }
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+    }
+  }
   // Get user data from content submissions
   async function getUserData() {
+    try {
+      // Try to find user through their game submissions first
+      const { data: gameData, error: gameError } = await supabase
+        .from('game_submissions')
+        .select('user_id, github_user, avatar_url')
+        .eq('github_user', username)
+        .limit(1);
+
+      if (gameData && gameData.length > 0) {
+        const game = gameData[0];
+        return {
+          id: game.user_id,
+          user_metadata: {
+            user_name: game.github_user,
+            full_name: game.github_user,
+            avatar_url: game.avatar_url
+          }
+        };
+      }
+
+      // If no games, try videos
+      const { data: videoData, error: videoError } = await supabase
+        .from('game_videos')
+        .select('github_username, avatar_url')
+        .eq('github_username', username)
+        .limit(1);
+
+      if (videoData && videoData.length > 0) {
+        const video = videoData[0];
+        return {
+          id: `video_user_${username}`,
+          user_metadata: {
+            user_name: video.github_username,
+            full_name: video.github_username,
+            avatar_url: video.avatar_url
+          }
+        };
+      }
+
+      // If no videos, try art
+      const { data: artData, error: artError } = await supabase
+        .from('user_art')
+        .select('github_username, avatar_url')
+        .eq('github_username', username)
+        .limit(1);
+
+      if (artData && artData.length > 0) {
+        const art = artData[0];
+        return {
+          id: `art_user_${username}`,
+          user_metadata: {
+            user_name: art.github_username,
+            full_name: art.github_username,
+            avatar_url: art.avatar_url
+          }
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error getting user data:', error);
+      return null;
+    }
+  }
     try {
       // Try to find user through their game submissions first
       const { data: gameData, error: gameError } = await supabase
@@ -1878,8 +2152,15 @@
         <div class="profile-details">
           ${detailsHTML}
         </div>
+        ${currentUser && currentUsername !== username ? '<button id="dmButton" class="dm-button">💬 Send Message</button>' : ''}
       </div>
     `;
+
+    // Add direct message button event listener
+    const dmButton = document.getElementById('dmButton');
+    if (dmButton) {
+      dmButton.addEventListener('click', openDMModal);
+    }
   }
 
   // Load and render stats
@@ -1968,7 +2249,88 @@
     }
   }
 
-  // Form event handlers
+  // Direct Message Modal Functions
+  function openDMModal() {
+    dmModalTitle.textContent = `Send Message to ${username}`;
+    dmMessage.value = '';
+    dmSuccessMessage.style.display = 'none';
+    dmModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    dmMessage.focus();
+  }
+
+  function closeDMModal() {
+    dmModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  async function sendDirectMessage(messageContent) {
+    if (!currentUser || !currentUsername) {
+      alert('You must be logged in to send messages');
+      return false;
+    }
+
+    if (!messageContent.trim()) {
+      alert('Please enter a message');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('direct_messages')
+        .insert([{
+          sender_id: currentUser.id,
+          sender_username: currentUsername,
+          recipient_username: username,
+          message_content: messageContent.trim()
+        }]);
+
+      if (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message: ' + error.message);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message');
+      return false;
+    }
+  }
+
+  // DM Modal Event Listeners
+  dmCloseBtn.addEventListener('click', closeDMModal);
+  dmModal.addEventListener('click', (e) => {
+    if (e.target === dmModal) closeDMModal();
+  });
+
+  dmForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    dmSendBtn.disabled = true;
+    dmSendBtn.textContent = '⏳ Sending...';
+
+    const success = await sendDirectMessage(dmMessage.value);
+    
+    if (success) {
+      dmSuccessMessage.style.display = 'block';
+      dmMessage.value = '';
+      setTimeout(() => {
+        closeDMModal();
+      }, 2000);
+    }
+    
+    dmSendBtn.disabled = false;
+    dmSendBtn.textContent = '📩 Send Message';
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dmModal.classList.contains('active')) {
+      closeDMModal();
+    }
+  });
   // (Removed - no editing functionality on public profile page)
 
   // Main initialization
@@ -1981,6 +2343,9 @@
     }
 
     pageTitle.textContent = `${username}'s Profile`;
+
+    // Check authentication first
+    await checkAuth();
 
     // Get user data (find through content submissions)
     userData = await getUserData();
