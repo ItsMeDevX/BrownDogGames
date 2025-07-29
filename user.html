@@ -1464,7 +1464,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>User Content - BrownDogGames</title>
+  <title>User Profile - BrownDogGames</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
@@ -1474,701 +1474,42 @@
       background-color: #1b1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
-      margin: 0; padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh;
-    }
-    h1, h2 {
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #ff4f9f;
-      margin: 1rem 0;
-      width: 100%;
-      max-width: 800px;
-    }
-    .back-link {
-      align-self: flex-start;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      text-decoration: none;
-      font-size: 0.9rem;
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-weight: bold;
-      transition: background-color 0.2s ease;
-      margin-bottom: 1rem;
-      max-width: 800px;
-      display: inline-block;
-    }
-    .back-link:hover { background-color: #ff82ba; }
-
-    .content-section {
-      max-width: 800px;
-      width: 100%;
-      margin-bottom: 40px;
-    }
-
-    .content-container {
-      display: grid;
-      gap: 20px;
-      justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      width: 100%;
-    }
-
-    .card {
-      background: linear-gradient(145deg, #3a2147, #241834);
-      border: 2px solid #ff4f9f;
-      border-radius: 16px;
-      padding: 20px;
-      width: 100%;
-      box-sizing: border-box;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
+      margin: 0; 
+      padding: 10px;
+      display: flex; 
+      flex-direction: column; 
       align-items: center;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .card:hover::before {
-      left: 100%;
-    }
-
-    .card:hover {
-      border-color: #ff82ba;
-      box-shadow: 0 12px 40px rgba(255, 79, 159, 0.3), 0 0 20px rgba(255, 130, 186, 0.2);
-      transform: translateY(-8px) scale(1.02);
-    }
-
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 30px #ff4f9f, inset 0 0 20px rgba(255, 79, 159, 0.1);
-      transform: scale(1.05);
-    }
-
-    .title {
-      margin-top: 0;
-      margin-bottom: 0.8rem;
-      text-align: center;
-      font-size: 1.1rem;
-      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
-      font-weight: bold;
-      position: relative;
-      z-index: 2;
-    }
-
-    .desc {
-      color: #e0e0e0;
-      margin: 0.5rem 0 1.2rem 0;
-      min-height: 3rem;
-      text-align: center;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      opacity: 0.9;
-      position: relative;
-      z-index: 2;
-    }
-
-    .thumbnail {
-      width: 100%;
-      max-height: 160px;
-      object-fit: cover;
-      border-radius: 12px;
-      margin-bottom: 15px;
-      display: block;
-      transition: transform 0.3s ease, filter 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      position: relative;
-      z-index: 2;
-    }
-
-    .card:hover .thumbnail {
-      transform: scale(1.05);
-      filter: brightness(1.1) contrast(1.1);
-    }
-
-    .game-player {
-      width: 100%;
-      border-radius: 12px;
-      margin-bottom: 15px;
-      background-color: black;
-      min-height: 220px;
-      max-width: 100%;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      transition: transform 0.3s ease;
-      position: relative;
-      z-index: 2;
-      border: none;
-    }
-
-    .card:hover .game-player {
-      transform: scale(1.02);
-    }
-
-    .play-link {
-      display: inline-block;
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
-      padding: 12px 20px;
-      border-radius: 25px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 0.9rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      margin-top: auto;
-      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-      position: relative;
-      z-index: 2;
-      overflow: hidden;
-    }
-
-    .play-link::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .play-link:hover::before {
-      left: 100%;
-    }
-
-    .play-link:hover { 
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-    }
-
-    .game-controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .control-btn {
-      background: rgba(255, 79, 159, 0.8);
-      color: #ffffff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    .control-btn:hover {
-      background: rgba(255, 130, 186, 1);
-      transform: translateY(-1px);
-    }
-
-    .game-type-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(255, 79, 159, 0.9);
-      color: #ffffff;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      z-index: 3;
-    }
-
-    #chat-container {
-      display: none;
-    }
-
-    .no-content {
-      font-size: 1.1rem;
-      text-align: center;
-      color: #ddd;
-      margin-top: 2rem;
-      font-style: italic;
-      background-color: #2f1a39;
-      padding: 1rem;
-      border-radius: 10px;
-    }
-  </style>
-</head>
-<body>
-
-  <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
-  <h1 id="pageTitle">User Content</h1>
-
-  <section class="content-section" id="games-section">
-    <h2>Games</h2>
-    <div id="games" class="content-container">Loading games...</div>
-  </section>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
-  const pageTitle = document.getElementById('pageTitle');
-  const gamesContainer = document.getElementById('games');
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const username = urlParams.get('user') || '';
-
-  // Game type detection
-  function detectGameType(url) {
-    if (!url) return 'unknown';
-    
-    const urlLower = url.toLowerCase();
-    
-    // Platform detection
-    if (urlLower.includes('itch.io')) return 'itch';
-    if (urlLower.includes('github.io') || urlLower.includes('netlify') || urlLower.includes('vercel')) return 'web';
-    if (urlLower.includes('scratch.mit.edu')) return 'scratch';
-    if (urlLower.includes('turbowarp.org')) return 'turbowarp';
-    if (urlLower.includes('newgrounds.com')) return 'newgrounds';
-    if (urlLower.includes('armor.ag') || urlLower.includes('armorgames.com')) return 'armor';
-    if (urlLower.includes('kongregate.com')) return 'kongregate';
-    if (urlLower.includes('addictinggames.com')) return 'addicting';
-    if (urlLower.includes('codecks.io')) return 'codecks';
-    if (urlLower.includes('gamejolt.com')) return 'gamejolt';
-    if (urlLower.includes('unity')) return 'unity';
-    if (urlLower.includes('construct')) return 'construct';
-    if (urlLower.includes('drive.google.com')) return 'drive';
-    if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
-    
-    // File type detection
-    if (urlLower.includes('.html') || urlLower.includes('.htm')) return 'html';
-    if (urlLower.includes('.swf')) return 'flash';
-    if (urlLower.includes('.unity3d') || urlLower.includes('.unityweb')) return 'unity';
-    if (urlLower.includes('.zip') || urlLower.includes('.rar')) return 'download';
-    if (urlLower.includes('.exe') || urlLower.includes('.app') || urlLower.includes('.dmg')) return 'executable';
-    
-    return 'iframe';
-  }
-
-  function createGameEmbed(game) {
-    const gameType = detectGameType(game.embed_url);
-    let embedUrl = game.embed_url;
-
-    // Handle Google Drive links
-    if (embedUrl.includes('drive.google.com')) {
-      const fileIdMatch = embedUrl.match(/\/d\/(.*?)(\/|$)/);
-      const fileId = fileIdMatch ? fileIdMatch[1] : null;
-      if (fileId) {
-        embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-      }
-    }
-
-    // Handle different game types
-    switch (gameType) {
-      case 'itch':
-        return createItchEmbed(embedUrl);
-      case 'scratch':
-      case 'turbowarp':
-        return createScratchEmbed(embedUrl);
-      case 'unity':
-        return createUnityEmbed(embedUrl);
-      case 'youtube':
-        return createYouTubeEmbed(embedUrl);
-      case 'newgrounds':
-        return createNewgroundsEmbed(embedUrl);
-      case 'download':
-      case 'executable':
-        return createDownloadLink(embedUrl, gameType);
-      default:
-        return createIframeEmbed(embedUrl);
-    }
-  }
-
-  function createItchEmbed(url) {
-    // Extract game ID for better embedding
-    let embedUrl = url;
-    if (url.includes('/embed/')) {
-      embedUrl = url;
-    } else {
-      // Convert regular itch.io URL to embed URL
-      embedUrl = url.replace(/\/([^\/]+)$/, '/embed/$1');
-    }
-
-    const iframe = document.createElement('iframe');
-    iframe.src = embedUrl;
-    iframe.className = 'game-player';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allow', 'autoplay; fullscreen');
-    iframe.loading = 'lazy';
-    iframe.width = "100%";
-    iframe.height = "400";
-    
-    return {
-      element: iframe,
-      controls: [
-        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
-        { text: 'Open on Itch.io', action: () => window.open(url.replace('/embed/', '/'), '_blank') }
-      ]
-    };
-  }
-
-  function createScratchEmbed(url) {
-    let projectId = '';
-    
-    // Extract project ID from various Scratch URL formats
-    if (url.includes('scratch.mit.edu')) {
-      const match = url.match(/\/projects\/(\d+)/);
-      projectId = match ? match[1] : '';
-    } else if (url.includes('turbowarp.org')) {
-      const match = url.match(/\/(\d+)/);
-      projectId = match ? match[1] : '';
-    }
-
-    const iframe = document.createElement('iframe');
-    if (url.includes('turbowarp.org')) {
-      iframe.src = `https://turbowarp.org/${projectId}/embed`;
-    } else {
-      iframe.src = `https://scratch.mit.edu/projects/${projectId}/embed`;
-    }
-    iframe.className = 'game-player';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.loading = 'lazy';
-    iframe.width = "100%";
-    iframe.height = "400";
-    
-    return {
-      element: iframe,
-      controls: [
-        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
-        { text: 'View Project', action: () => window.open(url, '_blank') }
-      ]
-    };
-  }
-
-  function createUnityEmbed(url) {
-    const iframe = document.createElement('iframe');
-    iframe.src = url;
-    iframe.className = 'game-player';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking');
-    iframe.loading = 'lazy';
-    iframe.width = "100%";
-    iframe.height = "500"; // Unity games often need more height
-    
-    return {
-      element: iframe,
-      controls: [
-        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) }
-      ]
-    };
-  }
-
-  function createYouTubeEmbed(url) {
-    let videoId = '';
-    
-    // Extract video ID from various YouTube URL formats
-    if (url.includes('youtu.be/')) {
-      videoId = url.split('youtu.be/')[1].split('?')[0];
-    } else if (url.includes('youtube.com/watch?v=')) {
-      videoId = url.split('v=')[1].split('&')[0];
-    } else if (url.includes('youtube.com/embed/')) {
-      videoId = url.split('/embed/')[1].split('?')[0];
-    }
-
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube.com/embed/${videoId}`;
-    iframe.className = 'game-player';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allow', 'autoplay; fullscreen');
-    iframe.loading = 'lazy';
-    iframe.width = "100%";
-    iframe.height = "315";
-    
-    return {
-      element: iframe,
-      controls: [
-        { text: 'Watch on YouTube', action: () => window.open(url, '_blank') }
-      ]
-    };
-  }
-
-  function createNewgroundsEmbed(url) {
-    const iframe = document.createElement('iframe');
-    iframe.src = url;
-    iframe.className = 'game-player';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.loading = 'lazy';
-    iframe.width = "100%";
-    iframe.height = "400";
-    
-    return {
-      element: iframe,
-      controls: [
-        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
-        { text: 'View on Newgrounds', action: () => window.open(url, '_blank') }
-      ]
-    };
-  }
-
-  function createDownloadLink(url, type) {
-    const div = document.createElement('div');
-    div.className = 'game-player';
-    div.style.display = 'flex';
-    div.style.alignItems = 'center';
-    div.style.justifyContent = 'center';
-    div.style.flexDirection = 'column';
-    div.style.gap = '10px';
-    div.style.padding = '40px';
-    div.style.textAlign = 'center';
-    
-    const icon = document.createElement('div');
-    icon.style.fontSize = '3rem';
-    icon.textContent = type === 'executable' ? '💻' : '📦';
-    div.appendChild(icon);
-    
-    const text = document.createElement('p');
-    text.textContent = `${type === 'executable' ? 'Executable' : 'Download'} Game`;
-    text.style.margin = '0';
-    text.style.color = '#e0e0e0';
-    div.appendChild(text);
-    
-    return {
-      element: div,
-      controls: [
-        { text: 'Download', action: () => window.open(url, '_blank') }
-      ]
-    };
-  }
-
-  function createIframeEmbed(url) {
-    const iframe = document.createElement('iframe');
-    iframe.src = url;
-    iframe.className = 'game-player';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking');
-    iframe.loading = 'lazy';
-    iframe.width = "100%";
-    iframe.height = "400";
-    
-    return {
-      element: iframe,
-      controls: [
-        { text: 'Fullscreen', action: () => toggleFullscreen(iframe) },
-        { text: 'Open Direct', action: () => window.open(url, '_blank') }
-      ]
-    };
-  }
-
-  async function incrementVipPageView() {
-    if (!username) return;
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
-
-    if (userError || !userData) {
-      console.error('User not found for VIP increment:', userError);
-      return;
-    }
-
-    const now = new Date().toISOString();
-
-    const { data, error } = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.id,
-      in_username: username,
-      in_now: now
-    });
-
-    if (error) {
-      console.error('Error incrementing VIP page views:', error);
-    } else {
-      console.log(`Incremented VIP page views for ${username}`);
-    }
-  }
-
-  async function loadGames() {
-    const { data, error } = await supabase
-      .from('game_submissions')
-      .select('*')
-      .eq('github_user', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
-      return;
-    }
-
-    if (!data.length) {
-      gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
-      return;
-    }
-
-    gamesContainer.innerHTML = '';
-    data.forEach((game, index) => {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.gameId = game.id || `game-${index}`;
-
-      // Add game type badge
-      if (game.embed_url) {
-        const gameType = detectGameType(game.embed_url);
-        const badge = document.createElement('div');
-        badge.className = 'game-type-badge';
-        badge.textContent = gameType.toUpperCase();
-        card.appendChild(badge);
-      }
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = game.title || 'Untitled Game';
-      card.appendChild(title);
-
-      if (game.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = game.description;
-        card.appendChild(desc);
-      }
-
-      if (game.screenshot_url) {
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-        img.alt = `Screenshot of ${game.title}`;
-        card.appendChild(img);
-      }
-
-      if (game.embed_url) {
-        const gameEmbed = createGameEmbed(game);
-        card.appendChild(gameEmbed.element);
-
-        if (gameEmbed.controls && gameEmbed.controls.length > 0) {
-          const controlsDiv = document.createElement('div');
-          controlsDiv.className = 'game-controls';
-
-          gameEmbed.controls.forEach(control => {
-            const btn = document.createElement('button');
-            btn.className = 'control-btn';
-            btn.textContent = control.text;
-            btn.addEventListener('click', control.action);
-            controlsDiv.appendChild(btn);
-          });
-
-          card.appendChild(controlsDiv);
-        }
-      }
-
-      gamesContainer.appendChild(card);
-    });
-  }
-
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (m) => {
-      switch(m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        default: return m;
-      }
-    });
-  }
-
-  function convertDriveLinkToThumbnail(url) {
-    if (!url) return '';
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
-    }
-    return url;
-  }
-
-  function toggleFullscreen(element) {
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if (element.mozRequestFullScreen) { // Firefox
-      element.mozRequestFullScreen();
-    } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
-      element.webkitRequestFullscreen();
-    } else if (element.msRequestFullscreen) { // IE/Edge
-      element.msRequestFullscreen();
-    }
-  }
-
-  if (!username) {
-    pageTitle.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-  } else {
-    pageTitle.textContent = `${username}'s Content`;
-
-    incrementVipPageView();
-    loadGames();
-  }
-</script>
-
-</body>
-</html>
-
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>User Content - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      color: #fefefe;
-      margin: 0; padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
       min-height: 100vh;
     }
-    h1, h2 {
+    
+    @media (min-width: 768px) {
+      body {
+        padding: 20px;
+      }
+    }
+    
+    h1, h2, h3 {
       color: #ff4f9f;
-      text-shadow: 2px 2px 0 #ff4f9f;
+      text-shadow: 2px 2px 0 #000;
       margin: 1rem 0;
       width: 100%;
       max-width: 800px;
+      font-size: 1.2em;
     }
+    
+    @media (min-width: 768px) {
+      h1, h2, h3 {
+        font-size: 1.5em;
+      }
+    }
+    
     .back-link {
       align-self: flex-start;
       background-color: #ff4f9f;
       color: #1b1b2e;
       text-decoration: none;
-      font-size: 0.9rem;
-      padding: 10px 16px;
+      font-size: 0.8rem;
+      padding: 8px 12px;
       border-radius: 999px;
       font-weight: bold;
       transition: background-color 0.2s ease;
@@ -2176,35 +1517,222 @@
       max-width: 800px;
       display: inline-block;
     }
+    
+    @media (min-width: 768px) {
+      .back-link {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+      }
+    }
+    
     .back-link:hover { background-color: #ff82ba; }
 
+    .profile-container {
+      max-width: 800px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    /* Profile Header */
+    .profile-header {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-header {
+        padding: 20px;
+        gap: 20px;
+      }
+    }
+
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #ff4f9f;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-avatar {
+        width: 100px;
+        height: 100px;
+      }
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .profile-name {
+      color: #ff4f9f;
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-name {
+        font-size: 1.5rem;
+      }
+    }
+
+    .profile-bio {
+      color: #ddd;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-bio {
+        font-size: 0.9rem;
+      }
+    }
+
+    .profile-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      font-size: 0.8rem;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-details {
+        font-size: 0.9rem;
+      }
+    }
+
+    .profile-detail {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .profile-detail a {
+      color: #ff82ba;
+      text-decoration: none;
+    }
+
+    .profile-detail a:hover {
+      color: #ffc0cb;
+      text-decoration: underline;
+    }
+
+    /* Profile Stats */
+    .profile-stats {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-stats {
+        padding: 20px;
+        gap: 20px;
+      }
+    }
+
+    .stat-item {
+      background-color: #3b2750;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      color: #8dffa1;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+    
+    @media (min-width: 768px) {
+      .stat-value {
+        font-size: 1.8rem;
+      }
+    }
+
+    .stat-label {
+      color: #ffc0cb;
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+    
+    @media (min-width: 768px) {
+      .stat-label {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Content Sections */
     .content-section {
       max-width: 800px;
       width: 100%;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
+    }
+    
+    @media (min-width: 768px) {
+      .content-section {
+        margin-bottom: 40px;
+      }
     }
 
     .content-container {
       display: grid;
-      gap: 20px;
+      gap: 15px;
       justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: 1fr;
       width: 100%;
+    }
+    
+    @media (min-width: 480px) {
+      .content-container {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      .content-container {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      }
     }
 
     .card {
       background-color: #2f1a39;
       border: 2px solid #ff4f9f;
       border-radius: 12px;
-      padding: 16px;
+      padding: 12px;
       width: 100%;
+      max-width: 100%;
       box-sizing: border-box;
       transition: border-color 0.3s ease;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
+    }
+    
+    @media (min-width: 768px) {
+      .card {
+        padding: 16px;
+      }
     }
 
     .card:hover {
@@ -2212,190 +1740,330 @@
       box-shadow: 0 0 10px #ff82ba;
     }
 
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
-    }
-
-    .title {
+    .card-title {
       margin-top: 0;
       margin-bottom: 0.5rem;
       text-align: center;
+      font-size: 0.9em;
+      color: #ff4f9f;
+    }
+    
+    @media (min-width: 768px) {
+      .card-title {
+        font-size: 1em;
+      }
     }
 
-    .desc {
+    .card-desc {
       color: #ddd;
       margin: 0.5rem 0 1rem 0;
       min-height: 3rem;
       text-align: center;
+      font-size: 0.8em;
+      line-height: 1.3;
+    }
+    
+    @media (min-width: 768px) {
+      .card-desc {
+        font-size: 0.9em;
+      }
     }
 
-    .image-container {
-      position: relative;
+    .card-thumbnail {
       width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .thumbnail {
-      width: 100%;
-      max-height: 150px;
+      max-height: 120px;
       object-fit: cover;
       border-radius: 8px;
+      margin-bottom: 10px;
       display: block;
     }
-
-    .fullscreen-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(255, 79, 159, 0.9);
-      color: #ffffff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 3;
-      font-family: 'Rubik Mono One', sans-serif;
-      opacity: 0;
-      transform: translateY(-10px);
+    
+    @media (min-width: 768px) {
+      .card-thumbnail {
+        max-height: 150px;
+      }
     }
 
-    .image-container:hover .fullscreen-btn {
-      opacity: 1;
-      transform: translateY(0);
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
     }
 
-    .fullscreen-btn:hover {
-      background: rgba(255, 130, 186, 1);
-      transform: scale(1.1);
-    }
-
-    .video-player {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background-color: black;
-      max-height: 200px;
-      max-width: 100%;
-    }
-
-    .play-link {
-      display: inline-block;
+    .action-btn {
       background-color: #ff4f9f;
       color: #1b1b2e;
-      padding: 8px 12px;
-      border-radius: 6px;
       text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 6px;
       font-weight: bold;
       transition: background-color 0.2s ease;
-      cursor: pointer;
-      margin-top: auto; /* push to bottom */
+      font-size: 0.8rem;
     }
-    .play-link:hover { background-color: #ff82ba; }
-
-    #chat-container {
-      display: none;
+    
+    @media (min-width: 768px) {
+      .action-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+    }
+    
+    .action-btn:hover { 
+      background-color: #ff82ba; 
     }
 
     .no-content {
-      font-size: 1.1rem;
+      font-size: 1rem;
       text-align: center;
       color: #ddd;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       font-style: italic;
       background-color: #2f1a39;
       padding: 1rem;
       border-radius: 10px;
     }
-
-    /* Fullscreen View */
-    .fullscreen-view {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      z-index: 1000;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    
+    @media (min-width: 768px) {
+      .no-content {
+        font-size: 1.1rem;
+        margin-top: 2rem;
+      }
     }
 
-    .fullscreen-view.active {
-      display: flex;
-    }
-
-    .fullscreen-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(27, 27, 46, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1001;
-      border-bottom: 2px solid #ff4f9f;
-    }
-
-    .fullscreen-title {
-      color: #ff4f9f;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-size: 1.2rem;
-      margin: 0;
-    }
-
-    .close-fullscreen {
-      background: #ff4f9f;
-      color: #1b1b2e;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
+    /* Loading states */
+    .loading {
+      text-align: center;
+      color: #ff82ba;
       font-size: 0.9rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      font-family: 'Rubik Mono One', sans-serif;
+      padding: 2rem;
+    }
+
+    .error {
+      text-align: center;
+      color: #ff8d8d;
+      font-size: 0.9rem;
+      padding: 2rem;
+    }
+
+    /* Profile Form for editing */
+    .profile-edit-form {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    @media (min-width: 768px) {
+      .profile-edit-form {
+        padding: 20px;
+      }
+    }
+
+    .profile-edit-form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #ffc0cb;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
       font-weight: bold;
     }
+    
+    @media (min-width: 768px) {
+      .form-group label {
+        font-size: 0.9rem;
+      }
+    }
 
-    .close-fullscreen:hover {
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border: 2px solid #ff4f9f;
+      border-radius: 6px;
+      background-color: #3b2750;
+      color: #fefefe;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 0.8rem;
+    }
+    
+    @media (min-width: 768px) {
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .edit-btn {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-size: 0.8rem;
+    }
+    
+    @media (min-width: 768px) {
+      .edit-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
+    }
+
+    .edit-btn:hover {
       background-color: #ff82ba;
     }
 
-    .fullscreen-image {
-      max-width: 90vw;
-      max-height: 80vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      margin-top: 80px;
+    .edit-btn:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .save-btn {
+      background-color: #8dffa1;
+      color: #1b1b2e;
+    }
+
+    .save-btn:hover {
+      background-color: #a1ff8d;
+    }
+
+    .cancel-btn {
+      background-color: #ff8d8d;
+      color: #1b1b2e;
+    }
+
+    .cancel-btn:hover {
+      background-color: #ffa1a1;
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 480px) {
+      .profile-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .profile-details {
+        justify-content: center;
+      }
+
+      .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   </style>
 </head>
 <body>
-  <h1 id="pageTitle">User Content</h1>
 
-  <section class="content-section" id="art-section">
-    <h2>Art</h2>
-    <div id="art" class="content-container">Loading art...</div>
-  </section>
+  <a href="user-videos.html" class="back-link">⬅️ Back to All Users</a>
+  
+  <div class="profile-container">
+    <h1 id="pageTitle">User Profile</h1>
 
-  <!-- Fullscreen View -->
-  <div id="fullscreen-view" class="fullscreen-view">
-    <div class="fullscreen-header">
-      <h2 id="fullscreen-title" class="fullscreen-title">Artwork</h2>
-      <button class="close-fullscreen" onclick="closeFullscreen()">✕ Close</button>
+    <!-- Profile Header -->
+    <div class="profile-header" id="profileHeader">
+      <div class="loading">Loading profile...</div>
     </div>
-    <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
+
+    <!-- Profile Edit Form -->
+    <div class="profile-edit-form" id="profileEditForm">
+      <h3>Edit Profile</h3>
+      <form id="editForm">
+        <div class="form-group">
+          <label for="editLocation">Location</label>
+          <input type="text" id="editLocation" placeholder="City, Country" />
+        </div>
+
+        <div class="form-group">
+          <label for="editWebsite">Website</label>
+          <input type="url" id="editWebsite" placeholder="https://yoursite.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="editTwitter">Twitter/X Handle</label>
+          <input type="text" id="editTwitter" placeholder="@yourusername" />
+        </div>
+
+        <div class="form-group">
+          <label for="editFavGenre">Favorite Game Genre</label>
+          <select id="editFavGenre">
+            <option value="">Select a genre</option>
+            <option value="action">Action</option>
+            <option value="adventure">Adventure</option>
+            <option value="puzzle">Puzzle</option>
+            <option value="simulation">Simulation</option>
+            <option value="strategy">Strategy</option>
+            <option value="arcade">Arcade</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editBio">Bio</label>
+          <textarea id="editBio" placeholder="Tell others about yourself and your games..." rows="4"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="edit-btn save-btn" id="saveBtn">💾 Save Changes</button>
+          <button type="button" class="edit-btn cancel-btn" id="cancelBtn">❌ Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Profile Stats -->
+    <div class="profile-stats" id="profileStats">
+      <div class="loading">Loading stats...</div>
+    </div>
+
+    <!-- Content Sections -->
+    <section class="content-section" id="games-section">
+      <h2>Games</h2>
+      <div id="games" class="content-container">
+        <div class="loading">Loading games...</div>
+      </div>
+    </section>
+
+    <section class="content-section" id="videos-section">
+      <h2>Videos</h2>
+      <div id="videos" class="content-container">
+        <div class="loading">Loading videos...</div>
+      </div>
+    </section>
+
+    <section class="content-section" id="art-section">
+      <h2>Art</h2>
+      <div id="art" class="content-container">
+        <div class="loading">Loading art...</div>
+      </div>
+    </section>
   </div>
 
 <script type="module">
@@ -2405,1471 +2073,528 @@
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
-
-  const pageTitle = document.getElementById('pageTitle');
-  const artContainer = document.getElementById('art');
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
 
-  // Fullscreen functionality
-  window.openFullscreen = function(imageSrc, altText, title) {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    const fullscreenImage = document.getElementById('fullscreen-image');
-    const fullscreenTitle = document.getElementById('fullscreen-title');
-    
-    fullscreenImage.src = imageSrc;
-    fullscreenImage.alt = altText;
-    fullscreenTitle.textContent = title || 'Artwork';
-    fullscreenView.classList.add('active');
-    
-    // Prevent body scrolling
-    document.body.style.overflow = 'hidden';
-  }
-
-  window.closeFullscreen = function() {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    fullscreenView.classList.remove('active');
-    
-    // Restore body scrolling
-    document.body.style.overflow = 'auto';
-  }
-
-  // Close fullscreen on escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      closeFullscreen();
-    }
-  });
-
-  async function incrementVipPageView() {
-    if (!username) return;
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
-
-    if (userError || !userData) {
-      console.error('User not found for VIP increment:', userError);
-      return;
-    }
-
-    const now = new Date().toISOString();
-
-    const { data, error } = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.id,
-      in_username: username,
-      in_now: now
-    });
-
-    if (error) {
-      console.error('Error incrementing VIP page views:', error);
-    } else {
-      console.log(`Incremented VIP page views for ${username}`);
-    }
-  }
-
-  async function loadArt() {
-    const { data, error } = await supabase
-      .from('user_art')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
-      return;
-    }
-
-    if (!data.length) {
-      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
-      return;
-    }
-
-    artContainer.innerHTML = '';
-    data.forEach((art, index) => {
-      const card = document.createElement('article');
-      card.className = 'card';
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = art.title || 'Untitled Art';
-      card.appendChild(title);
-
-      if (art.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = art.description;
-        card.appendChild(desc);
-      }
-
-      if (art.image_url) {
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'image-container';
-
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = `Artwork: ${art.title}`;
-
-        const fullscreenBtn = document.createElement('button');
-        fullscreenBtn.className = 'fullscreen-btn';
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
-          openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
-        });
-
-        imageContainer.appendChild(img);
-        imageContainer.appendChild(fullscreenBtn);
-        card.appendChild(imageContainer);
-      }
-
-      artContainer.appendChild(card);
-    });
-  }
-
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (m) => {
-      switch(m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        default: return m;
-      }
-    });
-  }
-
-  function convertDriveLinkToThumbnail(url) {
-    if (!url) return '';
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
-    }
-    return url;
-  }
-
-  function convertDriveLinkToDirectView(url) {
-    if (!url) return '';
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return `https://drive.google.com/uc?export=view&id=${fileId}`;
-    }
-    return url;
-  }
-
-  // Main execution block
-  if (!username) {
-    pageTitle.textContent = 'Error';
-    artContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-  } else {
-    pageTitle.textContent = `${username}'s Content`;
-
-    // Increment the VIP page views count each time this page loads for this user
-    incrementVipPageView();
-
-    loadArt();
-  }
-</script>
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>User Content - BrownDogGames</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      color: #fefefe;
-      margin: 0; padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh;
-    }
-    h1, h2 {
-      color: #ff4f9f;
-      text-shadow: 2px 2px 0 #ff4f9f;
-      margin: 1rem 0;
-      width: 100%;
-      max-width: 800px;
-    }
-    .back-link {
-      display: none;
-    }
-
-    .content-section {
-      max-width: 800px;
-      width: 100%;
-      margin-bottom: 40px;
-    }
-
-    .content-container {
-      display: grid;
-      gap: 20px;
-      justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      width: 100%;
-    }
-
-    .card {
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 16px;
-      width: 100%;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .card:hover {
-      border-color: #ff82ba;
-      box-shadow: 0 0 10px #ff82ba;
-    }
-
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
-    }
-
-    .title {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
-
-    .desc {
-      color: #ddd;
-      margin: 0.5rem 0 1rem 0;
-      min-height: 3rem;
-      text-align: center;
-    }
-
-    .thumbnail {
-      width: 100%;
-      max-height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      display: block;
-    }
-
-    .video-player {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background-color: black;
-      max-height: 200px;
-      max-width: 100%;
-    }
-
-    .adult-video-player {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background-color: black;
-      height: 340px;
-      max-width: 100%;
-    }
-
-    .preview-card {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, #2f1a39, #1a1328);
-      border: 2px solid #ff4f9f;
-      padding: 20px;
-      text-align: center;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .preview-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.2), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .preview-card:hover::before {
-      left: 100%;
-    }
-
-    .preview-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(255, 79, 159, 0.3);
-      border-color: #ff82ba;
-    }
-
-    .preview-thumbnail {
-      width: 100%;
-      height: 120px;
-      background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-      border-radius: 6px;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .preview-thumbnail img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 6px;
-    }
-
-    .preview-title {
-      color: #ff4f9f;
-      font-size: 1rem;
-      margin-bottom: 8px;
-      font-weight: bold;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    }
-
-    .preview-platform {
-      color: #ddd;
-      font-size: 0.8rem;
-      margin-bottom: 12px;
-    }
-
-    .preview-link {
-      display: inline-block;
-      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
-      color: #1b1b2e;
-      padding: 8px 16px;
-      border-radius: 20px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .preview-link::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #ff82ba, #ff4f9f);
-      transition: left 0.3s ease;
-      z-index: -1;
-    }
-
-    .preview-link:hover::before {
-      left: 0;
-    }
-
-    .preview-link:hover {
-      transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
-    }
-
-    .play-link {
-      display: inline-block;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      padding: 8px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.2s ease;
-      cursor: pointer;
-      margin-top: auto; /* push to bottom */
-    }
-    .play-link:hover { background-color: #ff82ba; }
-
-    #chat-container {
-      display: none;
-    }
-
-    .no-content {
-      font-size: 1.1rem;
-      text-align: center;
-      color: #ddd;
-      margin-top: 2rem;
-      font-style: italic;
-      background-color: #2f1a39;
-      padding: 1rem;
-      border-radius: 10px;
-    }
-
-    /* Modal styles for in-site viewer */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
-      display: none;
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-content {
-      background-color: #2f1a39;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 90vw;
-      max-height: 90vh;
-      overflow: auto;
-      position: relative;
-      box-shadow: 0 0 20px rgba(255, 79, 159, 0.5);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #ff4f9f;
-      padding-bottom: 10px;
-    }
-
-    .modal-title {
-      color: #ff4f9f;
-      font-size: 1.2rem;
-      margin: 0;
-    }
-
-    .modal-close {
-      background: #ff4f9f;
-      color: #1b1b2e;
-      border: none;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-close:hover {
-      background: #ff82ba;
-    }
-
-    .modal-iframe {
-      width: 100%;
-      height: 70vh;
-      border: none;
-      border-radius: 8px;
-      background-color: #000;
-    }
-
-    .modal-actions {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .modal-action-btn {
-      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
-      color: #1b1b2e;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.3s ease;
-    }
-
-    .modal-action-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(255, 79, 159, 0.4);
-    }
-  </style>
-</head>
-<body>
-
-  <h1 id="pageTitle">User Content</h1>
-
-  <section class="content-section" id="videos-section">
-    <h2>Videos</h2>
-    <div id="videos" class="content-container">Loading videos...</div>
-  </section>
-
-  <!-- Modal for in-site viewer -->
-  <div id="modal-overlay" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modal-title" class="modal-title">External Content</h3>
-        <button id="modal-close" class="modal-close">&times;</button>
-      </div>
-      <iframe id="modal-iframe" class="modal-iframe" src="about:blank"></iframe>
-      <div class="modal-actions">
-        <a id="modal-open-external" href="#" class="modal-action-btn">Open in External Site</a>
-        <button id="modal-refresh" class="modal-action-btn">Refresh</button>
-      </div>
-    </div>
-  </div>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-  );
-
+  let currentUser = null;
+  let isOwnProfile = false;
+  let userData = null;
+  let profileData = null;
+
+  // Get elements
   const pageTitle = document.getElementById('pageTitle');
+  const profileHeader = document.getElementById('profileHeader');
+  const profileStats = document.getElementById('profileStats');
+  const gamesContainer = document.getElementById('games');
   const videosContainer = document.getElementById('videos');
+  const artContainer = document.getElementById('art');
+  const profileEditForm = document.getElementById('profileEditForm');
+  const editForm = document.getElementById('editForm');
+  const saveBtn = document.getElementById('saveBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const username = urlParams.get('user') || '';
-
-  // Modal elements
-  const modalOverlay = document.getElementById('modal-overlay');
-  const modalClose = document.getElementById('modal-close');
-  const modalIframe = document.getElementById('modal-iframe');
-  const modalTitle = document.getElementById('modal-title');
-  const modalOpenExternal = document.getElementById('modal-open-external');
-  const modalRefresh = document.getElementById('modal-refresh');
-
-  // Modal functions
-  function openModal(url, title = 'External Content') {
-    modalTitle.textContent = title;
-    modalIframe.src = url;
-    modalOpenExternal.href = url;
-    modalOverlay.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    
-    // Handle iframe load errors
-    modalIframe.onload = function() {
-      // Check if iframe loaded successfully
-      try {
-        // This will throw an error if the site blocks iframe embedding
-        const iframeDoc = modalIframe.contentDocument || modalIframe.contentWindow.document;
-        if (!iframeDoc) {
-          throw new Error('Blocked by X-Frame-Options');
-        }
-      } catch (e) {
-        // If iframe is blocked, show fallback message
-        showIframeBlockedMessage(url, title);
+  // Check authentication
+  async function checkAuth() {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session?.user) {
+        currentUser = session.user;
+        const currentUsername = currentUser.user_metadata?.user_name || currentUser.email;
+        isOwnProfile = currentUsername === username;
       }
-    };
-    
-    modalIframe.onerror = function() {
-      showIframeBlockedMessage(url, title);
-    };
+    } catch (error) {
+      console.error('Auth check error:', error);
+    }
   }
 
-  function showIframeBlockedMessage(url, title) {
-    modalIframe.style.display = 'none';
-    const blockedMessage = document.createElement('div');
-    blockedMessage.className = 'iframe-blocked-message';
-    blockedMessage.style.cssText = `
-      background: linear-gradient(135deg, #2f1a39, #1a1328);
-      border: 2px solid #ff4f9f;
-      border-radius: 8px;
-      padding: 40px;
-      text-align: center;
-      height: 70vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+  // Get user data from auth system
+  async function getUserData() {
+    try {
+      // First try to find user by username in user_metadata
+      const { data: users, error } = await supabase.auth.admin.listUsers();
+      if (error) {
+        console.error('Error fetching users:', error);
+        return null;
+      }
+
+      const user = users.users.find(u => 
+        u.user_metadata?.user_name === username || 
+        u.email === username
+      );
+
+      return user;
+    } catch (error) {
+      console.error('Error getting user data:', error);
+      return null;
+    }
+  }
+
+  // Load profile data from database
+  async function loadProfileData() {
+    if (!userData) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userData.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading profile:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+      return null;
+    }
+  }
+
+  // Save profile data
+  async function saveProfileData(profileData) {
+    if (!userData || !isOwnProfile) return false;
+
+    try {
+      const dataToSave = {
+        user_id: userData.id,
+        location: profileData.location || '',
+        website: profileData.website || '',
+        twitter: profileData.twitter || '',
+        favorite_genre: profileData.favorite_genre || '',
+        bio: profileData.bio || '',
+        updated_at: new Date().toISOString()
+      };
+
+      // Check if profile exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('user_id', userData.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('user_profiles')
+          .update(dataToSave)
+          .eq('user_id', userData.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new profile
+        dataToSave.created_at = new Date().toISOString();
+        const { error: insertError } = await supabase
+          .from('user_profiles')
+          .insert([dataToSave]);
+
+        if (insertError) throw insertError;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      return false;
+    }
+  }
+
+  // Render profile header
+  function renderProfileHeader() {
+    if (!userData) {
+      profileHeader.innerHTML = '<div class="error">❌ User not found</div>';
+      return;
+    }
+
+    const avatarUrl = userData.user_metadata?.avatar_url;
+    const fullName = userData.user_metadata?.full_name || username;
+    const bio = profileData?.bio || 'No bio provided yet.';
+    
+    let detailsHTML = '';
+    
+    if (profileData?.location) {
+      detailsHTML += `<div class="profile-detail">📍 ${profileData.location}</div>`;
+    }
+    
+    if (profileData?.website) {
+      detailsHTML += `<div class="profile-detail">🌐 <a href="${profileData.website}" target="_blank">Website</a></div>`;
+    }
+    
+    if (profileData?.twitter) {
+      const twitterHandle = profileData.twitter.startsWith('@') ? profileData.twitter : `@${profileData.twitter}`;
+      const twitterUrl = `https://twitter.com/${twitterHandle.replace('@', '')}`;
+      detailsHTML += `<div class="profile-detail">🐦 <a href="${twitterUrl}" target="_blank">${twitterHandle}</a></div>`;
+    }
+    
+    if (profileData?.favorite_genre) {
+      detailsHTML += `<div class="profile-detail">🎮 ${profileData.favorite_genre}</div>`;
+    }
+
+    profileHeader.innerHTML = `
+      ${avatarUrl ? `<img src="${avatarUrl}" alt="${fullName}" class="profile-avatar">` : ''}
+      <div class="profile-info">
+        <div class="profile-name">${fullName}</div>
+        <div class="profile-bio">${bio}</div>
+        <div class="profile-details">
+          ${detailsHTML}
+        </div>
+        ${isOwnProfile ? '<button class="edit-btn" id="editProfileBtn">✏️ Edit Profile</button>' : ''}
+      </div>
     `;
-    
-    blockedMessage.innerHTML = `
-      <div style="font-size: 3rem; margin-bottom: 20px;">🚫</div>
-      <h3 style="color: #ff4f9f; margin-bottom: 15px;">Content Blocked</h3>
-      <p style="color: #ddd; margin-bottom: 25px; max-width: 400px;">
-        This site doesn't allow embedding. We'll open it in a new tab for you instead.
-      </p>
-      <button onclick="window.open('${url}', '_blank'); closeModal();" 
-              style="background: linear-gradient(135deg, #ff4f9f, #ff82ba); 
-                     color: #1b1b2e; border: none; padding: 12px 24px; 
-                     border-radius: 25px; font-weight: bold; cursor: pointer;
-                     transition: all 0.3s ease;">
-        Open in New Tab →
-      </button>
-    `;
-    
-    // Replace iframe with blocked message
-    const existingMessage = document.querySelector('.iframe-blocked-message');
-    if (existingMessage) {
-      existingMessage.remove();
-    }
-    modalIframe.parentNode.insertBefore(blockedMessage, modalIframe.nextSibling);
-  }
 
-  function closeModal() {
-    modalOverlay.classList.remove('active');
-    modalIframe.src = 'about:blank';
-    modalIframe.style.display = 'block';
-    document.body.style.overflow = ''; // Restore scrolling
-    
-    // Remove any blocked message or custom content
-    const blockedMessage = document.querySelector('.iframe-blocked-message');
-    if (blockedMessage) {
-      blockedMessage.remove();
-    }
-    
-    const customContent = document.querySelector('.modal-custom-content');
-    if (customContent) {
-      customContent.remove();
+    // Add edit button event listener
+    if (isOwnProfile) {
+      const editBtn = document.getElementById('editProfileBtn');
+      editBtn?.addEventListener('click', showEditForm);
     }
   }
 
-  // Modal event listeners
-  modalClose.addEventListener('click', closeModal);
-  modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) closeModal();
-  });
-  modalRefresh.addEventListener('click', () => {
-    const currentSrc = modalIframe.src;
-    modalIframe.src = 'about:blank';
-    setTimeout(() => modalIframe.src = currentSrc, 100);
-  });
-
-  // Close modal on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
-      closeModal();
-    }
-  });
-
-  // List of sites that typically block iframe embedding (removed twitter/x since they support official embeds)
-  const blockedSites = [
-    'facebook.com',
-    'instagram.com',
-    'linkedin.com'
-  ];
-
-  // Sites that have special embed handling
-  const specialEmbedSites = [
-    'x.com',
-    'twitter.com',
-    'tiktok.com'
-  ];
-
-  // Check if a URL is from a site that blocks iframes
-  function isBlockedSite(url) {
-    return blockedSites.some(site => url.includes(site));
+  // Show/hide edit form
+  function showEditForm() {
+    if (!profileData) profileData = {};
+    
+    // Populate form with current data
+    document.getElementById('editLocation').value = profileData.location || '';
+    document.getElementById('editWebsite').value = profileData.website || '';
+    document.getElementById('editTwitter').value = profileData.twitter || '';
+    document.getElementById('editFavGenre').value = profileData.favorite_genre || '';
+    document.getElementById('editBio').value = profileData.bio || '';
+    
+    profileEditForm.classList.add('active');
   }
 
-  // Check if a URL needs special embed handling
-  function needsSpecialEmbed(url) {
-    return specialEmbedSites.some(site => url.includes(site));
+  function hideEditForm() {
+    profileEditForm.classList.remove('active');
   }
 
-  // Create Twitter embed content
-  function createTwitterEmbed(url) {
-    const embedContainer = document.createElement('div');
-    embedContainer.style.cssText = `
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 400px;
-      padding: 20px;
-    `;
-    
-    // Extract tweet ID from URL for better embedding
-    const tweetIdMatch = url.match(/status\/(\d+)/);
-    const tweetId = tweetIdMatch ? tweetIdMatch[1] : null;
-    
-    if (tweetId) {
-      // Use the official Twitter oEmbed API approach
-      embedContainer.innerHTML = `
-        <div id="tweet-${tweetId}" style="max-width: 550px; width: 100%;">
-          <div style="background: #000; color: #fff; padding: 40px; text-align: center; border-radius: 8px;">
-            <div style="font-size: 2rem; margin-bottom: 10px;">🐦</div>
-            <p>Loading tweet...</p>
-          </div>
+  // Load and render stats
+  async function loadStats() {
+    try {
+      // Get games count
+      const { count: gamesCount } = await supabase
+        .from('game_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('github_user', username);
+
+      // Get videos count  
+      const { count: videosCount } = await supabase
+        .from('game_videos')
+        .select('*', { count: 'exact', head: true })
+        .eq('github_username', username);
+
+      // Get art count
+      const { count: artCount } = await supabase
+        .from('user_art')
+        .select('*', { count: 'exact', head: true })
+        .eq('github_username', username);
+
+      // Get page likes count
+      const { count: likesCount } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      profileStats.innerHTML = `
+        <div class="stat-item">
+          <div class="stat-value">${gamesCount || 0}</div>
+          <div class="stat-label">Games</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${videosCount || 0}</div>
+          <div class="stat-label">Videos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${artCount || 0}</div>
+          <div class="stat-label">Art Pieces</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${likesCount || 0}</div>
+          <div class="stat-label">Page Likes</div>
         </div>
       `;
-      
-      // Try to load the tweet using Twitter's oEmbed API
-      loadTweetEmbed(tweetId, url, embedContainer);
-    } else {
-      // Fallback for invalid URLs
-      embedContainer.innerHTML = createFallbackEmbed(url, 'X (Twitter)', '🐦').innerHTML;
+    } catch (error) {
+      console.error('Error loading stats:', error);
+      profileStats.innerHTML = '<div class="error">❌ Error loading stats</div>';
     }
-    
-    return embedContainer;
   }
 
-  // Load tweet using oEmbed API
-  function loadTweetEmbed(tweetId, url, container) {
-    // First try to use existing Twitter widgets if available
-    if (window.twttr && window.twttr.widgets) {
-      createTwitterWidget(tweetId, url, container);
-      return;
-    }
-    
-    // Load Twitter widgets script
-    const script = document.createElement('script');
-    script.src = 'https://platform.twitter.com/widgets.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.twttr && window.twttr.widgets) {
-        createTwitterWidget(tweetId, url, container);
-      } else {
-        showTwitterFallback(url, container);
+  // Load games
+  async function loadGames() {
+    try {
+      const { data, error } = await supabase
+        .from('game_submissions')
+        .select('*')
+        .eq('github_user', username)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!data.length) {
+        gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+        return;
       }
-    };
-    script.onerror = () => {
-      showTwitterFallback(url, container);
-    };
-    
-    document.head.appendChild(script);
-  }
 
-  // Create the actual Twitter widget
-  function createTwitterWidget(tweetId, url, container) {
-    const targetDiv = container.querySelector(`#tweet-${tweetId}`);
-    if (targetDiv && window.twttr && window.twttr.widgets) {
-      // Clear loading message
-      targetDiv.innerHTML = '';
-      
-      // Create the tweet embed
-      window.twttr.widgets.createTweet(tweetId, targetDiv, {
-        theme: 'dark',
-        width: 550,
-        align: 'center',
-        conversation: 'none',
-        cards: 'visible'
-      }).then((el) => {
-        if (!el) {
-          // If tweet creation failed, show fallback
-          showTwitterFallback(url, container);
-        }
-      }).catch(() => {
-        showTwitterFallback(url, container);
+      gamesContainer.innerHTML = '';
+
+      data.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        card.innerHTML = `
+          ${game.cover_url ? `<img src="${game.cover_url}" alt="${game.title}" class="card-thumbnail">` : ''}
+          <h3 class="card-title">${game.title}</h3>
+          <p class="card-desc">${game.description}</p>
+          <div class="card-actions">
+            <a href="${game.embed_url}" target="_blank" class="action-btn">🎮 Play</a>
+            ${game.screenshot_url ? `<a href="${game.screenshot_url}" target="_blank" class="action-btn">📸 Screenshot</a>` : ''}
+          </div>
+        `;
+
+        gamesContainer.appendChild(card);
       });
-    } else {
-      showTwitterFallback(url, container);
+    } catch (error) {
+      console.error('Error loading games:', error);
+      gamesContainer.innerHTML = '<div class="error">❌ Error loading games</div>';
     }
   }
 
-  // Show fallback when Twitter embed fails
-  function showTwitterFallback(url, container) {
-    container.innerHTML = `
-      <div style="background: linear-gradient(135deg, #2f1a39, #1a1328); border: 2px solid #ff4f9f; border-radius: 8px; padding: 40px; text-align: center; max-width: 550px; width: 100%;">
-        <div style="font-size: 3rem; margin-bottom: 20px;">🐦</div>
-        <h3 style="color: #ff4f9f; margin-bottom: 15px;">X (Twitter) Post</h3>
-        <p style="color: #ddd; margin-bottom: 25px;">
-          Unable to embed this tweet. Click below to view it on X.
-        </p>
-        <button onclick="window.open('${url}', '_blank');" 
-                style="background: linear-gradient(135deg, #ff4f9f, #ff82ba); color: #1b1b2e; border: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
-          View on X →
-        </button>
-      </div>
-    `;
-  }
+  // Load videos
+  async function loadVideos() {
+    try {
+      const { data, error } = await supabase
+        .from('game_videos')
+        .select('*')
+        .eq('github_username', username)
+        .order('created_at', { ascending: false });
 
-  // Create TikTok embed content  
-  function createTikTokEmbed(url) {
-    const videoId = extractTikTokId(url);
-    if (!videoId) {
-      return createFallbackEmbed(url, 'TikTok', '🎵');
-    }
-    
-    const embedContainer = document.createElement('div');
-    embedContainer.innerHTML = `
-      <blockquote class="tiktok-embed" cite="${url}" data-video-id="${videoId}" style="max-width: 550px; min-width: 325px; margin: 0 auto;">
-        <section>
-          <a href="${url}">Loading TikTok...</a>
-        </section>
-      </blockquote>
-    `;
-    
-    // Load TikTok embed script if not already loaded
-    if (!document.querySelector('script[src*="tiktok.com/embed"]')) {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://www.tiktok.com/embed.js';
-      document.head.appendChild(script);
-    }
-    
-    return embedContainer;
-  }
+      if (error) throw error;
 
-  // Create fallback embed for blocked sites
-  function createFallbackEmbed(url, platformName, emoji) {
-    const embedContainer = document.createElement('div');
-    embedContainer.style.cssText = `
-      background: linear-gradient(135deg, #2f1a39, #1a1328);
-      border: 2px solid #ff4f9f;
-      border-radius: 8px;
-      padding: 40px;
-      text-align: center;
-      height: 400px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    `;
-    
-    embedContainer.innerHTML = `
-      <div style="font-size: 3rem; margin-bottom: 20px;">${emoji}</div>
-      <h3 style="color: #ff4f9f; margin-bottom: 15px;">${platformName} Content</h3>
-      <p style="color: #ddd; margin-bottom: 25px; max-width: 400px;">
-        This content is best viewed on ${platformName}. Click below to open it.
-      </p>
-      <button onclick="window.open('${url}', '_blank');" 
-              style="background: linear-gradient(135deg, #ff4f9f, #ff82ba); 
-                     color: #1b1b2e; border: none; padding: 12px 24px; 
-                     border-radius: 25px; font-weight: bold; cursor: pointer;
-                     transition: all 0.3s ease;">
-        Open on ${platformName} →
-      </button>
-    `;
-    
-    return embedContainer;
-  }
+      if (!data.length) {
+        videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
+        return;
+      }
 
-  // Open URL with appropriate embedding method
-  function openContent(url, title = 'External Content') {
-    if (isBlockedSite(url)) {
-      window.open(url, '_blank');
-    } else if (needsSpecialEmbed(url)) {
-      openModalWithCustomContent(url, title);
-    } else {
-      openModal(url, title);
+      videosContainer.innerHTML = '';
+
+      data.forEach(video => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        // Extract thumbnail for video preview
+        let thumbnailHTML = '';
+        if (video.video_url) {
+          if (video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be')) {
+            const videoId = extractYouTubeId(video.video_url);
+            if (videoId) {
+              thumbnailHTML = `<img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg" alt="${video.title}" class="card-thumbnail">`;
+            }
+          }
+        }
+
+        card.innerHTML = `
+          ${thumbnailHTML}
+          <h3 class="card-title">${video.title || 'Untitled Video'}</h3>
+          <p class="card-desc">${video.content || 'No description'}</p>
+          <div class="card-actions">
+            <a href="user-content.html?user=${username}" class="action-btn">🎬 Watch</a>
+            <a href="${video.video_url}" target="_blank" class="action-btn">🔗 Source</a>
+          </div>
+        `;
+
+        videosContainer.appendChild(card);
+      });
+    } catch (error) {
+      console.error('Error loading videos:', error);
+      videosContainer.innerHTML = '<div class="error">❌ Error loading videos</div>';
     }
   }
 
-  // Open modal with custom embed content instead of iframe
-  function openModalWithCustomContent(url, title) {
-    modalTitle.textContent = title;
-    modalOpenExternal.href = url;
-    modalOverlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Hide the iframe and show custom content
-    modalIframe.style.display = 'none';
-    
-    let customContent;
-    if (url.includes('twitter.com') || url.includes('x.com')) {
-      customContent = createTwitterEmbed(url);
-    } else if (url.includes('tiktok.com')) {
-      customContent = createTikTokEmbed(url);
-    } else {
-      customContent = createFallbackEmbed(url, 'External Site', '🌐');
-    }
-    
-    // Remove any existing custom content
-    const existingCustom = document.querySelector('.modal-custom-content');
-    if (existingCustom) {
-      existingCustom.remove();
-    }
-    
-    customContent.className = 'modal-custom-content';
-    customContent.style.height = '70vh';
-    customContent.style.overflow = 'auto';
-    
-    modalIframe.parentNode.insertBefore(customContent, modalIframe.nextSibling);
-  }
+  // Load art
+  async function loadArt() {
+    try {
+      const { data, error } = await supabase
+        .from('user_art')
+        .select('*')
+        .eq('github_username', username)
+        .order('created_at', { ascending: false });
 
-  async function incrementVipPageView() {
-    if (!username) return;
+      if (error) throw error;
 
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
+      if (!data.length) {
+        artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
+        return;
+      }
 
-    if (userError || !userData) {
-      console.error('User not found for VIP increment:', userError);
-      return;
-    }
+      artContainer.innerHTML = '';
 
-    const now = new Date().toISOString();
+      data.forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'card';
 
-    const { data, error } = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.id,
-      in_username: username,
-      in_now: now
-    });
+        card.innerHTML = `
+          <img src="${art.image_url}" alt="${art.title}" class="card-thumbnail">
+          <h3 class="card-title">${art.title}</h3>
+          <p class="card-desc">${art.description}</p>
+          <div class="card-actions">
+            <a href="${art.image_url}" target="_blank" class="action-btn">🖼️ View Full</a>
+          </div>
+        `;
 
-    if (error) {
-      console.error('Error incrementing VIP page views:', error);
-    } else {
-      console.log(`Incremented VIP page views for ${username}`);
+        artContainer.appendChild(card);
+      });
+    } catch (error) {
+      console.error('Error loading art:', error);
+      artContainer.innerHTML = '<div class="error">❌ Error loading art</div>';
     }
   }
 
-  // Helper functions to extract video IDs
+  // Helper function to extract YouTube ID
   function extractYouTubeId(url) {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   }
 
-  function extractVimeoId(url) {
-    const regExp = /(?:vimeo)\.com.*(?:videos|video|channels|)\/([\d]+)/i;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
+  // Increment VIP page view
+  async function incrementVipPageView() {
+    if (!username) return;
 
-  function extractTwitchVideoId(url) {
-    const regExp = /twitch\.tv\/videos\/(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractDailymotionId(url) {
-    const regExp = /dailymotion\.com\/video\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractStreamableId(url) {
-    const regExp = /streamable\.com\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractMmmeId(url) {
-    const regExp = /mmme\.me\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractRedTubeId(url) {
-    const regExp = /redtube\.com\/(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractXVideosId(url) {
-    const regExp = /xvideos\.com\/video(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractPornHubId(url) {
-    // Handle both view_video.php and embed URLs
-    let match = url.match(/pornhub\.com\/view_video\.php\?viewkey=([a-zA-Z0-9]+)/);
-    if (match) return match[1];
-    
-    // Handle direct embed URLs
-    match = url.match(/pornhub\.com\/embed\/([a-zA-Z0-9]+)/);
-    if (match) return match[1];
-    
-    return null;
-  }
-
-  function extractTikTokId(url) {
-    const regExp = /tiktok\.com\/@[\w.-]+\/video\/(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractInstagramId(url) {
-    const regExp = /instagram\.com\/p\/([a-zA-Z0-9_-]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractTwitterVideoId(url) {
-    const regExp = /(twitter\.com|x\.com)\/\w*\/?.*\/status\/(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[2] : null;
-  }
-
-  function extractWistiaId(url) {
-    const regExp = /wistia\.com\/medias\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractBitChuteId(url) {
-    const regExp = /bitchute\.com\/video\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractRumbleId(url) {
-    const regExp = /rumble\.com\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractSpankBangId(url) {
-    const regExp = /spankbang\.com\/([a-zA-Z0-9]+)\/video/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractFacebookVideoId(url) {
-    const regExp = /facebook\.com\/.*\/videos\/(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractRedditVideoId(url) {
-    const regExp = /reddit\.com\/r\/[\w]+\/comments\/([a-zA-Z0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractJWPlayerId(url) {
-    const regExp = /jwplatform\.com\/players\/([a-zA-Z0-9-]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  }
-
-  function extractBrightcoveId(url) {
-    const regExp = /players\.brightcove\.net\/(\d+)\/.*\/index\.html\?videoId=(\d+)/;
-    const match = url.match(regExp);
-    return match ? { accountId: match[1], videoId: match[2] } : null;
-  }
-
-  function extractKalturaId(url) {
-    const regExp = /kaltura\.com\/p\/(\d+)\/sp\/(\d+)00\/.*\/uiconf_id\/(\d+)\/.*entry_id\/([a-zA-Z0-9_-]+)/;
-    const match = url.match(regExp);
-    return match ? { 
-      partnerId: match[1], 
-      uiconfId: match[3], 
-      entryId: match[4] 
-    } : null;
-  }
-
-  // Function to create enhanced preview cards (MODIFIED: opens in modal)
-  function createPreviewCard(url, platform, emoji, platformName) {
-    const mediaEl = document.createElement('div');
-    mediaEl.className = 'preview-card';
-    
-    // Try to extract thumbnail if possible
-    let thumbnailUrl = null;
-    if (platform === 'pornhub') {
-      // PornHub thumbnail extraction (if video ID available)
-      const match = url.match(/viewkey=([a-zA-Z0-9]+)/);
-      if (match) {
-        thumbnailUrl = `https://ci.phncdn.com/videos/201501/25/36944322/original/(m=eafTGgaaaa)(mh=jOakqk_rBQwZcBOb)1.jpg`;
-      }
-    }
-    
-    mediaEl.innerHTML = `
-      <div class="preview-thumbnail">
-        ${thumbnailUrl ? 
-          `<img src="${thumbnailUrl}" alt="${platformName} thumbnail" onerror="this.style.display='none'; this.parentNode.innerHTML='${emoji}';" />` : 
-          emoji
-        }
-      </div>
-      <div class="preview-title">${platformName} Content</div>
-      <div class="preview-platform">Click to view on ${platformName}</div>
-      <a href="#" class="preview-link" data-url="${url}" data-title="${platformName} Content">
-        View Content →
-      </a>
-    `;
-    
-    // Add click event to open in modal or new tab based on site
-    const link = mediaEl.querySelector('.preview-link');
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      openContent(url, `${platformName} Content`);
-    });
-    
-    return mediaEl;
-  }
-
-async function loadVideos() {
-  const { data, error } = await supabase
-    .from('game_videos')
-    .select('*')
-    .eq('github_username', username)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    videosContainer.innerHTML = `<div class="no-content">❌ Error loading videos: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data.length) {
-    videosContainer.innerHTML = `<p class="no-content">No videos submitted by ${username} yet.</p>`;
-    return;
-  }
-
-  videosContainer.innerHTML = '';
-
-  data.forEach((video) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-
-    if (video.video_url) {
-      let mediaEl;
-      const url = video.video_url;
-
-      // YouTube videos
-      if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
-        const videoId = extractYouTubeId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.youtube.com/embed/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
+    try {
+      // Find user by username
+      let targetUserId = null;
       
-      // Vimeo videos
-      else if (url.includes('vimeo.com/')) {
-        const videoId = extractVimeoId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://player.vimeo.com/video/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Twitch videos
-      else if (url.includes('twitch.tv/videos/')) {
-        const videoId = extractTwitchVideoId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://player.twitch.tv/?video=${videoId}&parent=${window.location.hostname}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Dailymotion videos
-      else if (url.includes('dailymotion.com/video/')) {
-        const videoId = extractDailymotionId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.dailymotion.com/embed/video/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Streamable videos
-      else if (url.includes('streamable.com/')) {
-        const videoId = extractStreamableId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://streamable.com/e/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Mmme.me videos
-      else if (url.includes('mmme.me/')) {
-        const videoId = extractMmmeId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://mmme.me/embed/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.frameBorder = '0';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // TikTok videos
-      else if (url.includes('tiktok.com/')) {
-        const videoId = extractTikTokId(url);
-        if (videoId) {
-          mediaEl = document.createElement('blockquote');
-          mediaEl.className = 'tiktok-embed video-player';
-          mediaEl.setAttribute('cite', url);
-          mediaEl.setAttribute('data-video-id', videoId);
-          mediaEl.style.maxWidth = '100%';
-          mediaEl.style.minWidth = '325px';
-          mediaEl.style.margin = '0';
-          
-          // Load TikTok embed script if not already loaded
-          if (!document.querySelector('script[src*="tiktok.com/embed"]')) {
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://www.tiktok.com/embed.js';
-            document.head.appendChild(script);
-          }
-        }
-      }
-      
-      // Instagram videos
-      else if (url.includes('instagram.com/p/')) {
-        const videoId = extractInstagramId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.instagram.com/p/${videoId}/embed/`;
-          mediaEl.width = '100%';
-          mediaEl.height = '400';
-          mediaEl.frameBorder = '0';
-          mediaEl.scrolling = 'no';
-          mediaEl.allowTransparency = 'true';
-          mediaEl.className = 'video-player';
-        }
-      }
-      
-      // Twitter/X videos (MODIFIED: opens in modal)
-      else if ((url.includes('twitter.com/') && url.includes('/status/')) || 
-               (url.includes('x.com/') && url.includes('/status/'))) {
-        mediaEl = document.createElement('div');
-        mediaEl.className = 'preview-card';
-        
-        const thumbnailDiv = document.createElement('div');
-        thumbnailDiv.className = 'preview-thumbnail';
-        thumbnailDiv.textContent = '🐦';
-        
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'preview-title';
-        titleDiv.textContent = 'X (Twitter) Video';
-        
-        const platformDiv = document.createElement('div');
-        platformDiv.className = 'preview-platform';
-        platformDiv.textContent = 'Click to view on X';
-        
-        const linkEl = document.createElement('a');
-        linkEl.href = '#';
-        linkEl.className = 'preview-link';
-        linkEl.textContent = 'View Post →';
-        linkEl.addEventListener('click', (e) => {
-          e.preventDefault();
-          openContent(url, 'X (Twitter) Post');
-        });
-        
-        mediaEl.appendChild(thumbnailDiv);
-        mediaEl.appendChild(titleDiv);
-        mediaEl.appendChild(platformDiv);
-        mediaEl.appendChild(linkEl);
-      }
-      
-      // Adult content platforms - NOW WITH DIRECT IFRAME EMBEDDING
-      else if (url.includes('pornhub.com/')) {
-        const videoId = extractPornHubId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.pornhub.com/embed/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '340';
-          mediaEl.frameBorder = '0';
-          mediaEl.scrolling = 'no';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'adult-video-player';
-        }
-      }
-      
-      else if (url.includes('redtube.com/')) {
-        const videoId = extractRedTubeId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://embed.redtube.com/?id=${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '340';
-          mediaEl.frameBorder = '0';
-          mediaEl.scrolling = 'no';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'adult-video-player';
-        }
-      }
-      
-      else if (url.includes('xvideos.com/')) {
-        const videoId = extractXVideosId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://www.xvideos.com/embedframe/${videoId}`;
-          mediaEl.width = '100%';
-          mediaEl.height = '340';
-          mediaEl.frameBorder = '0';
-          mediaEl.scrolling = 'no';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'adult-video-player';
-        }
-      }
-      
-      else if (url.includes('spankbang.com/')) {
-        const videoId = extractSpankBangId(url);
-        if (videoId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://spankbang.com/${videoId}/embed/`;
-          mediaEl.width = '100%';
-          mediaEl.height = '340';
-          mediaEl.frameBorder = '0';
-          mediaEl.scrolling = 'no';
-          mediaEl.allowFullscreen = true;
-          mediaEl.className = 'adult-video-player';
-        }
-      }
-
-      // Handle Google Drive video links
-      else if (url.includes("drive.google.com")) {
-        const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-        const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-        if (fileId) {
-          mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://drive.google.com/file/d/${fileId}/preview`;
-          mediaEl.width = '100%';
-          mediaEl.height = '200';
-          mediaEl.allow = 'autoplay';
-          mediaEl.frameBorder = '0';
-          mediaEl.className = 'video-player';
-        } else {
-          mediaEl = document.createElement('p');
-          mediaEl.textContent = '⚠️ Invalid Google Drive link.';
-        }
-
+      if (userData && userData.id) {
+        targetUserId = userData.id;
       } else {
-        // Determine file extension (lowercase)
-        const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
-        const ext = extMatch ? extMatch[1].toLowerCase() : '';
-
-        // Supported image extensions (including SVG)
-        const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
-
-        // Supported video extensions
-        const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-
-        // Check if URL is a GitHub raw image URL
-        const isGithubRawImage = url.includes('raw.githubusercontent.com') && imageExts.includes(ext);
-
-        if (imageExts.includes(ext) || isGithubRawImage) {
-          // Render image
-          mediaEl = document.createElement('img');
-          mediaEl.src = url;
-          mediaEl.alt = video.title || 'Image';
-          mediaEl.className = 'video-player';
-
-        } else if (videoExts.includes(ext)) {
-          // Render video element
-          mediaEl = document.createElement('video');
-          mediaEl.controls = true;
-          mediaEl.className = 'video-player';
-          mediaEl.src = url;
-          mediaEl.type = `video/${ext === 'jpg' ? 'mpeg' : ext}`;
-
-        } else {
-          // Unknown file type - show link to original instead of error
-          mediaEl = document.createElement('div');
-          mediaEl.className = 'video-player';
-          mediaEl.style.display = 'flex';
-          mediaEl.style.alignItems = 'center';
-          mediaEl.style.justifyContent = 'center';
-          mediaEl.style.backgroundColor = '#333';
-          mediaEl.style.color = '#fff';
-          mediaEl.style.padding = '20px';
-          mediaEl.innerHTML = `
-            <div style="text-align: center;">
-              <p>⚠️ Unsupported format</p>
-              <a href="#" style="color: #ff4f9f;" class="open-link-modal">Open Link</a>
-            </div>
-          `;
-          
-          const link = mediaEl.querySelector('.open-link-modal');
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            openContent(url, 'External File');
-          });
+        // Fallback: try to find user in submissions
+        const { data: gameData } = await supabase
+          .from('game_submissions')
+          .select('user_id')
+          .eq('github_user', username)
+          .limit(1)
+          .single();
+        
+        if (gameData) {
+          targetUserId = gameData.user_id;
         }
       }
 
-      if (mediaEl) {
-        card.appendChild(mediaEl);
+      if (!targetUserId) {
+        console.log('No user ID found for VIP increment');
+        return;
       }
-    }
 
-    if (video.title) {
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = video.title;
-      card.appendChild(title);
-    }
+      const now = new Date().toISOString();
 
-    if (video.description) {
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = video.description;
-      card.appendChild(desc);
-    }
+      const { error } = await supabase.rpc('increment_vip_page_view', {
+        in_user_id: targetUserId,
+        in_username: username,
+        in_now: now
+      });
 
-    videosContainer.appendChild(card);
+      if (error) {
+        console.error('Error incrementing VIP page views:', error);
+      } else {
+        console.log(`Incremented VIP page views for ${username}`);
+      }
+    } catch (error) {
+      console.error('Error in VIP increment:', error);
+    }
+  }
+
+  // Form event handlers
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳ Saving...';
+
+    const formData = {
+      location: document.getElementById('editLocation').value.trim(),
+      website: document.getElementById('editWebsite').value.trim(),
+      twitter: document.getElementById('editTwitter').value.trim(),
+      favorite_genre: document.getElementById('editFavGenre').value,
+      bio: document.getElementById('editBio').value.trim()
+    };
+
+    const success = await saveProfileData(formData);
+    
+    if (success) {
+      profileData = { ...profileData, ...formData };
+      renderProfileHeader();
+      hideEditForm();
+      
+      // Show success message briefly
+      saveBtn.textContent = '✅ Saved!';
+      setTimeout(() => {
+        saveBtn.textContent = '💾 Save Changes';
+        saveBtn.disabled = false;
+      }, 2000);
+    } else {
+      saveBtn.textContent = '❌ Error saving';
+      setTimeout(() => {
+        saveBtn.textContent = '💾 Save Changes';
+        saveBtn.disabled = false;
+      }, 3000);
+    }
   });
-}
 
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (m) => {
-      switch(m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        default: return m;
-      }
-    });
+  cancelBtn.addEventListener('click', () => {
+    hideEditForm();
+  });
+
+  // Main initialization
+  async function init() {
+    if (!username) {
+      pageTitle.textContent = 'Error';
+      profileHeader.innerHTML = '<div class="error">❌ No username provided in URL.</div>';
+      profileStats.innerHTML = '';
+      gamesContainer.innerHTML = '';
+      videosContainer.innerHTML = '';
+      artContainer.innerHTML = '';
+      return;
+    }
+
+    pageTitle.textContent = `${username}'s Profile`;
+
+    // Check authentication
+    await checkAuth();
+
+    // Get user data (this might not work without admin access, so we'll use a fallback approach)
+    userData = await getUserData();
+    
+    // If we can't get user data from auth, create a fallback
+    if (!userData && username) {
+      userData = {
+        id: `fallback_${username}`,
+        user_metadata: {
+          user_name: username,
+          full_name: username
+        }
+      };
+    }
+
+    // Load profile data
+    profileData = await loadProfileData();
+
+    // Render components
+    renderProfileHeader();
+    await loadStats();
+    await loadGames();
+    await loadVideos();
+    await loadArt();
+
+    // Increment page view
+    await incrementVipPageView();
   }
 
-  // Main execution block
-  if (!username) {
-    pageTitle.textContent = 'Error';
-    videosContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
-  } else {
-    pageTitle.textContent = `${username}'s Content`;
-
-    // Increment the VIP page views count each time this page loads for this user
-    incrementVipPageView();
-
-    loadVideos();
-  }
+  // Start the application
+  init().catch(console.error);
 </script>
 
 </body>
