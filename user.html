@@ -1981,7 +1981,21 @@
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
-      debug('Stats loaded:', { gamesCount, videosCount, artCount });
+      // Get page likes count
+      let likesCount = 0;
+      try {
+        const { count } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('username', username);
+        likesCount = count || 0;
+        debug('Page likes loaded:', likesCount);
+      } catch (likesError) {
+        debug('Error loading page likes (table may not exist):', likesError);
+        likesCount = 0;
+      }
+
+      debug('Stats loaded:', { gamesCount, videosCount, artCount, likesCount });
 
       document.getElementById('profileStats').innerHTML = `
         <div class="stat-item">
@@ -1997,7 +2011,7 @@
           <div class="stat-label">Art Pieces</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">0</div>
+          <div class="stat-value">${likesCount}</div>
           <div class="stat-label">Page Likes</div>
         </div>
       `;
@@ -2069,6 +2083,82 @@
     }
   }
 
+  // Increment page view
+  async function incrementPageView() {
+    if (!supabase || !username || !userData) return;
+
+    try {
+      debug('Incrementing page view for:', username);
+      
+      // Get the actual user_id from userData
+      let targetUserId = null;
+      
+      if (userData && userData.id && !userData.id.startsWith('video_user_') && !userData.id.startsWith('art_user_')) {
+        targetUserId = userData.id;
+      }
+
+      if (!targetUserId) {
+        debug('No valid user ID found for page view increment');
+        return;
+      }
+
+      const now = new Date().toISOString();
+
+      // Try to use the RPC function first
+      try {
+        const { error: rpcError } = await supabase.rpc('increment_vip_page_view', {
+          in_user_id: targetUserId,
+          in_username: username,
+          in_now: now
+        });
+
+        if (rpcError) {
+          debug('RPC function failed, trying direct insert:', rpcError);
+          
+          // Fallback to direct insert
+          const { error: insertError } = await supabase
+            .from('vip_page_views')
+            .insert([{
+              user_id: targetUserId,
+              username: username,
+              viewed_at: now
+            }]);
+
+          if (insertError) {
+            debug('Direct insert also failed:', insertError);
+          } else {
+            debug('Page view recorded via direct insert');
+          }
+        } else {
+          debug('Page view recorded via RPC function');
+        }
+      } catch (rpcException) {
+        debug('Exception with RPC, trying direct insert:', rpcException);
+        
+        // Fallback to direct insert
+        try {
+          const { error: insertError } = await supabase
+            .from('vip_page_views')
+            .insert([{
+              user_id: targetUserId,
+              username: username,
+              viewed_at: now
+            }]);
+
+          if (insertError) {
+            debug('Direct insert failed:', insertError);
+          } else {
+            debug('Page view recorded via direct insert');
+          }
+        } catch (insertException) {
+          debug('Both RPC and direct insert failed:', insertException);
+        }
+      }
+    } catch (error) {
+      debug('Error in page view increment:', error);
+    }
+  }
+
   // Initialize message form
   function initMessageForm() {
     const form = document.getElementById('quickMessageForm');
@@ -2129,6 +2219,9 @@
       
       // Initialize message form
       initMessageForm();
+      
+      // Increment page view
+      await incrementPageView();
       
       debug('Initialization complete!');
     } catch (error) {
