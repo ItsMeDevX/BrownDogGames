@@ -2017,35 +2017,47 @@
         return;
       }
 
+      console.log('Found profiles:', profiles.length);
+
       // Get user data and stats for each profile
       const usersWithData = await Promise.all(
         profiles.map(async (profile) => {
+          console.log('Processing profile for user_id:', profile.user_id);
+          
           // Find username by looking for content submissions with this user_id
           let username = null;
+          let avatar_url = null;
           
-          // Try games first
-          const { data: gameData } = await supabase
+          // Try games first (most reliable for user_id matching)
+          const { data: gameData, error: gameError } = await supabase
             .from('game_submissions')
             .select('github_user, avatar_url')
             .eq('user_id', profile.user_id)
             .limit(1);
 
-          if (gameData && gameData.length > 0) {
-            username = gameData[0].github_user;
+          if (gameError) {
+            console.error('Error fetching game data:', gameError);
           }
 
+          if (gameData && gameData.length > 0) {
+            username = gameData[0].github_user;
+            avatar_url = gameData[0].avatar_url;
+            console.log('Found username from games:', username);
+          }
+
+          // If no username found from games, this profile doesn't have discoverable content
           if (!username) {
-            // Try to get username from auth or other sources
-            // For now, we'll skip profiles without discoverable usernames
+            console.log('No username found for user_id:', profile.user_id);
             return null;
           }
 
-          const userData = await getUserData(username);
+          // Get stats for this username
           const stats = await getUserStats(username);
+          console.log('Stats for', username, ':', stats);
 
           return {
             username,
-            avatar_url: userData?.avatar_url,
+            avatar_url,
             profile,
             stats,
             created_at: profile.created_at
@@ -2053,11 +2065,13 @@
         })
       );
 
-      // Filter out null entries
+      // Filter out null entries (profiles without discoverable usernames)
       allUsers = usersWithData.filter(user => user !== null);
 
+      console.log('Users with discoverable data:', allUsers.length);
+
       if (allUsers.length === 0) {
-        userListEl.innerHTML = '<div class="no-users">No user profiles with discoverable usernames found.</div>';
+        userListEl.innerHTML = '<div class="no-users">No user profiles with content submissions found.</div>';
         featuredSection.style.display = 'none';
         return;
       }
@@ -2067,7 +2081,7 @@
 
     } catch (error) {
       console.error('Error loading user profiles:', error);
-      userListEl.innerHTML = '<div class="error">Error loading profiles</div>';
+      userListEl.innerHTML = '<div class="error">Error loading profiles: ' + error.message + '</div>';
       featuredSection.style.display = 'none';
     }
   }
