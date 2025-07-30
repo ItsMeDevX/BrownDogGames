@@ -1882,7 +1882,73 @@
       margin-top: 80px;
     }
 
-    @media (max-width: 768px) {
+    /* Artwork Like System Styles */
+    .artwork-like-section {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 79, 159, 0.3);
+    }
+
+    .artwork-like-btn {
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
+    }
+
+    .artwork-like-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
+    }
+
+    .artwork-like-btn:disabled {
+      background: linear-gradient(135deg, #666, #444);
+      cursor: not-allowed;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .artwork-like-btn.liked {
+      background: linear-gradient(135deg, #ff69b4, #ff1493);
+      animation: pulse 0.3s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .artwork-like-count {
+      color: #ff82ba;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .artwork-login-prompt {
+      font-size: 0.7rem;
+      color: #ddd;
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0.8;
+    }
       .main-content {
         padding: 25px;
       }
@@ -1951,6 +2017,8 @@
   let currentUser = null;
   let totalLikes = 0;
   let userHasLiked = false;
+  let artworkLikes = {};
+  let userLikedArtworks = new Set();
 
   // Get current user
   async function getCurrentUser() {
@@ -1981,6 +2049,120 @@
     return !!result.data;
   }
 
+  // Get artwork likes using vip_page_views table
+  async function getArtworkLikes(artworkIds) {
+    if (artworkIds.length === 0) return {};
+    
+    const artworkUsernames = artworkIds.map(id => username + '_artwork_' + id);
+    
+    const result = await supabase
+      .from('vip_page_views')
+      .select('username, view_count')
+      .in('username', artworkUsernames);
+
+    if (result.error) {
+      console.error('Error fetching artwork likes:', result.error);
+      return {};
+    }
+
+    const likes = {};
+    result.data.forEach(item => {
+      const artworkId = item.username.split('_artwork_')[1];
+      likes[artworkId] = item.view_count || 0;
+    });
+    
+    return likes;
+  }
+
+  // Get user's liked artworks using vip_page_views table
+  async function getUserLikedArtworks(userId, artworkIds) {
+    if (!userId || artworkIds.length === 0) return new Set();
+    
+    const artworkUsernames = artworkIds.map(id => username + '_artwork_' + id);
+    
+    const result = await supabase
+      .from('vip_page_views')
+      .select('username')
+      .eq('user_id', userId)
+      .in('username', artworkUsernames);
+
+    if (result.error) {
+      console.error('Error fetching user liked artworks:', result.error);
+      return new Set();
+    }
+
+    return new Set(result.data.map(item => item.username.split('_artwork_')[1]));
+  }
+
+  // Like/unlike artwork using vip_page_views table
+  async function toggleArtworkLike(artworkId) {
+    if (!currentUser) {
+      alert('Please log in to like artworks');
+      return;
+    }
+
+    const artworkUsername = username + '_artwork_' + artworkId;
+    const isLiked = userLikedArtworks.has(artworkId);
+    const now = new Date().toISOString();
+
+    if (isLiked) {
+      // Unlike - delete the record
+      const result = await supabase
+        .from('vip_page_views')
+        .delete()
+        .eq('user_id', currentUser.id)
+        .eq('username', artworkUsername);
+
+      if (result.error) {
+        console.error('Error unliking artwork:', result.error);
+        return;
+      }
+
+      userLikedArtworks.delete(artworkId);
+      artworkLikes[artworkId] = Math.max(0, (artworkLikes[artworkId] || 1) - 1);
+    } else {
+      // Like - insert new record
+      const result = await supabase
+        .from('vip_page_views')
+        .insert({
+          user_id: currentUser.id,
+          username: artworkUsername,
+          view_count: 1,
+          first_viewed_at: now,
+          last_viewed_at: now
+        });
+
+      if (result.error) {
+        console.error('Error liking artwork:', result.error);
+        return;
+      }
+
+      userLikedArtworks.add(artworkId);
+      artworkLikes[artworkId] = (artworkLikes[artworkId] || 0) + 1;
+    }
+
+    // Update UI
+    updateArtworkLikeButton(artworkId);
+  }
+
+  // Update artwork like button appearance
+  function updateArtworkLikeButton(artworkId) {
+    const likeBtn = document.querySelector('[data-artwork-id="' + artworkId + '"] .artwork-like-btn');
+    const likeCount = document.querySelector('[data-artwork-id="' + artworkId + '"] .artwork-like-count');
+    
+    if (!likeBtn || !likeCount) return;
+
+    const isLiked = userLikedArtworks.has(artworkId);
+    const count = artworkLikes[artworkId] || 0;
+
+    likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+    likeBtn.className = 'artwork-like-btn' + (isLiked ? ' liked' : '');
+    likeCount.innerHTML = '❤️ ' + count;
+
+    if (isLiked) {
+      likeBtn.classList.add('liked');
+    }
+  }
   // Like the user's page (exactly like show some love page)
   async function likeUserPage() {
     if (!currentUser) {
@@ -2159,6 +2341,13 @@
       });
     }
 
+    // Get artwork likes data
+    const artworkIds = data.map(art => art.id);
+    artworkLikes = await getArtworkLikes(artworkIds);
+    if (currentUser) {
+      userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
+    }
+
     artContainer.innerHTML = '';
     data.forEach((art, index) => {
       const card = document.createElement('article');
@@ -2199,6 +2388,42 @@
         imageContainer.appendChild(img);
         imageContainer.appendChild(fullscreenBtn);
         card.appendChild(imageContainer);
+      }
+
+      // Add artwork like section
+      const artworkLikeSection = document.createElement('div');
+      artworkLikeSection.className = 'artwork-like-section';
+
+      const artworkLikeBtn = document.createElement('button');
+      artworkLikeBtn.className = 'artwork-like-btn';
+      const isLiked = userLikedArtworks.has(art.id);
+      artworkLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+      if (isLiked) artworkLikeBtn.classList.add('liked');
+      
+      if (!currentUser) {
+        artworkLikeBtn.disabled = true;
+        artworkLikeBtn.innerHTML = '🤍 Like';
+      }
+
+      artworkLikeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleArtworkLike(art.id);
+      });
+
+      const artworkLikeCount = document.createElement('div');
+      artworkLikeCount.className = 'artwork-like-count';
+      artworkLikeCount.innerHTML = '❤️ ' + (artworkLikes[art.id] || 0);
+
+      artworkLikeSection.appendChild(artworkLikeBtn);
+      artworkLikeSection.appendChild(artworkLikeCount);
+      card.appendChild(artworkLikeSection);
+
+      // Add login prompt if user not logged in
+      if (!currentUser) {
+        const loginPrompt = document.createElement('p');
+        loginPrompt.className = 'artwork-login-prompt';
+        loginPrompt.textContent = 'Log in to like artworks';
+        card.appendChild(loginPrompt);
       }
 
       artContainer.appendChild(card);
