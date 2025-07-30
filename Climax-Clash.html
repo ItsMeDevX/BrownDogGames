@@ -2178,13 +2178,15 @@
     // Load VIP Extras
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
+      console.log('Loading VIP extras...');
       
       try {
         const { data: extras, error } = await supabase
           .from('vip_extras')
           .select('*')
-          .eq('is_active', true)
           .order('created_at', { ascending: false });
+
+        console.log('Supabase response:', { extras, error });
 
         if (error) {
           console.error('Error loading extras:', error);
@@ -2197,20 +2199,22 @@
           return;
         }
 
+        console.log('Found', extras.length, 'extras');
+
         container.innerHTML = extras.map(extra => `
           <div class="extra-card">
             <div class="extra-header">
-              <div class="extra-type">${extra.type.toUpperCase()}</div>
+              <div class="extra-type">${(extra.type || 'EXTRA').toUpperCase()}</div>
             </div>
-            <h4 class="extra-title">${extra.title}</h4>
-            <p class="extra-description">${extra.description}</p>
+            <h4 class="extra-title">${extra.title || 'Untitled'}</h4>
+            <p class="extra-description">${extra.description || 'No description'}</p>
             <div class="extra-footer">
               <span class="extra-creator">
-                Added by <span class="vip-creator">👑 ${extra.creator_name}</span>
+                Added by <span class="vip-creator">👑 ${extra.creator_name || 'Anonymous'}</span>
                 <br>
-                <small>${new Date(extra.created_at).toLocaleDateString()}</small>
+                <small>${extra.created_at ? new Date(extra.created_at).toLocaleDateString() : 'Unknown date'}</small>
               </span>
-              <a href="${extra.url}" target="_blank" class="extra-link">
+              <a href="${extra.url || '#'}" target="_blank" class="extra-link">
                 ${extra.type === 'download' ? '⬇ Download' : 
                   extra.type === 'link' ? '🔗 Open Link' : 
                   extra.type === 'code' ? '📋 Get Code' : 
@@ -2222,7 +2226,7 @@
 
       } catch (err) {
         console.error('Failed to load VIP extras:', err);
-        container.innerHTML = `<div class="no-extras">Failed to load VIP extras</div>`;
+        container.innerHTML = `<div class="no-extras">Failed to load VIP extras: ${err.message}</div>`;
       }
     }
 
