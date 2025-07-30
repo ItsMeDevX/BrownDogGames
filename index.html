@@ -683,15 +683,15 @@
         <h3>⭐ VIP Access</h3>
         <div class="price">£2/month</div>
         <ul class="feature-list">
-          <li><span class="icon">🎮</span> All exclusive VIP games</li>
+          <li><span class="icon">🎮</span> Access to all premium games</li>
           <li><span class="icon">✅</span> Verified member chats</li>
           <li><span class="icon">💰</span> Earn money from content</li>
           <li><span class="icon">🏅</span> VIP badges & status</li>
-          <li><span class="icon">🚀</span> Early access to new games</li>
-          <li><span class="icon">💬</span> Direct creator support</li>
+          <li><span class="icon">🚀</span> Priority support</li>
+          <li><span class="icon">💬</span> Direct community access</li>
         </ul>
         <div class="vip-only-features">
-          <strong>Premium Features:</strong> Upload games, access member forums, priority support
+          <strong>Premium Features:</strong> Enhanced experience, priority support, and community benefits
         </div>
       </div>
 
@@ -1199,9 +1199,6 @@
 
   function renderNav() {
     taskbarNav.innerHTML = '';
-    
-    const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-    const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
 
     // User Games (always available)
     const userGamesBtn = document.createElement('button');
@@ -1226,41 +1223,6 @@
     userProfilesBtn.textContent = 'User Profiles';
     userProfilesBtn.addEventListener('click', () => window.location.href = 'user-profiles.html');
     taskbarNav.appendChild(userProfilesBtn);
-
-    // VIP Only Features
-    if (hasVIPAccess) {
-      // Creator Dashboard (VIP only)
-      const creatorBtn = document.createElement('button');
-      creatorBtn.textContent = 'Creator Tools';
-      creatorBtn.addEventListener('click', () => window.location.href = 'creator-dashboard.html');
-      taskbarNav.appendChild(creatorBtn);
-
-      // VIP Games (VIP only)
-      const vipGamesBtn = document.createElement('button');
-      vipGamesBtn.textContent = 'VIP Games';
-      vipGamesBtn.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
-      vipGamesBtn.addEventListener('click', () => window.location.href = 'vip-games.html');
-      taskbarNav.appendChild(vipGamesBtn);
-    } else {
-      // Show disabled VIP buttons for free users
-      const creatorBtn = document.createElement('button');
-      creatorBtn.textContent = 'Creator Tools';
-      creatorBtn.className = 'vip-only';
-      creatorBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        alert('This feature requires VIP membership. Upgrade to access creator tools!');
-      });
-      taskbarNav.appendChild(creatorBtn);
-
-      const vipGamesBtn = document.createElement('button');
-      vipGamesBtn.textContent = 'VIP Games';
-      vipGamesBtn.className = 'vip-only';
-      vipGamesBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        alert('This feature requires VIP membership. Upgrade to access exclusive games!');
-      });
-      taskbarNav.appendChild(vipGamesBtn);
-    }
   }
 
   async function renderVip() {
@@ -1270,9 +1232,8 @@
     
     const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
     const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
-    const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
     
-    if (hasVIPAccess) {
+    if (hasVIPAccess || currentVIPStatus) {
       const vipStatus = document.createElement('div');
       vipStatus.className = 'vip-status';
       vipStatus.innerHTML = '⭐ VIP Member';
