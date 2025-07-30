@@ -917,6 +917,9 @@
       accessMessage.style.display = 'none';
     }
 
+    // Make initVIPPayPal available globally so upgrade button can use it
+    window.initVIPPayPal = initVIPPayPal;
+
     function initVIPPayPal() {
       if (typeof paypal === 'undefined') {
         showAccessMessage('PayPal not loaded. Please refresh the page.', true);
@@ -1249,14 +1252,42 @@
       upgradeBtn.textContent = 'Upgrade to VIP';
       upgradeBtn.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
       upgradeBtn.addEventListener('click', () => {
-        // Show access gate again
+        // Show access gate with VIP process
         const accessGate = document.getElementById('access-choice-gate');
         if (accessGate) {
-          // Reset the gate to show options
-          document.querySelector('.access-options').style.display = 'grid';
-          document.getElementById('vip-process').style.display = 'none';
-          document.getElementById('back-to-options').style.display = 'none';
-          accessGate.classList.add('show');
+          // If user is already logged in, skip to payment step
+          if (currentUser) {
+            // Set the gate user
+            gateUser = currentUser;
+            
+            // Hide options and show VIP process
+            document.querySelector('.access-options').style.display = 'none';
+            document.getElementById('vip-process').style.display = 'block';
+            document.getElementById('back-to-options').style.display = 'inline-block';
+            
+            // Mark login as completed and show payment step
+            const loginStep = document.getElementById('login-step');
+            const paymentStep = document.getElementById('payment-step');
+            const loginStatus = document.getElementById('login-status');
+            
+            loginStep.classList.add('completed');
+            document.getElementById('github-login-btn').style.display = 'none';
+            loginStatus.classList.add('show');
+            paymentStep.style.display = 'block';
+            
+            // Initialize PayPal
+            setTimeout(() => {
+              initVIPPayPal();
+            }, 500);
+            
+            accessGate.classList.add('show');
+          } else {
+            // User not logged in, show normal flow
+            document.querySelector('.access-options').style.display = 'grid';
+            document.getElementById('vip-process').style.display = 'none';
+            document.getElementById('back-to-options').style.display = 'none';
+            accessGate.classList.add('show');
+          }
         }
       });
       taskbarVip.appendChild(upgradeBtn);
