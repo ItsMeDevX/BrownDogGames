@@ -44,8 +44,8 @@
       text-align: center;
     }
 
-    /* VIP Access Gate */
-    #vip-access-gate {
+    /* Access Choice Gate */
+    #access-choice-gate {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.95);
@@ -62,110 +62,138 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    #vip-access-gate.show {
+    #access-choice-gate.show {
       display: flex;
     }
 
-    .vip-gate-content {
+    .choice-gate-content {
       background: #2a243b;
       padding: 40px;
       border-radius: 16px;
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
-      max-width: 600px;
+      max-width: 700px;
       width: 90%;
       margin: 20px auto;
-      max-height: none;
     }
 
-    #vip-access-gate h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #ff69b4;
+    .access-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin: 30px 0;
     }
 
-    #vip-access-gate p {
-      margin-bottom: 1.5rem;
-      font-size: 1rem;
-      color: #ffc0cb;
-      line-height: 1.4;
-    }
-
-    .age-verification-info {
+    .access-option {
       background: #3b3750;
-      padding: 20px;
+      padding: 30px 20px;
       border-radius: 12px;
-      margin: 20px 0;
-      border-left: 4px solid #ff69b4;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
     }
 
-    .age-verification-info h3 {
-      color: #ff69b4;
-      margin-bottom: 10px;
-      font-size: 1.1rem;
+    .access-option:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
 
-    .age-verification-info ul {
-      text-align: left;
-      color: #ffc0cb;
-      font-size: 0.9rem;
-      line-height: 1.5;
+    .access-option.vip {
+      border-color: #2ecc71;
+      background: linear-gradient(135deg, #2d4a3a, #3b4d42);
     }
 
-    .age-verification-info li {
-      margin-bottom: 8px;
+    .access-option.vip:hover {
+      border-color: #27ae60;
+      box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
     }
 
-    .vip-benefits-section {
-      background: #2d4a3a;
-      padding: 20px;
-      border-radius: 12px;
-      margin: 20px 0;
-      border-left: 4px solid #2ecc71;
+    .access-option.free {
+      border-color: #3498db;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
     }
 
-    .vip-benefits-section h3 {
-      color: #2ecc71;
+    .access-option.free:hover {
+      border-color: #2980b9;
+      box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+    }
+
+    .access-option h3 {
+      font-size: 1.5rem;
       margin-bottom: 15px;
-      font-size: 1.2rem;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
     }
 
-    .vip-benefits-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
-
-    .vip-benefit-item {
-      background: #3b4d42;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid #2ecc71;
-      text-align: left;
-    }
-
-    .vip-benefit-item h4 {
+    .access-option.vip h3 {
       color: #2ecc71;
-      font-size: 0.9rem;
-      margin-bottom: 8px;
+    }
+
+    .access-option.free h3 {
+      color: #3498db;
+    }
+
+    .access-option .price {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    .access-option.vip .price {
+      color: #2ecc71;
+    }
+
+    .access-option.free .price {
+      color: #3498db;
+    }
+
+    .feature-list {
+      list-style: none;
+      text-align: left;
+      margin: 20px 0;
+    }
+
+    .feature-list li {
+      padding: 8px 0;
+      color: #ffc0cb;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      font-size: 0.9rem;
     }
 
-    .vip-benefit-item p {
-      color: #a8d4b8;
-      font-size: 0.8rem;
-      line-height: 1.4;
-      margin: 0;
+    .feature-list .icon {
+      width: 20px;
+      text-align: center;
+    }
+
+    .vip-only-features {
+      background: #2d4a3a;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #2ecc71;
+    }
+
+    .free-features {
+      background: #2c3e50;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #3498db;
+    }
+
+    /* VIP Process Steps */
+    .vip-process {
+      display: none;
+      margin-top: 30px;
     }
 
     .vip-step {
       background: #3b3750;
-      padding: 15px;
+      padding: 20px;
       border-radius: 8px;
       margin: 15px 0;
       border: 2px solid #ff69b4;
@@ -178,7 +206,8 @@
 
     .vip-step h4 {
       color: #ff69b4;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
     }
 
     .vip-step.completed h4 {
@@ -208,51 +237,6 @@
       opacity: 0.6;
     }
 
-    #vip-paypal-container {
-      margin: 20px 0;
-    }
-
-    .vip-access-buttons {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-      margin-top: 20px;
-    }
-
-    .vip-access-buttons button {
-      background: #666;
-      color: #fff;
-      border: none;
-      padding: 12px 24px;
-      font-weight: bold;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .vip-access-buttons button:hover {
-      background: #888;
-    }
-
-    #vip-access-message {
-      margin: 15px 0;
-      padding: 12px;
-      border-radius: 8px;
-      display: none;
-      font-size: 0.9rem;
-    }
-
-    .vip-success {
-      background: #2ecc71;
-      color: white;
-    }
-
-    .vip-error {
-      background: #e74c3c;
-      color: white;
-    }
-
     .login-status {
       color: #2ecc71;
       font-size: 0.9rem;
@@ -262,6 +246,62 @@
 
     .login-status.show {
       display: block;
+    }
+
+    #vip-paypal-container {
+      margin: 20px 0;
+    }
+
+    .gate-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .gate-buttons button {
+      background: #666;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      min-width: 150px;
+    }
+
+    .gate-buttons button:hover {
+      background: #888;
+    }
+
+    .gate-buttons button.primary {
+      background: #ff69b4;
+      color: #1e1b2e;
+    }
+
+    .gate-buttons button.primary:hover {
+      background: #ff8edb;
+    }
+
+    #access-message {
+      margin: 15px 0;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+      font-size: 0.9rem;
+    }
+
+    .success-message {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .error-message {
+      background: #e74c3c;
+      color: white;
     }
 
     /* Age Gate */
@@ -278,8 +318,6 @@
       font-family: 'Rubik Mono One', sans-serif;
       text-align: center;
       padding: 20px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
     }
 
     #age-gate.show {
@@ -315,7 +353,7 @@
       background: #ff8edb;
     }
 
-    /* Taskbar with logo and everything */
+    /* Taskbar */
     #taskbar {
       max-width: 1200px;
       margin: 20px auto;
@@ -334,14 +372,13 @@
       gap: 20px;
     }
 
-    /* Logo in taskbar - Made Much Bigger */
     .taskbar-logo {
       display: flex;
       align-items: center;
     }
 
     .taskbar-logo img {
-      height: 90px; /* Increased from 60px to 90px */
+      height: 90px;
       width: auto;
       cursor: pointer;
       transition: transform 0.2s;
@@ -351,7 +388,6 @@
       transform: scale(1.1);
     }
 
-    /* Navigation */
     .taskbar-nav {
       display: flex;
       gap: 15px;
@@ -376,7 +412,27 @@
       background-color: #ff8edb;
     }
 
-    /* Search in taskbar */
+    .taskbar-nav button.vip-only {
+      background-color: #666;
+      color: #999;
+      cursor: not-allowed;
+      position: relative;
+    }
+
+    .taskbar-nav button.vip-only:hover::after {
+      content: "VIP Only";
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+    }
+
     .taskbar-search {
       display: flex;
       align-items: center;
@@ -409,7 +465,6 @@
       background-color: #ff8edb;
     }
 
-    /* VIP in taskbar */
     .taskbar-vip {
       display: flex;
       align-items: center;
@@ -440,7 +495,14 @@
       gap: 5px;
     }
 
-    /* Auth in taskbar */
+    .free-status {
+      color: #3498db;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     .taskbar-auth {
       display: flex;
       align-items: center;
@@ -545,7 +607,7 @@
       }
 
       .taskbar-logo img {
-        height: 75px; /* Increased from 50px to 75px */
+        height: 75px;
       }
 
       .taskbar-nav {
@@ -558,60 +620,20 @@
         width: 200px;
       }
 
-      .vip-access-buttons {
+      .access-options {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .gate-buttons {
         flex-direction: column;
         align-items: center;
       }
 
-      .vip-gate-content {
+      .choice-gate-content {
         padding: 20px 15px;
         margin: 10px;
         max-width: 95%;
-      }
-
-      #vip-access-gate h2 {
-        font-size: 1.4rem;
-        margin-bottom: 0.8rem;
-      }
-
-      #vip-access-gate p {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-      }
-
-      .age-verification-info {
-        padding: 15px;
-        margin: 15px 0;
-      }
-
-      .age-verification-info h3 {
-        font-size: 1rem;
-      }
-
-      .age-verification-info ul {
-        font-size: 0.8rem;
-      }
-
-      .vip-benefits-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-
-      .vip-access-buttons button {
-        width: 100%;
-        max-width: 280px;
-        padding: 15px 20px;
-        font-size: 1rem;
-        margin: 5px 0;
-      }
-
-      #vip-paypal-container {
-        margin: 15px 0;
-        width: 100%;
-      }
-
-      #vip-paypal-container > div {
-        width: 100% !important;
       }
     }
 
@@ -621,846 +643,871 @@
       }
 
       .taskbar-logo img {
-        height: 65px; /* Increased from 45px to 65px */
+        height: 65px;
       }
 
-      .vip-gate-content {
+      .choice-gate-content {
         padding: 15px 10px;
         margin: 5px;
       }
 
-      #vip-access-gate h2 {
+      .access-option {
+        padding: 20px 15px;
+      }
+
+      .access-option h3 {
         font-size: 1.2rem;
       }
 
-      #vip-access-gate p {
-        font-size: 0.85rem;
-      }
-
-      .age-verification-info {
-        padding: 12px;
-        margin: 10px 0;
-      }
-
-      .age-verification-info ul {
-        font-size: 0.75rem;
-      }
-
-      .vip-benefit-item h4 {
-        font-size: 0.8rem;
-      }
-
-      .vip-benefit-item p {
-        font-size: 0.75rem;
+      .access-option .price {
+        font-size: 1.5rem;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- VIP Access Gate -->
-  <div id="vip-access-gate">
-    <div class="vip-gate-content">
-      <h2>🔞 Adults Only - VIP Access Required</h2>
-      <p>To comply with UK age verification laws and access BrownDogGames, complete these steps:</p>
-      
-      <div class="age-verification-info">
-        <h3>Why PayPal Verification?</h3>
-        <ul>
-          <li>PayPal requires users to be 18+ to create accounts</li>
-          <li>This serves as robust age verification under UK law</li>
-          <li>Your payment information confirms adult status</li>
-          <li>Supports our adult content platform</li>
+<!-- Access Choice Gate -->
+<div id="access-choice-gate">
+  <div class="choice-gate-content">
+    <h2>🎮 Welcome to BrownDogGames</h2>
+    <p>Choose your access level - VIP membership or free browsing:</p>
+
+    <div class="access-options">
+      <!-- VIP Option -->
+      <div class="access-option vip" id="vip-option">
+        <h3>⭐ VIP Access</h3>
+        <div class="price">£2/month</div>
+        <ul class="feature-list">
+          <li><span class="icon">🎮</span> Access to all premium games</li>
+          <li><span class="icon">✅</span> Verified member chats</li>
+          <li><span class="icon">💰</span> Earn money from content</li>
+          <li><span class="icon">🏅</span> VIP badges & status</li>
+          <li><span class="icon">🚀</span> Priority support</li>
+          <li><span class="icon">💬</span> Direct community access</li>
         </ul>
-      </div>
-
-      <div class="vip-benefits-section">
-        <h3>⭐ What You Get With VIP Access - Just £2/month!</h3>
-        <p style="color: #2ecc71; font-size: 1.1rem; margin-bottom: 15px; font-weight: bold;">
-          🎉 Incredible value at only £2 per month for full VIP membership and age verification!
-        </p>
-        <div class="vip-benefits-grid">
-          <div class="vip-benefit-item">
-            <h4>🎮 VIP Games</h4>
-            <p>Access exclusive adult games only available to VIP members - worth much more than £2/month alone!</p>
-          </div>
-          <div class="vip-benefit-item">
-            <h4>✅ Verified Chats</h4>
-            <p>Join verified-only chat rooms and communities with other VIP members</p>
-          </div>
-          <div class="vip-benefit-item">
-            <h4>💰 Earn Money</h4>
-            <p>Get paid when posting content, games, and participating in the community - earn back your £2/month quickly!</p>
-          </div>
-          <div class="vip-benefit-item">
-            <h4>🏅 VIP Badges</h4>
-            <p>Show off your VIP status with exclusive badges and recognition throughout the site</p>
-          </div>
-        </div>
-        <div style="background: #2d4a3a; padding: 15px; border-radius: 8px; margin-top: 15px; border: 2px solid #2ecc71;">
-          <p style="color: #2ecc71; font-size: 0.9rem; margin: 0; text-align: center; font-weight: bold;">
-            💡 At just £2 per month, this is less than a coffee and gives you ongoing access to premium adult gaming content!
-          </p>
+        <div class="vip-only-features">
+          <strong>Premium Features:</strong> Enhanced experience, priority support, and community benefits
         </div>
       </div>
 
+      <!-- Free Option -->
+      <div class="access-option free" id="free-option">
+        <h3>🆓 Free Access</h3>
+        <div class="price">Free</div>
+        <ul class="feature-list">
+          <li><span class="icon">🎮</span> Browse all public games</li>
+          <li><span class="icon">👀</span> View user profiles</li>
+          <li><span class="icon">🖼️</span> See user art & videos</li>
+          <li><span class="icon">🔍</span> Search & discover content</li>
+          <li><span class="icon">📱</span> Mobile-friendly experience</li>
+        </ul>
+        <div class="free-features">
+          <strong>Free Features:</strong> Perfect for casual browsing and discovering new content
+        </div>
+      </div>
+    </div>
+
+    <!-- VIP Process (hidden initially) -->
+    <div class="vip-process" id="vip-process">
       <div class="vip-step" id="login-step">
         <h4>Step 1: Create Account</h4>
-        <p>Login with GitHub to create your account</p>
+        <p>Login with GitHub to create your VIP account</p>
         <button id="github-login-btn">🔑 Login with GitHub</button>
         <div class="login-status" id="login-status">✅ Successfully logged in!</div>
       </div>
 
       <div class="vip-step" id="payment-step" style="display: none;">
-        <h4>Step 2: Subscribe for Age Verification & VIP Access</h4>
+        <h4>Step 2: Subscribe for VIP Access</h4>
         <p>Subscribe to VIP for just £2/month - includes age verification and unlocks all premium features!</p>
-        <div style="background: #2d4a3a; padding: 10px; border-radius: 6px; margin: 10px 0; border: 1px solid #2ecc71;">
-          <p style="color: #2ecc71; font-size: 0.85rem; margin: 0; text-align: center;">
-            💸 Only £2 per month - That's less than a cup of coffee for ongoing VIP access!
-          </p>
-        </div>
         <div id="vip-paypal-container"></div>
       </div>
+    </div>
       
-      <div id="vip-access-message"></div>
+    <div id="access-message"></div>
       
-      <div class="vip-access-buttons">
-        <button id="vip-exit-btn">I'm Under 18 - Exit</button>
-      </div>
+    <div class="gate-buttons">
+      <button id="back-to-options" style="display: none;">← Back to Options</button>
+      <button id="exit-btn">I'm Under 18 - Exit</button>
     </div>
   </div>
+</div>
 
-  <!-- Age Gate -->
-  <div id="age-gate">
-    <h2>🔞 Adults Only</h2>
-    <p>You must be 18 or older to access BrownDogGames.</p>
-    <button id="yes-btn">Yes, I'm 18+</button>
-    <button id="no-btn">No, Take Me Back</button>
+<!-- Age Gate -->
+<div id="age-gate">
+  <h2>🔞 Adults Only</h2>
+  <p>You must be 18 or older to access BrownDogGames.</p>
+  <button id="yes-btn">Yes, I'm 18+</button>
+  <button id="no-btn">No, Take Me Back</button>
+</div>
+
+<!-- Taskbar -->
+<div id="taskbar">
+  <div class="taskbar-logo">
+    <img 
+      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+      alt="BrownDogGames Logo"
+      onclick="window.location.href='index.html'"
+    >
   </div>
 
-  <!-- Unified Taskbar with logo and everything -->
-  <div id="taskbar">
-    <div class="taskbar-logo">
-      <img 
-        src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-        alt="BrownDogGames Logo"
-        onclick="window.location.href='index.html'"
-      >
-    </div>
-
-    <div class="taskbar-nav" id="taskbar-nav">
-      <!-- Navigation buttons injected by JS -->
-    </div>
-    
-    <div class="taskbar-search">
-      <input type="text" id="game-search-input" placeholder="Search games..." />
-      <button id="search-button">Search</button>
-      <div id="suggestions-dropdown"></div>
-    </div>
-
-    <div class="taskbar-vip" id="taskbar-vip">
-      <!-- VIP button/status injected by JS -->
-    </div>
-    
-    <div class="taskbar-auth" id="taskbar-auth">
-      <!-- Auth content injected by JS -->
-    </div>
+  <div class="taskbar-nav" id="taskbar-nav">
+    <!-- Navigation buttons injected by JS -->
+  </div>
+  
+  <div class="taskbar-search">
+    <input type="text" id="game-search-input" placeholder="Search games..." />
+    <button id="search-button">Search</button>
+    <div id="suggestions-dropdown"></div>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
+  <div class="taskbar-vip" id="taskbar-vip">
+    <!-- VIP button/status injected by JS -->
+  </div>
+  
+  <div class="taskbar-auth" id="taskbar-auth">
+    <!-- Auth content injected by JS -->
+  </div>
+</div>
 
-  <script>
-    // Global variables for gate management
-    let gateUser = null;
-    let supabaseClient = null;
-    let authInitialized = false;
+<!-- Scripts -->
+<script src="https://www.paypal.com/sdk/js?client-id=AYgrpkjHd7Ycq_8vUWm9nb3qigcwALSTbyMZ5o6LjMqjC1YscFwQ_1kDEMr7tm2D1xysfHSEiyhZ1pZl&vault=true&intent=subscription"></script>
 
-    // VIP Access Gate
-    document.addEventListener('DOMContentLoaded', () => {
-      const vipAccessGate = document.getElementById('vip-access-gate');
-      const vipExitBtn = document.getElementById('vip-exit-btn');
-      const vipAccessMessage = document.getElementById('vip-access-message');
-      const githubLoginBtn = document.getElementById('github-login-btn');
-      const loginStep = document.getElementById('login-step');
-      const paymentStep = document.getElementById('payment-step');
-      const loginStatus = document.getElementById('login-status');
+<script>
+  // Global variables
+  let gateUser = null;
+  let supabaseClient = null;
+  let authInitialized = false;
 
-      // Function to check and enforce access
-      function checkAndEnforceAccess() {
-        const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-        const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+  // Access Management
+  document.addEventListener('DOMContentLoaded', () => {
+    const accessChoiceGate = document.getElementById('access-choice-gate');
+    const vipOption = document.getElementById('vip-option');
+    const freeOption = document.getElementById('free-option');
+    const vipProcess = document.getElementById('vip-process');
+    const backToOptionsBtn = document.getElementById('back-to-options');
+    const exitBtn = document.getElementById('exit-btn');
+    const accessMessage = document.getElementById('access-message');
+    const githubLoginBtn = document.getElementById('github-login-btn');
+    const loginStep = document.getElementById('login-step');
+    const paymentStep = document.getElementById('payment-step');
+    const loginStatus = document.getElementById('login-status');
 
-        // Show VIP gate if no VIP access OR no age verification
-        if (!hasVIPAccess || !isAgeVerified) {
-          vipAccessGate.classList.add('show');
-          return false;
-        }
+    // Check if user already has access
+    function checkExistingAccess() {
+      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+      const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
+      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+
+      // If user has any access and is age verified, don't show gate
+      if ((hasVIPAccess || hasFreeAccess) && isAgeVerified) {
         return true;
       }
+      return false;
+    }
 
-      // Check access immediately
-      checkAndEnforceAccess();
+    // Show access gate if no existing access
+    if (!checkExistingAccess()) {
+      accessChoiceGate.classList.add('show');
+    }
 
-      // Check access every 2 seconds to catch any manual localStorage manipulation
-      setInterval(checkAndEnforceAccess, 2000);
+    // VIP Option Click
+    vipOption.addEventListener('click', () => {
+      vipProcess.style.display = 'block';
+      backToOptionsBtn.style.display = 'inline-block';
+      document.querySelector('.access-options').style.display = 'none';
+    });
 
-      // GitHub login button in gate
-      githubLoginBtn.addEventListener('click', () => {
-        githubLoginBtn.disabled = true;
-        githubLoginBtn.textContent = 'Connecting...';
-        
-        // Wait for Supabase to be available
-        if (window.supabaseClient) {
-          window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
-        } else {
-          showVIPMessage('Loading login system...', true);
-          setTimeout(() => {
-            if (window.supabaseClient) {
-              window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
-            } else {
-              githubLoginBtn.disabled = false;
-              githubLoginBtn.textContent = '🔑 Login with GitHub';
-              showVIPMessage('Login system failed to load. Please refresh the page.', true);
-            }
-          }, 2000);
-        }
-      });
-
-      // Listen for login success
-      let loginHandlerAdded = false;
+    // Free Option Click
+    freeOption.addEventListener('click', () => {
+      // Grant free access
+      localStorage.setItem('freeAccess', 'true');
+      localStorage.setItem('ageVerified', 'true');
       
-      function addLoginHandler() {
-        if (!loginHandlerAdded) {
-          window.addEventListener('vip-user-logged-in', (event) => {
-            gateUser = event.detail;
-            showLoginSuccess();
-          });
-          loginHandlerAdded = true;
-        }
-      }
+      showAccessMessage('🎉 Free access granted! Welcome to BrownDogGames!');
       
-      addLoginHandler();
+      setTimeout(() => {
+        accessChoiceGate.classList.remove('show');
+        // Re-render taskbar to show free status
+        if (window.renderVip) {
+          window.renderVip();
+        }
+      }, 2000);
+    });
 
-      function showLoginSuccess() {
-        // Update login step to show success
-        loginStep.classList.add('completed');
-        githubLoginBtn.style.display = 'none';
-        loginStatus.classList.add('show');
-        
-        // Wait a moment, then show payment step
+    // Back to Options
+    backToOptionsBtn.addEventListener('click', () => {
+      vipProcess.style.display = 'none';
+      backToOptionsBtn.style.display = 'none';
+      document.querySelector('.access-options').style.display = 'grid';
+      hideAccessMessage();
+    });
+
+    // Exit Button
+    exitBtn.addEventListener('click', () => {
+      alert('Thank you for being honest. Redirecting to a family-friendly site.');
+      window.location.href = 'https://google.com';
+    });
+
+    // GitHub Login
+    githubLoginBtn.addEventListener('click', () => {
+      githubLoginBtn.disabled = true;
+      githubLoginBtn.textContent = 'Connecting...';
+      
+      if (window.supabaseClient) {
+        window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
+      } else {
+        showAccessMessage('Loading login system...', true);
         setTimeout(() => {
-          showPaymentStep();
-        }, 1500);
-      }
-
-      function showPaymentStep() {
-        paymentStep.style.display = 'block';
-        
-        // Small delay to ensure DOM is ready before PayPal init
-        setTimeout(() => {
-          initVIPPayPal();
-        }, 500);
-      }
-
-      vipExitBtn.addEventListener('click', () => {
-        alert('Thank you for being honest. Redirecting to a family-friendly site.');
-        window.location.href = 'https://google.com';
-      });
-
-      function showVIPMessage(text, isError = false) {
-        vipAccessMessage.textContent = text;
-        vipAccessMessage.className = isError ? 'vip-error' : 'vip-success';
-        vipAccessMessage.style.display = 'block';
-      }
-
-      function hideVIPMessage() {
-        vipAccessMessage.style.display = 'none';
-      }
-
-      function initVIPPayPal() {
-        if (typeof paypal === 'undefined') {
-          showVIPMessage('PayPal not loaded. Please refresh the page.', true);
-          return;
-        }
-
-        if (!gateUser) {
-          showVIPMessage('Please login first before subscribing.', true);
-          return;
-        }
-
-        // Clear any existing PayPal buttons first
-        const container = document.getElementById('vip-paypal-container');
-        if (container) {
-          container.innerHTML = '';
-        }
-
-        paypal.Buttons({
-          style: {
-            shape: 'rect',
-            color: 'gold',
-            layout: 'vertical',
-            label: 'subscribe',
-            height: 45
-          },
-
-          createSubscription(data, actions) {
-            hideVIPMessage();
-            return actions.subscription.create({
-              plan_id: 'P-20H197268N8973414NBIXE2I'
-            });
-          },
-
-          onApprove: async (data) => {
-            hideVIPMessage();
-            const subscriptionID = data.subscriptionID;
-
-            try {
-              // Save to database
-              if (window.supabaseClient && gateUser) {
-                const { error } = await window.supabaseClient
-                  .from('users')
-                  .upsert({
-                    id: gateUser.id,
-                    is_vip: true,
-                    vip_expires_at: null,
-                    paypal_transaction_id: subscriptionID
-                  });
-
-                if (error) {
-                  console.error('Failed to update database:', error);
-                }
-              }
-
-              // Save locally
-              localStorage.setItem('vipAccess', 'true');
-              localStorage.setItem('ageVerified', 'true');
-              localStorage.setItem('vipSubscriptionId', subscriptionID);
-              localStorage.setItem('vipActivatedAt', new Date().toISOString());
-
-              showVIPMessage('🎉 Age verified and VIP activated! Welcome to BrownDogGames!');
-
-              setTimeout(() => {
-                vipAccessGate.classList.remove('show');
-                // Force re-render of VIP status
-                if (window.renderVip) {
-                  window.renderVip();
-                }
-              }, 2000);
-
-            } catch (error) {
-              console.error('Error processing subscription:', error);
-              showVIPMessage('Subscription successful, but there was an error. Please refresh the page.', true);
-            }
-          },
-
-          onError: (err) => {
-            console.error('PayPal error:', err);
-            showVIPMessage('Payment error. Please try again or contact support.', true);
-          },
-
-          onCancel: (data) => {
-            showVIPMessage('Payment cancelled. You must subscribe to access the site.', true);
+          if (window.supabaseClient) {
+            window.supabaseClient.auth.signInWithOAuth({ provider: 'github' });
+          } else {
+            githubLoginBtn.disabled = false;
+            githubLoginBtn.textContent = '🔑 Login with GitHub';
+            showAccessMessage('Login system failed to load. Please refresh the page.', true);
           }
-
-        }).render('#vip-paypal-container');
+        }, 2000);
       }
     });
 
-    // Age Gate - Fixed with localStorage
-    document.addEventListener('DOMContentLoaded', () => {
-      const ageGate = document.getElementById('age-gate');
-      const yesBtn = document.getElementById('yes-btn');
-      const noBtn = document.getElementById('no-btn');
-
-      // Check if user has already verified their age
-      const isVerified = localStorage.getItem('ageVerified') === 'true';
-
-      // Only show age gate if not verified
-      if (!isVerified) {
-        ageGate.classList.add('show');
+    // Listen for login success
+    let loginHandlerAdded = false;
+    
+    function addLoginHandler() {
+      if (!loginHandlerAdded) {
+        window.addEventListener('vip-user-logged-in', (event) => {
+          gateUser = event.detail;
+          showLoginSuccess();
+        });
+        loginHandlerAdded = true;
       }
+    }
+    
+    addLoginHandler();
 
-      yesBtn.addEventListener('click', () => {
-        localStorage.setItem('ageVerified', 'true');
-        ageGate.classList.remove('show');
-      });
-
-      noBtn.addEventListener('click', () => {
-        alert('Sorry, you must be 18 or older to enter.');
-        window.location.href = 'https://google.com';
-      });
-    });
-
-    // Game Search
-    const gamePages = [
-      { title: 'Lapdance Dash', url: 'https://browndoggames.com/Lapdance-Dash.html' },
-      { title: 'Naked Craft', url: 'https://browndoggames.com/naked-craft.html' },
-      { title: 'Butt Blaster Arena', url: 'https://browndoggames.com/butt-blaster-arena.html' },
-      { title: 'Streaker Run', url: 'https://browndoggames.com/streaker-run.html' },
-      { title: 'Pet Penis Simulator', url: 'https://browndoggames.com/pet-penis-simulator.html' },
-      { title: 'Naked Fang', url: 'https://browndoggames.com/naked-fang.html' },
-      { title: 'Climax Clash', url: 'https://browndoggames.com/Climax-Clash.html' },
-      { title: 'Shafted', url: 'https://browndoggames.com/Shafted.html' },
-      { title: 'She Comes First', url: 'https://browndoggames.com/She-Comes-First.html' },
-      { title: 'LustLab', url: 'https://browndoggames.com/LustLab.html' }
-    ];
-
-    const searchInput = document.getElementById('game-search-input');
-    const suggestionsDropdown = document.getElementById('suggestions-dropdown');
-    let highlightedIndex = -1;
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
+    function showLoginSuccess() {
+      loginStep.classList.add('completed');
+      githubLoginBtn.style.display = 'none';
+      loginStatus.classList.add('show');
       
-      if (query) {
-        const firstLetterMatches = gamePages.filter(game => 
-          game.title.toLowerCase().startsWith(query[0])
-        );
+      setTimeout(() => {
+        showPaymentStep();
+      }, 1500);
+    }
 
-        const results = firstLetterMatches.concat(gamePages.filter(game => 
-          game.title.toLowerCase().includes(query) && !game.title.toLowerCase().startsWith(query[0])
-        ));
+    function showPaymentStep() {
+      paymentStep.style.display = 'block';
+      
+      setTimeout(() => {
+        initVIPPayPal();
+      }, 500);
+    }
 
-        if (results.length > 0) {
-          suggestionsDropdown.style.display = 'flex';
-          suggestionsDropdown.innerHTML = '';
+    function showAccessMessage(text, isError = false) {
+      accessMessage.textContent = text;
+      accessMessage.className = isError ? 'error-message' : 'success-message';
+      accessMessage.style.display = 'block';
+    }
 
-          results.forEach((game, index) => {
-            const suggestionItem = document.createElement('div');
-            suggestionItem.innerHTML = game.title;
-            suggestionItem.addEventListener('click', () => {
-              window.location.href = game.url;
-            });
-            suggestionsDropdown.appendChild(suggestionItem);
+    function hideAccessMessage() {
+      accessMessage.style.display = 'none';
+    }
+
+    // Make initVIPPayPal available globally so upgrade button can use it
+    window.initVIPPayPal = initVIPPayPal;
+
+    function initVIPPayPal() {
+      if (typeof paypal === 'undefined') {
+        showAccessMessage('PayPal not loaded. Please refresh the page.', true);
+        return;
+      }
+
+      if (!gateUser) {
+        showAccessMessage('Please login first before subscribing.', true);
+        return;
+      }
+
+      const container = document.getElementById('vip-paypal-container');
+      if (container) {
+        container.innerHTML = '';
+      }
+
+      paypal.Buttons({
+        style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe',
+          height: 45
+        },
+
+        createSubscription(data, actions) {
+          hideAccessMessage();
+          return actions.subscription.create({
+            plan_id: 'P-20H197268N8973414NBIXE2I'
           });
-        } else {
-          suggestionsDropdown.style.display = 'none';
-        }
-      } else {
-        suggestionsDropdown.style.display = 'none';
-      }
-    });
+        },
 
-    searchInput.addEventListener('keydown', (e) => {
-      const suggestions = suggestionsDropdown.querySelectorAll('div');
+        onApprove: async (data) => {
+          hideAccessMessage();
+          const subscriptionID = data.subscriptionID;
 
-      if (e.key === 'ArrowDown') {
-        if (highlightedIndex < suggestions.length - 1) {
-          highlightedIndex++;
-          updateHighlightedItem(suggestions);
-        }
-      } else if (e.key === 'ArrowUp') {
-        if (highlightedIndex > 0) {
-          highlightedIndex--;
-          updateHighlightedItem(suggestions);
-        }
-      } else if (e.key === 'Enter' && highlightedIndex >= 0) {
-        suggestions[highlightedIndex].click();
-      }
-    });
-
-    function updateHighlightedItem(suggestions) {
-      suggestions.forEach((item, index) => {
-        if (index === highlightedIndex) {
-          item.style.backgroundColor = '#ff69b4';
-          item.style.color = '#1e1b2e';
-        } else {
-          item.style.backgroundColor = 'transparent';
-          item.style.color = '#fefefe';
-        }
-      });
-    }
-
-    document.getElementById('search-button').addEventListener('click', () => {
-      const query = searchInput.value.trim().toLowerCase();
-      const result = gamePages.find(game => game.title.toLowerCase() === query);
-
-      if (result) {
-        window.location.href = result.url;
-      } else {
-        alert('No game found for your search.');
-      }
-    });
-
-    document.addEventListener('click', (event) => {
-      if (!searchInput.contains(event.target) && !suggestionsDropdown.contains(event.target)) {
-        suggestionsDropdown.style.display = 'none';
-        highlightedIndex = -1;
-      }
-    });
-  </script>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-    const supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
-
-    // Make supabase available globally for the gate
-    window.supabaseClient = supabase;
-
-    const taskbarNav = document.getElementById('taskbar-nav');
-    const taskbarAuth = document.getElementById('taskbar-auth');
-    const taskbarVip = document.getElementById('taskbar-vip');
-
-    // Global state tracking
-    let currentVIPStatus = false;
-    let currentUser = null;
-    let isInitialized = false;
-    let renderingInProgress = false;
-
-    function toggleDropdown(dropdown) {
-      dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
-    }
-
-    function showMessage(text, bgColor = '#e74c3c') {
-      // Message function removed since VIP modal is gone
-      console.log('Message:', text);
-    }
-
-    function hideMessage() {
-      // Message function removed since VIP modal is gone
-    }
-
-    async function checkVIPStatus(userId) {
-      // Check local VIP access first
-      const localVIP = localStorage.getItem('vipAccess') === 'true';
-      const localAgeVerified = localStorage.getItem('ageVerified') === 'true';
-      
-      // Must have both VIP access AND age verification
-      if (localVIP && localAgeVerified) return true;
-
-      if (!userId) return false;
-
-      try {
-        const { data: user, error } = await supabase
-          .from('users')
-          .select('is_vip')
-          .eq('id', userId)
-          .single();
-
-        if (error) {
-          console.error('Error fetching VIP status:', error);
-          return false;
-        }
-
-        // If user is VIP in database, grant local access too
-        if (user?.is_vip) {
-          localStorage.setItem('vipAccess', 'true');
-          localStorage.setItem('ageVerified', 'true');
-          
-          // Hide VIP gate if it's showing
-          const vipGate = document.getElementById('vip-access-gate');
-          if (vipGate) {
-            vipGate.classList.remove('show');
-          }
-        }
-
-        return user?.is_vip ?? false;
-      } catch (error) {
-        console.error('Exception in checkVIPStatus:', error);
-        return false;
-      }
-    }
-
-    function renderNav() {
-      taskbarNav.innerHTML = '';
-
-      const userGamesBtn = document.createElement('button');
-      userGamesBtn.textContent = 'User Games';
-      userGamesBtn.addEventListener('click', () => window.location.href = 'user-games.html');
-      taskbarNav.appendChild(userGamesBtn);
-
-      const userVideoBtn = document.createElement('button');
-      userVideoBtn.textContent = 'User Video';
-      userVideoBtn.addEventListener('click', () => window.location.href = 'user-videos.html');
-      taskbarNav.appendChild(userVideoBtn);
-
-      const userArtBtn = document.createElement('button');
-      userArtBtn.textContent = 'User Art';
-      userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
-      taskbarNav.appendChild(userArtBtn);
-
-      // Add the User Profiles button
-      const userProfilesBtn = document.createElement('button');
-      userProfilesBtn.textContent = 'User Profiles';
-      userProfilesBtn.addEventListener('click', () => window.location.href = 'user-profiles.html');
-      taskbarNav.appendChild(userProfilesBtn);
-    }
-
-    async function renderVip() {
-      if (renderingInProgress) return;
-      
-      taskbarVip.innerHTML = '';
-      
-      // Check if user has VIP access (local or database) AND age verification
-      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
-      const hasFullAccess = hasVIPAccess && isAgeVerified;
-      
-      if (hasFullAccess || currentVIPStatus) {
-        const vipStatus = document.createElement('div');
-        vipStatus.className = 'vip-status';
-        vipStatus.innerHTML = hasFullAccess ? '⭐ VIP Active (Age Verified)' : '⭐ VIP Active';
-        taskbarVip.appendChild(vipStatus);
-      } else {
-        // No VIP button since access gate handles everything
-        const vipNote = document.createElement('div');
-        vipNote.style.color = '#888';
-        vipNote.style.fontSize = '0.8rem';
-        vipNote.textContent = 'VIP Required';
-        taskbarVip.appendChild(vipNote);
-      }
-    }
-
-    async function renderAuth() {
-      if (renderingInProgress) return;
-      renderingInProgress = true;
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        taskbarAuth.innerHTML = '';
-        
-        const existingDropdown = document.getElementById('user-dropdown');
-        if (existingDropdown) {
-          existingDropdown.remove();
-        }
-
-        if (session?.user) {
-          currentUser = session.user;
-          currentVIPStatus = await checkVIPStatus(session.user.id);
-          
-          // Only notify VIP gate if it's currently showing and user isn't already set
-          const vipGate = document.getElementById('vip-access-gate');
-          if (vipGate && vipGate.classList.contains('show') && !gateUser) {
-            window.dispatchEvent(new CustomEvent('vip-user-logged-in', { detail: session.user }));
-          }
-          
-          const { user_metadata } = session.user;
-          const name = user_metadata.full_name || 'GitHub User';
-          const avatar = user_metadata.avatar_url || '';
-          const githubUsername = user_metadata.user_name;
-
-          const userInfo = document.createElement('div');
-          userInfo.id = 'user-info';
-
-          if (avatar) {
-            const img = document.createElement('img');
-            img.src = avatar;
-            img.alt = name;
-            userInfo.appendChild(img);
-          }
-
-          const nameDiv = document.createElement('div');
-          nameDiv.innerHTML = `
-            <strong style="
-              display: inline-flex;
-              align-items: center;
-              gap: 6px;
-              background-color: #ff69b4;
-              color: #1e1b2e;
-              padding: 6px 12px;
-              border-radius: 20px;
-              font-size: 0.85rem;
-              font-weight: bold;
-              box-shadow: 0 0 10px #ff8edb;
-              cursor: pointer;
-              transition: background-color 0.2s, box-shadow 0.2s;
-            " title="Click for options">
-              ${name}
-              <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
-            </strong>
-          `;
-          userInfo.appendChild(nameDiv);
-          taskbarAuth.appendChild(userInfo);
-
-          const dropdown = document.createElement('div');
-          dropdown.id = 'user-dropdown';
-
-          const myPageBtn = document.createElement('button');
-          myPageBtn.textContent = 'My Page';
-          myPageBtn.onclick = async () => {
-            dropdown.style.display = 'none';
-            try {
-              const { data: { user }, error: userError } = await supabase.auth.getUser();
-              if (userError || !user) {
-                console.error('Unable to get user:', userError);
-                return;
-              }
-
-              const { data, error } = await supabase
-                .from('game_submissions')
-                .select('id')
-                .eq('user_id', user.id)
-                .limit(1);
+          try {
+            // Save to database
+            if (window.supabaseClient && gateUser) {
+              const { error } = await window.supabaseClient
+                .from('users')
+                .upsert({
+                  id: gateUser.id,
+                  is_vip: true,
+                  vip_expires_at: null,
+                  paypal_transaction_id: subscriptionID
+                });
 
               if (error) {
-                console.error('Error checking submission:', error);
-                return;
+                console.error('Failed to update database:', error);
               }
-
-              if (data && data.length > 0 && githubUsername) {
-                window.location.href = `user.html?user=${githubUsername}`;
-              } else {
-                window.location.href = 'dashboard.html';
-              }
-            } catch (error) {
-              console.error('Error in myPageBtn click:', error);
             }
-          };
 
-          const dashboardBtn = document.createElement('button');
-          dashboardBtn.textContent = 'Dashboard';
-          dashboardBtn.onclick = () => {
-            dropdown.style.display = 'none';
-            window.location.href = 'dashboard.html';
-          };
+            // Grant VIP access
+            localStorage.setItem('vipAccess', 'true');
+            localStorage.setItem('ageVerified', 'true');
+            localStorage.setItem('vipSubscriptionId', subscriptionID);
+            localStorage.setItem('vipActivatedAt', new Date().toISOString());
 
-          const logoutBtn = document.createElement('button');
-          logoutBtn.textContent = 'Logout';
-          logoutBtn.onclick = async () => {
-            try {
-              await supabase.auth.signOut();
-              
-              // Clear all local storage data on logout
-              localStorage.removeItem('vipAccess');
-              localStorage.removeItem('ageVerified');
-              localStorage.removeItem('vipSubscriptionId');
-              localStorage.removeItem('vipActivatedAt');
-              
-              currentUser = null;
-              currentVIPStatus = false;
-              
-              // Show VIP gate again after logout
-              const vipAccessGate = document.getElementById('vip-access-gate');
-              if (vipAccessGate) {
-                vipAccessGate.classList.add('show');
+            showAccessMessage('🎉 VIP access activated! Welcome to BrownDogGames Premium!');
+
+            setTimeout(() => {
+              accessChoiceGate.classList.remove('show');
+              if (window.renderVip) {
+                window.renderVip();
               }
-              
-              window.location.reload();
-            } catch (error) {
-              console.error('Error during logout:', error);
-            }
-          };
+            }, 2000);
 
-          dropdown.appendChild(myPageBtn);
-          dropdown.appendChild(dashboardBtn);
-          dropdown.appendChild(logoutBtn);
-
-          taskbarAuth.appendChild(dropdown);
-          userInfo.addEventListener('click', () => toggleDropdown(dropdown));
-
-        } else {
-          currentUser = null;
-          currentVIPStatus = false;
-          
-          const loginBtn = document.createElement('button');
-          loginBtn.textContent = 'Login with GitHub';
-          loginBtn.addEventListener('click', () => {
-            supabase.auth.signInWithOAuth({ provider: 'github' });
-          });
-          taskbarAuth.appendChild(loginBtn);
-        }
-      } catch (error) {
-        console.error('Error in renderAuth:', error);
-      } finally {
-        renderingInProgress = false;
-      }
-    }
-
-    // Global click handler for dropdowns
-    let globalClickHandlerAdded = false;
-    
-    function addGlobalClickHandler() {
-      if (!globalClickHandlerAdded) {
-        document.addEventListener('click', (e) => {
-          const dropdown = document.getElementById('user-dropdown');
-          if (dropdown && !taskbarAuth.contains(e.target)) {
-            dropdown.style.display = 'none';
+          } catch (error) {
+            console.error('Error processing subscription:', error);
+            showAccessMessage('Subscription successful, but there was an error. Please refresh the page.', true);
           }
-        });
-        globalClickHandlerAdded = true;
-      }
-    }
+        },
 
-    // Initialize everything
-    async function initializeApp() {
-      if (isInitialized) return;
-      isInitialized = true;
+        onError: (err) => {
+          console.error('PayPal error:', err);
+          showAccessMessage('Payment error. Please try again or contact support.', true);
+        },
 
-      try {
-        // Check access status immediately on app init
-        const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-        const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
-        
-        // If no VIP access or age verification, show gate immediately
-        if (!hasVIPAccess || !isAgeVerified) {
-          const vipAccessGate = document.getElementById('vip-access-gate');
-          if (vipAccessGate) {
-            vipAccessGate.classList.add('show');
-          }
+        onCancel: (data) => {
+          showAccessMessage('Payment cancelled. You can still choose free access instead.', true);
         }
 
-        renderNav();
-        await renderAuth();
-        await renderVip();
-        addGlobalClickHandler();
-
-        let authChangeTimeout;
-        supabase.auth.onAuthStateChange(async (event, session) => {
-          clearTimeout(authChangeTimeout);
-          authChangeTimeout = setTimeout(async () => {
-            if (!renderingInProgress) {
-              await renderAuth();
-              await renderVip();
-              
-              // Check access after auth change
-              const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-              const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
-              
-              if (!hasVIPAccess || !isAgeVerified) {
-                const vipAccessGate = document.getElementById('vip-access-gate');
-                if (vipAccessGate) {
-                  vipAccessGate.classList.add('show');
-                }
-              }
-            }
-          }, 100);
-        });
-
-      } catch (error) {
-        console.error('Error initializing app:', error);
-      }
+      }).render('#vip-paypal-container');
     }
 
-    // Make render functions globally accessible for debugging
-    window.renderVip = renderVip;
-    window.renderAuth = renderAuth;
-    window.checkAndEnforceAccess = () => {
+    // Check access every 5 seconds to prevent manipulation
+    setInterval(() => {
       const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+      const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
       const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
-      const vipAccessGate = document.getElementById('vip-access-gate');
-      
-      if (!hasVIPAccess || !isAgeVerified) {
-        if (vipAccessGate) {
-          vipAccessGate.classList.add('show');
-        }
+
+      // If no access or age verification, show gate
+      if (!(hasVIPAccess || hasFreeAccess) || !isAgeVerified) {
+        accessChoiceGate.classList.add('show');
+      }
+    }, 5000);
+  });
+
+  // Age Gate
+  document.addEventListener('DOMContentLoaded', () => {
+    const ageGate = document.getElementById('age-gate');
+    const yesBtn = document.getElementById('yes-btn');
+    const noBtn = document.getElementById('no-btn');
+
+    // Check if user has already verified their age
+    const isVerified = localStorage.getItem('ageVerified') === 'true';
+
+    // Only show age gate if not verified
+    if (!isVerified) {
+      ageGate.classList.add('show');
+    }
+
+    yesBtn.addEventListener('click', () => {
+      localStorage.setItem('ageVerified', 'true');
+      ageGate.classList.remove('show');
+    });
+
+    noBtn.addEventListener('click', () => {
+      alert('Sorry, you must be 18 or older to enter.');
+      window.location.href = 'https://google.com';
+    });
+  });
+
+  // Game Search
+  const gamePages = [
+    { title: 'Lapdance Dash', url: 'https://browndoggames.com/Lapdance-Dash.html' },
+    { title: 'Naked Craft', url: 'https://browndoggames.com/naked-craft.html' },
+    { title: 'Butt Blaster Arena', url: 'https://browndoggames.com/butt-blaster-arena.html' },
+    { title: 'Streaker Run', url: 'https://browndoggames.com/streaker-run.html' },
+    { title: 'Pet Penis Simulator', url: 'https://browndoggames.com/pet-penis-simulator.html' },
+    { title: 'Naked Fang', url: 'https://browndoggames.com/naked-fang.html' },
+    { title: 'Climax Clash', url: 'https://browndoggames.com/Climax-Clash.html' },
+    { title: 'Shafted', url: 'https://browndoggames.com/Shafted.html' },
+    { title: 'She Comes First', url: 'https://browndoggames.com/She-Comes-First.html' },
+    { title: 'LustLab', url: 'https://browndoggames.com/LustLab.html' }
+  ];
+
+  const searchInput = document.getElementById('game-search-input');
+  const suggestionsDropdown = document.getElementById('suggestions-dropdown');
+  let highlightedIndex = -1;
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    
+    if (query) {
+      const firstLetterMatches = gamePages.filter(game => 
+        game.title.toLowerCase().startsWith(query[0])
+      );
+
+      const results = firstLetterMatches.concat(gamePages.filter(game => 
+        game.title.toLowerCase().includes(query) && !game.title.toLowerCase().startsWith(query[0])
+      ));
+
+      if (results.length > 0) {
+        suggestionsDropdown.style.display = 'flex';
+        suggestionsDropdown.innerHTML = '';
+
+        results.forEach((game, index) => {
+          const suggestionItem = document.createElement('div');
+          suggestionItem.innerHTML = game.title;
+          suggestionItem.addEventListener('click', () => {
+            window.location.href = game.url;
+          });
+          suggestionsDropdown.appendChild(suggestionItem);
+        });
+      } else {
+        suggestionsDropdown.style.display = 'none';
+      }
+    } else {
+      suggestionsDropdown.style.display = 'none';
+    }
+  });
+
+  searchInput.addEventListener('keydown', (e) => {
+    const suggestions = suggestionsDropdown.querySelectorAll('div');
+
+    if (e.key === 'ArrowDown') {
+      if (highlightedIndex < suggestions.length - 1) {
+        highlightedIndex++;
+        updateHighlightedItem(suggestions);
+      }
+    } else if (e.key === 'ArrowUp') {
+      if (highlightedIndex > 0) {
+        highlightedIndex--;
+        updateHighlightedItem(suggestions);
+      }
+    } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+      suggestions[highlightedIndex].click();
+    }
+  });
+
+  function updateHighlightedItem(suggestions) {
+    suggestions.forEach((item, index) => {
+      if (index === highlightedIndex) {
+        item.style.backgroundColor = '#ff69b4';
+        item.style.color = '#1e1b2e';
+      } else {
+        item.style.backgroundColor = 'transparent';
+        item.style.color = '#fefefe';
+      }
+    });
+  }
+
+  document.getElementById('search-button').addEventListener('click', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    const result = gamePages.find(game => game.title.toLowerCase() === query);
+
+    if (result) {
+      window.location.href = result.url;
+    } else {
+      alert('No game found for your search.');
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!searchInput.contains(event.target) && !suggestionsDropdown.contains(event.target)) {
+      suggestionsDropdown.style.display = 'none';
+      highlightedIndex = -1;
+    }
+  });
+</script>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  // Make supabase available globally
+  window.supabaseClient = supabase;
+
+  const taskbarNav = document.getElementById('taskbar-nav');
+  const taskbarAuth = document.getElementById('taskbar-auth');
+  const taskbarVip = document.getElementById('taskbar-vip');
+
+  // Global state tracking
+  let currentVIPStatus = false;
+  let currentUser = null;
+  let isInitialized = false;
+  let renderingInProgress = false;
+
+  function toggleDropdown(dropdown) {
+    dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
+  }
+
+  async function checkVIPStatus(userId) {
+    // Check local VIP access first
+    const localVIP = localStorage.getItem('vipAccess') === 'true';
+    
+    if (localVIP) return true;
+    if (!userId) return false;
+
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('is_vip')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching VIP status:', error);
         return false;
       }
-      return true;
-    };
 
-    // Start the app when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeApp);
-    } else {
-      initializeApp();
+      // If user is VIP in database, grant local access too
+      if (user?.is_vip) {
+        localStorage.setItem('vipAccess', 'true');
+        localStorage.setItem('ageVerified', 'true');
+      }
+
+      return user?.is_vip ?? false;
+    } catch (error) {
+      console.error('Exception in checkVIPStatus:', error);
+      return false;
     }
-  </script>
+  }
+
+  function renderNav() {
+    taskbarNav.innerHTML = '';
+
+    // User Games (always available)
+    const userGamesBtn = document.createElement('button');
+    userGamesBtn.textContent = 'User Games';
+    userGamesBtn.addEventListener('click', () => window.location.href = 'user-games.html');
+    taskbarNav.appendChild(userGamesBtn);
+
+    // User Video (always available)
+    const userVideoBtn = document.createElement('button');
+    userVideoBtn.textContent = 'User Video';
+    userVideoBtn.addEventListener('click', () => window.location.href = 'user-videos.html');
+    taskbarNav.appendChild(userVideoBtn);
+
+    // User Art (always available)
+    const userArtBtn = document.createElement('button');
+    userArtBtn.textContent = 'User Art';
+    userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
+    taskbarNav.appendChild(userArtBtn);
+
+    // User Profiles (always available)
+    const userProfilesBtn = document.createElement('button');
+    userProfilesBtn.textContent = 'User Profiles';
+    userProfilesBtn.addEventListener('click', () => window.location.href = 'user-profiles.html');
+    taskbarNav.appendChild(userProfilesBtn);
+  }
+
+  async function renderVip() {
+    if (renderingInProgress) return;
+    
+    taskbarVip.innerHTML = '';
+    
+    const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+    const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
+    
+    if (hasVIPAccess || currentVIPStatus) {
+      const vipStatus = document.createElement('div');
+      vipStatus.className = 'vip-status';
+      vipStatus.innerHTML = '⭐ VIP Member';
+      taskbarVip.appendChild(vipStatus);
+    } else if (hasFreeAccess) {
+      const freeStatus = document.createElement('div');
+      freeStatus.className = 'free-status';
+      freeStatus.innerHTML = '🆓 Free Member';
+      taskbarVip.appendChild(freeStatus);
+
+      // Add upgrade button for free users
+      const upgradeBtn = document.createElement('button');
+      upgradeBtn.textContent = 'Upgrade to VIP';
+      upgradeBtn.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
+      upgradeBtn.addEventListener('click', () => {
+        // Show access gate with VIP process
+        const accessGate = document.getElementById('access-choice-gate');
+        if (accessGate) {
+          // If user is already logged in, skip to payment step
+          if (currentUser) {
+            // Set the gate user
+            gateUser = currentUser;
+            
+            // Hide options and show VIP process
+            document.querySelector('.access-options').style.display = 'none';
+            document.getElementById('vip-process').style.display = 'block';
+            document.getElementById('back-to-options').style.display = 'inline-block';
+            
+            // Mark login as completed and show payment step
+            const loginStep = document.getElementById('login-step');
+            const paymentStep = document.getElementById('payment-step');
+            const loginStatus = document.getElementById('login-status');
+            
+            loginStep.classList.add('completed');
+            document.getElementById('github-login-btn').style.display = 'none';
+            loginStatus.classList.add('show');
+            paymentStep.style.display = 'block';
+            
+            // Initialize PayPal
+            setTimeout(() => {
+              initVIPPayPal();
+            }, 500);
+            
+            accessGate.classList.add('show');
+          } else {
+            // User not logged in, show normal flow
+            document.querySelector('.access-options').style.display = 'grid';
+            document.getElementById('vip-process').style.display = 'none';
+            document.getElementById('back-to-options').style.display = 'none';
+            accessGate.classList.add('show');
+          }
+        }
+      });
+      taskbarVip.appendChild(upgradeBtn);
+    } else {
+      const noAccessNote = document.createElement('div');
+      noAccessNote.style.color = '#888';
+      noAccessNote.style.fontSize = '0.8rem';
+      noAccessNote.textContent = 'Choose Access Level';
+      taskbarVip.appendChild(noAccessNote);
+    }
+  }
+
+  async function renderAuth() {
+    if (renderingInProgress) return;
+    renderingInProgress = true;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      taskbarAuth.innerHTML = '';
+      
+      const existingDropdown = document.getElementById('user-dropdown');
+      if (existingDropdown) {
+        existingDropdown.remove();
+      }
+
+      if (session?.user) {
+        currentUser = session.user;
+        currentVIPStatus = await checkVIPStatus(session.user.id);
+        
+        // Notify VIP gate if it's showing and user isn't already set
+        const accessGate = document.getElementById('access-choice-gate');
+        if (accessGate && accessGate.classList.contains('show') && !gateUser) {
+          window.dispatchEvent(new CustomEvent('vip-user-logged-in', { detail: session.user }));
+        }
+        
+        const { user_metadata } = session.user;
+        const name = user_metadata.full_name || 'GitHub User';
+        const avatar = user_metadata.avatar_url || '';
+        const githubUsername = user_metadata.user_name;
+
+        const userInfo = document.createElement('div');
+        userInfo.id = 'user-info';
+
+        if (avatar) {
+          const img = document.createElement('img');
+          img.src = avatar;
+          img.alt = name;
+          userInfo.appendChild(img);
+        }
+
+        const nameDiv = document.createElement('div');
+        nameDiv.innerHTML = `
+          <strong style="
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #ff69b4;
+            color: #1e1b2e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px #ff8edb;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+          " title="Click for options">
+            ${name}
+            <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
+          </strong>
+        `;
+        userInfo.appendChild(nameDiv);
+        taskbarAuth.appendChild(userInfo);
+
+        const dropdown = document.createElement('div');
+        dropdown.id = 'user-dropdown';
+
+        const myPageBtn = document.createElement('button');
+        myPageBtn.textContent = 'My Page';
+        myPageBtn.onclick = async () => {
+          dropdown.style.display = 'none';
+          try {
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) {
+              console.error('Unable to get user:', userError);
+              return;
+            }
+
+            const { data, error } = await supabase
+              .from('game_submissions')
+              .select('id')
+              .eq('user_id', user.id)
+              .limit(1);
+
+            if (error) {
+              console.error('Error checking submission:', error);
+              return;
+            }
+
+            if (data && data.length > 0 && githubUsername) {
+              window.location.href = `user.html?user=${githubUsername}`;
+            } else {
+              window.location.href = 'dashboard.html';
+            }
+          } catch (error) {
+            console.error('Error in myPageBtn click:', error);
+          }
+        };
+
+        const dashboardBtn = document.createElement('button');
+        dashboardBtn.textContent = 'Dashboard';
+        dashboardBtn.onclick = () => {
+          dropdown.style.display = 'none';
+          window.location.href = 'dashboard.html';
+        };
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = async () => {
+          try {
+            await supabase.auth.signOut();
+            
+            // Clear all access data on logout
+            localStorage.removeItem('vipAccess');
+            localStorage.removeItem('freeAccess');
+            localStorage.removeItem('ageVerified');
+            localStorage.removeItem('vipSubscriptionId');
+            localStorage.removeItem('vipActivatedAt');
+            
+            currentUser = null;
+            currentVIPStatus = false;
+            
+            // Show access gate again after logout
+            const accessChoiceGate = document.getElementById('access-choice-gate');
+            if (accessChoiceGate) {
+              accessChoiceGate.classList.add('show');
+            }
+            
+            window.location.reload();
+          } catch (error) {
+            console.error('Error during logout:', error);
+          }
+        };
+
+        dropdown.appendChild(myPageBtn);
+        dropdown.appendChild(dashboardBtn);
+        dropdown.appendChild(logoutBtn);
+
+        taskbarAuth.appendChild(dropdown);
+        userInfo.addEventListener('click', () => toggleDropdown(dropdown));
+
+      } else {
+        currentUser = null;
+        currentVIPStatus = false;
+        
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login with GitHub';
+        loginBtn.addEventListener('click', () => {
+          supabase.auth.signInWithOAuth({ provider: 'github' });
+        });
+        taskbarAuth.appendChild(loginBtn);
+      }
+    } catch (error) {
+      console.error('Error in renderAuth:', error);
+    } finally {
+      renderingInProgress = false;
+    }
+  }
+
+  // Global click handler for dropdowns
+  let globalClickHandlerAdded = false;
+  
+  function addGlobalClickHandler() {
+    if (!globalClickHandlerAdded) {
+      document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('user-dropdown');
+        if (dropdown && !taskbarAuth.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+      globalClickHandlerAdded = true;
+    }
+  }
+
+  // Initialize everything
+  async function initializeApp() {
+    if (isInitialized) return;
+    isInitialized = true;
+
+    try {
+      renderNav();
+      await renderAuth();
+      await renderVip();
+      addGlobalClickHandler();
+
+      let authChangeTimeout;
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        clearTimeout(authChangeTimeout);
+        authChangeTimeout = setTimeout(async () => {
+          if (!renderingInProgress) {
+            await renderAuth();
+            await renderVip();
+            renderNav(); // Re-render nav to update VIP features
+          }
+        }, 100);
+      });
+
+    } catch (error) {
+      console.error('Error initializing app:', error);
+    }
+  }
+
+  // Make render functions globally accessible
+  window.renderVip = renderVip;
+  window.renderAuth = renderAuth;
+  window.renderNav = renderNav;
+
+  // Start the app when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+  } else {
+    initializeApp();
+  }
+</script>
 
 </body>
 </html>
