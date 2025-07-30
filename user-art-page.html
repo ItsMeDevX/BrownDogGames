@@ -1662,97 +1662,9 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
-      margin-top: auto;
+      margin-top: auto; /* push to bottom */
     }
     .play-link:hover { background-color: #ff82ba; }
-
-    .main-content {
-      max-width: 600px;
-      width: 100%;
-      background: linear-gradient(145deg, #3a2147, #241834);
-      border: 2px solid #ff4f9f;
-      border-radius: 16px;
-      padding: 40px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 40px;
-    }
-
-    .main-content::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .main-content:hover::before {
-      left: 100%;
-    }
-
-    #like-status {
-      margin: 20px 0 30px;
-      font-size: 1.2rem;
-      color: #e0e0e0;
-      line-height: 1.4;
-      position: relative;
-      z-index: 2;
-      opacity: 0.9;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    #main-like-btn {
-      display: inline-block;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: bold;
-      font-family: 'Rubik Mono One', sans-serif;
-      border-radius: 25px;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-      position: relative;
-      z-index: 2;
-      overflow: hidden;
-      margin-top: auto;
-    }
-
-    #main-like-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s ease;
-    }
-
-    #main-like-btn:hover::before {
-      left: 100%;
-    }
-
-    #main-like-btn:disabled {
-      background: linear-gradient(135deg, #666, #444);
-      cursor: not-allowed;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    #main-like-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-    }
 
     #chat-container {
       max-width: 800px;
@@ -1881,83 +1793,6 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       margin-top: 80px;
     }
-
-    /* Artwork Like System Styles */
-    .artwork-like-section {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255, 79, 159, 0.3);
-    }
-
-    .artwork-like-btn {
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
-      border: none;
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Rubik Mono One', sans-serif;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
-    }
-
-    .artwork-like-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
-    }
-
-    .artwork-like-btn:disabled {
-      background: linear-gradient(135deg, #666, #444);
-      cursor: not-allowed;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .artwork-like-btn.liked {
-      background: linear-gradient(135deg, #ff69b4, #ff1493);
-      animation: pulse 0.3s ease-in-out;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-
-    .artwork-like-count {
-      color: #ff82ba;
-      font-size: 0.8rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .artwork-login-prompt {
-      font-size: 0.7rem;
-      color: #ddd;
-      text-align: center;
-      margin-top: 8px;
-      opacity: 0.8;
-    }
-      .main-content {
-        padding: 25px;
-      }
-      
-      #main-like-btn {
-        padding: 10px 16px;
-        font-size: 0.8rem;
-      }
-    }
   </style>
 </head>
 <body>
@@ -1965,20 +1800,13 @@
   <a href="user-art.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
-  <section class="content-section" id="like-section">
-    <div class="main-content">
-      <p id="like-status">Loading...</p>
-      <button id="main-like-btn">Like</button>
-    </div>
-  </section>
-
   <section class="content-section" id="art-section">
     <h2>Art</h2>
     <div id="art" class="content-container">Loading art...</div>
   </section>
 
   <section id="chat-container">
-    <h2>Chat with <span id="chat-username">Loading...</span></h2>
+    <h2>Chat with <span id="chat-username">{username}</span></h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
@@ -2014,258 +1842,6 @@
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
 
-  let currentUser = null;
-  let totalLikes = 0;
-  let userHasLiked = false;
-  let artworkLikes = {};
-  let userLikedArtworks = new Set();
-
-  // Get current user
-  async function getCurrentUser() {
-    const result = await supabase.auth.getUser();
-    if (result.error || !result.data.user) return null;
-    return result.data.user;
-  }
-
-  // Get total likes for the user - includes main page AND all artwork likes
-  async function getTotalLikes() {
-    if (!username) return 0;
-    
-    // Get main page likes
-    const mainPageResult = await supabase
-      .from('vip_page_views')
-      .select('*', { count: 'exact', head: true })
-      .eq('username', username);
-    
-    // Get all artwork likes (any username that starts with username_artwork_)
-    const artworkResult = await supabase
-      .from('vip_page_views')
-      .select('*', { count: 'exact', head: true })
-      .like('username', username + '_artwork_%');
-    
-    const mainPageCount = mainPageResult.count || 0;
-    const artworkCount = artworkResult.count || 0;
-    
-    return mainPageCount + artworkCount;
-  }
-
-  // Check if current user has liked this user's page (exactly like show some love page)
-  async function hasUserLiked(userId) {
-    if (!userId || !username) return false;
-    const result = await supabase
-      .from('vip_page_views')
-      .select('user_id')
-      .eq('user_id', userId)
-      .eq('username', username)
-      .maybeSingle();
-    return !!result.data;
-  }
-
-  // Get artwork likes using vip_page_views table
-  async function getArtworkLikes(artworkIds) {
-    if (artworkIds.length === 0) return {};
-    
-    const artworkUsernames = artworkIds.map(id => username + '_artwork_' + id);
-    
-    const result = await supabase
-      .from('vip_page_views')
-      .select('username, view_count')
-      .in('username', artworkUsernames);
-
-    if (result.error) {
-      console.error('Error fetching artwork likes:', result.error);
-      return {};
-    }
-
-    const likes = {};
-    result.data.forEach(item => {
-      const artworkId = item.username.split('_artwork_')[1];
-      likes[artworkId] = item.view_count || 0;
-    });
-    
-    return likes;
-  }
-
-  // Get user's liked artworks using vip_page_views table
-  async function getUserLikedArtworks(userId, artworkIds) {
-    if (!userId || artworkIds.length === 0) return new Set();
-    
-    const artworkUsernames = artworkIds.map(id => username + '_artwork_' + id);
-    
-    const result = await supabase
-      .from('vip_page_views')
-      .select('username')
-      .eq('user_id', userId)
-      .in('username', artworkUsernames);
-
-    if (result.error) {
-      console.error('Error fetching user liked artworks:', result.error);
-      return new Set();
-    }
-
-    return new Set(result.data.map(item => item.username.split('_artwork_')[1]));
-  }
-
-  // Like/unlike artwork using vip_page_views table
-  async function toggleArtworkLike(artworkId) {
-    if (!currentUser) {
-      alert('Please log in to like artworks');
-      return;
-    }
-
-    const artworkUsername = username + '_artwork_' + artworkId;
-    const isLiked = userLikedArtworks.has(artworkId);
-    const now = new Date().toISOString();
-
-    if (isLiked) {
-      // Unlike - delete the record
-      const result = await supabase
-        .from('vip_page_views')
-        .delete()
-        .eq('user_id', currentUser.id)
-        .eq('username', artworkUsername);
-
-      if (result.error) {
-        console.error('Error unliking artwork:', result.error);
-        return;
-      }
-
-      userLikedArtworks.delete(artworkId);
-      artworkLikes[artworkId] = Math.max(0, (artworkLikes[artworkId] || 1) - 1);
-      
-      // Update total likes count since we removed a like
-      totalLikes = await getTotalLikes();
-      updateLikeStatus();
-    } else {
-      // Like - insert new record
-      const result = await supabase
-        .from('vip_page_views')
-        .insert({
-          user_id: currentUser.id,
-          username: artworkUsername,
-          view_count: 1,
-          first_viewed_at: now,
-          last_viewed_at: now
-        });
-
-      if (result.error) {
-        console.error('Error liking artwork:', result.error);
-        return;
-      }
-
-      userLikedArtworks.add(artworkId);
-      artworkLikes[artworkId] = (artworkLikes[artworkId] || 0) + 1;
-      
-      // Update total likes count since we added a new like
-      totalLikes = await getTotalLikes();
-      updateLikeStatus();
-    }
-
-    // Update UI
-    updateArtworkLikeButton(artworkId);
-  }
-
-  // Update artwork like button appearance
-  function updateArtworkLikeButton(artworkId) {
-    const likeBtn = document.querySelector('[data-artwork-id="' + artworkId + '"] .artwork-like-btn');
-    const likeCount = document.querySelector('[data-artwork-id="' + artworkId + '"] .artwork-like-count');
-    
-    if (!likeBtn || !likeCount) return;
-
-    const isLiked = userLikedArtworks.has(artworkId);
-    const count = artworkLikes[artworkId] || 0;
-
-    likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
-    likeBtn.className = 'artwork-like-btn' + (isLiked ? ' liked' : '');
-    likeCount.innerHTML = '❤️ ' + count;
-
-    if (isLiked) {
-      likeBtn.classList.add('liked');
-    }
-  }
-  // Like the user's page (exactly like show some love page)
-  async function likeUserPage() {
-    if (!currentUser) {
-      alert('Please log in to like this page');
-      return false;
-    }
-
-    if (userHasLiked) {
-      return false; // Already liked
-    }
-
-    const now = new Date().toISOString();
-
-    // Check if the user has already liked the page
-    const { data: existingLike, error: likeError } = await supabase
-      .from('vip_page_views')
-      .select('view_count, first_viewed_at')
-      .eq('user_id', currentUser.id)
-      .eq('username', username)
-      .single();
-
-    if (existingLike) {
-      // If the user already liked, update the view count and last viewed timestamp
-      const { error: updateError } = await supabase
-        .from('vip_page_views')
-        .update({
-          view_count: existingLike.view_count + 1,
-          last_viewed_at: now,
-        })
-        .eq('user_id', currentUser.id)
-        .eq('username', username);
-
-      if (updateError) {
-        console.error('Error updating like count:', updateError);
-        return false;
-      }
-
-      return true;
-    }
-
-    // If the user hasn't liked, insert a new row with the current timestamp
-    const { error: insertError } = await supabase
-      .from('vip_page_views')
-      .insert([{
-        user_id: currentUser.id,
-        username: username,
-        view_count: 1,
-        first_viewed_at: now,
-        last_viewed_at: now,
-      }]);
-
-    if (insertError) {
-      console.error('Insert error:', insertError);
-      return false;
-    }
-
-    return true;
-  }
-
-  // Update like status display
-  function updateLikeStatus() {
-    const status = document.getElementById('like-status');
-    const likeBtn = document.getElementById('main-like-btn');
-    
-    if (!status || !likeBtn) return;
-
-    if (!currentUser) {
-      status.textContent = '❌ Please log in to like this page.';
-      likeBtn.style.display = 'none';
-      return;
-    }
-
-    if (userHasLiked) {
-      status.textContent = '❤️ You already liked ' + username + "'s page. Total likes: " + totalLikes;
-      likeBtn.disabled = true;
-    } else {
-      status.textContent = '👍 Total likes for ' + username + ': ' + totalLikes;
-      likeBtn.disabled = false;
-    }
-
-    likeBtn.style.display = 'inline-block';
-  }
-
   // Fullscreen functionality
   window.openFullscreen = function(imageSrc, altText, title) {
     const fullscreenView = document.getElementById('fullscreen-view');
@@ -2277,15 +1853,19 @@
     fullscreenTitle.textContent = title || 'Artwork';
     fullscreenView.classList.add('active');
     
+    // Prevent body scrolling
     document.body.style.overflow = 'hidden';
   }
 
   window.closeFullscreen = function() {
     const fullscreenView = document.getElementById('fullscreen-view');
     fullscreenView.classList.remove('active');
+    
+    // Restore body scrolling
     document.body.style.overflow = 'auto';
   }
 
+  // Close fullscreen on escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       closeFullscreen();
@@ -2317,7 +1897,7 @@
     if (error) {
       console.error('Error incrementing VIP page views:', error);
     } else {
-      console.log('Incremented VIP page views for ' + username);
+      console.log(`Incremented VIP page views for ${username}`);
     }
   }
 
@@ -2329,50 +1909,19 @@
       .order('created_at', { ascending: false });
 
     if (error) {
-      artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + error.message + '</div>';
+      artContainer.innerHTML = `<div class="no-content">❌ Error loading art: ${error.message}</div>`;
       return;
     }
 
     if (!data.length) {
-      artContainer.innerHTML = '<p class="no-content">No art submitted by ' + username + ' yet.</p>';
+      artContainer.innerHTML = `<p class="no-content">No art submitted by ${username} yet.</p>`;
       return;
-    }
-
-    // Get current user and load like status
-    currentUser = await getCurrentUser();
-    totalLikes = await getTotalLikes();
-    if (currentUser) {
-      userHasLiked = await hasUserLiked(currentUser.id);
-    }
-
-    // Update the like status display
-    updateLikeStatus();
-
-    // Add event listener for main like button
-    const mainLikeBtn = document.getElementById('main-like-btn');
-    if (mainLikeBtn) {
-      mainLikeBtn.addEventListener('click', async () => {
-        const success = await likeUserPage();
-        if (success) {
-          userHasLiked = true;
-          totalLikes = await getTotalLikes();
-          updateLikeStatus();
-        }
-      });
-    }
-
-    // Get artwork likes data
-    const artworkIds = data.map(art => art.id);
-    artworkLikes = await getArtworkLikes(artworkIds);
-    if (currentUser) {
-      userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
     }
 
     artContainer.innerHTML = '';
     data.forEach((art, index) => {
       const card = document.createElement('article');
       card.className = 'card';
-      card.setAttribute('data-artwork-id', art.id);
 
       const title = document.createElement('h3');
       title.className = 'title';
@@ -2394,7 +1943,7 @@
         img.className = 'thumbnail';
         const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
         img.src = thumbUrl || art.image_url;
-        img.alt = 'Artwork: ' + art.title;
+        img.alt = `Artwork: ${art.title}`;
 
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'fullscreen-btn';
@@ -2410,42 +1959,6 @@
         card.appendChild(imageContainer);
       }
 
-      // Add artwork like section
-      const artworkLikeSection = document.createElement('div');
-      artworkLikeSection.className = 'artwork-like-section';
-
-      const artworkLikeBtn = document.createElement('button');
-      artworkLikeBtn.className = 'artwork-like-btn';
-      const isLiked = userLikedArtworks.has(art.id);
-      artworkLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
-      if (isLiked) artworkLikeBtn.classList.add('liked');
-      
-      if (!currentUser) {
-        artworkLikeBtn.disabled = true;
-        artworkLikeBtn.innerHTML = '🤍 Like';
-      }
-
-      artworkLikeBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleArtworkLike(art.id);
-      });
-
-      const artworkLikeCount = document.createElement('div');
-      artworkLikeCount.className = 'artwork-like-count';
-      artworkLikeCount.innerHTML = '❤️ ' + (artworkLikes[art.id] || 0);
-
-      artworkLikeSection.appendChild(artworkLikeBtn);
-      artworkLikeSection.appendChild(artworkLikeCount);
-      card.appendChild(artworkLikeSection);
-
-      // Add login prompt if user not logged in
-      if (!currentUser) {
-        const loginPrompt = document.createElement('p');
-        loginPrompt.className = 'artwork-login-prompt';
-        loginPrompt.textContent = 'Log in to like artworks';
-        card.appendChild(loginPrompt);
-      }
-
       artContainer.appendChild(card);
     });
   }
@@ -2458,7 +1971,7 @@
       .order('created_at', { ascending: true });
 
     if (error) {
-      messagesDiv.innerHTML = '<p style="color:red;">Error loading messages: ' + error.message + '</p>';
+      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
       console.error(error);
       return;
     }
@@ -2468,24 +1981,24 @@
       return;
     }
 
-    messagesDiv.innerHTML = data.map(m => 
-      '<div><strong>' + (m.github_username || 'Guest') + ':</strong> ' + escapeHtml(m.content) + '</div>'
-    ).join('');
+    messagesDiv.innerHTML = data.map(m => `
+      <div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>
+    `).join('');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  form.addEventListener('submit', async function(e) {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const message = msgInput.value.trim();
     if (!message) return;
 
-    const result = await supabase
+    const { error } = await supabase
       .from('messages')
       .insert([{ github_username: username, content: message }]);
 
-    if (result.error) {
-      alert('Failed to send message: ' + result.error.message);
+    if (error) {
+      alert('Failed to send message: ' + error.message);
       return;
     }
 
@@ -2511,7 +2024,7 @@
     const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
     if (fileId) {
-      return 'https://drive.google.com/thumbnail?id=' + fileId;
+      return `https://drive.google.com/thumbnail?id=${fileId}`;
     }
     return url;
   }
@@ -2521,7 +2034,7 @@
     const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
     if (fileId) {
-      return 'https://drive.google.com/uc?export=view&id=' + fileId;
+      return `https://drive.google.com/uc?export=view&id=${fileId}`;
     }
     return url;
   }
@@ -2530,13 +2043,15 @@
   if (!username) {
     pageTitle.textContent = 'Error';
     chatHeading.textContent = 'Error';
-    artContainer.innerHTML = '<p class="no-content">❌ No username provided in URL.</p>';
+    artContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
     messagesDiv.innerHTML = '';
   } else {
-    pageTitle.textContent = username + "'s Content";
+    pageTitle.textContent = `${username}'s Content`;
     chatHeading.textContent = username;
 
+    // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
+
     loadArt();
     loadChatMessages();
   }
