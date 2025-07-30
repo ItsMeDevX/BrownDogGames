@@ -1766,27 +1766,6 @@
       font-weight: bold;
     }
 
-    .extra-link {
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
-      color: #1b1b2e;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-      text-align: center;
-      display: block;
-      width: 100%;
-    }
-
-    @media (min-width: 600px) {
-      .extra-link {
-        display: inline-block;
-        width: auto;
-      }
-    }
-
     .extra-link:hover {
       background: linear-gradient(45deg, #ffed4e, #ffd700);
       transform: translateY(-1px);
@@ -2163,7 +2142,7 @@
 
     <section class="vip-extras-section">
       <h3>👑 VIP Community Extras</h3>
-      <p style="color: #ff82ba; margin-bottom: 2rem;">Exclusive content shared by our VIP members. Only VIPs can add new extras!</p>
+      <p style="color: #ff82ba; margin-bottom: 2rem;">Exclusive content shared by our VIP members for Climax Clash!</p>
       
       <div id="extrasContainer" class="extras-grid">
         <div class="loading">Loading VIP extras...</div>
@@ -2382,14 +2361,17 @@
         return null;
       }
     }
+
+    // Load VIP Extras - UPDATED FOR CLIMAX CLASH
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
-      console.log('Loading VIP extras...');
+      console.log('Loading VIP extras for Climax Clash...');
       
       try {
         const { data: extras, error } = await supabase
           .from('vip_extras')
           .select('*')
+          .eq('game_id', 'climax-clash') // Only load Climax Clash extras
           .order('created_at', { ascending: false });
 
         console.log('Supabase response:', { extras, error });
@@ -2401,11 +2383,11 @@
         }
 
         if (!extras || extras.length === 0) {
-          container.innerHTML = `<div class="no-extras">No VIP extras yet. Be the first to share something awesome!</div>`;
+          container.innerHTML = `<div class="no-extras">No VIP extras yet for Climax Clash. Be the first to share something awesome!</div>`;
           return;
         }
 
-        console.log('Found', extras.length, 'extras');
+        console.log('Found', extras.length, 'extras for Climax Clash');
 
         // Get likes for all extras
         const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
@@ -2504,6 +2486,8 @@
       // Re-enable button
       likeBtn.disabled = false;
     };
+
+    // Add VIP Extra - UPDATED FOR CLIMAX CLASH
     async function addVipExtra(extraData) {
       if (!currentUser) {
         alert('Please login first');
@@ -2518,6 +2502,7 @@
             description: extraData.description,
             url: extraData.url,
             type: extraData.type,
+            game_id: 'climax-clash', // Add game ID for Climax Clash
             created_by: currentUser.id,
             creator_name: currentUser.user_metadata?.full_name || 'VIP User'
           }]);
@@ -2576,12 +2561,12 @@
         document.querySelectorAll('.badge-item').forEach(b => b.classList.remove('selected'));
         badge.classList.add('selected');
         selectedBadge = badge.dataset.badge;
-        localStorage.setItem('vip_badge', selectedBadge);
+        localStorage.setItem('vip_badge_climax', selectedBadge);
       });
     });
 
     // Load saved badge
-    const savedBadge = localStorage.getItem('vip_badge');
+    const savedBadge = localStorage.getItem('vip_badge_climax');
     if (savedBadge) {
       selectedBadge = savedBadge;
       const badgeElement = document.querySelector(`[data-badge="${savedBadge}"]`);
@@ -2642,12 +2627,13 @@
       }, 30000);
     }
 
-    // Real-time updates for VIP extras
-    supabase.channel('vip_extras')
+    // Real-time updates for VIP extras - UPDATED FOR CLIMAX CLASH
+    supabase.channel('vip_extras_climax')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'vip_extras' 
+        table: 'vip_extras',
+        filter: 'game_id=eq.climax-clash'
       }, () => {
         loadVipExtras();
       })
