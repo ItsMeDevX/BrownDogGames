@@ -2360,15 +2360,16 @@
       }
     }
 
-    // Load VIP Extras
+    // Load VIP Extras - UPDATED FOR LAPDANCE DASH
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
-      console.log('Loading VIP extras...');
+      console.log('Loading VIP extras for Lapdance Dash...');
       
       try {
         const { data: extras, error } = await supabase
           .from('vip_extras')
           .select('*')
+          .eq('game_id', 'lapdance-dash') // Only load Lapdance Dash extras
           .order('created_at', { ascending: false });
 
         console.log('Supabase response:', { extras, error });
@@ -2380,11 +2381,11 @@
         }
 
         if (!extras || extras.length === 0) {
-          container.innerHTML = `<div class="no-extras">No VIP extras yet. Be the first to share something awesome!</div>`;
+          container.innerHTML = `<div class="no-extras">No VIP extras yet for Lapdance Dash. Be the first to share something awesome!</div>`;
           return;
         }
 
-        console.log('Found', extras.length, 'extras');
+        console.log('Found', extras.length, 'extras for Lapdance Dash');
 
         // Get likes for all extras
         const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
@@ -2481,7 +2482,7 @@
       likeBtn.disabled = false;
     };
 
-    // Add VIP Extra
+    // Add VIP Extra - UPDATED FOR LAPDANCE DASH
     async function addVipExtra(extraData) {
       if (!currentUser) {
         alert('Please login first');
@@ -2496,6 +2497,7 @@
             description: extraData.description,
             url: extraData.url,
             type: extraData.type,
+            game_id: 'lapdance-dash', // Add game ID for Lapdance Dash
             created_by: currentUser.id,
             creator_name: currentUser.user_metadata?.full_name || 'VIP User'
           }]);
@@ -2620,12 +2622,13 @@
       }, 30000);
     }
 
-    // Real-time updates for VIP extras
-    supabase.channel('vip_extras')
+    // Real-time updates for VIP extras - UPDATED FOR LAPDANCE DASH
+    supabase.channel('vip_extras_lapdance')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'vip_extras' 
+        table: 'vip_extras',
+        filter: 'game_id=eq.lapdance-dash'
       }, () => {
         loadVipExtras();
       })
