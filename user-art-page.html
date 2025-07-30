@@ -1662,9 +1662,77 @@
       font-weight: bold;
       transition: background-color 0.2s ease;
       cursor: pointer;
-      margin-top: auto; /* push to bottom */
+      margin-top: auto;
     }
     .play-link:hover { background-color: #ff82ba; }
+
+    /* Like System Styles */
+    .like-section {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 79, 159, 0.3);
+    }
+
+    .like-btn {
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
+    }
+
+    .like-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
+    }
+
+    .like-btn:disabled {
+      background: linear-gradient(135deg, #666, #444);
+      cursor: not-allowed;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .like-btn.liked {
+      background: linear-gradient(135deg, #ff69b4, #ff1493);
+      animation: pulse 0.3s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .like-count {
+      color: #ff82ba;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .login-prompt {
+      font-size: 0.7rem;
+      color: #ddd;
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0.8;
+    }
 
     #chat-container {
       max-width: 800px;
@@ -1793,6 +1861,23 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       margin-top: 80px;
     }
+
+    @media (max-width: 768px) {
+      .like-section {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+      }
+      
+      .like-btn {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+      }
+      
+      .like-count {
+        font-size: 0.7rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1842,6 +1927,132 @@
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
 
+  let currentUser = null;
+  let artworkLikes = {};
+  let userLikedArtworks = new Set();
+
+  // Get current user
+  async function getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    return user;
+  }
+
+  // Get artwork likes using vip_page_views table
+  async function getArtworkLikes(artworkIds) {
+    if (artworkIds.length === 0) return {};
+    
+    const artworkUsernames = artworkIds.map(id => `${username}_artwork_${id}`);
+    
+    const { data, error } = await supabase
+      .from('vip_page_views')
+      .select('username, view_count')
+      .in('username', artworkUsernames);
+
+    if (error) {
+      console.error('Error fetching artwork likes:', error);
+      return {};
+    }
+
+    const likes = {};
+    data.forEach(item => {
+      const artworkId = item.username.split('_artwork_')[1];
+      likes[artworkId] = item.view_count || 0;
+    });
+    
+    return likes;
+  }
+
+  // Get user's liked artworks using vip_page_views table
+  async function getUserLikedArtworks(userId, artworkIds) {
+    if (!userId || artworkIds.length === 0) return new Set();
+    
+    const artworkUsernames = artworkIds.map(id => `${username}_artwork_${id}`);
+    
+    const { data, error } = await supabase
+      .from('vip_page_views')
+      .select('username')
+      .eq('user_id', userId)
+      .in('username', artworkUsernames);
+
+    if (error) {
+      console.error('Error fetching user liked artworks:', error);
+      return new Set();
+    }
+
+    return new Set(data.map(item => item.username.split('_artwork_')[1]));
+  }
+
+  // Like/unlike artwork using vip_page_views table
+  async function toggleArtworkLike(artworkId) {
+    if (!currentUser) {
+      alert('Please log in to like artworks');
+      return;
+    }
+
+    const artworkUsername = `${username}_artwork_${artworkId}`;
+    const isLiked = userLikedArtworks.has(artworkId);
+    const now = new Date().toISOString();
+
+    if (isLiked) {
+      // Unlike - delete the record
+      const { error } = await supabase
+        .from('vip_page_views')
+        .delete()
+        .eq('user_id', currentUser.id)
+        .eq('username', artworkUsername);
+
+      if (error) {
+        console.error('Error unliking artwork:', error);
+        return;
+      }
+
+      userLikedArtworks.delete(artworkId);
+      artworkLikes[artworkId] = Math.max(0, (artworkLikes[artworkId] || 1) - 1);
+    } else {
+      // Like - insert new record
+      const { error } = await supabase
+        .from('vip_page_views')
+        .insert({
+          user_id: currentUser.id,
+          username: artworkUsername,
+          view_count: 1,
+          first_viewed_at: now,
+          last_viewed_at: now
+        });
+
+      if (error) {
+        console.error('Error liking artwork:', error);
+        return;
+      }
+
+      userLikedArtworks.add(artworkId);
+      artworkLikes[artworkId] = (artworkLikes[artworkId] || 0) + 1;
+    }
+
+    // Update UI
+    updateLikeButton(artworkId);
+  }
+
+  // Update like button appearance
+  function updateLikeButton(artworkId) {
+    const likeBtn = document.querySelector(`[data-artwork-id="${artworkId}"] .like-btn`);
+    const likeCount = document.querySelector(`[data-artwork-id="${artworkId}"] .like-count`);
+    
+    if (!likeBtn || !likeCount) return;
+
+    const isLiked = userLikedArtworks.has(artworkId);
+    const count = artworkLikes[artworkId] || 0;
+
+    likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+    likeBtn.className = `like-btn${isLiked ? ' liked' : ''}`;
+    likeCount.innerHTML = `❤️ ${count}`;
+
+    if (isLiked) {
+      likeBtn.classList.add('liked');
+    }
+  }
+
   // Fullscreen functionality
   window.openFullscreen = function(imageSrc, altText, title) {
     const fullscreenView = document.getElementById('fullscreen-view');
@@ -1853,19 +2064,15 @@
     fullscreenTitle.textContent = title || 'Artwork';
     fullscreenView.classList.add('active');
     
-    // Prevent body scrolling
     document.body.style.overflow = 'hidden';
   }
 
   window.closeFullscreen = function() {
     const fullscreenView = document.getElementById('fullscreen-view');
     fullscreenView.classList.remove('active');
-    
-    // Restore body scrolling
     document.body.style.overflow = 'auto';
   }
 
-  // Close fullscreen on escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       closeFullscreen();
@@ -1918,10 +2125,19 @@
       return;
     }
 
+    // Get current user and artwork likes
+    currentUser = await getCurrentUser();
+    const artworkIds = data.map(art => art.id);
+    artworkLikes = await getArtworkLikes(artworkIds);
+    if (currentUser) {
+      userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
+    }
+
     artContainer.innerHTML = '';
     data.forEach((art, index) => {
       const card = document.createElement('article');
       card.className = 'card';
+      card.setAttribute('data-artwork-id', art.id);
 
       const title = document.createElement('h3');
       title.className = 'title';
@@ -1957,6 +2173,42 @@
         imageContainer.appendChild(img);
         imageContainer.appendChild(fullscreenBtn);
         card.appendChild(imageContainer);
+      }
+
+      // Add like section
+      const likeSection = document.createElement('div');
+      likeSection.className = 'like-section';
+
+      const likeBtn = document.createElement('button');
+      likeBtn.className = 'like-btn';
+      const isLiked = userLikedArtworks.has(art.id);
+      likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+      if (isLiked) likeBtn.classList.add('liked');
+      
+      if (!currentUser) {
+        likeBtn.disabled = true;
+        likeBtn.innerHTML = '🤍 Like';
+      }
+
+      likeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleArtworkLike(art.id);
+      });
+
+      const likeCount = document.createElement('div');
+      likeCount.className = 'like-count';
+      likeCount.innerHTML = `❤️ ${artworkLikes[art.id] || 0}`;
+
+      likeSection.appendChild(likeBtn);
+      likeSection.appendChild(likeCount);
+      card.appendChild(likeSection);
+
+      // Add login prompt if user not logged in
+      if (!currentUser) {
+        const loginPrompt = document.createElement('p');
+        loginPrompt.className = 'login-prompt';
+        loginPrompt.textContent = 'Log in to like artworks';
+        card.appendChild(loginPrompt);
       }
 
       artContainer.appendChild(card);
@@ -2049,9 +2301,7 @@
     pageTitle.textContent = `${username}'s Content`;
     chatHeading.textContent = username;
 
-    // Increment the VIP page views count each time this page loads for this user
     incrementVipPageView();
-
     loadArt();
     loadChatMessages();
   }
