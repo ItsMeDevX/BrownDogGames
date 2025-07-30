@@ -1523,7 +1523,7 @@
       color: #fefefe;
       min-height: 100vh;
       padding: 3rem 1rem;
-      max-width: 900px;
+      max-width: 1000px;
       margin: auto;
       text-align: center;
       user-select: none;
@@ -1562,49 +1562,124 @@
       text-decoration: none;
     }
 
+    .loading {
+      color: #ff82ba;
+      font-size: 1.2rem;
+      margin: 2rem 0;
+    }
+
     #featuredArtist {
-      background: #3d2460;
+      background: linear-gradient(145deg, #3d2460, #2a1a3d);
       border: 3px solid #ff69b4;
       border-radius: 20px;
       padding: 2rem 1.5rem;
       margin-bottom: 3rem;
       box-shadow: 0 0 30px #ff69b4cc;
-      max-width: 600px;
+      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    #featuredArtist::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    #featuredArtist:hover::before {
+      left: 100%;
     }
 
     #featuredArtist h2 {
       color: #ff8bd8;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       letter-spacing: 0.1em;
-    }
-
-    #featuredArtist .avatar-img,
-    #featuredArtist .cover-img {
-      margin: 0 auto 1rem auto;
-      border: 3px solid #ff8bd8;
+      position: relative;
+      z-index: 2;
     }
 
     #featuredArtist .avatar-img {
+      margin: 0 auto 1rem auto;
+      border: 3px solid #ff8bd8;
       width: 80px;
       height: 80px;
       font-size: 2rem;
       margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
     }
 
     #featuredArtist .cover-img {
       width: 100%;
-      max-width: 300px;
-      height: 160px;
+      max-width: 350px;
+      height: 180px;
       object-fit: cover;
       border-radius: 16px;
+      border: 3px solid #ff8bd8;
       box-shadow: 0 0 15px #ff8bd8cc;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    #featuredStats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    #featuredStats .stat-item {
+      background-color: #4a3157;
+      padding: 1rem;
+      border-radius: 12px;
+    }
+
+    #featuredStats .stat-value {
+      font-size: 1.5rem;
+      color: #8dffa1;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    #featuredStats .stat-label {
+      font-size: 0.8rem;
+      color: #ffc0cb;
+    }
+
+    #featuredLikes {
+      background-color: #4a3157;
+      border-radius: 12px;
+      padding: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    #featuredLikes .total-likes {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: #8dffa1;
+      font-weight: bold;
+    }
+
+    #featuredLikes .likes-detail {
+      font-size: 0.9rem;
+      color: #ff82ba;
     }
 
     #userList {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
       margin-top: 2rem;
     }
@@ -1613,52 +1688,221 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #2d1a3a;
-      padding: 1rem;
+      background: linear-gradient(145deg, #2d1a3a, #241834);
+      padding: 1.5rem 1rem;
       border-radius: 16px;
       box-shadow: 0 0 15px #ff69b4cc, inset 0 0 10px #ff69b4bb;
       color: #ffc0cb;
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .user-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .user-btn:hover::before {
+      left: 100%;
     }
 
     .user-btn:hover {
-      transform: translateY(-4px);
+      transform: translateY(-6px);
       box-shadow: 0 0 25px #ff8bd8ff, inset 0 0 20px #ff8bd8ee;
     }
 
     .avatar-img {
-      width: 48px;
-      height: 48px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
       background: #1e1b2e;
-      color: #1e1b2e;
+      color: #ff69b4;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 1.5rem;
       font-weight: bold;
-      border: 2px solid #ff69b4;
-      margin-bottom: 0.5rem;
+      border: 3px solid #ff69b4;
+      margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .avatar-img img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
     .username-text {
-      font-size: 1rem;
+      font-size: 1.1rem;
       margin-bottom: 0.75rem;
       color: #ffc0cb;
       word-break: break-word;
+      position: relative;
+      z-index: 2;
+      font-weight: bold;
     }
 
     .cover-img {
       width: 100%;
-      max-width: 180px;
-      height: 100px;
+      max-width: 220px;
+      height: 140px;
       object-fit: cover;
       border-radius: 12px;
       border: 2px solid #ff69b4;
       background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+      transition: transform 0.3s ease;
+    }
+
+    .user-btn:hover .cover-img {
+      transform: scale(1.05);
+    }
+
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .stat-item {
+      background-color: #3b2750;
+      padding: 0.5rem 0.25rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      color: #8dffa1;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 0.1rem;
+    }
+
+    .stat-label {
+      color: #ffc0cb;
+      font-size: 0.6rem;
+      opacity: 0.8;
+    }
+
+    .likes-breakdown {
+      background-color: #3b2750;
+      border-radius: 8px;
+      padding: 0.6rem;
+      font-size: 0.7rem;
+      color: #ff82ba;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .total-likes {
+      color: #8dffa1;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+      font-size: 0.8rem;
+    }
+
+    .likes-detail {
+      opacity: 0.8;
+      font-size: 0.65rem;
+    }
+
+    .art-title {
+      font-size: 0.9rem;
+      color: #ffb6c1;
+      font-style: italic;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 0 0.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Fullscreen Art Viewer */
+    #artModal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      user-select: none;
+    }
+
+    #artModalContent {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+
+    #artModalImage {
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
+    }
+
+    #closeArtModalBtn {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      background: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      font-weight: 700;
+      font-size: 1.3rem;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      line-height: 1;
+      user-select: none;
+    }
+
+    #closeArtModalBtn:hover {
+      background: #ff8bd8;
+    }
+
+    @media (max-width: 768px) {
+      #userList {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+      
+      .user-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      #featuredStats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      h1 {
+        font-size: 2.2rem;
+      }
     }
   </style>
 </head>
@@ -1669,20 +1913,32 @@
   <h1>All User Art Submissions</h1>
 
   <!-- Featured Artist Section -->
-  <section id="featuredArtist" aria-label="Featured Artist of the Week">
-    <h2>🌟 Featured Artist of the Week</h2>
+  <section id="featuredArtist" aria-label="Featured Artist">
+    <h2>🎨 Featured Artist</h2>
     <div class="avatar-img" id="featuredAvatar"></div>
     <div class="username-text" id="featuredUsername"></div>
     <img src="" alt="Featured artwork" class="cover-img" id="featuredArtwork" />
-    <div id="featuredTitle" style="margin-top: 0.5rem; font-style: italic; color: #ffb6c1;"></div>
+    <div id="featuredTitle" class="art-title"></div>
+    <div id="featuredStats"></div>
+    <div id="featuredLikes"></div>
   </section>
 
   <div>
     <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
     <button class="back-link" id="sortNewest">🆕 Newest</button>
+    <button class="back-link" id="sortMostArt">🎨 Most Art</button>
+    <button class="back-link" id="sortMostLiked">❤️ Most Liked</button>
   </div>
 
-  <div id="userList">Loading art submissions...</div>
+  <div id="userList" class="loading">Loading artists and calculating comprehensive likes...</div>
+
+  <!-- Art Modal -->
+  <div id="artModal">
+    <div id="artModalContent">
+      <button id="closeArtModalBtn">×</button>
+      <img id="artModalImage" src="" alt="Full size artwork" />
+    </div>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -1698,10 +1954,104 @@
     const featuredUsername = document.getElementById('featuredUsername');
     const featuredArtwork = document.getElementById('featuredArtwork');
     const featuredTitle = document.getElementById('featuredTitle');
+    const featuredStats = document.getElementById('featuredStats');
+    const featuredLikes = document.getElementById('featuredLikes');
+
+    const artModal = document.getElementById('artModal');
+    const artModalImage = document.getElementById('artModalImage');
+    const closeArtModalBtn = document.getElementById('closeArtModalBtn');
 
     let currentSort = 'alphabetical';
+    let allUsers = [];
+
+    // Enhanced function to get ALL likes for a specific user (same as other pages)
+    async function getUserLikesBreakdown(username) {
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+
+      try {
+        // Get main page likes (exact username match)
+        const { count: pageLikes, error: pageError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('username', username);
+
+        if (pageError) throw pageError;
+
+        // Get video likes (username_video_*)
+        const { count: videoLikes, error: videoError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .like('username', username + '_video_%');
+
+        if (videoError) throw videoError;
+
+        // Get game likes (username_game_*)
+        const { count: gameLikes, error: gameError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .like('username', username + '_game_%');
+
+        if (gameError) throw gameError;
+
+        // Get art likes (username_artwork_*)
+        const { count: artLikes, error: artError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .like('username', username + '_artwork_%');
+
+        if (artError) throw artError;
+
+        const breakdown = {
+          page: pageLikes || 0,
+          videos: videoLikes || 0,
+          games: gameLikes || 0,
+          art: artLikes || 0,
+          total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0)
+        };
+
+        return breakdown;
+
+      } catch (error) {
+        console.error('Error getting likes breakdown for', username, ':', error);
+        return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+      }
+    }
+
+    // Get comprehensive stats for a user
+    async function getUserStats(username) {
+      try {
+        // Get games count
+        const { count: gamesCount } = await supabase
+          .from('game_submissions')
+          .select('*', { count: 'exact', head: true })
+          .eq('github_user', username);
+
+        // Get videos count  
+        const { count: videosCount } = await supabase
+          .from('game_videos')
+          .select('*', { count: 'exact', head: true })
+          .eq('github_username', username);
+
+        // Get art count
+        const { count: artCount } = await supabase
+          .from('user_art')
+          .select('*', { count: 'exact', head: true })
+          .eq('github_username', username);
+
+        return {
+          games: gamesCount || 0,
+          videos: videosCount || 0,
+          art: artCount || 0,
+          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0)
+        };
+      } catch (error) {
+        console.error('Error getting user stats:', error);
+        return { games: 0, videos: 0, art: 0, total: 0 };
+      }
+    }
 
     function getDriveThumbnailUrl(url) {
+      if (!url) return '';
       const regex = /\/d\/([^\/]+)\//;
       const match = url.match(regex);
       if (match && match[1]) {
@@ -1710,127 +2060,339 @@
       return url;
     }
 
+    function getDriveDirectUrl(url) {
+      if (!url) return '';
+      const regex = /\/d\/([^\/]+)\//;
+      const match = url.match(regex);
+      if (match && match[1]) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+      return url;
+    }
+
+    function openArtModal(imageUrl, altText) {
+      const fullImageUrl = imageUrl.includes('drive.google.com') ? getDriveDirectUrl(imageUrl) : imageUrl;
+      artModalImage.src = fullImageUrl;
+      artModalImage.alt = altText;
+      artModal.style.display = 'flex';
+    }
+
+    function closeArtModal() {
+      artModal.style.display = 'none';
+      artModalImage.src = '';
+    }
+
+    closeArtModalBtn.onclick = closeArtModal;
+    artModal.onclick = (e) => {
+      if (e.target === artModal) closeArtModal();
+    };
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && artModal.style.display === 'flex') {
+        closeArtModal();
+      }
+    });
+
     async function loadUsers(sortMode = 'alphabetical') {
-      const orderBy = sortMode === 'newest'
-        ? { column: 'created_at', ascending: false }
-        : { column: 'github_username', ascending: true };
+      userListEl.innerHTML = '<div class="loading">Loading artists and calculating comprehensive likes...</div>';
 
-      const { data, error } = await supabase
-        .from('user_art')
-        .select('github_username, image_url, title, avatar_url, created_at')
-        .order(orderBy.column, { ascending: orderBy.ascending });
+      try {
+        const orderBy = sortMode === 'newest'
+          ? { column: 'created_at', ascending: false }
+          : { column: 'github_username', ascending: true };
 
-      if (error) {
-        userListEl.textContent = `Error loading art submissions: ${error.message}`;
+        const { data, error } = await supabase
+          .from('user_art')
+          .select('github_username, image_url, title, avatar_url, created_at')
+          .order(orderBy.column, { ascending: orderBy.ascending });
+
+        if (error) {
+          userListEl.textContent = `Error loading art submissions: ${error.message}`;
+          featuredSection.style.display = 'none';
+          return;
+        }
+
+        if (!data.length) {
+          userListEl.textContent = 'No art submissions found.';
+          featuredSection.style.display = 'none';
+          return;
+        }
+
+        // Build unique users map with their newest art
+        const usersMap = new Map();
+        data.forEach(({ github_username, image_url, title, avatar_url, created_at }) => {
+          if (github_username && !usersMap.has(github_username)) {
+            usersMap.set(github_username, { 
+              username: github_username,
+              image_url, 
+              title, 
+              avatar_url,
+              created_at
+            });
+          }
+        });
+
+        // Get comprehensive stats and likes for each user
+        const usersWithData = await Promise.all(
+          Array.from(usersMap.values()).map(async (user) => {
+            const [stats, likesBreakdown] = await Promise.all([
+              getUserStats(user.username),
+              getUserLikesBreakdown(user.username)
+            ]);
+            
+            return {
+              ...user,
+              stats,
+              likesBreakdown
+            };
+          })
+        );
+
+        allUsers = usersWithData;
+        console.log('Loaded artists with comprehensive data:', allUsers.length);
+
+        // Sort and display
+        sortAndDisplayUsers(sortMode);
+        await displayFeaturedArtist(data);
+
+      } catch (error) {
+        console.error('Error loading art:', error);
+        userListEl.innerHTML = `<div style="color: #ff8d8d;">Error loading art: ${error.message}</div>`;
         featuredSection.style.display = 'none';
-        return;
+      }
+    }
+
+    function sortAndDisplayUsers(sortMode) {
+      let sortedUsers = [...allUsers];
+
+      switch (sortMode) {
+        case 'alphabetical':
+          sortedUsers.sort((a, b) => a.username.localeCompare(b.username));
+          break;
+        case 'newest':
+          sortedUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          break;
+        case 'mostArt':
+          sortedUsers.sort((a, b) => b.stats.art - a.stats.art);
+          break;
+        case 'mostLiked':
+          sortedUsers.sort((a, b) => b.likesBreakdown.total - a.likesBreakdown.total);
+          break;
       }
 
-      if (!data.length) {
-        userListEl.textContent = 'No art submissions found.';
-        featuredSection.style.display = 'none';
-        return;
-      }
+      displayUsers(sortedUsers);
+    }
 
-      // Set featured artist (latest submission for example)
-      const featured = data[0];
-      if (featured) {
-        featuredSection.style.display = 'block';
+    function displayUsers(users) {
+      userListEl.innerHTML = '';
+      const fragment = document.createDocumentFragment();
 
-        // avatar for featured artist
-        featuredAvatar.innerHTML = '';
-        if (featured.avatar_url) {
-          const img = document.createElement('img');
-          img.src = featured.avatar_url;
-          img.alt = `${featured.github_username}'s avatar`;
-          img.style.width = '80px';
-          img.style.height = '80px';
-          img.style.borderRadius = '50%';
-          featuredAvatar.appendChild(img);
+      for (const user of users) {
+        const a = document.createElement('a');
+        a.className = 'user-btn';
+        a.href = `user-art-page.html?user=${encodeURIComponent(user.username)}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar-img';
+
+        if (user.avatar_url) {
+          const imgAvatar = document.createElement('img');
+          imgAvatar.src = user.avatar_url;
+          imgAvatar.alt = `${user.username}'s avatar`;
+          imgAvatar.onerror = () => {
+            avatar.innerHTML = user.username.charAt(0).toUpperCase();
+          };
+          avatar.appendChild(imgAvatar);
         } else {
-          featuredAvatar.textContent = featured.github_username.charAt(0).toUpperCase();
+          avatar.textContent = user.username.charAt(0).toUpperCase();
+        }
+        a.appendChild(avatar);
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username-text';
+        usernameSpan.textContent = user.username;
+        a.appendChild(usernameSpan);
+
+        const img = document.createElement('img');
+        img.src = user.image_url && user.image_url.includes('drive.google.com')
+          ? getDriveThumbnailUrl(user.image_url)
+          : (user.image_url || 'https://via.placeholder.com/220x140?text=No+Image');
+        img.alt = `${user.username}'s artwork titled "${user.title}"`;
+        img.className = 'cover-img';
+        
+        // Add click handler for fullscreen view
+        img.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openArtModal(user.image_url, img.alt);
+        };
+        
+        a.appendChild(img);
+
+        // Art title
+        if (user.title) {
+          const titleDiv = document.createElement('div');
+          titleDiv.className = 'art-title';
+          titleDiv.textContent = user.title;
+          a.appendChild(titleDiv);
+        }
+
+        // Stats
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'user-stats';
+        
+        const stats = [
+          { value: user.stats.art, label: 'Art' },
+          { value: user.stats.games, label: 'Games' },
+          { value: user.stats.videos, label: 'Videos' }
+        ];
+        
+        stats.forEach(stat => {
+          const statDiv = document.createElement('div');
+          statDiv.className = 'stat-item';
+          statDiv.innerHTML = `
+            <div class="stat-value">${stat.value}</div>
+            <div class="stat-label">${stat.label}</div>
+          `;
+          statsDiv.appendChild(statDiv);
+        });
+        
+        a.appendChild(statsDiv);
+
+        // Likes Breakdown
+        const likesDiv = document.createElement('div');
+        likesDiv.className = 'likes-breakdown';
+        likesDiv.innerHTML = `
+          <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
+          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art}</div>
+        `;
+        a.appendChild(likesDiv);
+
+        fragment.appendChild(a);
+      }
+
+      userListEl.appendChild(fragment);
+    }
+
+    async function displayFeaturedArtist(allArt) {
+      if (allUsers.length === 0) return;
+
+      // Featured artist is the one with the most art likes (since this is the art page)
+      const featuredUser = allUsers.reduce((mostArtLikes, current) => {
+        return current.likesBreakdown.art > mostArtLikes.likesBreakdown.art ? current : mostArtLikes;
+      }, allUsers[0]);
+
+      featuredSection.style.display = 'block';
+
+      // Avatar
+      featuredAvatar.innerHTML = '';
+      if (featuredUser.avatar_url) {
+        const img = document.createElement('img');
+        img.src = featuredUser.avatar_url;
+        img.alt = `${featuredUser.username}'s avatar`;
+        img.onerror = () => {
+          featuredAvatar.innerHTML = featuredUser.username.charAt(0).toUpperCase();
           featuredAvatar.style.fontSize = '2rem';
           featuredAvatar.style.color = '#ff69b4';
           featuredAvatar.style.display = 'flex';
           featuredAvatar.style.alignItems = 'center';
           featuredAvatar.style.justifyContent = 'center';
           featuredAvatar.style.background = '#2d1a3a';
-          featuredAvatar.style.border = '3px solid #ff69b4';
-        }
-
-        featuredUsername.textContent = featured.github_username;
-
-        featuredArtwork.src = featured.image_url && featured.image_url.includes('drive.google.com')
-          ? getDriveThumbnailUrl(featured.image_url)
-          : (featured.image_url || 'https://via.placeholder.com/300x160.png?text=No+Image');
-
-        featuredArtwork.alt = `${featured.github_username}'s artwork titled "${featured.title}"`;
-        featuredTitle.textContent = featured.title || '';
+        };
+        featuredAvatar.appendChild(img);
+      } else {
+        featuredAvatar.textContent = featuredUser.username.charAt(0).toUpperCase();
+        featuredAvatar.style.fontSize = '2rem';
+        featuredAvatar.style.color = '#ff69b4';
+        featuredAvatar.style.display = 'flex';
+        featuredAvatar.style.alignItems = 'center';
+        featuredAvatar.style.justifyContent = 'center';
+        featuredAvatar.style.background = '#2d1a3a';
       }
 
-      // Now build user list grid without duplicates (one per user)
-      const usersMap = new Map();
-      data.forEach(({ github_username, image_url, title, avatar_url }) => {
-        if (github_username && !usersMap.has(github_username)) {
-          usersMap.set(github_username, { image_url, title, avatar_url });
+      // Username
+      featuredUsername.textContent = featuredUser.username;
+
+      // Artwork
+      featuredArtwork.src = featuredUser.image_url && featuredUser.image_url.includes('drive.google.com')
+        ? getDriveThumbnailUrl(featuredUser.image_url)
+        : (featuredUser.image_url || 'https://via.placeholder.com/350x180?text=No+Image');
+      featuredArtwork.alt = `${featuredUser.username}'s artwork titled "${featuredUser.title}"`;
+
+      // Title
+      featuredTitle.textContent = featuredUser.title || 'Untitled Artwork';
+
+      // Stats
+      featuredStats.innerHTML = `
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.art}</div>
+          <div class="stat-label">Art Pieces</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.games}</div>
+          <div class="stat-label">Games</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.videos}</div>
+          <div class="stat-label">Videos</div>
+        </div>
+      `;
+
+      // Likes
+      featuredLikes.innerHTML = `
+        <div class="total-likes">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
+        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art</div>
+      `;
+
+      // Click handler for featured artwork
+      featuredArtwork.onclick = () => openArtModal(featuredUser.image_url, featuredArtwork.alt);
+      
+      // Click handler for featured section
+      featuredSection.onclick = (e) => {
+        if (e.target !== featuredArtwork) {
+          window.location.href = `user-art-page.html?user=${encodeURIComponent(featuredUser.username)}`;
         }
-      });
-
-      userListEl.textContent = '';
-      const fragment = document.createDocumentFragment();
-
-     for (const [user, info] of usersMap.entries()) {
-  const a = document.createElement('a');
-  a.className = 'user-btn';
-  a.href = `user-art-page.html?user=${encodeURIComponent(user)}`; // Updated here
-
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar-img';
-
-  if (info.avatar_url) {
-    const imgAvatar = document.createElement('img');
-    imgAvatar.src = info.avatar_url;
-    imgAvatar.alt = `${user}'s avatar`;
-    imgAvatar.style.width = '48px';
-    imgAvatar.style.height = '48px';
-    imgAvatar.style.borderRadius = '50%';
-    avatar.appendChild(imgAvatar);
-  } else {
-    avatar.textContent = user.charAt(0).toUpperCase();
-  }
-  a.appendChild(avatar);
-
-  const usernameSpan = document.createElement('span');
-  usernameSpan.className = 'username-text';
-  usernameSpan.textContent = user;
-  a.appendChild(usernameSpan);
-
-  const img = document.createElement('img');
-  img.src = info.image_url && info.image_url.includes('drive.google.com')
-    ? getDriveThumbnailUrl(info.image_url)
-    : (info.image_url || 'https://via.placeholder.com/180x100.png?text=No+Image');
-  img.alt = `${user}'s artwork titled "${info.title}"`;
-  img.className = 'cover-img';
-  a.appendChild(img);
-
-  fragment.appendChild(a);
-}
-
-      userListEl.appendChild(fragment);
+      };
     }
 
-    // Initial load
-    loadUsers(currentSort);
-
+    // Button event listeners
     document.getElementById('sortAlpha').addEventListener('click', () => {
       currentSort = 'alphabetical';
-      loadUsers(currentSort);
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortAlpha');
     });
 
     document.getElementById('sortNewest').addEventListener('click', () => {
       currentSort = 'newest';
-      loadUsers(currentSort);
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortNewest');
     });
+
+    document.getElementById('sortMostArt').addEventListener('click', () => {
+      currentSort = 'mostArt';
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortMostArt');
+    });
+
+    document.getElementById('sortMostLiked').addEventListener('click', () => {
+      currentSort = 'mostLiked';
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortMostLiked');
+    });
+
+    function updateButtonStates(activeId) {
+      document.querySelectorAll('.back-link').forEach(btn => {
+        if (btn.id && btn.id.startsWith('sort')) {
+          btn.style.opacity = btn.id === activeId ? '1' : '0.7';
+        }
+      });
+    }
+
+    // Initialize
+    loadUsers(currentSort);
+    
+    // Set initial button state
+    setTimeout(() => updateButtonStates('sortAlpha'), 100);
   </script>
 
 </body>
