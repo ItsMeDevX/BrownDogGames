@@ -1572,7 +1572,7 @@
 
     #userList {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 1.5rem;
       user-select: none;
     }
@@ -1691,6 +1691,25 @@
       opacity: 0.8;
     }
 
+    .likes-breakdown {
+      background-color: #3b2750;
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.7rem;
+      color: #ff82ba;
+    }
+
+    .total-likes {
+      color: #8dffa1;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    .likes-detail {
+      opacity: 0.8;
+    }
+
     /* Featured user section styling */
     #featuredUser {
       max-width: 600px;
@@ -1783,7 +1802,7 @@
     /* Responsive adjustments */
     @media (max-width: 600px) {
       #userList {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       }
       
       .user-card {
@@ -1819,6 +1838,7 @@
     <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
     <button class="back-link" id="sortNewest">🆕 Newest</button>
     <button class="back-link" id="sortMostActive">📊 Most Active</button>
+    <button class="back-link" id="sortMostLiked">❤️ Most Liked</button>
   </div>
 
   <div id="userList">Loading user profiles...</div>
@@ -1840,6 +1860,59 @@
 
   let currentSort = 'alphabetical';
   let allUsers = [];
+
+  // Enhanced function to get ALL likes for a specific user (same as dashboard)
+  async function getUserLikesBreakdown(username) {
+    if (!username) return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+
+    try {
+      // Get main page likes (exact username match)
+      const { count: pageLikes, error: pageError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+
+      if (pageError) throw pageError;
+
+      // Get video likes (username_video_*)
+      const { count: videoLikes, error: videoError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .like('username', username + '_video_%');
+
+      if (videoError) throw videoError;
+
+      // Get game likes (username_game_*)
+      const { count: gameLikes, error: gameError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .like('username', username + '_game_%');
+
+      if (gameError) throw gameError;
+
+      // Get art likes (username_artwork_*)
+      const { count: artLikes, error: artError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .like('username', username + '_artwork_%');
+
+      if (artError) throw artError;
+
+      const breakdown = {
+        page: pageLikes || 0,
+        videos: videoLikes || 0,
+        games: gameLikes || 0,
+        art: artLikes || 0,
+        total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0)
+      };
+
+      return breakdown;
+
+    } catch (error) {
+      console.error('Error getting likes breakdown for', username, ':', error);
+      return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+    }
+  }
 
   function createAvatar(user) {
     const div = document.createElement('div');
@@ -1935,7 +2008,7 @@
       { value: user.stats.games, label: 'Games' },
       { value: user.stats.videos, label: 'Videos' },
       { value: user.stats.art, label: 'Art' },
-      { value: user.stats.likes, label: 'Likes' }
+      { value: user.stats.total, label: 'Items' }
     ];
     
     stats.forEach(stat => {
@@ -1949,6 +2022,15 @@
     });
     
     card.appendChild(statsDiv);
+
+    // Enhanced Likes Breakdown
+    const likesDiv = document.createElement('div');
+    likesDiv.className = 'likes-breakdown';
+    likesDiv.innerHTML = `
+      <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
+      <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art}</div>
+    `;
+    card.appendChild(likesDiv);
 
     // Add a small indicator if user has a profile
     if (user.hasProfile) {
@@ -1997,22 +2079,15 @@
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
-      // Get page likes count
-      const { count: likesCount } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', username);
-
       return {
         games: gamesCount || 0,
         videos: videosCount || 0,
         art: artCount || 0,
-        likes: likesCount || 0,
         total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0)
       };
     } catch (error) {
       console.error('Error getting user stats:', error);
-      return { games: 0, videos: 0, art: 0, likes: 0, total: 0 };
+      return { games: 0, videos: 0, art: 0, total: 0 };
     }
   }
 
@@ -2071,7 +2146,7 @@
   }
 
   async function loadUserProfiles() {
-    userListEl.innerHTML = '<div class="loading">Loading user profiles...</div>';
+    userListEl.innerHTML = '<div class="loading">Loading user profiles and calculating comprehensive likes...</div>';
 
     try {
       console.log('Starting to load user profiles...');
@@ -2132,15 +2207,21 @@
             return null;
           }
 
-          // Get stats for this username
-          const stats = await getUserStats(username);
+          // Get stats and comprehensive likes for this username
+          const [stats, likesBreakdown] = await Promise.all([
+            getUserStats(username),
+            getUserLikesBreakdown(username)
+          ]);
+          
           console.log('Stats for', username, ':', stats);
+          console.log('Likes breakdown for', username, ':', likesBreakdown);
 
           return {
             username,
             avatar_url,
             profile,
             stats,
+            likesBreakdown,
             created_at: profile.created_at,
             hasProfile: true
           };
@@ -2236,13 +2317,18 @@
         return;
       }
 
-      // Get stats for each user
+      // Get stats and comprehensive likes for each user
       const usersWithStats = await Promise.all(
         Array.from(usersMap.values()).map(async (user) => {
-          const stats = await getUserStats(user.username);
+          const [stats, likesBreakdown] = await Promise.all([
+            getUserStats(user.username),
+            getUserLikesBreakdown(user.username)
+          ]);
+          
           return {
             ...user,
             stats,
+            likesBreakdown,
             profile: null // No profile data
           };
         })
@@ -2274,6 +2360,9 @@
       case 'mostActive':
         sortedUsers.sort((a, b) => b.stats.total - a.stats.total);
         break;
+      case 'mostLiked':
+        sortedUsers.sort((a, b) => b.likesBreakdown.total - a.likesBreakdown.total);
+        break;
     }
 
     userListEl.innerHTML = '';
@@ -2286,9 +2375,9 @@
   function displayFeaturedUser() {
     if (allUsers.length === 0) return;
 
-    // Featured user is the most recently created profile
-    const featuredUser = allUsers.reduce((latest, current) => {
-      return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+    // Featured user is the one with the most total likes
+    const featuredUser = allUsers.reduce((mostLiked, current) => {
+      return current.likesBreakdown.total > mostLiked.likesBreakdown.total ? current : mostLiked;
     }, allUsers[0]);
 
     featuredSection.style.display = 'block';
@@ -2313,6 +2402,23 @@
       featuredDetails.appendChild(detailSpan);
     });
     
+    // Add likes info to featured section
+    const likesInfo = document.createElement('div');
+    likesInfo.style.cssText = `
+      background-color: #3b2750;
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: #ff82ba;
+      text-align: center;
+    `;
+    likesInfo.innerHTML = `
+      <div style="color: #8dffa1; font-weight: bold; margin-bottom: 0.25rem;">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
+      <div>📄 ${featuredUser.likesBreakdown.page} • 🎮 ${featuredUser.likesBreakdown.games} • 🎬 ${featuredUser.likesBreakdown.videos} • 🎨 ${featuredUser.likesBreakdown.art}</div>
+    `;
+    featuredDetails.appendChild(likesInfo);
+    
     // Click handler for featured section
     featuredSection.onclick = () => {
       window.location.href = `user.html?user=${featuredUser.username}`;
@@ -2323,17 +2429,44 @@
   document.getElementById('sortAlpha').onclick = () => {
     currentSort = 'alphabetical';
     sortAndDisplayUsers();
+    
+    // Update button states
+    document.querySelectorAll('#sortButtons .back-link').forEach(btn => btn.style.opacity = '0.7');
+    document.getElementById('sortAlpha').style.opacity = '1';
   };
 
   document.getElementById('sortNewest').onclick = () => {
     currentSort = 'newest';
     sortAndDisplayUsers();
+    
+    // Update button states
+    document.querySelectorAll('#sortButtons .back-link').forEach(btn => btn.style.opacity = '0.7');
+    document.getElementById('sortNewest').style.opacity = '1';
   };
 
   document.getElementById('sortMostActive').onclick = () => {
     currentSort = 'mostActive';
     sortAndDisplayUsers();
+    
+    // Update button states
+    document.querySelectorAll('#sortButtons .back-link').forEach(btn => btn.style.opacity = '0.7');
+    document.getElementById('sortMostActive').style.opacity = '1';
   };
+
+  document.getElementById('sortMostLiked').onclick = () => {
+    currentSort = 'mostLiked';
+    sortAndDisplayUsers();
+    
+    // Update button states
+    document.querySelectorAll('#sortButtons .back-link').forEach(btn => btn.style.opacity = '0.7');
+    document.getElementById('sortMostLiked').style.opacity = '1';
+  };
+
+  // Initialize button states
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#sortButtons .back-link').forEach(btn => btn.style.opacity = '0.7');
+    document.getElementById('sortAlpha').style.opacity = '1';
+  });
 
   // Load profiles on page load
   loadUserProfiles();
