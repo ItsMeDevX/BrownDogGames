@@ -2385,7 +2385,21 @@
 
         console.log('Found', extras.length, 'extras');
 
-        container.innerHTML = extras.map(extra => {
+        // Get likes for all extras
+        const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
+          const [likeCount, userHasLiked] = await Promise.all([
+            getExtraLikes(extra.id),
+            hasUserLikedExtra(extra.id)
+          ]);
+          
+          return {
+            ...extra,
+            likeCount,
+            userHasLiked
+          };
+        }));
+
+        container.innerHTML = extrasWithLikes.map(extra => {
           // Format the date properly
           let dateStr = 'Unknown date';
           if (extra.created_at) {
@@ -2409,11 +2423,20 @@
             <h4 class="extra-title">${extra.title || 'Untitled'}</h4>
             <p class="extra-description">${extra.description || 'No description'}</p>
             <div class="extra-footer">
-              <span class="extra-creator">
-                Added by <span class="vip-creator">👑 ${extra.creator_name || 'Anonymous'}</span>
-                <br>
-                <small>${dateStr}</small>
-              </span>
+              <div class="extra-actions">
+                <span class="extra-creator">
+                  Added by <span class="vip-creator">👑 ${extra.creator_name || 'Anonymous'}</span>
+                  <br>
+                  <small>${dateStr}</small>
+                </span>
+                <div class="like-section">
+                  <button class="like-btn ${extra.userHasLiked ? 'liked' : ''}" 
+                          onclick="handleLikeClick('${extra.id}')">
+                    ${extra.userHasLiked ? '❤️' : '🤍'} Like
+                  </button>
+                  <span class="like-count">${extra.likeCount}</span>
+                </div>
+              </div>
               <a href="${extra.url || '#'}" target="_blank" class="extra-link">
                 ${extra.type === 'download' ? '⬇ Download' : 
                   extra.type === 'link' ? '🔗 Open Link' : 
