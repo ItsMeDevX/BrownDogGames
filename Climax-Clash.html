@@ -2304,9 +2304,9 @@
       try {
         const { data, error } = await supabase
           .from('vip_page_views')
-          .select('id')
+          .select('user_id')
           .eq('username', `extra_${extraId}`)
-          .eq('viewer_id', session.session.user.id)
+          .eq('user_id', session.session.user.id)
           .single();
 
         if (error && error.code !== 'PGRST116') {
@@ -2336,19 +2336,20 @@
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
           .from('vip_page_views')
-          .select('id')
+          .select('user_id')
           .eq('username', username)
-          .eq('viewer_id', userId)
+          .eq('user_id', userId)
           .single();
 
         console.log('Existing like check:', { existingLike, checkError });
 
         if (existingLike) {
-          // Remove like
+          // Remove like - delete the row
           const { error: deleteError } = await supabase
             .from('vip_page_views')
             .delete()
-            .eq('id', existingLike.id);
+            .eq('username', username)
+            .eq('user_id', userId);
 
           if (deleteError) {
             console.error('Delete error:', deleteError);
@@ -2357,13 +2358,15 @@
           console.log('Like removed');
           return false; // unliked
         } else {
-          // Add like
+          // Add like - insert new row
           const { error: insertError } = await supabase
             .from('vip_page_views')
             .insert([{
               username: username,
-              viewer_id: userId,
-              page_url: window.location.href
+              user_id: userId,
+              view_count: 1,
+              first_viewed_at: new Date().toISOString(),
+              last_viewed_at: new Date().toISOString()
             }]);
 
           if (insertError) {
