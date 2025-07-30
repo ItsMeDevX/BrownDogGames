@@ -2027,14 +2027,26 @@
     return result.data.user;
   }
 
-  // Get total likes for the user (exactly like show some love page)
+  // Get total likes for the user - includes main page AND all artwork likes
   async function getTotalLikes() {
     if (!username) return 0;
-    const result = await supabase
+    
+    // Get main page likes
+    const mainPageResult = await supabase
       .from('vip_page_views')
       .select('*', { count: 'exact', head: true })
       .eq('username', username);
-    return result.count || 0;
+    
+    // Get all artwork likes (any username that starts with username_artwork_)
+    const artworkResult = await supabase
+      .from('vip_page_views')
+      .select('*', { count: 'exact', head: true })
+      .like('username', username + '_artwork_%');
+    
+    const mainPageCount = mainPageResult.count || 0;
+    const artworkCount = artworkResult.count || 0;
+    
+    return mainPageCount + artworkCount;
   }
 
   // Check if current user has liked this user's page (exactly like show some love page)
@@ -2120,6 +2132,10 @@
 
       userLikedArtworks.delete(artworkId);
       artworkLikes[artworkId] = Math.max(0, (artworkLikes[artworkId] || 1) - 1);
+      
+      // Update total likes count since we removed a like
+      totalLikes = await getTotalLikes();
+      updateLikeStatus();
     } else {
       // Like - insert new record
       const result = await supabase
@@ -2139,6 +2155,10 @@
 
       userLikedArtworks.add(artworkId);
       artworkLikes[artworkId] = (artworkLikes[artworkId] || 0) + 1;
+      
+      // Update total likes count since we added a new like
+      totalLikes = await getTotalLikes();
+      updateLikeStatus();
     }
 
     // Update UI
