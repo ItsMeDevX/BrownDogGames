@@ -43,7 +43,10 @@
       background-color: #1e1b2e;
       color: #fefefe;
       min-height: 100vh;
-      padding: 20px;
+      padding-top: 140px; /* Add padding to account for fixed taskbar */
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 20px;
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
     }
@@ -357,23 +360,28 @@
       background: #ff8edb;
     }
 
-    /* Taskbar */
+    /* Taskbar - FIXED POSITION */
     #taskbar {
-      max-width: 1200px;
-      margin: 20px auto;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      max-width: 100%;
       background-color: #2a243b;
-      border-radius: 12px;
-      box-shadow: 0 0 12px #00000055;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
       padding: 15px 20px;
       font-family: 'Rubik Mono One', sans-serif;
       color: #fefefe;
-      position: relative;
       user-select: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 20px;
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid #ff69b4;
     }
 
     .taskbar-logo {
@@ -586,6 +594,33 @@
       color: #1e1b2e;
     }
 
+    #user-dropdown button.vip-locked {
+      background-color: #666;
+      color: #999;
+      cursor: not-allowed;
+      position: relative;
+    }
+
+    #user-dropdown button.vip-locked:hover {
+      background-color: #666;
+      color: #999;
+    }
+
+    #user-dropdown button.vip-locked:hover::after {
+      content: "VIP Only";
+      position: absolute;
+      top: 50%;
+      right: -70px;
+      transform: translateY(-50%);
+      background: #333;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      z-index: 10001;
+    }
+
     #user-info {
       display: flex;
       align-items: center;
@@ -602,8 +637,11 @@
     }
 
     @media (max-width: 900px) {
+      body {
+        padding-top: 160px; /* Increase padding for mobile */
+      }
+
       #taskbar {
-        max-width: 95%;
         flex-direction: column;
         gap: 15px;
         text-align: center;
@@ -643,7 +681,9 @@
 
     @media (max-width: 600px) {
       body {
-        padding: 10px;
+        padding-top: 180px; /* Further increase for smaller screens */
+        padding-left: 10px;
+        padding-right: 10px;
       }
 
       .taskbar-logo img {
@@ -667,6 +707,36 @@
         font-size: 1.5rem;
       }
     }
+
+    /* Page content styles */
+    .page-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .welcome-section {
+      background: linear-gradient(135deg, #2a243b, #3b3750);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid #ff69b4;
+    }
+
+    .welcome-section h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #ff69b4;
+      text-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+    }
+
+    .welcome-section p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #ffc0cb;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body>
@@ -689,9 +759,10 @@
           <li><span class="icon">🏅</span> VIP badges & status</li>
           <li><span class="icon">🚀</span> Priority support</li>
           <li><span class="icon">💬</span> Direct community access</li>
+          <li><span class="icon">📊</span> Dashboard access</li>
         </ul>
         <div class="vip-only-features">
-          <strong>Premium Features:</strong> Enhanced experience, priority support, and community benefits
+          <strong>Premium Features:</strong> Enhanced experience, priority support, dashboard access, and community benefits
         </div>
       </div>
 
@@ -771,6 +842,16 @@
   
   <div class="taskbar-auth" id="taskbar-auth">
     <!-- Auth content injected by JS -->
+  </div>
+</div>
+
+<!-- Page Content -->
+<div class="page-content">
+  <div class="welcome-section">
+    <h1>🎮 Welcome to BrownDogGames</h1>
+    <p>Your premium destination for adult cartoon games and interactive entertainment.</p>
+    <p>Choose your access level above to get started - VIP members get exclusive access to premium content and the dashboard!</p>
+    <p>The taskbar is now fixed at the top of every page for consistent navigation.</p>
   </div>
 </div>
 
@@ -1397,12 +1478,24 @@
           }
         };
 
+        // Dashboard button with VIP lock
         const dashboardBtn = document.createElement('button');
         dashboardBtn.textContent = 'Dashboard';
-        dashboardBtn.onclick = () => {
-          dropdown.style.display = 'none';
-          window.location.href = 'dashboard.html';
-        };
+        
+        const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+        if (!hasVIPAccess && !currentVIPStatus) {
+          dashboardBtn.classList.add('vip-locked');
+          dashboardBtn.onclick = (e) => {
+            e.preventDefault();
+            // Optional: Show upgrade prompt
+            alert('Dashboard access is VIP only! Upgrade to VIP for just £2/month to unlock premium features.');
+          };
+        } else {
+          dashboardBtn.onclick = () => {
+            dropdown.style.display = 'none';
+            window.location.href = 'dashboard.html';
+          };
+        }
 
         const logoutBtn = document.createElement('button');
         logoutBtn.textContent = 'Logout';
