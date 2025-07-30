@@ -1664,10 +1664,57 @@
       border-top: 1px solid #2f1a39;
     }
 
+    .extra-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
     .extra-creator {
       font-size: 0.8rem;
       color: #888;
-      text-align: center;
+      text-align: left;
+      flex: 1;
+    }
+
+    .like-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .like-btn {
+      background: none;
+      border: 2px solid #ff4f9f;
+      color: #ff4f9f;
+      border-radius: 20px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .like-btn:hover {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      transform: scale(1.05);
+    }
+
+    .like-btn.liked {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      border-color: #ff4f9f;
+    }
+
+    .like-count {
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 0.9rem;
     }
 
     @media (min-width: 600px) {
@@ -1675,6 +1722,10 @@
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
+      }
+      
+      .extra-actions {
+        width: 100%;
       }
       
       .extra-creator {
@@ -2198,7 +2249,89 @@
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Load VIP Extras
+    // Get likes for a specific extra
+    async function getExtraLikes(extraId) {
+      try {
+        const { count, error } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('username', `extra_${extraId}`);
+
+        if (error) throw error;
+        return count || 0;
+      } catch (error) {
+        console.error('Error getting extra likes:', error);
+        return 0;
+      }
+    }
+
+    // Check if current user has liked an extra
+    async function hasUserLikedExtra(extraId) {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) return false;
+
+      try {
+        const { data, error } = await supabase
+          .from('vip_page_views')
+          .select('id')
+          .eq('username', `extra_${extraId}`)
+          .eq('viewer_id', session.session.user.id)
+          .single();
+
+        return !error && data;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    // Toggle like for an extra
+    async function toggleExtraLike(extraId) {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) {
+        alert('Please login to like extras');
+        return false;
+      }
+
+      const userId = session.session.user.id;
+      const username = `extra_${extraId}`;
+
+      try {
+        // Check if already liked
+        const { data: existingLike, error: checkError } = await supabase
+          .from('vip_page_views')
+          .select('id')
+          .eq('username', username)
+          .eq('viewer_id', userId)
+          .single();
+
+        if (existingLike) {
+          // Remove like
+          const { error: deleteError } = await supabase
+            .from('vip_page_views')
+            .delete()
+            .eq('id', existingLike.id);
+
+          if (deleteError) throw deleteError;
+          return false; // unliked
+        } else {
+          // Add like
+          const { error: insertError } = await supabase
+            .from('vip_page_views')
+            .insert([{
+              username: username,
+              viewer_id: userId,
+              page_url: window.location.href
+            }]);
+
+          if (insertError) throw insertError;
+          return true; // liked
+        }
+      } catch (error) {
+        console.error('Error toggling like:', error);
+        alert('Failed to update like');
+        return null;
+      }
+    }
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
       console.log('Loading VIP extras...');
@@ -2270,7 +2403,34 @@
       }
     }
 
-    // Add VIP Extra
+    // Handle like button clicks
+    window.handleLikeClick = async function(extraId) {
+      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${extraId}')"]`);
+      const likeCountSpan = likeBtn.parentElement.querySelector('.like-count');
+      
+      // Disable button during request
+      likeBtn.disabled = true;
+      
+      const isLiked = await toggleExtraLike(extraId);
+      
+      if (isLiked !== null) {
+        // Update UI
+        if (isLiked) {
+          likeBtn.innerHTML = '❤️ Like';
+          likeBtn.classList.add('liked');
+        } else {
+          likeBtn.innerHTML = '🤍 Like';
+          likeBtn.classList.remove('liked');
+        }
+        
+        // Update count
+        const newCount = await getExtraLikes(extraId);
+        likeCountSpan.textContent = newCount;
+      }
+      
+      // Re-enable button
+      likeBtn.disabled = false;
+    };
     async function addVipExtra(extraData) {
       if (!currentUser) {
         alert('Please login first');
