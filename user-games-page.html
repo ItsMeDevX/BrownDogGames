@@ -1747,6 +1747,165 @@
       z-index: 3;
     }
 
+    /* Main Like Section Styles */
+    .main-content {
+      max-width: 600px;
+      width: 100%;
+      background: linear-gradient(145deg, #3a2147, #241834);
+      border: 2px solid #ff4f9f;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+
+    .main-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .main-content:hover::before {
+      left: 100%;
+    }
+
+    #like-status {
+      margin: 20px 0 30px;
+      font-size: 1.2rem;
+      color: #e0e0e0;
+      line-height: 1.4;
+      position: relative;
+      z-index: 2;
+      opacity: 0.9;
+      font-family: 'Rubik Mono One', sans-serif;
+    }
+
+    #main-like-btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: bold;
+      font-family: 'Rubik Mono One', sans-serif;
+      border-radius: 25px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+      margin-top: auto;
+    }
+
+    #main-like-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    #main-like-btn:hover::before {
+      left: 100%;
+    }
+
+    #main-like-btn:disabled {
+      background: linear-gradient(135deg, #666, #444);
+      cursor: not-allowed;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #main-like-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+    }
+
+    /* Game Like System Styles */
+    .game-like-section {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 79, 159, 0.3);
+      position: relative;
+      z-index: 2;
+    }
+
+    .game-like-btn {
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
+    }
+
+    .game-like-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
+    }
+
+    .game-like-btn:disabled {
+      background: linear-gradient(135deg, #666, #444);
+      cursor: not-allowed;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-like-btn.liked {
+      background: linear-gradient(135deg, #ff69b4, #ff1493);
+      animation: pulse 0.3s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .game-like-count {
+      color: #ff82ba;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .game-login-prompt {
+      font-size: 0.7rem;
+      color: #ddd;
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0.8;
+    }
+
     #chat-container {
       max-width: 800px;
       width: 100%;
@@ -1805,6 +1964,32 @@
       padding: 1rem;
       border-radius: 10px;
     }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 25px;
+      }
+      
+      #main-like-btn {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+      }
+
+      .game-like-section {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+      }
+      
+      .game-like-btn {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+      }
+      
+      .game-like-count {
+        font-size: 0.7rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1812,13 +1997,20 @@
   <a href="user-games.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content</h1>
 
+  <section class="content-section" id="like-section">
+    <div class="main-content">
+      <p id="like-status">Loading...</p>
+      <button id="main-like-btn">Like</button>
+    </div>
+  </section>
+
   <section class="content-section" id="games-section">
     <h2>Games</h2>
     <div id="games" class="content-container">Loading games...</div>
   </section>
 
   <section id="chat-container">
-    <h2>Chat with <span id="chat-username"></span></h2>
+    <h2>Chat with <span id="chat-username">Loading...</span></h2>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
@@ -1843,6 +2035,259 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
+
+  let currentUser = null;
+  let totalLikes = 0;
+  let userHasLiked = false;
+  let gameLikes = {};
+  let userLikedGames = new Set();
+
+  // Get current user
+  async function getCurrentUser() {
+    const result = await supabase.auth.getUser();
+    if (result.error || !result.data.user) return null;
+    return result.data.user;
+  }
+
+  // Get total likes - includes main page AND all game likes
+  async function getTotalLikes() {
+    if (!username) return 0;
+    
+    // Get main page likes
+    const mainPageResult = await supabase
+      .from('vip_page_views')
+      .select('*', { count: 'exact', head: true })
+      .eq('username', username);
+    
+    // Get all game likes (any username that starts with username_game_)
+    const gameResult = await supabase
+      .from('vip_page_views')
+      .select('*', { count: 'exact', head: true })
+      .like('username', username + '_game_%');
+    
+    const mainPageCount = mainPageResult.count || 0;
+    const gameCount = gameResult.count || 0;
+    
+    return mainPageCount + gameCount;
+  }
+
+  // Check if current user has liked this user's page
+  async function hasUserLiked(userId) {
+    if (!userId || !username) return false;
+    const result = await supabase
+      .from('vip_page_views')
+      .select('user_id')
+      .eq('user_id', userId)
+      .eq('username', username)
+      .maybeSingle();
+    return !!result.data;
+  }
+
+  // Get game likes using vip_page_views table
+  async function getGameLikes(gameIds) {
+    if (gameIds.length === 0) return {};
+    
+    const gameUsernames = gameIds.map(id => username + '_game_' + id);
+    
+    const result = await supabase
+      .from('vip_page_views')
+      .select('username, view_count')
+      .in('username', gameUsernames);
+
+    if (result.error) {
+      console.error('Error fetching game likes:', result.error);
+      return {};
+    }
+
+    const likes = {};
+    result.data.forEach(item => {
+      const gameId = item.username.split('_game_')[1];
+      likes[gameId] = item.view_count || 0;
+    });
+    
+    return likes;
+  }
+
+  // Get user's liked games using vip_page_views table
+  async function getUserLikedGames(userId, gameIds) {
+    if (!userId || gameIds.length === 0) return new Set();
+    
+    const gameUsernames = gameIds.map(id => username + '_game_' + id);
+    
+    const result = await supabase
+      .from('vip_page_views')
+      .select('username')
+      .eq('user_id', userId)
+      .in('username', gameUsernames);
+
+    if (result.error) {
+      console.error('Error fetching user liked games:', result.error);
+      return new Set();
+    }
+
+    return new Set(result.data.map(item => item.username.split('_game_')[1]));
+  }
+
+  // Like the user's page (main page like)
+  async function likeUserPage() {
+    if (!currentUser) {
+      alert('Please log in to like this page');
+      return false;
+    }
+
+    if (userHasLiked) {
+      return false; // Already liked
+    }
+
+    const now = new Date().toISOString();
+
+    // Check if the user has already liked the page
+    const existingResult = await supabase
+      .from('vip_page_views')
+      .select('view_count, first_viewed_at')
+      .eq('user_id', currentUser.id)
+      .eq('username', username)
+      .single();
+
+    if (existingResult.data) {
+      // If the user already liked, update the view count and last viewed timestamp
+      const updateResult = await supabase
+        .from('vip_page_views')
+        .update({
+          view_count: existingResult.data.view_count + 1,
+          last_viewed_at: now,
+        })
+        .eq('user_id', currentUser.id)
+        .eq('username', username);
+
+      if (updateResult.error) {
+        console.error('Error updating like count:', updateResult.error);
+        return false;
+      }
+
+      return true;
+    }
+
+    // If the user hasn't liked, insert a new row with the current timestamp
+    const insertResult = await supabase
+      .from('vip_page_views')
+      .insert([{
+        user_id: currentUser.id,
+        username: username,
+        view_count: 1,
+        first_viewed_at: now,
+        last_viewed_at: now,
+      }]);
+
+    if (insertResult.error) {
+      console.error('Insert error:', insertResult.error);
+      return false;
+    }
+
+    return true;
+  }
+
+  // Like/unlike game using vip_page_views table
+  async function toggleGameLike(gameId) {
+    if (!currentUser) {
+      alert('Please log in to like games');
+      return;
+    }
+
+    const gameUsername = username + '_game_' + gameId;
+    const isLiked = userLikedGames.has(gameId);
+    const now = new Date().toISOString();
+
+    if (isLiked) {
+      // Unlike - delete the record
+      const result = await supabase
+        .from('vip_page_views')
+        .delete()
+        .eq('user_id', currentUser.id)
+        .eq('username', gameUsername);
+
+      if (result.error) {
+        console.error('Error unliking game:', result.error);
+        return;
+      }
+
+      userLikedGames.delete(gameId);
+      gameLikes[gameId] = Math.max(0, (gameLikes[gameId] || 1) - 1);
+      
+      // Update total likes count since we removed a like
+      totalLikes = await getTotalLikes();
+      updateLikeStatus();
+    } else {
+      // Like - insert new record
+      const result = await supabase
+        .from('vip_page_views')
+        .insert({
+          user_id: currentUser.id,
+          username: gameUsername,
+          view_count: 1,
+          first_viewed_at: now,
+          last_viewed_at: now
+        });
+
+      if (result.error) {
+        console.error('Error liking game:', result.error);
+        return;
+      }
+
+      userLikedGames.add(gameId);
+      gameLikes[gameId] = (gameLikes[gameId] || 0) + 1;
+      
+      // Update total likes count since we added a new like
+      totalLikes = await getTotalLikes();
+      updateLikeStatus();
+    }
+
+    // Update UI
+    updateGameLikeButton(gameId);
+  }
+
+  // Update game like button appearance
+  function updateGameLikeButton(gameId) {
+    const likeBtn = document.querySelector('[data-game-id="' + gameId + '"] .game-like-btn');
+    const likeCount = document.querySelector('[data-game-id="' + gameId + '"] .game-like-count');
+    
+    if (!likeBtn || !likeCount) return;
+
+    const isLiked = userLikedGames.has(gameId);
+    const count = gameLikes[gameId] || 0;
+
+    likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+    likeBtn.className = 'game-like-btn' + (isLiked ? ' liked' : '');
+    likeCount.innerHTML = '❤️ ' + count;
+
+    if (isLiked) {
+      likeBtn.classList.add('liked');
+    }
+  }
+
+  // Update like status display
+  function updateLikeStatus() {
+    const status = document.getElementById('like-status');
+    const likeBtn = document.getElementById('main-like-btn');
+    
+    if (!status || !likeBtn) return;
+
+    if (!currentUser) {
+      status.textContent = '❌ Please log in to like this page.';
+      likeBtn.style.display = 'none';
+      return;
+    }
+
+    if (userHasLiked) {
+      status.textContent = '❤️ You already liked ' + username + "'s page. Total likes: " + totalLikes;
+      likeBtn.disabled = true;
+    } else {
+      status.textContent = '👍 Total likes for ' + username + ': ' + totalLikes;
+      likeBtn.disabled = false;
+    }
+
+    likeBtn.style.display = 'inline-block';
+  }
 
   // Game type detection
   function detectGameType(url) {
@@ -2088,54 +2533,85 @@
   async function incrementVipPageView() {
     if (!username) return;
 
-    const { data: userData, error: userError } = await supabase
+    const userData = await supabase
       .from('users')
       .select('id')
       .eq('username', username)
       .single();
 
-    if (userError || !userData) {
-      console.error('User not found for VIP increment:', userError);
+    if (userData.error || !userData.data) {
+      console.error('User not found for VIP increment:', userData.error);
       return;
     }
 
     const now = new Date().toISOString();
 
-    const { data, error } = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.id,
+    const result = await supabase.rpc('increment_vip_page_view', {
+      in_user_id: userData.data.id,
       in_username: username,
       in_now: now
     });
 
-    if (error) {
-      console.error('Error incrementing VIP page views:', error);
+    if (result.error) {
+      console.error('Error incrementing VIP page views:', result.error);
     } else {
-      console.log(`Incremented VIP page views for ${username}`);
+      console.log('Incremented VIP page views for ' + username);
     }
   }
 
   async function loadGames() {
-    const { data, error } = await supabase
+    const result = await supabase
       .from('game_submissions')
       .select('*')
       .eq('github_user', username)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      gamesContainer.innerHTML = `<div class="no-content">❌ Error loading games: ${error.message}</div>`;
+    if (result.error) {
+      gamesContainer.innerHTML = '<div class="no-content">❌ Error loading games: ' + result.error.message + '</div>';
       return;
     }
 
-    if (!data.length) {
-      gamesContainer.innerHTML = `<p class="no-content">No games submitted by ${username} yet.</p>`;
+    if (!result.data.length) {
+      gamesContainer.innerHTML = '<p class="no-content">No games submitted by ' + username + ' yet.</p>';
       return;
+    }
+
+    // Get current user and load like status
+    currentUser = await getCurrentUser();
+    totalLikes = await getTotalLikes();
+    if (currentUser) {
+      userHasLiked = await hasUserLiked(currentUser.id);
+    }
+
+    // Update the like status display
+    updateLikeStatus();
+
+    // Add event listener for main like button
+    const mainLikeBtn = document.getElementById('main-like-btn');
+    if (mainLikeBtn) {
+      mainLikeBtn.addEventListener('click', async function() {
+        const success = await likeUserPage();
+        if (success) {
+          userHasLiked = true;
+          totalLikes = await getTotalLikes();
+          updateLikeStatus();
+        }
+      });
+    }
+
+    // Get game likes data
+    const gameIds = result.data.map(game => game.id || 'game-' + result.data.indexOf(game));
+    gameLikes = await getGameLikes(gameIds);
+    if (currentUser) {
+      userLikedGames = await getUserLikedGames(currentUser.id, gameIds);
     }
 
     gamesContainer.innerHTML = '';
-    data.forEach((game, index) => {
+    result.data.forEach(function(game, index) {
+      const gameId = game.id || 'game-' + index;
       const card = document.createElement('article');
       card.className = 'card';
-      card.dataset.gameId = game.id || `game-${index}`;
+      card.dataset.gameId = gameId;
 
       // Add game type badge
       if (game.embed_url) {
@@ -2162,7 +2638,7 @@
         const img = document.createElement('img');
         img.className = 'thumbnail';
         img.src = convertDriveLinkToThumbnail(game.screenshot_url);
-        img.alt = `Screenshot of ${game.title}`;
+        img.alt = 'Screenshot of ' + game.title;
         card.appendChild(img);
       }
 
@@ -2186,46 +2662,82 @@
         }
       }
 
+      // Add game like section
+      const gameLikeSection = document.createElement('div');
+      gameLikeSection.className = 'game-like-section';
+
+      const gameLikeBtn = document.createElement('button');
+      gameLikeBtn.className = 'game-like-btn';
+      const isLiked = userLikedGames.has(gameId);
+      gameLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+      if (isLiked) gameLikeBtn.classList.add('liked');
+      
+      if (!currentUser) {
+        gameLikeBtn.disabled = true;
+        gameLikeBtn.innerHTML = '🤍 Like';
+      }
+
+      gameLikeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleGameLike(gameId);
+      });
+
+      const gameLikeCount = document.createElement('div');
+      gameLikeCount.className = 'game-like-count';
+      gameLikeCount.innerHTML = '❤️ ' + (gameLikes[gameId] || 0);
+
+      gameLikeSection.appendChild(gameLikeBtn);
+      gameLikeSection.appendChild(gameLikeCount);
+      card.appendChild(gameLikeSection);
+
+      // Add login prompt if user not logged in
+      if (!currentUser) {
+        const loginPrompt = document.createElement('p');
+        loginPrompt.className = 'game-login-prompt';
+        loginPrompt.textContent = 'Log in to like games';
+        card.appendChild(loginPrompt);
+      }
+
       gamesContainer.appendChild(card);
     });
   }
 
   async function loadChatMessages() {
-    const { data, error } = await supabase
+    const result = await supabase
       .from('messages')
       .select('*')
       .eq('github_username', username)
       .order('created_at', { ascending: true });
 
-    if (error) {
-      messagesDiv.innerHTML = `<p style="color:red;">Error loading messages: ${error.message}</p>`;
-      console.error(error);
+    if (result.error) {
+      messagesDiv.innerHTML = '<p style="color:red;">Error loading messages: ' + result.error.message + '</p>';
+      console.error(result.error);
       return;
     }
 
-    if (!data.length) {
+    if (!result.data.length) {
       messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
       return;
     }
 
-    messagesDiv.innerHTML = data.map(m => 
-      `<div><strong>${m.github_username || 'Guest'}:</strong> ${escapeHtml(m.content)}</div>` 
-    ).join('');
+    messagesDiv.innerHTML = result.data.map(function(m) {
+      return '<div><strong>' + (m.github_username || 'Guest') + ':</strong> ' + escapeHtml(m.content) + '</div>';
+    }).join('');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const message = msgInput.value.trim();
     if (!message) return;
 
-    const { error } = await supabase
+    const result = await supabase
       .from('messages')
       .insert([{ github_username: username, content: message }]);
 
-    if (error) {
-      alert('Failed to send message: ' + error.message);
+    if (result.error) {
+      alert('Failed to send message: ' + result.error.message);
       return;
     }
 
@@ -2234,7 +2746,7 @@
   });
 
   function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (m) => {
+    return text.replace(/[&<>"']/g, function(m) {
       switch(m) {
         case '&': return '&amp;';
         case '<': return '&lt;';
@@ -2251,7 +2763,7 @@
     const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
     if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}`;
+      return 'https://drive.google.com/thumbnail?id=' + fileId;
     }
     return url;
   }
@@ -2271,9 +2783,9 @@
   if (!username) {
     pageTitle.textContent = 'Error';
     chatHeading.textContent = 'Error';
-    gamesContainer.innerHTML = `<p class="no-content">❌ No username provided in URL.</p>`;
+    gamesContainer.innerHTML = '<p class="no-content">❌ No username provided in URL.</p>';
   } else {
-    pageTitle.textContent = `${username}'s Content`;
+    pageTitle.textContent = username + "'s Content";
     chatHeading.textContent = username;
 
     incrementVipPageView();
@@ -2281,468 +2793,6 @@
     loadChatMessages();
   }
 </script>
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Show Love to VIP Member</title>
- <style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-
-  * { box-sizing: border-box; }
-
-  body {
-    font-family: 'Rubik Mono One', sans-serif;
-    background-color: #1b1b2e;
-    background-image: linear-gradient(135deg, #361c3e, #1a1328);
-    color: #fefefe;
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-
-
-
-  header {
-    text-align: center;
-    padding: 2rem 1rem;
-    max-width: 800px;
-    width: 100%;
-  }
-
-  header h1 {
-    font-size: 3.2rem;
-    color: #ff4f9f;
-    text-shadow: 2px 2px 0 #ff4f9f;
-    margin: 1rem 0;
-    width: 100%;
-    max-width: 800px;
-    font-family: 'Rubik Mono One', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-
-  .main-content {
-    max-width: 600px;
-    width: 100%;
-    background: linear-gradient(145deg, #3a2147, #241834);
-    border: 2px solid #ff4f9f;
-    border-radius: 16px;
-    padding: 40px;
-    text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 40px;
-  }
-
-  .main-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
-    transition: left 0.6s ease;
-  }
-
-  .main-content:hover::before {
-    left: 100%;
-  }
-
-  #status {
-    margin: 20px 0 30px;
-    font-size: 1.2rem;
-    color: #e0e0e0;
-    line-height: 1.4;
-    position: relative;
-    z-index: 2;
-    opacity: 0.9;
-    font-family: 'Rubik Mono One', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  #like-btn {
-    display: inline-block;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #ff4f9f, #ff1493);
-    color: #ffffff;
-    font-size: 1rem;
-    font-weight: bold;
-    font-family: 'Rubik Mono One', sans-serif;
-    border-radius: 25px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-    position: relative;
-    z-index: 2;
-    overflow: hidden;
-    margin-top: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  #like-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-  }
-
-  #like-btn:hover::before {
-    left: 100%;
-  }
-
-  #like-btn:disabled {
-    background: linear-gradient(135deg, #666, #444);
-    cursor: not-allowed;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  }
-
-  #like-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #ff82ba, #ff69b4);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-  }
-
-  .footer-card {
-    max-width: 800px;
-    width: 100%;
-    background: linear-gradient(145deg, #3a2147, #241834);
-    border: 2px solid #ff4f9f;
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .footer-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
-    transition: left 0.6s ease;
-  }
-
-  .footer-card:hover::before {
-    left: 100%;
-  }
-
-  .footer-card h2 {
-    font-size: 1.6rem;
-    color: #ff4f9f;
-    margin-bottom: 15px;
-    text-align: center;
-    text-shadow: 2px 2px 0 #ff4f9f;
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: 800px;
-    font-family: 'Rubik Mono One', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-
-  .footer-card p {
-    font-size: 1rem;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #e0e0e0;
-    line-height: 1.4;
-    opacity: 0.9;
-    position: relative;
-    z-index: 2;
-    font-family: 'Rubik Mono One', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  .perks-list {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-    display: grid;
-    gap: 12px;
-    position: relative;
-    z-index: 2;
-  }
-
-  .perks-list li {
-    background: linear-gradient(135deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.05));
-    padding: 12px 20px;
-    border-radius: 12px;
-    border-left: 4px solid #ff4f9f;
-    font-size: 1rem;
-    color: #e0e0e0;
-    transition: all 0.3s ease;
-    line-height: 1.4;
-    font-family: 'Rubik Mono One', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  .perks-list li:hover {
-    background: linear-gradient(135deg, rgba(255, 79, 159, 0.15), rgba(255, 130, 186, 0.08));
-    transform: translateX(8px);
-  }
-
-  .signup-btn {
-    display: inline-block;
-    background: linear-gradient(135deg, #ff4f9f, #ff1493);
-    color: #ffffff;
-    padding: 12px 20px;
-    text-decoration: none;
-    font-weight: bold;
-    font-family: 'Rubik Mono One', sans-serif;
-    border-radius: 25px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-    font-size: 1rem;
-    position: relative;
-    overflow: hidden;
-    margin-top: 10px;
-    cursor: pointer;
-    z-index: 2;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  .signup-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-  }
-
-  .signup-btn:hover::before {
-    left: 100%;
-  }
-
-  .signup-btn:hover {
-    background: linear-gradient(135deg, #ff82ba, #ff69b4);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-  }
-
-  @media (max-width: 768px) {
-    header h1 {
-      font-size: 2.2rem;
-    }
-    
-    .main-content, .footer-card {
-      padding: 25px;
-    }
-    
-    #like-btn, .signup-btn {
-      padding: 10px 16px;
-      font-size: 0.8rem;
-    }
-  }
-</style>
-</head>
-<body>
-  <header>
-    <h1 id="heading">Show Some Love ❤️</h1>
-  </header>
-  
-  <div class="main-content">
-    <p id="status"></p>
-    <button id="like-btn">Like</button>
-  </div>
-
-  <div class="footer-card">
-    <h2>💡 Join the community and unlock exclusive perks!</h2>
-    <p>By signing up as a VIP member, you can support your favorite creators and get access to special content and rewards. Your likes help the creators grow and earn rewards, too!</p>
-    <p>Become a VIP today and enjoy:</p>
-    <ul class="perks-list">
-      <li>🔓 Access to exclusive content</li>
-      <li>💎 VIP-only features</li>
-      <li>💖 Direct impact on the creators you love</li>
-    </ul>
-    <p style="margin-top: 30px;">Ready to make a difference?</p>
-    <a href="javascript:void(0);" onclick="window.scrollTo(0, 0);" class="signup-btn">
-      Sign in now with GitHub!
-    </a>
-  </div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const likeBtn = document.getElementById('like-btn');
-    const status = document.getElementById('status');
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const pageOwner = urlParams.get('user');
-
-    // Handle error if no user in the URL
-    if (!pageOwner) {
-      document.title = 'Error';
-      document.getElementById('heading').textContent = '❌ No username in URL.';
-      likeBtn.style.display = 'none';
-      status.textContent = '';
-    } else {
-      document.title = `Show Love to ${pageOwner}`;
-      document.getElementById('heading').textContent = `Show Some Love to ${pageOwner} ❤️`;
-    }
-
-    // Function to get logged-in user
-    async function getUser() {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) return null;
-      return user;
-    }
-
-    // Check if the user has already liked the page
-    async function hasLiked(userId) {
-      if (!userId || !pageOwner) return false;
-      const { data, error } = await supabase
-        .from('vip_page_views')
-        .select('user_id')
-        .eq('user_id', userId)
-        .eq('username', pageOwner)
-        .maybeSingle();
-      return !!data;
-    }
-
-    // Get the total like count for the page
-    async function getLikeCount() {
-      if (!pageOwner) return 0;
-      const { count, error } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', pageOwner);
-      return count || 0;
-    }
-
-    // Update the status and like button based on the user's status
-    async function updateStatus() {
-      const user = await getUser();
-      if (!user) {
-        status.textContent = '❌ Please log in to like this page.';
-        likeBtn.style.display = 'none';  // Hide like button if not logged in
-        return;
-      }
-
-      const liked = await hasLiked(user.id);
-      const count = await getLikeCount();
-
-      if (liked) {
-        status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${count}`;
-        likeBtn.disabled = true;  // Disable the button if already liked
-      } else {
-        status.textContent = `👍 Total likes for ${pageOwner}: ${count}`;
-        likeBtn.disabled = false;  // Enable button if not liked
-      }
-
-      likeBtn.style.display = 'inline-block';  // Show the like button if logged in
-    }
-
-    // Like the page when the button is clicked
-    likeBtn.addEventListener('click', async () => {
-      const user = await getUser();
-      if (!user) {
-        status.textContent = '❌ You must be logged in to like this page.';
-        return;
-      }
-
-      const liked = await hasLiked(user.id);
-      if (liked) {
-        status.textContent = `❤️ You've already liked ${pageOwner}'s page.`;
-        likeBtn.disabled = true;
-        return;
-      }
-
-      const now = new Date().toISOString();
-
-      // Check if the user has already liked the page
-      const { data: existingLike, error: likeError } = await supabase
-        .from('vip_page_views')
-        .select('view_count, first_viewed_at')
-        .eq('user_id', user.id)
-        .eq('username', pageOwner)
-        .single();
-
-      if (existingLike) {
-        // If the user already liked, update the view count and last viewed timestamp
-        const { error: updateError } = await supabase
-          .from('vip_page_views')
-          .update({
-            view_count: existingLike.view_count + 1,
-            last_viewed_at: now,
-          })
-          .eq('user_id', user.id)
-          .eq('username', pageOwner);
-
-        if (updateError) {
-          console.error('Error updating like count:', updateError);
-          status.textContent = '❌ Error updating like count.';
-          return;
-        }
-
-        status.textContent = `❤️ You already liked ${pageOwner}'s page. Total likes: ${existingLike.view_count + 1}`;
-        return;
-      }
-
-      // If the user hasn't liked, insert a new row with the current timestamp
-      const { error: insertError } = await supabase
-        .from('vip_page_views')
-        .insert([{
-          user_id: user.id,
-          username: pageOwner,
-          view_count: 1,
-          first_viewed_at: now,  // Set the first view time only when they like the page for the first time
-          last_viewed_at: now,
-        }]);
-
-      if (insertError) {
-        console.error('Insert error:', insertError);
-        status.textContent = '❌ Error liking page. Please try again.';
-        return;
-      }
-
-      const count = await getLikeCount();
-      likeBtn.disabled = true;
-      status.textContent = `🎉 Thanks! You liked ${pageOwner}'s page. Total likes: ${count}`;
-    });
-
-    // Initialize the page status and like button
-    updateStatus();
-  </script>
 
 </body>
 </html>
