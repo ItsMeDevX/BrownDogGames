@@ -1514,17 +1514,19 @@
   <title>Leaderboard - Top 10 Users</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+    
     body {
       background-color: #1e1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
       font-family: 'Rubik Mono One', sans-serif;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 40px auto;
       padding: 20px;
       line-height: 1.6;
       text-align: left;
     }
+    
     h1 {
       color: #ff69b4;
       font-size: 2.8rem;
@@ -1532,59 +1534,263 @@
       margin-bottom: 1rem;
       text-align: center;
     }
+    
     .intro {
       font-size: 1.1rem;
       margin-bottom: 1.5rem;
       text-align: center;
       color: #ff8edb;
     }
+    
+    .loading {
+      text-align: center;
+      color: #ff69b4;
+      font-size: 1.2rem;
+      margin: 2rem 0;
+    }
+    
+    .stats-summary {
+      background-color: #2d1a3a;
+      border: 2px solid #ff69b4;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .stat-item {
+      background-color: #3b2750;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    
+    .stat-value {
+      color: #8dffa1;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+    
+    .stat-label {
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 30px;
+      background-color: #2d1a3a;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
+    
     th, td {
       border: 1px solid #ff69b4;
-      padding: 12px 10px;
+      padding: 15px 12px;
       text-align: left;
       vertical-align: top;
     }
+    
     th {
-      background-color: #2d1a3a;
-      width: 35%;
+      background-color: #3b2750;
+      color: #ff69b4;
+      font-weight: bold;
+      text-align: center;
     }
+    
     tbody tr:nth-child(odd) {
       background-color: #2a2040;
+    }
+    
+    tbody tr:hover {
+      background-color: #3d2952;
+      transition: background-color 0.2s ease;
+    }
+    
+    .rank-cell {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      width: 80px;
+    }
+    
+    .username-cell {
+      color: #ff8edb;
+      font-weight: bold;
+      width: 200px;
+    }
+    
+    .likes-breakdown {
+      font-size: 0.85rem;
+      color: #ffc0cb;
+      opacity: 0.9;
+    }
+    
+    .total-likes {
+      color: #8dffa1;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    
+    .likes-cell {
+      width: 250px;
+    }
+    
+    .earnings-cell {
+      color: #8dffa1;
+      text-align: right;
+      font-weight: bold;
+      width: 120px;
+    }
+    
+    .podium {
+      display: flex;
+      justify-content: center;
+      align-items: end;
+      gap: 1rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .podium-item {
+      background: linear-gradient(145deg, #3a2147, #241834);
+      border: 2px solid #ff69b4;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      min-width: 180px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .podium-item.first {
+      order: 2;
+      transform: scale(1.1);
+      border-color: #ffd700;
+      background: linear-gradient(145deg, #4a3157, #342244);
+    }
+    
+    .podium-item.second {
+      order: 1;
+      transform: scale(1.05);
+      border-color: #c0c0c0;
+    }
+    
+    .podium-item.third {
+      order: 3;
+      transform: scale(1.05);
+      border-color: #cd7f32;
+    }
+    
+    .podium-rank {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .podium-username {
+      color: #ff69b4;
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .podium-likes {
+      color: #8dffa1;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+    
+    @media (max-width: 768px) {
+      table {
+        font-size: 0.9rem;
+      }
+      
+      th, td {
+        padding: 10px 8px;
+      }
+      
+      .podium {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .podium-item {
+        min-width: 150px;
+        transform: none !important;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   </style>
 </head>
 <body>
-
   <h1>🏆 Leaderboard</h1>
-  <p class="intro">Top 10 users ranked by total likes 💖</p>
-
-  <table>
+  <p class="intro">Top creators ranked by total likes across all content 💖</p>
+  
+  <div class="loading" id="loading">
+    🔄 Calculating comprehensive likes across all content...
+  </div>
+  
+  <div class="stats-summary" id="stats-summary" style="display: none;">
+    <h3 style="color: #ff69b4; margin: 0 0 1rem 0;">📊 Platform Statistics</h3>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-value" id="totalUsers">0</div>
+        <div class="stat-label">Active Creators</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="totalLikes">0</div>
+        <div class="stat-label">Total Likes</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="totalEarnings">£0.00</div>
+        <div class="stat-label">Total Earnings</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="avgLikes">0</div>
+        <div class="stat-label">Avg Likes/Creator</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="podium" style="display: none;"></div>
+  
+  <table id="leaderboard-table" style="display: none;">
     <thead>
       <tr>
         <th>Rank</th>
-        <th>Username</th>
+        <th>Creator</th>
         <th>Total Likes</th>
+        <th>Breakdown</th>
+        <th>Earnings</th>
       </tr>
     </thead>
     <tbody id="leaderboard-body">
-      <tr><td colspan="3">Loading leaderboard...</td></tr>
     </tbody>
   </table>
+  
+  <div id="error-message" style="display: none; text-align: center; color: #ff8d8d; font-size: 1.1rem; margin: 2rem 0;">
+    😢 Error loading leaderboard
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
+    
     const supabase = createClient(
       'https://fwslmbzfukriibnkpzou.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
-
-    const leaderboardBody = document.getElementById('leaderboard-body');
 
     function getRankEmoji(index) {
       if (index === 0) return '🥇';
@@ -1593,50 +1799,163 @@
       return `#${index + 1}`;
     }
 
-    async function loadLeaderboard() {
+    // Function to get comprehensive likes breakdown for ALL users
+    async function getAllUsersLikesBreakdown() {
       try {
-        // Query vip_page_views grouped by user_id, username, summing view_count
-        let { data, error } = await supabase
+        console.log('🔍 Starting comprehensive likes calculation...');
+        
+        // Get all records from vip_page_views
+        const { data: allViews, error } = await supabase
           .from('vip_page_views')
-          .select('user_id, username, view_count')
-          .order('view_count', { ascending: false });
+          .select('username, view_count');
 
         if (error) throw error;
-        if (!data || data.length === 0) {
-          leaderboardBody.innerHTML = `<tr><td colspan="3">No users found.</td></tr>`;
-          return;
-        }
 
-        // Aggregate views per user (sum views per username)
-        const userLikesMap = {};
+        console.log(`📊 Found ${allViews?.length || 0} total view records`);
 
-        data.forEach(({ username, view_count }) => {
-          if (!username) username = 'Unknown';
-          if (!userLikesMap[username]) userLikesMap[username] = 0;
-          userLikesMap[username] += view_count;
+        const usersLikesMap = {};
+
+        allViews.forEach(view => {
+          const username = view.username;
+          const viewCount = view.view_count || 0;
+          
+          if (!username) return;
+
+          // Determine the base username and content type
+          let baseUsername = username;
+          let contentType = 'page';
+
+          if (username.includes('_video_')) {
+            baseUsername = username.split('_video_')[0];
+            contentType = 'video';
+          } else if (username.includes('_game_')) {
+            baseUsername = username.split('_game_')[0];
+            contentType = 'game';
+          } else if (username.includes('_artwork_')) {
+            baseUsername = username.split('_artwork_')[0];
+            contentType = 'art';
+          }
+
+          // Initialize user if not exists
+          if (!usersLikesMap[baseUsername]) {
+            usersLikesMap[baseUsername] = {
+              username: baseUsername,
+              page: 0,
+              videos: 0,
+              games: 0,
+              art: 0,
+              total: 0
+            };
+          }
+
+          // Add to appropriate category
+          usersLikesMap[baseUsername][contentType === 'video' ? 'videos' : contentType === 'game' ? 'games' : contentType] += viewCount;
         });
 
-        // Convert to array and sort by total likes desc
-        const sortedUsers = Object.entries(userLikesMap)
-          .map(([username, total_likes]) => ({ username, total_likes }))
-          .sort((a, b) => b.total_likes - a.total_likes)
-          .slice(0, 10); // top 10
+        // Calculate totals and convert to array
+        const usersArray = Object.values(usersLikesMap).map(user => {
+          user.total = user.page + user.videos + user.games + user.art;
+          return user;
+        });
 
-        leaderboardBody.innerHTML = sortedUsers.map((user, idx) => `
-          <tr>
-            <td>${getRankEmoji(idx)}</td>
-            <td>@${user.username}</td>
-            <td>❤️ ${user.total_likes}</td>
-          </tr>
-        `).join('');
-      } catch (err) {
-        console.error('Error loading leaderboard:', err);
-        leaderboardBody.innerHTML = `<tr><td colspan="3">Error loading leaderboard 😢</td></tr>`;
+        // Filter out users with 0 total likes and sort
+        const sortedUsers = usersArray
+          .filter(user => user.total > 0)
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 10);
+
+        console.log(`🏆 Found ${sortedUsers.length} users with likes:`, sortedUsers);
+
+        return {
+          users: sortedUsers,
+          totalUsers: usersArray.filter(u => u.total > 0).length,
+          totalLikes: usersArray.reduce((sum, u) => sum + u.total, 0)
+        };
+
+      } catch (error) {
+        console.error('❌ Error in getAllUsersLikesBreakdown:', error);
+        throw error;
       }
     }
 
+    async function loadLeaderboard() {
+      const loadingEl = document.getElementById('loading');
+      const statsEl = document.getElementById('stats-summary');
+      const podiumEl = document.getElementById('podium');
+      const tableEl = document.getElementById('leaderboard-table');
+      const bodyEl = document.getElementById('leaderboard-body');
+      const errorEl = document.getElementById('error-message');
+
+      try {
+        // Get comprehensive data
+        const { users, totalUsers, totalLikes } = await getAllUsersLikesBreakdown();
+
+        if (users.length === 0) {
+          loadingEl.style.display = 'none';
+          errorEl.innerHTML = '📭 No users with likes found yet.';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        // Calculate statistics
+        const totalEarnings = Math.floor(totalLikes / 10) * 0.01;
+        const avgLikes = Math.round(totalLikes / totalUsers);
+
+        // Update statistics display
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('totalLikes').textContent = totalLikes.toLocaleString();
+        document.getElementById('totalEarnings').textContent = `£${totalEarnings.toFixed(2)}`;
+        document.getElementById('avgLikes').textContent = avgLikes;
+
+        // Create podium for top 3
+        if (users.length >= 3) {
+          podiumEl.innerHTML = users.slice(0, 3).map((user, idx) => {
+            const classes = ['second', 'first', 'third'];
+            const rankEmojis = ['🥈', '🥇', '🥉'];
+            return `
+              <div class="podium-item ${classes[idx]}">
+                <div class="podium-rank">${rankEmojis[idx]}</div>
+                <div class="podium-username">@${user.username}</div>
+                <div class="podium-likes">❤️ ${user.total}</div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // Create leaderboard table
+        bodyEl.innerHTML = users.map((user, idx) => {
+          const earnings = Math.floor(user.total / 10) * 0.01;
+          return `
+            <tr>
+              <td class="rank-cell">${getRankEmoji(idx)}</td>
+              <td class="username-cell">@${user.username}</td>
+              <td class="likes-cell">
+                <div class="total-likes">❤️ ${user.total.toLocaleString()}</div>
+              </td>
+              <td class="likes-breakdown">
+                📄 ${user.page} • 🎮 ${user.games} • 🎬 ${user.videos} • 🎨 ${user.art}
+              </td>
+              <td class="earnings-cell">£${earnings.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        // Show results
+        loadingEl.style.display = 'none';
+        statsEl.style.display = 'block';
+        if (users.length >= 3) podiumEl.style.display = 'block';
+        tableEl.style.display = 'table';
+
+      } catch (err) {
+        console.error('❌ Error loading leaderboard:', err);
+        loadingEl.style.display = 'none';
+        errorEl.innerHTML = `😢 Error loading leaderboard: ${err.message}`;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    // Load leaderboard on page load
     loadLeaderboard();
   </script>
-
 </body>
 </html>
