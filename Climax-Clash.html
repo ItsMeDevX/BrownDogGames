@@ -1609,8 +1609,8 @@
 
     .extras-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
       margin-bottom: 2rem;
     }
 
@@ -1618,7 +1618,7 @@
       background-color: #1b1b2e;
       border: 2px solid #ffd700;
       border-radius: 8px;
-      padding: 1.5rem;
+      padding: 1rem;
       transition: transform 0.2s ease;
     }
 
@@ -1657,8 +1657,8 @@
 
     .extra-footer {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 1rem;
       margin-top: 1rem;
       padding-top: 1rem;
       border-top: 1px solid #2f1a39;
@@ -1667,6 +1667,19 @@
     .extra-creator {
       font-size: 0.8rem;
       color: #888;
+      text-align: center;
+    }
+
+    @media (min-width: 600px) {
+      .extra-footer {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .extra-creator {
+        text-align: left;
+      }
     }
 
     .vip-creator {
@@ -1678,11 +1691,21 @@
       background: linear-gradient(45deg, #ffd700, #ffed4e);
       color: #1b1b2e;
       text-decoration: none;
-      padding: 8px 16px;
+      padding: 10px 16px;
       border-radius: 6px;
       font-weight: bold;
       font-size: 0.9rem;
       transition: all 0.2s ease;
+      text-align: center;
+      display: block;
+      width: 100%;
+    }
+
+    @media (min-width: 600px) {
+      .extra-link {
+        display: inline-block;
+        width: auto;
+      }
     }
 
     .extra-link:hover {
@@ -2201,7 +2224,23 @@
 
         console.log('Found', extras.length, 'extras');
 
-        container.innerHTML = extras.map(extra => `
+        container.innerHTML = extras.map(extra => {
+          // Format the date properly
+          let dateStr = 'Unknown date';
+          if (extra.created_at) {
+            try {
+              const date = new Date(extra.created_at);
+              dateStr = date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+              });
+            } catch (e) {
+              console.error('Date parsing error:', e);
+            }
+          }
+
+          return `
           <div class="extra-card">
             <div class="extra-header">
               <div class="extra-type">${(extra.type || 'EXTRA').toUpperCase()}</div>
@@ -2212,7 +2251,7 @@
               <span class="extra-creator">
                 Added by <span class="vip-creator">👑 ${extra.creator_name || 'Anonymous'}</span>
                 <br>
-                <small>${extra.created_at ? new Date(extra.created_at).toLocaleDateString() : 'Unknown date'}</small>
+                <small>${dateStr}</small>
               </span>
               <a href="${extra.url || '#'}" target="_blank" class="extra-link">
                 ${extra.type === 'download' ? '⬇ Download' : 
@@ -2222,7 +2261,8 @@
               </a>
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
 
       } catch (err) {
         console.error('Failed to load VIP extras:', err);
