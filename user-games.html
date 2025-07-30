@@ -1523,7 +1523,7 @@
       color: #fefefe;
       min-height: 100vh;
       padding: 3rem 1rem;
-      max-width: 900px;
+      max-width: 1000px;
       margin: auto;
       text-align: center;
       user-select: none;
@@ -1562,9 +1562,15 @@
       text-decoration: none;
     }
 
+    .loading {
+      color: #ff82ba;
+      font-size: 1.2rem;
+      margin: 2rem 0;
+    }
+
     #userList {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
       margin-top: 2rem;
     }
@@ -1574,64 +1580,185 @@
       flex-direction: column;
       align-items: center;
       background-color: #2d1a3a;
-      padding: 1rem;
+      padding: 1.5rem 1rem;
       border-radius: 16px;
       box-shadow: 0 0 15px #ff69b4cc, inset 0 0 10px #ff69b4bb;
       color: #ffc0cb;
       text-decoration: none;
       transition: transform 0.25s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .user-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .user-btn:hover::before {
+      left: 100%;
     }
 
     .user-btn:hover {
-      transform: translateY(-4px);
+      transform: translateY(-6px);
       box-shadow: 0 0 25px #ff8bd8ff, inset 0 0 20px #ff8bd8ee;
     }
 
     .avatar-img {
-      width: 48px;
-      height: 48px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #ff69b4;
+      border: 3px solid #ff69b4;
       background: #1e1b2e;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .avatar-initial {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #1e1b2e;
+      border: 3px solid #ff69b4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff69b4;
+      margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 2;
     }
 
     .username-text {
-      font-size: 1rem;
+      font-size: 1.1rem;
       margin-bottom: 0.75rem;
       color: #ffc0cb;
       word-break: break-word;
+      position: relative;
+      z-index: 2;
+      font-weight: bold;
     }
 
     .cover-img {
       width: 100%;
-      max-width: 180px;
-      height: 100px;
+      max-width: 220px;
+      height: 120px;
       object-fit: cover;
       border-radius: 12px;
       border: 2px solid #ff69b4;
       background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+      transition: transform 0.3s ease;
+    }
+
+    .user-btn:hover .cover-img {
+      transform: scale(1.05);
+    }
+
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .stat-item {
+      background-color: #3b2750;
+      padding: 0.5rem 0.25rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      color: #8dffa1;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 0.1rem;
+    }
+
+    .stat-label {
+      color: #ffc0cb;
+      font-size: 0.6rem;
+      opacity: 0.8;
+    }
+
+    .likes-breakdown {
+      background-color: #3b2750;
+      border-radius: 8px;
+      padding: 0.6rem;
+      font-size: 0.7rem;
+      color: #ff82ba;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .total-likes {
+      color: #8dffa1;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+      font-size: 0.8rem;
+    }
+
+    .likes-detail {
+      opacity: 0.8;
+      font-size: 0.65rem;
     }
 
     /* Featured User Section */
     #featuredUser {
       display: none;
-      max-width: 600px;
+      max-width: 700px;
       margin: 2rem auto 3rem;
-      background: #3d2460;
+      background: linear-gradient(145deg, #3d2460, #2a1a3d);
       border: 3px solid #ff69b4;
       border-radius: 20px;
       padding: 2rem 1.5rem;
       box-shadow: 0 0 30px #ff69b4cc;
       user-select: none;
+      position: relative;
+      overflow: hidden;
     }
+
+    #featuredUser::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    #featuredUser:hover::before {
+      left: 100%;
+    }
+
     #featuredUser h2 {
       color: #ff8bd8;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       letter-spacing: 0.1em;
+      position: relative;
+      z-index: 2;
     }
+
     #featuredAvatar {
       margin: 0 auto 1rem auto;
       width: 80px;
@@ -1646,21 +1773,97 @@
       font-size: 2rem;
       font-weight: bold;
       color: #ff69b4;
+      position: relative;
+      z-index: 2;
     }
+
+    #featuredAvatar img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
     #featuredUsername {
       color: #ffc0cb;
       font-size: 1.4rem;
       margin-bottom: 1rem;
       word-break: break-word;
+      position: relative;
+      z-index: 2;
     }
+
     #featuredCover {
       width: 100%;
-      max-width: 300px;
-      height: 160px;
+      max-width: 350px;
+      height: 180px;
       object-fit: cover;
       border-radius: 16px;
       border: 3px solid #ff8bd8;
       box-shadow: 0 0 15px #ff8bd8cc;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    #featuredStats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    #featuredStats .stat-item {
+      background-color: #4a3157;
+      padding: 1rem;
+      border-radius: 12px;
+    }
+
+    #featuredStats .stat-value {
+      font-size: 1.5rem;
+      color: #8dffa1;
+    }
+
+    #featuredStats .stat-label {
+      font-size: 0.8rem;
+      color: #ffc0cb;
+    }
+
+    #featuredLikes {
+      background-color: #4a3157;
+      border-radius: 12px;
+      padding: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    #featuredLikes .total-likes {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #featuredLikes .likes-detail {
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      #userList {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+      
+      .user-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      #featuredStats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      h1 {
+        font-size: 2.2rem;
+      }
     }
   </style>
 </head>
@@ -1671,19 +1874,23 @@
   <h1>All User Game Pages</h1>
 
   <!-- Featured User Section -->
-  <section id="featuredUser" aria-label="Featured User of the Week">
-    <h2>🌟 Featured User of the Week</h2>
+  <section id="featuredUser" aria-label="Featured Game Creator">
+    <h2>🎮 Featured Game Creator</h2>
     <div id="featuredAvatar"></div>
     <div id="featuredUsername"></div>
     <img src="" alt="Featured user cover" id="featuredCover" />
+    <div id="featuredStats"></div>
+    <div id="featuredLikes"></div>
   </section>
 
   <div>
     <button id="sortAlpha" class="back-link">🅰️ Alphabetical</button>
     <button id="sortNewest" class="back-link">🆕 Newest</button>
+    <button id="sortMostGames" class="back-link">🎮 Most Games</button>
+    <button id="sortMostLiked" class="back-link">❤️ Most Liked</button>
   </div>
 
-  <div id="userList">Loading users...</div>
+  <div id="userList" class="loading">Loading game creators and calculating comprehensive likes...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -1695,188 +1902,399 @@
 
     const userListEl = document.getElementById('userList');
     let currentSort = 'alphabetical';
+    let allUsers = [];
 
     const featuredSection = document.getElementById('featuredUser');
     const featuredAvatar = document.getElementById('featuredAvatar');
     const featuredUsername = document.getElementById('featuredUsername');
     const featuredCover = document.getElementById('featuredCover');
+    const featuredStats = document.getElementById('featuredStats');
+    const featuredLikes = document.getElementById('featuredLikes');
 
-// Helper function to check if the URL is valid
-function isValidUrl(url) {
-  try {
-    const parsedUrl = new URL(url);
-    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'; // Only accept HTTP/HTTPS URLs
-  } catch (e) {
-    return false; // Invalid URL if it throws an error
-  }
-}
+    // Enhanced function to get ALL likes for a specific user (same as other pages)
+    async function getUserLikesBreakdown(username) {
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
 
-// Function to convert Google Drive links to thumbnail
-function convertDriveLinkToThumbnail(url) {
-  // If the URL is invalid or empty, just return the original URL
-  if (!url || !isValidUrl(url)) return url;
+      try {
+        // Get main page likes (exact username match)
+        const { count: pageLikes, error: pageError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('username', username);
 
-  // Regex to match Google Drive file links
-  const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
-  const fileId = match ? match[1] : null;
+        if (pageError) throw pageError;
 
-  // If a valid file ID is found, return the thumbnail link
-  if (fileId) {
-    return `https://drive.google.com/thumbnail?id=${fileId}`;
-  }
+        // Get video likes (username_video_*)
+        const { count: videoLikes, error: videoError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .like('username', username + '_video_%');
 
-  // Return the original URL if no file ID was found
-  return url;
-}
+        if (videoError) throw videoError;
 
-// Function to get the resolved cover URL
-async function getResolvedCoverUrl(cover_url) {
-  let coverSrc = cover_url || '';
+        // Get game likes (username_game_*)
+        const { count: gameLikes, error: gameError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .like('username', username + '_game_%');
 
-  if (coverSrc && isValidUrl(coverSrc)) {
-    // If the URL is valid, check if it's from Supabase Storage or a Google Drive link
-    if (!coverSrc.startsWith('http')) {
-      const { data: publicUrlData } = await supabase.storage.from('covers').getPublicUrl(coverSrc);
-      if (publicUrlData && publicUrlData.publicUrl) {
-        return convertDriveLinkToThumbnail(publicUrlData.publicUrl);
+        if (gameError) throw gameError;
+
+        // Get art likes (username_artwork_*)
+        const { count: artLikes, error: artError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .like('username', username + '_artwork_%');
+
+        if (artError) throw artError;
+
+        const breakdown = {
+          page: pageLikes || 0,
+          videos: videoLikes || 0,
+          games: gameLikes || 0,
+          art: artLikes || 0,
+          total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0)
+        };
+
+        return breakdown;
+
+      } catch (error) {
+        console.error('Error getting likes breakdown for', username, ':', error);
+        return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
       }
-    } else {
-      return convertDriveLinkToThumbnail(coverSrc);
-    }
-  }
-
-  // Fallback URL if no valid cover image found
-  return 'https://via.placeholder.com/300x160.png?text=No+Cover';
-}
-
-// Main function to load users, sorted by either 'newest' or 'alphabetical'
-async function loadUsers(sortMode = 'alphabetical') {
-  // Determine how to sort the user list (by newest or alphabetically)
-  const orderBy = sortMode === 'newest'
-    ? { column: 'created_at', ascending: false }
-    : { column: 'github_user', ascending: true };
-
-  // Fetch the user data from Supabase
-  const { data, error } = await supabase
-    .from('game_submissions')
-    .select('github_user, avatar_url, cover_url, created_at')
-    .order(orderBy.column, { ascending: orderBy.ascending });
-
-  // Handle errors during data fetch
-  if (error) {
-    userListEl.textContent = `Error loading users: ${error.message}`;
-    featuredSection.style.display = 'none';
-    return;
-  }
-
-  // If no data found, show a message and hide the featured section
-  if (!data.length) {
-    userListEl.textContent = 'No users found.';
-    featuredSection.style.display = 'none';
-    return;
-  }
-
-  // FEATURED USER - Display the user with the newest submission
-  const featuredUser = data[0];
-  if (featuredUser) {
-    featuredSection.style.display = 'block';
-
-    // Avatar
-    featuredAvatar.innerHTML = '';
-    if (featuredUser.avatar_url && isValidUrl(featuredUser.avatar_url)) {
-      const img = document.createElement('img');
-      img.src = convertDriveLinkToThumbnail(featuredUser.avatar_url);
-      img.alt = `${featuredUser.github_user}'s avatar`;
-      img.style.width = '80px';
-      img.style.height = '80px';
-      img.style.borderRadius = '50%';
-      featuredAvatar.appendChild(img);
-    } else {
-      // If no avatar URL, show the first letter of the username
-      featuredAvatar.textContent = featuredUser.github_user.charAt(0).toUpperCase();
     }
 
-    // Username
-    featuredUsername.textContent = featuredUser.github_user;
+    // Get comprehensive stats for a user
+    async function getUserStats(username) {
+      try {
+        // Get games count
+        const { count: gamesCount } = await supabase
+          .from('game_submissions')
+          .select('*', { count: 'exact', head: true })
+          .eq('github_user', username);
 
-    // Cover Image
-    let coverSrc = await getResolvedCoverUrl(featuredUser.cover_url);
-    featuredCover.src = coverSrc;
-    featuredCover.alt = `${featuredUser.github_user}'s cover`;
-  } else {
-    featuredSection.style.display = 'none';
-  }
+        // Get videos count  
+        const { count: videosCount } = await supabase
+          .from('game_videos')
+          .select('*', { count: 'exact', head: true })
+          .eq('github_username', username);
 
-  // Build the user list, ensuring no duplicate users
-  const usersMap = new Map();
-  data.forEach(({ github_user, avatar_url, cover_url }) => {
-    if (github_user && !usersMap.has(github_user)) {
-      usersMap.set(github_user, { avatar_url, cover_url });
+        // Get art count
+        const { count: artCount } = await supabase
+          .from('user_art')
+          .select('*', { count: 'exact', head: true })
+          .eq('github_username', username);
+
+        return {
+          games: gamesCount || 0,
+          videos: videosCount || 0,
+          art: artCount || 0,
+          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0)
+        };
+      } catch (error) {
+        console.error('Error getting user stats:', error);
+        return { games: 0, videos: 0, art: 0, total: 0 };
+      }
     }
-  });
 
-  // Clear any existing user list content
-  userListEl.textContent = '';
-  const fragment = document.createDocumentFragment();
+    // Helper function to check if the URL is valid
+    function isValidUrl(url) {
+      try {
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+      } catch (e) {
+        return false;
+      }
+    }
 
-// Iterate over users and create list elements for each user
-for (const [user, images] of usersMap.entries()) {
-  const a = document.createElement('a');
-  
-  // Change the link to open 'user-games-page.html' instead of 'user.html'
-  a.className = 'user-btn';
-  a.href = `user-games-page.html?user=${encodeURIComponent(user)}`; // Updated link
+    // Function to convert Google Drive links to thumbnail
+    function convertDriveLinkToThumbnail(url) {
+      if (!url || !isValidUrl(url)) return url;
 
-  // Avatar
-  if (images.avatar_url && isValidUrl(images.avatar_url)) {
-    const avatarImg = document.createElement('img');
-    avatarImg.src = convertDriveLinkToThumbnail(images.avatar_url);
-    avatarImg.alt = `${user}'s avatar`;
-    avatarImg.className = 'avatar-img';
-    a.appendChild(avatarImg);
-  } else {
-    // Show the first letter of the username as a fallback
-    const initial = document.createElement('span');
-    initial.className = 'avatar-initial';
-    initial.textContent = user.charAt(0).toUpperCase();
-    a.appendChild(initial);
-  }
+      const match = url.match(/\/file\/d\/([^\/]+)\//) || url.match(/open\?id=([^&]+)/);
+      const fileId = match ? match[1] : null;
 
-  // Username
-  const usernameSpan = document.createElement('span');
-  usernameSpan.className = 'username-text';
-  usernameSpan.textContent = user;
-  a.appendChild(usernameSpan);
+      if (fileId) {
+        return `https://drive.google.com/thumbnail?id=${fileId}`;
+      }
 
-  // Cover Image
-  const coverSrc = await getResolvedCoverUrl(images.cover_url);
-  const coverImg = document.createElement('img');
-  coverImg.src = coverSrc;
-  coverImg.alt = `${user}'s cover`;
-  coverImg.className = 'cover-img';
-  a.appendChild(coverImg);
+      return url;
+    }
 
-  // Append the user element to the fragment
-  fragment.appendChild(a);
-}
+    // Function to get the resolved cover URL
+    async function getResolvedCoverUrl(cover_url) {
+      let coverSrc = cover_url || '';
 
-  // Append all user elements to the list
-  userListEl.appendChild(fragment);
-}
+      if (coverSrc && isValidUrl(coverSrc)) {
+        if (!coverSrc.startsWith('http')) {
+          const { data: publicUrlData } = await supabase.storage.from('covers').getPublicUrl(coverSrc);
+          if (publicUrlData && publicUrlData.publicUrl) {
+            return convertDriveLinkToThumbnail(publicUrlData.publicUrl);
+          }
+        } else {
+          return convertDriveLinkToThumbnail(coverSrc);
+        }
+      }
 
-    // Load default
-    loadUsers(currentSort);
+      return 'https://via.placeholder.com/300x160.png?text=No+Cover';
+    }
+
+    // Main function to load users with comprehensive data
+    async function loadUsers(sortMode = 'alphabetical') {
+      userListEl.innerHTML = '<div class="loading">Loading game creators and calculating comprehensive likes...</div>';
+
+      try {
+        // Fetch the user data from Supabase
+        const { data, error } = await supabase
+          .from('game_submissions')
+          .select('github_user, avatar_url, cover_url, created_at')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          userListEl.textContent = `Error loading users: ${error.message}`;
+          featuredSection.style.display = 'none';
+          return;
+        }
+
+        if (!data.length) {
+          userListEl.textContent = 'No game creators found.';
+          featuredSection.style.display = 'none';
+          return;
+        }
+
+        // Build unique users map
+        const usersMap = new Map();
+        data.forEach(({ github_user, avatar_url, cover_url, created_at }) => {
+          if (github_user && !usersMap.has(github_user)) {
+            usersMap.set(github_user, { 
+              username: github_user,
+              avatar_url, 
+              cover_url,
+              created_at
+            });
+          }
+        });
+
+        // Get comprehensive stats and likes for each user
+        const usersWithData = await Promise.all(
+          Array.from(usersMap.values()).map(async (user) => {
+            const [stats, likesBreakdown] = await Promise.all([
+              getUserStats(user.username),
+              getUserLikesBreakdown(user.username)
+            ]);
+            
+            return {
+              ...user,
+              stats,
+              likesBreakdown
+            };
+          })
+        );
+
+        allUsers = usersWithData;
+        console.log('Loaded users with comprehensive data:', allUsers.length);
+
+        // Sort and display
+        sortAndDisplayUsers(sortMode);
+        await displayFeaturedUser();
+
+      } catch (error) {
+        console.error('Error loading users:', error);
+        userListEl.innerHTML = `<div style="color: #ff8d8d;">Error loading users: ${error.message}</div>`;
+        featuredSection.style.display = 'none';
+      }
+    }
+
+    function sortAndDisplayUsers(sortMode) {
+      let sortedUsers = [...allUsers];
+
+      switch (sortMode) {
+        case 'alphabetical':
+          sortedUsers.sort((a, b) => a.username.localeCompare(b.username));
+          break;
+        case 'newest':
+          sortedUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          break;
+        case 'mostGames':
+          sortedUsers.sort((a, b) => b.stats.games - a.stats.games);
+          break;
+        case 'mostLiked':
+          sortedUsers.sort((a, b) => b.likesBreakdown.total - a.likesBreakdown.total);
+          break;
+      }
+
+      displayUsers(sortedUsers);
+    }
+
+    async function displayUsers(users) {
+      userListEl.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+
+      for (const user of users) {
+        const a = document.createElement('a');
+        a.className = 'user-btn';
+        a.href = `user-games-page.html?user=${encodeURIComponent(user.username)}`;
+
+        // Avatar
+        if (user.avatar_url && isValidUrl(user.avatar_url)) {
+          const avatarImg = document.createElement('img');
+          avatarImg.src = convertDriveLinkToThumbnail(user.avatar_url);
+          avatarImg.alt = `${user.username}'s avatar`;
+          avatarImg.className = 'avatar-img';
+          a.appendChild(avatarImg);
+        } else {
+          const initial = document.createElement('div');
+          initial.className = 'avatar-initial';
+          initial.textContent = user.username.charAt(0).toUpperCase();
+          a.appendChild(initial);
+        }
+
+        // Username
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username-text';
+        usernameSpan.textContent = user.username;
+        a.appendChild(usernameSpan);
+
+        // Cover Image
+        const coverSrc = await getResolvedCoverUrl(user.cover_url);
+        const coverImg = document.createElement('img');
+        coverImg.src = coverSrc;
+        coverImg.alt = `${user.username}'s cover`;
+        coverImg.className = 'cover-img';
+        a.appendChild(coverImg);
+
+        // Stats
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'user-stats';
+        
+        const stats = [
+          { value: user.stats.games, label: 'Games' },
+          { value: user.stats.videos, label: 'Videos' },
+          { value: user.stats.art, label: 'Art' }
+        ];
+        
+        stats.forEach(stat => {
+          const statDiv = document.createElement('div');
+          statDiv.className = 'stat-item';
+          statDiv.innerHTML = `
+            <div class="stat-value">${stat.value}</div>
+            <div class="stat-label">${stat.label}</div>
+          `;
+          statsDiv.appendChild(statDiv);
+        });
+        
+        a.appendChild(statsDiv);
+
+        // Likes Breakdown
+        const likesDiv = document.createElement('div');
+        likesDiv.className = 'likes-breakdown';
+        likesDiv.innerHTML = `
+          <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
+          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art}</div>
+        `;
+        a.appendChild(likesDiv);
+
+        fragment.appendChild(a);
+      }
+
+      userListEl.appendChild(fragment);
+    }
+
+    async function displayFeaturedUser() {
+      if (allUsers.length === 0) return;
+
+      // Featured user is the one with the most game likes (since this is the games page)
+      const featuredUser = allUsers.reduce((mostGameLikes, current) => {
+        return current.likesBreakdown.games > mostGameLikes.likesBreakdown.games ? current : mostGameLikes;
+      }, allUsers[0]);
+
+      featuredSection.style.display = 'block';
+
+      // Avatar
+      featuredAvatar.innerHTML = '';
+      if (featuredUser.avatar_url && isValidUrl(featuredUser.avatar_url)) {
+        const img = document.createElement('img');
+        img.src = convertDriveLinkToThumbnail(featuredUser.avatar_url);
+        img.alt = `${featuredUser.username}'s avatar`;
+        featuredAvatar.appendChild(img);
+      } else {
+        featuredAvatar.textContent = featuredUser.username.charAt(0).toUpperCase();
+      }
+
+      // Username
+      featuredUsername.textContent = featuredUser.username;
+
+      // Cover Image
+      const coverSrc = await getResolvedCoverUrl(featuredUser.cover_url);
+      featuredCover.src = coverSrc;
+      featuredCover.alt = `${featuredUser.username}'s cover`;
+
+      // Stats
+      featuredStats.innerHTML = `
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.games}</div>
+          <div class="stat-label">Games</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.videos}</div>
+          <div class="stat-label">Videos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.art}</div>
+          <div class="stat-label">Art</div>
+        </div>
+      `;
+
+      // Likes
+      featuredLikes.innerHTML = `
+        <div class="total-likes">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
+        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art</div>
+      `;
+
+      // Click handler
+      featuredSection.onclick = () => {
+        window.location.href = `user-games-page.html?user=${encodeURIComponent(featuredUser.username)}`;
+      };
+    }
 
     // Button event listeners
     document.getElementById('sortAlpha').addEventListener('click', () => {
       currentSort = 'alphabetical';
-      loadUsers(currentSort);
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortAlpha');
     });
 
     document.getElementById('sortNewest').addEventListener('click', () => {
       currentSort = 'newest';
-      loadUsers(currentSort);
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortNewest');
     });
+
+    document.getElementById('sortMostGames').addEventListener('click', () => {
+      currentSort = 'mostGames';
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortMostGames');
+    });
+
+    document.getElementById('sortMostLiked').addEventListener('click', () => {
+      currentSort = 'mostLiked';
+      sortAndDisplayUsers(currentSort);
+      updateButtonStates('sortMostLiked');
+    });
+
+    function updateButtonStates(activeId) {
+      document.querySelectorAll('.back-link').forEach(btn => {
+        if (btn.id && btn.id.startsWith('sort')) {
+          btn.style.opacity = btn.id === activeId ? '1' : '0.7';
+        }
+      });
+    }
+
+    // Initialize
+    loadUsers(currentSort);
+    
+    // Set initial button state
+    setTimeout(() => updateButtonStates('sortAlpha'), 100);
   </script>
 
 </body>
