@@ -2285,7 +2285,10 @@
           .select('*', { count: 'exact', head: true })
           .eq('username', `extra_${extraId}`);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error getting likes:', error);
+          return 0;
+        }
         return count || 0;
       } catch (error) {
         console.error('Error getting extra likes:', error);
@@ -2306,8 +2309,12 @@
           .eq('viewer_id', session.session.user.id)
           .single();
 
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking user like:', error);
+        }
         return !error && data;
       } catch (error) {
+        console.error('Error in hasUserLikedExtra:', error);
         return false;
       }
     }
@@ -2317,11 +2324,13 @@
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
         alert('Please login to like extras');
-        return false;
+        return null;
       }
 
       const userId = session.session.user.id;
       const username = `extra_${extraId}`;
+
+      console.log('Toggling like for:', { extraId, userId, username });
 
       try {
         // Check if already liked
@@ -2332,6 +2341,8 @@
           .eq('viewer_id', userId)
           .single();
 
+        console.log('Existing like check:', { existingLike, checkError });
+
         if (existingLike) {
           // Remove like
           const { error: deleteError } = await supabase
@@ -2339,7 +2350,11 @@
             .delete()
             .eq('id', existingLike.id);
 
-          if (deleteError) throw deleteError;
+          if (deleteError) {
+            console.error('Delete error:', deleteError);
+            throw deleteError;
+          }
+          console.log('Like removed');
           return false; // unliked
         } else {
           // Add like
@@ -2351,12 +2366,16 @@
               page_url: window.location.href
             }]);
 
-          if (insertError) throw insertError;
+          if (insertError) {
+            console.error('Insert error:', insertError);
+            throw insertError;
+          }
+          console.log('Like added');
           return true; // liked
         }
       } catch (error) {
         console.error('Error toggling like:', error);
-        alert('Failed to update like');
+        alert('Failed to update like: ' + error.message);
         return null;
       }
     }
