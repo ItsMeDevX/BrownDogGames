@@ -1593,20 +1593,15 @@
       color: #ff82ba;
     }
 
-    .vip-extras {
+    .vip-extras-section {
       background: linear-gradient(135deg, #2f1a39, #3d2147);
       border: 2px solid #ffd700;
       border-radius: 12px;
       padding: 2rem;
       margin: 2rem 0;
-      display: none;
     }
 
-    .vip-extras.show {
-      display: block;
-    }
-
-    .vip-extras h3 {
+    .vip-extras-section h3 {
       color: #ffd700;
       margin-bottom: 1.5rem;
       text-shadow: 0 0 10px #ffd700;
@@ -1619,7 +1614,7 @@
       margin-bottom: 2rem;
     }
 
-    .extra-item {
+    .extra-card {
       background-color: #1b1b2e;
       border: 2px solid #ffd700;
       border-radius: 8px;
@@ -1627,50 +1622,66 @@
       transition: transform 0.2s ease;
     }
 
-    .extra-item:hover {
+    .extra-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     }
 
-    .extra-item h4 {
-      color: #ffd700;
-      margin: 0 0 1rem 0;
-    }
-
-    .extra-item p {
-      color: #ff82ba;
-      margin: 0 0 1rem 0;
-      font-size: 0.9rem;
-    }
-
-    .extra-meta {
+    .extra-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: start;
       margin-bottom: 1rem;
-      font-size: 0.8rem;
-    }
-
-    .extra-date {
-      color: #888;
     }
 
     .extra-type {
       background-color: #ff4f9f;
       color: #1b1b2e;
-      padding: 2px 8px;
+      padding: 4px 8px;
       border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .extra-title {
+      color: #ffd700;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+    }
+
+    .extra-description {
+      color: #ff82ba;
+      margin: 0 0 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .extra-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #2f1a39;
+    }
+
+    .extra-creator {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .vip-creator {
+      color: #ffd700;
       font-weight: bold;
     }
 
     .extra-link {
-      display: inline-block;
       background: linear-gradient(45deg, #ffd700, #ffed4e);
       color: #1b1b2e;
       text-decoration: none;
       padding: 8px 16px;
       border-radius: 6px;
       font-weight: bold;
+      font-size: 0.9rem;
       transition: all 0.2s ease;
     }
 
@@ -1679,20 +1690,25 @@
       transform: translateY(-1px);
     }
 
-    .add-extra-form {
+    .add-extra-section {
       background-color: #1b1b2e;
       border: 2px solid #ffd700;
       border-radius: 8px;
       padding: 1.5rem;
       margin-top: 2rem;
+      display: none;
     }
 
-    .add-extra-form h4 {
+    .add-extra-section.show {
+      display: block;
+    }
+
+    .add-extra-section h4 {
       color: #ffd700;
       margin: 0 0 1rem 0;
     }
 
-    .form-row {
+    .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem;
@@ -1713,17 +1729,83 @@
     .form-group input,
     .form-group select,
     .form-group textarea {
-      padding: 8px;
+      padding: 10px;
       border: 2px solid #ff4f9f;
-      border-radius: 4px;
+      border-radius: 6px;
       background-color: #2f1a39;
       color: #fff;
       font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
     }
 
     .form-group textarea {
       resize: vertical;
       height: 80px;
+    }
+
+    .vip-badges-section {
+      background: linear-gradient(135deg, #2f1a39, #3d2147);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      display: none;
+    }
+
+    .vip-badges-section.show {
+      display: block;
+    }
+
+    .vip-badges-section h3 {
+      color: #ffd700;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px #ffd700;
+    }
+
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .badge-item {
+      background-color: #1b1b2e;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .badge-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .badge-item.selected {
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      color: #1b1b2e;
+    }
+
+    .badge-emoji {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge-name {
+      font-size: 0.8rem;
+      font-weight: bold;
     }
 
     .buttons {
@@ -1819,27 +1901,53 @@
       border: 2px solid #ff4f9f;
       border-radius: 8px;
       padding: 1rem;
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
       margin-bottom: 1rem;
-      min-height: 150px;
+      min-height: 200px;
     }
 
-    #messages div {
-      margin-bottom: 8px;
+    .message {
+      margin-bottom: 12px;
       font-size: 0.9rem;
+      padding: 8px;
+      border-radius: 4px;
     }
 
-    #messages strong {
+    .message.vip {
+      background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 79, 159, 0.1));
+      border-left: 3px solid #ffd700;
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .username {
+      font-weight: bold;
       color: #ff82ba;
     }
 
-    .vip-message {
-      background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 79, 159, 0.1));
-      border-left: 3px solid #ffd700;
-      padding: 5px 10px;
-      margin: 5px 0;
-      border-radius: 4px;
+    .username.vip {
+      color: #ffd700;
+      text-shadow: 0 0 5px #ffd700;
+    }
+
+    .user-badge {
+      font-size: 1rem;
+    }
+
+    .message-content {
+      color: #fefefe;
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      color: #888;
+      margin-left: auto;
     }
 
     #chat-form {
@@ -1856,6 +1964,11 @@
       background-color: #1b1b2e;
       color: #fff;
       font-family: inherit;
+    }
+
+    #msg-input.vip {
+      border-color: #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
     }
 
     button {
@@ -1875,8 +1988,15 @@
     }
 
     .loading {
-      color: #ffd700;
       text-align: center;
+      color: #ffd700;
+      padding: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .no-extras {
+      text-align: center;
+      color: #ff82ba;
       padding: 2rem;
     }
 
@@ -1907,8 +2027,12 @@
         grid-template-columns: 1fr;
       }
 
-      .form-row {
+      .form-grid {
         grid-template-columns: 1fr;
+      }
+
+      .badges-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
   </style>
@@ -1935,52 +2059,88 @@
       <p>⚠️🔞 Contains explicit content and crude humor — not for the faint of heart</p>
     </section>
 
-    <div id="vipExtras" class="vip-extras">
-      <h3>👑 VIP Exclusive Content</h3>
+    <section class="vip-extras-section">
+      <h3>👑 VIP Community Extras</h3>
+      <p style="color: #ff82ba; margin-bottom: 2rem;">Exclusive content shared by our VIP members. Only VIPs can add new extras!</p>
       
       <div id="extrasContainer" class="extras-grid">
         <div class="loading">Loading VIP extras...</div>
       </div>
 
-      <div class="add-extra-form" id="addExtraForm" style="display: none;">
-        <h4>➕ Add New VIP Extra</h4>
+      <div id="addExtraSection" class="add-extra-section">
+        <h4>➕ Share New VIP Extra</h4>
         <form id="extraForm">
-          <div class="form-row">
+          <div class="form-grid">
             <div class="form-group">
-              <label for="extraTitle">Title:</label>
-              <input type="text" id="extraTitle" required>
+              <label for="extraTitle">Title *</label>
+              <input type="text" id="extraTitle" required placeholder="e.g., Exclusive Soundtrack">
             </div>
             <div class="form-group">
-              <label for="extraType">Type:</label>
+              <label for="extraType">Type *</label>
               <select id="extraType" required>
-                <option value="Download">Download</option>
-                <option value="Link">Link</option>
-                <option value="Code">Code</option>
-                <option value="Beta">Beta Access</option>
-                <option value="Asset">Asset Pack</option>
+                <option value="">Select type...</option>
+                <option value="download">Download</option>
+                <option value="link">External Link</option>
+                <option value="code">Cheat Code</option>
+                <option value="beta">Beta Access</option>
+                <option value="mod">Mod/Asset</option>
+                <option value="guide">Guide/Tutorial</option>
               </select>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="extraDescription">Description:</label>
-              <textarea id="extraDescription" required></textarea>
-            </div>
-            <div class="form-group">
-              <label for="extraUrl">URL/Link:</label>
-              <input type="url" id="extraUrl" required>
-            </div>
+          <div class="form-group">
+            <label for="extraDescription">Description *</label>
+            <textarea id="extraDescription" required placeholder="Describe what this extra contains..."></textarea>
           </div>
-          <button type="submit" class="button-link vip-button">Add Extra</button>
+          <div class="form-group">
+            <label for="extraUrl">URL/Link *</label>
+            <input type="url" id="extraUrl" required placeholder="https://...">
+          </div>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button type="submit" class="button-link vip-button">Add Extra</button>
+            <button type="button" class="button-link" onclick="toggleAddExtra()">Cancel</button>
+          </div>
         </form>
+      </div>
+    </section>
+
+    <div id="vipBadgesSection" class="vip-badges-section">
+      <h3>👑 VIP Badges</h3>
+      <p style="color: #ff82ba; margin-bottom: 1.5rem;">Choose your VIP badge that appears in chat:</p>
+      
+      <div class="badges-grid">
+        <div class="badge-item" data-badge="👑" data-name="Crown">
+          <span class="badge-emoji">👑</span>
+          <span class="badge-name">Crown</span>
+        </div>
+        <div class="badge-item" data-badge="⭐" data-name="Star">
+          <span class="badge-emoji">⭐</span>
+          <span class="badge-name">Star</span>
+        </div>
+        <div class="badge-item" data-badge="💎" data-name="Diamond">
+          <span class="badge-emoji">💎</span>
+          <span class="badge-name">Diamond</span>
+        </div>
+        <div class="badge-item" data-badge="🔥" data-name="Fire">
+          <span class="badge-emoji">🔥</span>
+          <span class="badge-name">Fire</span>
+        </div>
+        <div class="badge-item" data-badge="⚡" data-name="Lightning">
+          <span class="badge-emoji">⚡</span>
+          <span class="badge-name">Lightning</span>
+        </div>
+        <div class="badge-item" data-badge="🎯" data-name="Target">
+          <span class="badge-emoji">🎯</span>
+          <span class="badge-name">Target</span>
+        </div>
       </div>
     </div>
 
     <div class="buttons">
       <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
       <div id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-      <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1P5gHi2VQeL8yoVKh1gByjDAy91GeA4Xr" class="button-link vip-button" download style="display: none;">⬇ Download Game</a>
-      <button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()">➕ Add VIP Extra</button>
+      <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1P5gHi2VQeL8yoVKh1gByjDAy91GeA4Xr" class="button-link vip-button" download style="display: none;">⬇ VIP Download</a>
+      <button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()">➕ Add Extra</button>
       <a href="index.html" class="button-link">← Back to Home</a>
     </div>
 
@@ -2013,8 +2173,9 @@
 
     let isVipUser = false;
     let currentUser = null;
+    let selectedBadge = '👑';
 
-    // VIP Extras Management
+    // Load VIP Extras
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
       
@@ -2022,40 +2183,56 @@
         const { data: extras, error } = await supabase
           .from('vip_extras')
           .select('*')
+          .eq('is_active', true)
           .order('created_at', { ascending: false });
 
         if (error) {
-          container.innerHTML = `<div style="color: #ff4f9f;">Error loading extras: ${error.message}</div>`;
+          console.error('Error loading extras:', error);
+          container.innerHTML = `<div class="no-extras">Error loading VIP extras: ${error.message}</div>`;
           return;
         }
 
         if (!extras || extras.length === 0) {
-          container.innerHTML = `<div style="color: #ff82ba;">No VIP extras available yet. Add the first one!</div>`;
+          container.innerHTML = `<div class="no-extras">No VIP extras yet. Be the first to share something awesome!</div>`;
           return;
         }
 
         container.innerHTML = extras.map(extra => `
-          <div class="extra-item">
-            <div class="extra-meta">
-              <span class="extra-date">${new Date(extra.created_at).toLocaleDateString()}</span>
-              <span class="extra-type">${extra.type || 'Extra'}</span>
+          <div class="extra-card">
+            <div class="extra-header">
+              <div class="extra-type">${extra.type.toUpperCase()}</div>
             </div>
-            <h4>${extra.title}</h4>
-            <p>${extra.description}</p>
-            <a href="${extra.url}" target="_blank" class="extra-link">
-              ${extra.type === 'Download' ? '⬇ Download' : '🔗 Access'}
-            </a>
+            <h4 class="extra-title">${extra.title}</h4>
+            <p class="extra-description">${extra.description}</p>
+            <div class="extra-footer">
+              <span class="extra-creator">
+                Added by <span class="vip-creator">👑 ${extra.creator_name}</span>
+                <br>
+                <small>${new Date(extra.created_at).toLocaleDateString()}</small>
+              </span>
+              <a href="${extra.url}" target="_blank" class="extra-link">
+                ${extra.type === 'download' ? '⬇ Download' : 
+                  extra.type === 'link' ? '🔗 Open Link' : 
+                  extra.type === 'code' ? '📋 Get Code' : 
+                  '🎯 Access'}
+              </a>
+            </div>
           </div>
         `).join('');
 
       } catch (err) {
-        container.innerHTML = `<div style="color: #ff4f9f;">Failed to load VIP extras</div>`;
-        console.error('Error loading VIP extras:', err);
+        console.error('Failed to load VIP extras:', err);
+        container.innerHTML = `<div class="no-extras">Failed to load VIP extras</div>`;
       }
     }
 
-    // Add new VIP extra
+    // Add VIP Extra
     async function addVipExtra(extraData) {
+      if (!currentUser) {
+        alert('Please login first');
+        return false;
+      }
+
       try {
         const { error } = await supabase
           .from('vip_extras')
@@ -2064,19 +2241,26 @@
             description: extraData.description,
             url: extraData.url,
             type: extraData.type,
-            created_by: currentUser?.id
+            created_by: currentUser.id,
+            creator_name: currentUser.user_metadata?.full_name || 'VIP User'
           }]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error adding extra:', error);
+          alert('Failed to add extra: ' + error.message);
+          return false;
+        }
 
         // Reload extras
         await loadVipExtras();
         
-        // Reset form
+        // Reset form and hide
         document.getElementById('extraForm').reset();
-        document.getElementById('addExtraForm').style.display = 'none';
+        document.getElementById('addExtraSection').classList.remove('show');
         
+        alert('VIP extra added successfully!');
         return true;
+
       } catch (err) {
         console.error('Error adding VIP extra:', err);
         alert('Failed to add VIP extra: ' + err.message);
@@ -2086,8 +2270,8 @@
 
     // Toggle add extra form
     window.toggleAddExtra = function() {
-      const form = document.getElementById('addExtraForm');
-      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      const section = document.getElementById('addExtraSection');
+      section.classList.toggle('show');
     };
 
     // Handle form submission
@@ -2095,14 +2279,41 @@
       e.preventDefault();
       
       const formData = {
-        title: document.getElementById('extraTitle').value,
-        description: document.getElementById('extraDescription').value,
-        url: document.getElementById('extraUrl').value,
+        title: document.getElementById('extraTitle').value.trim(),
+        description: document.getElementById('extraDescription').value.trim(),
+        url: document.getElementById('extraUrl').value.trim(),
         type: document.getElementById('extraType').value
       };
 
+      if (!formData.title || !formData.description || !formData.url || !formData.type) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
       await addVipExtra(formData);
     });
+
+    // Badge selection
+    document.querySelectorAll('.badge-item').forEach(badge => {
+      badge.addEventListener('click', () => {
+        document.querySelectorAll('.badge-item').forEach(b => b.classList.remove('selected'));
+        badge.classList.add('selected');
+        selectedBadge = badge.dataset.badge;
+        localStorage.setItem('vip_badge', selectedBadge);
+      });
+    });
+
+    // Load saved badge
+    const savedBadge = localStorage.getItem('vip_badge');
+    if (savedBadge) {
+      selectedBadge = savedBadge;
+      const badgeElement = document.querySelector(`[data-badge="${savedBadge}"]`);
+      if (badgeElement) {
+        badgeElement.classList.add('selected');
+      }
+    } else {
+      document.querySelector('[data-badge="👑"]').classList.add('selected');
+    }
 
     // VIP Access Check
     async function showDownloadIfVIP() {
@@ -2113,10 +2324,11 @@
       const downloadLink = document.getElementById('downloadLink');
       const downloadMessage = document.getElementById('downloadMessage');
       const vipBadge = document.getElementById('vipBadge');
-      const vipExtras = document.getElementById('vipExtras');
+      const vipBadgesSection = document.getElementById('vipBadgesSection');
       const addExtraBtn = document.getElementById('addExtraBtn');
+      const msgInput = document.getElementById('msg-input');
 
-      if (!user || !downloadLink || !downloadMessage) {
+      if (!user) {
         downloadMessage.textContent = '🚫 Please login to check VIP access';
         return;
       }
@@ -2135,11 +2347,9 @@
       // Enable VIP features
       isVipUser = true;
       vipBadge.style.display = 'inline-block';
-      vipExtras.classList.add('show');
+      vipBadgesSection.classList.add('show');
       addExtraBtn.style.display = 'inline-block';
-
-      // Load VIP extras
-      await loadVipExtras();
+      msgInput.classList.add('vip');
 
       let seconds = 30;
       const countdown = setInterval(() => {
@@ -2149,7 +2359,7 @@
       setTimeout(() => {
         clearInterval(countdown);
         downloadLink.style.display = 'inline-block';
-        downloadMessage.innerHTML = '✅ <strong>VIP Access Confirmed!</strong> Enjoy exclusive content!';
+        downloadMessage.innerHTML = '✅ <strong>VIP Access Confirmed!</strong> You can now add extras and enjoy VIP chat!';
         downloadMessage.style.background = 'linear-gradient(45deg, #2f1a39, #1a4d2e)';
         downloadMessage.style.borderColor = '#4ade80';
       }, 30000);
@@ -2158,17 +2368,15 @@
     // Real-time updates for VIP extras
     supabase.channel('vip_extras')
       .on('postgres_changes', { 
-        event: '*', 
+        event: 'INSERT', 
         schema: 'public', 
         table: 'vip_extras' 
       }, () => {
-        if (isVipUser) {
-          loadVipExtras();
-        }
+        loadVipExtras();
       })
       .subscribe();
 
-    // Chat functionality
+    // Chat functionality with VIP features
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
     const msgInput = document.getElementById('msg-input');
@@ -2204,12 +2412,22 @@
         return;
       }
 
+      const currentUsername = await getUserGitHubUsername();
+
       messagesDiv.innerHTML = data.map(m => {
-        const messageClass = isVipUser ? 'vip-message' : '';
-        const vipIcon = isVipUser ? '👑 ' : '';
+        const isCurrentUserVip = isVipUser && m.github_username === currentUsername;
+        const messageClass = isCurrentUserVip ? 'message vip' : 'message';
+        const usernameClass = isCurrentUserVip ? 'username vip' : 'username';
+        const userBadge = isCurrentUserVip ? selectedBadge : '';
+        const messageTime = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
         return `<div class="${messageClass}">
-          <strong>${vipIcon}${m.github_username || 'Guest'}:</strong> ${m.content}
+          <div class="message-header">
+            <span class="${usernameClass}">${m.github_username || 'Guest'}</span>
+            ${userBadge ? `<span class="user-badge">${userBadge}</span>` : ''}
+            <span class="message-time">${messageTime}</span>
+          </div>
+          <div class="message-content">${m.content}</div>
         </div>`;
       }).join('');
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -2246,7 +2464,8 @@
       .subscribe();
 
     // Initialize
-    showDownloadIfVIP();
+    loadVipExtras(); // Load extras for everyone to see
+    showDownloadIfVIP(); // Check VIP access
     loadMessages();
   </script>
 </body>
