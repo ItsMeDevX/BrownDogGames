@@ -2374,6 +2374,8 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
     }
+
+    @media (max-width: 768px) {
       .main-content {
         padding: 25px;
       }
@@ -2420,7 +2422,7 @@
   <section class="vip-extras-section" id="vip-extras-section">
     <h3>👑 VIP Community Extras</h3>
     <div class="page-owner-info">
-      <p>Exclusive content shared by <span class="owner-name" id="extras-username"></span></p>
+      <p>Exclusive content shared for <span class="owner-name" id="extras-username"></span></p>
     </div>
     
     <div id="extrasContainer" class="extras-grid">
@@ -2736,8 +2738,7 @@
       console.log('Found extras:', extras);
 
       if (!extras || extras.length === 0) {
-        const isPageOwner = await isCurrentUserPageOwner();
-        if (isVipUser && isPageOwner) {
+        if (isVipUser) {
           container.innerHTML = `<div class="no-extras">No VIP extras yet for ${username}. Be the first to share something awesome!</div>`;
         } else {
           container.innerHTML = `<div class="no-extras">No VIP extras available for ${username}.</div>`;
@@ -2812,40 +2813,15 @@
     }
   }
 
-  // Check if current user is the page owner
-  async function isCurrentUserPageOwner() {
-    if (!currentUser) return false;
-    
-    try {
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('github_username')
-        .eq('id', currentUser.id)
-        .single();
-    
-      if (error) {
-        console.error('Error checking page owner:', error);
-        return false;
-      }
-
-      return userData?.github_username === username;
-    } catch (error) {
-      console.error('Error in isCurrentUserPageOwner:', error);
-      return false;
-    }
-  }
-
-  // Add VIP Extra for this user's page
+  // Add VIP Extra for this user's page - UPDATED TO ALLOW ANY VIP USER
   async function addVipExtra(extraData) {
     if (!currentUser || !isVipUser) {
       alert('VIP access required to add extras');
       return false;
     }
 
-    if (!await isCurrentUserPageOwner()) {
-      alert('You can only add extras to your own page');
-      return false;
-    }
+    // REMOVED THE PAGE OWNER CHECK - Now any VIP user can add extras to any page
+    console.log('Adding VIP extra as VIP user:', currentUser.user_metadata?.full_name || currentUser.id);
 
     try {
       const { error } = await supabase
@@ -2857,7 +2833,7 @@
           type: extraData.type,
           game_id: username, // Use page owner's username as game_id
           created_by: currentUser.id,
-          creator_name: currentUser.user_metadata?.full_name || username
+          creator_name: currentUser.user_metadata?.full_name || 'VIP User'
         }]);
 
       if (error) {
@@ -2888,6 +2864,7 @@
     const section = document.getElementById('addExtraSection');
     section.classList.toggle('show');
   };
+
   async function getTotalLikes() {
     if (!username) return 0;
     
@@ -3260,57 +3237,35 @@
       console.log('👑 Is VIP:', isVipUser);
       console.log('📝 Page username:', username);
       
-      // Show VIP badge if user is VIP - ALWAYS for any VIP user
+      // Show VIP badge and features if user is VIP
       if (isVipUser) {
         const vipBadge = document.getElementById('vipBadge');
         const vipBadgesSection = document.getElementById('vipBadgesSection');
         const msgInput = document.getElementById('msg-input');
+        const addExtraBtn = document.getElementById('addExtraBtn');
         
         console.log('🎉 User is VIP! Enabling VIP features...');
         
         if (vipBadge) {
           vipBadge.style.display = 'inline-block';
           console.log('✅ VIP badge shown');
-        } else {
-          console.error('❌ VIP badge element not found');
         }
         
         if (vipBadgesSection) {
           vipBadgesSection.classList.add('show');
           console.log('✅ VIP badges section shown');
-        } else {
-          console.error('❌ VIP badges section not found');
         }
         
         if (msgInput) {
           msgInput.classList.add('vip');
           console.log('✅ VIP chat styling added');
-        } else {
-          console.error('❌ Chat input not found');
         }
         
-        // Check if this is the VIP user's own page to show add button
-        const isPageOwner = await isCurrentUserPageOwner();
-        console.log('🏠 Is page owner:', isPageOwner);
-        
-        if (isPageOwner) {
-          const addExtraBtn = document.getElementById('addExtraBtn');
-          if (addExtraBtn) {
-            addExtraBtn.style.display = 'inline-block';
-            console.log('✅ Add extra button shown');
-          } else {
-            console.error('❌ Add extra button not found');
-          }
-        } else {
-          console.log('ℹ️ Not page owner, add button hidden');
-        }
-        
-        // ALWAYS show add button for VIP users regardless of page ownership for testing
-        const addExtraBtn = document.getElementById('addExtraBtn');
+        // Show add extra button for ALL VIP users (no page owner restriction)
         if (addExtraBtn) {
           addExtraBtn.style.display = 'inline-block';
-          addExtraBtn.textContent = '➕ Add VIP Extra (Testing)';
-          console.log('🧪 Add extra button force-shown for testing');
+          addExtraBtn.textContent = '➕ Add VIP Extra';
+          console.log('✅ Add extra button shown for VIP user');
         }
         
       } else {
@@ -3398,7 +3353,7 @@
           }
         }
         
-        // NEW: X (Twitter) posts/videos
+        // X (Twitter) posts/videos
         else if (url.includes('twitter.com/') || url.includes('x.com/')) {
           const xId = extractXId(url);
           if (xId) {
@@ -3413,7 +3368,7 @@
           }
         }
         
-        // NEW: TikTok videos
+        // TikTok videos
         else if (url.includes('tiktok.com/')) {
           const tiktokId = extractTikTokId(url);
           if (tiktokId) {
@@ -3660,17 +3615,19 @@
     });
   }
 
-    // Subscribe to real-time message updates
-    supabase.channel('messages_' + username)
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'messages',
-        filter: `game_id=eq.${username}`
-      }, () => {
-        loadChatMessages();
-      })
-      .subscribe();
+  // Subscribe to real-time message updates
+  supabase.channel('messages_' + username)
+    .on('postgres_changes', { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'messages',
+      filter: `game_id=eq.${username}`
+    }, () => {
+      loadChatMessages();
+    })
+    .subscribe();
+
+  // Subscribe to real-time VIP extras updates
   supabase.channel(`vip_extras_${username}`)
     .on('postgres_changes', { 
       event: 'INSERT', 
