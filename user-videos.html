@@ -1699,6 +1699,24 @@
       font-weight: bold;
     }
 
+    .platform-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.6rem;
+      font-weight: bold;
+      z-index: 3;
+    }
+
+    .platform-badge.youtube { background: rgba(255, 0, 0, 0.8); }
+    .platform-badge.tiktok { background: rgba(255, 0, 80, 0.8); }
+    .platform-badge.twitter { background: rgba(29, 161, 242, 0.8); }
+    .platform-badge.drive { background: rgba(52, 168, 83, 0.8); }
+
     .user-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -1945,6 +1963,26 @@
       background: #ff8bd8;
     }
 
+    .external-link-notice {
+      background: #4a3157;
+      color: #ffb6d1;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .external-link-notice a {
+      color: #8dffa1;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .external-link-notice a:hover {
+      text-decoration: underline;
+    }
+
     @media (max-width: 768px) {
       #userList {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1998,6 +2036,9 @@
   <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div id="modalContent">
       <button id="closeModalBtn" aria-label="Close video player">×</button>
+      <div id="externalLinkNotice" class="external-link-notice" style="display: none;">
+        <p>This video is hosted on an external platform. <a id="externalLink" href="#" target="_blank" rel="noopener noreferrer">Click here to view on the original platform</a></p>
+      </div>
       <iframe id="videoPlayerIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
   </div>
@@ -2022,6 +2063,8 @@
   const videoModal = document.getElementById('videoModal');
   const videoPlayerIframe = document.getElementById('videoPlayerIframe');
   const closeModalBtn = document.getElementById('closeModalBtn');
+  const externalLinkNotice = document.getElementById('externalLinkNotice');
+  const externalLink = document.getElementById('externalLink');
 
   let currentSort = 'alphabetical';
   let allUsers = [];
@@ -2112,14 +2155,34 @@
     }
   }
 
+  function getPlatformInfo(url) {
+    if (!url) return { platform: 'unknown', badge: 'VID' };
+
+    // YouTube
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      return { platform: 'youtube', badge: 'YT' };
+    }
+    
+    // TikTok
+    if (url.includes('tiktok.com')) {
+      return { platform: 'tiktok', badge: 'TT' };
+    }
+    
+    // X/Twitter
+    if (url.includes('twitter.com') || url.includes('x.com')) {
+      return { platform: 'twitter', badge: 'X' };
+    }
+    
+    // Google Drive
+    if (url.includes('drive.google.com')) {
+      return { platform: 'drive', badge: 'GD' };
+    }
+
+    return { platform: 'unknown', badge: 'VID' };
+  }
+
   function getThumbnailFromUrl(url) {
     if (!url) return null;
-
-    // Google Drive thumbnail
-    const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
-    if (driveMatch) {
-      return `https://drive.google.com/thumbnail?id=${driveMatch[1]}`;
-    }
 
     // YouTube thumbnail
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
@@ -2127,7 +2190,23 @@
       return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
     }
 
-    return null;
+    // Google Drive thumbnail
+    const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
+    if (driveMatch) {
+      return `https://drive.google.com/thumbnail?id=${driveMatch[1]}`;
+    }
+
+    // TikTok - use a placeholder since TikTok doesn't provide easy thumbnail access
+    if (url.includes('tiktok.com')) {
+      return 'https://via.placeholder.com/200x120/ff0050/ffffff?text=TikTok';
+    }
+
+    // X/Twitter - use a placeholder since Twitter doesn't provide easy thumbnail access
+    if (url.includes('twitter.com') || url.includes('x.com')) {
+      return 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=X';
+    }
+
+    return 'https://via.placeholder.com/200x120?text=Video';
   }
 
   function createAvatar(user) {
@@ -2151,12 +2230,21 @@
   function createVideoThumb(video) {
     const container = document.createElement('div');
     container.className = 'video-thumb';
+    container.style.position = 'relative';
 
-    const thumbnailUrl = getThumbnailFromUrl(video.video_url) || 'https://via.placeholder.com/200x120?text=No+Thumbnail';
+    const platformInfo = getPlatformInfo(video.video_url);
+    const thumbnailUrl = getThumbnailFromUrl(video.video_url);
+    
     const img = document.createElement('img');
     img.src = thumbnailUrl;
     img.alt = `${video.title} video thumbnail`;
     container.appendChild(img);
+
+    // Add platform badge
+    const badge = document.createElement('div');
+    badge.className = `platform-badge ${platformInfo.platform}`;
+    badge.textContent = platformInfo.badge;
+    container.appendChild(badge);
 
     const titleDiv = document.createElement('div');
     titleDiv.className = 'video-title';
@@ -2173,19 +2261,56 @@
 
   function openVideoModal(url) {
     let embedUrl = url;
+    let showExternalNotice = false;
 
-    // Convert YouTube watch URL to embed URL with autoplay
+    // YouTube - convert to embed URL with autoplay
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
     if (ytMatch) {
       embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
     }
-
-    // Convert Google Drive URL to embed URL
-    const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
-    if (driveMatch) {
-      embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+    // Google Drive - convert to embed URL
+    else if (url.includes('drive.google.com')) {
+      const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
+      if (driveMatch) {
+        embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+      }
+    }
+    // TikTok - show external notice since TikTok doesn't allow embedding in many cases
+    else if (url.includes('tiktok.com')) {
+      showExternalNotice = true;
+      externalLink.href = url;
+      // Try TikTok embed, but it may not work due to restrictions
+      const tiktokMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
+      if (tiktokMatch) {
+        embedUrl = `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}`;
+      } else {
+        // Fallback: show placeholder
+        embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+          <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+            <h2>🎵 TikTok Video</h2>
+            <p>This video is hosted on TikTok.</p>
+            <p><a href="${url}" target="_blank" style="color:#ff0050;text-decoration:none;font-size:18px;">► Open on TikTok</a></p>
+          </body></html>
+        `);
+      }
+    }
+    // X/Twitter - show external notice since Twitter videos have restrictions
+    else if (url.includes('twitter.com') || url.includes('x.com')) {
+      showExternalNotice = true;
+      externalLink.href = url;
+      // Show placeholder since Twitter embed is complex
+      embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+          <h2>🐦 X (Twitter) Video</h2>
+          <p>This video is hosted on X (formerly Twitter).</p>
+          <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
+        </body></html>
+      `);
     }
 
+    // Show/hide external link notice
+    externalLinkNotice.style.display = showExternalNotice ? 'block' : 'none';
+    
     videoPlayerIframe.src = embedUrl;
     videoModal.style.display = 'flex';
     videoModal.focus();
@@ -2194,6 +2319,7 @@
   function closeVideoModal() {
     videoModal.style.display = 'none';
     videoPlayerIframe.src = '';
+    externalLinkNotice.style.display = 'none';
   }
 
   closeModalBtn.onclick = closeVideoModal;
