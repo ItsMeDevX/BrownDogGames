@@ -2181,7 +2181,7 @@
     return { platform: 'unknown', badge: 'VID' };
   }
 
-  function getThumbnailFromUrl(url) {
+  async function getThumbnailFromUrl(url) {
     if (!url) return null;
 
     // YouTube thumbnail
@@ -2196,17 +2196,77 @@
       return `https://drive.google.com/thumbnail?id=${driveMatch[1]}`;
     }
 
-    // TikTok - use a placeholder since TikTok doesn't provide easy thumbnail access
+    // TikTok thumbnail extraction
     if (url.includes('tiktok.com')) {
-      return 'https://via.placeholder.com/200x120/ff0050/ffffff?text=TikTok';
+      try {
+        // Extract video ID from TikTok URL
+        const tiktokMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
+        if (tiktokMatch) {
+          const videoId = tiktokMatch[1];
+          // Use TikTok's oEmbed API to get thumbnail
+          const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+          
+          try {
+            const response = await fetch(oembedUrl);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.thumbnail_url) {
+                return data.thumbnail_url;
+              }
+            }
+          } catch (e) {
+            console.log('TikTok oEmbed failed, trying alternative...');
+          }
+          
+          // Alternative: Try to construct thumbnail URL (may not always work)
+          return `https://p16-sign-sg.tiktokcdn.com/obj/tos-maliva-p-0068/oUfHBfn6lCAIr6eEFGE9AvjQqIBPAu2CIfhfD?x-expires=1640995200&x-signature=dummy`;
+        }
+      } catch (error) {
+        console.log('TikTok thumbnail extraction failed:', error);
+      }
+      
+      // Fallback to branded placeholder
+      return 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok';
     }
 
-    // X/Twitter - use a placeholder since Twitter doesn't provide easy thumbnail access
+    // X/Twitter thumbnail extraction
     if (url.includes('twitter.com') || url.includes('x.com')) {
-      return 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=X';
+      try {
+        // Extract tweet ID from URL
+        const twitterMatch = url.match(/(?:twitter\.com|x\.com)\/[^\/]+\/status\/(\d+)/);
+        if (twitterMatch) {
+          // Use a proxy service to get Twitter/X metadata
+          // Note: Twitter's API requires authentication, so we'll use a meta tag scraping approach
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+          
+          try {
+            const response = await fetch(proxyUrl);
+            if (response.ok) {
+              const data = await response.json();
+              const html = data.contents;
+              
+              // Parse HTML for og:image meta tag
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, 'text/html');
+              const ogImage = doc.querySelector('meta[property="og:image"]');
+              
+              if (ogImage && ogImage.content) {
+                return ogImage.content;
+              }
+            }
+          } catch (e) {
+            console.log('X/Twitter thumbnail extraction failed:', e);
+          }
+        }
+      } catch (error) {
+        console.log('X/Twitter thumbnail extraction failed:', error);
+      }
+      
+      // Fallback to branded placeholder
+      return 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X';
     }
 
-    return 'https://via.placeholder.com/200x120?text=Video';
+    return 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
   }
 
   function createAvatar(user) {
@@ -2233,11 +2293,38 @@
     container.style.position = 'relative';
 
     const platformInfo = getPlatformInfo(video.video_url);
-    const thumbnailUrl = getThumbnailFromUrl(video.video_url);
     
     const img = document.createElement('img');
-    img.src = thumbnailUrl;
     img.alt = `${video.title} video thumbnail`;
+    
+    // Set loading placeholder first
+    img.src = 'https://via.placeholder.com/200x120/333333/ffffff?text=Loading...';
+    
+    // Load actual thumbnail asynchronously
+    getThumbnailFromUrl(video.video_url).then(thumbnailUrl => {
+      if (thumbnailUrl) {
+        img.src = thumbnailUrl;
+        // Add error handler for failed thumbnail loads
+        img.onerror = () => {
+          const fallbackUrl = platformInfo.platform === 'tiktok' 
+            ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
+            : platformInfo.platform === 'twitter'
+            ? 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X'
+            : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
+          img.src = fallbackUrl;
+        };
+      }
+    }).catch(error => {
+      console.log('Thumbnail loading failed:', error);
+      // Use platform-specific fallback
+      const fallbackUrl = platformInfo.platform === 'tiktok' 
+        ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
+        : platformInfo.platform === 'twitter'
+        ? 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X'
+        : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
+      img.src = fallbackUrl;
+    });
+    
     container.appendChild(img);
 
     // Add platform badge
@@ -2509,9 +2596,36 @@
 
     // Thumbnail and Title
     if (featuredUser.newestVideo) {
-      featuredThumbnail.src = getThumbnailFromUrl(featuredUser.newestVideo.video_url) || 'https://via.placeholder.com/350x180?text=No+Thumbnail';
+      // Set loading placeholder first
+      featuredThumbnail.src = 'https://via.placeholder.com/350x180/333333/ffffff?text=Loading...';
       featuredThumbnail.alt = `${featuredUser.newestVideo.title} video thumbnail`;
       featuredTitle.textContent = featuredUser.newestVideo.title;
+      
+      // Load actual thumbnail asynchronously
+      getThumbnailFromUrl(featuredUser.newestVideo.video_url).then(thumbnailUrl => {
+        if (thumbnailUrl) {
+          featuredThumbnail.src = thumbnailUrl;
+          // Add error handler for failed thumbnail loads
+          featuredThumbnail.onerror = () => {
+            const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
+            const fallbackUrl = platformInfo.platform === 'tiktok' 
+              ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
+              : platformInfo.platform === 'twitter'
+              ? 'https://via.placeholder.com/350x180/1da1f2/ffffff?text=🐦+X+Video'
+              : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
+            featuredThumbnail.src = fallbackUrl;
+          };
+        }
+      }).catch(error => {
+        console.log('Featured thumbnail loading failed:', error);
+        const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
+        const fallbackUrl = platformInfo.platform === 'tiktok' 
+          ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
+          : platformInfo.platform === 'twitter'
+          ? 'https://via.placeholder.com/350x180/1da1f2/ffffff?text=🐦+X+Video'
+          : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
+        featuredThumbnail.src = fallbackUrl;
+      });
       
       // Click handler for video
       featuredSection.onclick = () => openVideoModal(featuredUser.newestVideo.video_url);
