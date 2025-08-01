@@ -1546,7 +1546,22 @@
       max-width: 800px;
       display: inline-block;
     }
-    .back-link:hover { background-color: #ff82ba; }
+    .vip-badge {
+      display: inline-block;
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      color: #1b1b2e;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-left: 15px;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 5px #ffd700; }
+      to { box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
+    }
 
     .content-section {
       max-width: 800px;
@@ -2388,7 +2403,7 @@
 <body>
 
   <a href="user-videos.html" class="back-link">⬅️ Back to All Users</a>
-  <h1 id="pageTitle">User Content</h1>
+  <h1 id="pageTitle">User Content<span id="vipBadge" class="vip-badge" style="display: none;">👑 VIP</span></h1>
 
   <section class="content-section" id="like-section">
     <div class="main-content">
@@ -2542,6 +2557,8 @@
     if (!user) return false;
     
     try {
+      console.log('Checking VIP status for user:', user.id);
+      
       const { data: userData, error } = await supabase
         .from('users')
         .select('is_vip')
@@ -2553,7 +2570,11 @@
         return false;
       }
 
-      return userData?.is_vip === true;
+      console.log('User data from database:', userData);
+      const isVip = userData?.is_vip === true;
+      console.log('Is VIP result:', isVip);
+      
+      return isVip;
     } catch (error) {
       console.error('Error in checkVipStatus:', error);
       return false;
@@ -3225,6 +3246,8 @@
 
     // Get current user and load like status
     currentUser = await getCurrentUser();
+    console.log('Current user:', currentUser);
+    
     if (currentUser) {
       isVipUser = await checkVipStatus(currentUser);
       userHasLiked = await hasUserLiked(currentUser.id);
@@ -3233,15 +3256,23 @@
       console.log('Is VIP:', isVipUser);
       console.log('Page username:', username);
       
-      // Show VIP badges section if user is VIP
+      // Show VIP badge if user is VIP
       if (isVipUser) {
+        const vipBadge = document.getElementById('vipBadge');
         const vipBadgesSection = document.getElementById('vipBadgesSection');
         const msgInput = document.getElementById('msg-input');
+        
+        if (vipBadge) {
+          vipBadge.style.display = 'inline-block';
+          console.log('Showing VIP badge');
+        }
         if (vipBadgesSection) {
           vipBadgesSection.classList.add('show');
+          console.log('Showing VIP badges section');
         }
         if (msgInput) {
           msgInput.classList.add('vip');
+          console.log('Adding VIP styling to chat input');
         }
       }
       
