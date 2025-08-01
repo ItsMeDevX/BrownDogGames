@@ -1652,6 +1652,15 @@
       max-width: 100%;
     }
 
+    .video-embed {
+      width: 100%;
+      height: 200px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: black;
+      border: none;
+    }
+
     .play-link {
       display: inline-block;
       background-color: #ff4f9f;
@@ -2353,6 +2362,22 @@
     return match ? match[1] : null;
   }
 
+  // NEW: Extract X (Twitter) video/post ID
+  function extractXId(url) {
+    // Matches twitter.com and x.com URLs
+    const regExp = /(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[2] : null;
+  }
+
+  // NEW: Extract TikTok video ID
+  function extractTikTokId(url) {
+    // Matches various TikTok URL formats
+    const regExp = /(?:tiktok\.com\/)(?:@[\w.-]+\/video\/|.*\/video\/)(\d+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  }
+
   function convertDriveLinkToThumbnail(url) {
     if (!url) return '';
     const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
@@ -2454,7 +2479,7 @@
             mediaEl.frameBorder = '0';
             mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
             mediaEl.allowFullscreen = true;
-            mediaEl.className = 'video-player';
+            mediaEl.className = 'video-embed';
           }
         }
         
@@ -2469,7 +2494,38 @@
             mediaEl.frameBorder = '0';
             mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
             mediaEl.allowFullscreen = true;
-            mediaEl.className = 'video-player';
+            mediaEl.className = 'video-embed';
+          }
+        }
+        
+        // NEW: X (Twitter) posts/videos
+        else if (url.includes('twitter.com/') || url.includes('x.com/')) {
+          const xId = extractXId(url);
+          if (xId) {
+            mediaEl = document.createElement('iframe');
+            mediaEl.src = `https://platform.twitter.com/embed/Tweet.html?id=${xId}`;
+            mediaEl.width = '100%';
+            mediaEl.height = '250';
+            mediaEl.frameBorder = '0';
+            mediaEl.scrolling = 'no';
+            mediaEl.className = 'video-embed';
+            mediaEl.style.backgroundColor = '#000';
+          }
+        }
+        
+        // NEW: TikTok videos
+        else if (url.includes('tiktok.com/')) {
+          const tiktokId = extractTikTokId(url);
+          if (tiktokId) {
+            mediaEl = document.createElement('iframe');
+            mediaEl.src = `https://www.tiktok.com/embed/v2/${tiktokId}`;
+            mediaEl.width = '100%';
+            mediaEl.height = '300';
+            mediaEl.frameBorder = '0';
+            mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            mediaEl.allowFullscreen = true;
+            mediaEl.className = 'video-embed';
+            mediaEl.style.backgroundColor = '#000';
           }
         }
         
@@ -2485,7 +2541,7 @@
             mediaEl.height = '200';
             mediaEl.allow = 'autoplay';
             mediaEl.frameBorder = '0';
-            mediaEl.className = 'video-player';
+            mediaEl.className = 'video-embed';
           }
         }
         
@@ -2526,7 +2582,7 @@
             playLink.href = url;
             playLink.target = '_blank';
             playLink.className = 'play-link';
-            playLink.textContent = 'View Video →';
+            playLink.textContent = 'View Content →';
             
             mediaEl.appendChild(playLink);
           }
