@@ -2502,6 +2502,10 @@
 
   <section id="chat-container">
     <h2>Chat with <span id="chat-username">Loading...</span></h2>
+    <div id="game-id-container" style="margin-bottom: 1.5rem;">
+      <label id="game-id-label" for="game-id" style="font-size: 1.1rem; color: #ff4f9f; display: block; margin-bottom: 5px;">Game ID:</label>
+      <input type="text" id="game-id" readonly style="width: 100%; padding: 10px; font-size: 16px; border: 2px solid #ff4f9f; border-radius: 8px; background-color: #1b1b2e; color: #fff; font-family: inherit;" />
+    </div>
     <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
@@ -3546,10 +3550,13 @@
   }
 
   async function loadChatMessages() {
+    const gameId = username; // Use the page owner's username as game_id
+    if (!gameId) return;
+
     const result = await supabase
       .from('messages')
       .select('*')
-      .eq('github_username', username)
+      .eq('game_id', gameId)
       .order('created_at', { ascending: true });
 
     if (result.error) {
@@ -3591,10 +3598,11 @@
     if (!message) return;
 
     const githubUsername = await getUserGitHubUsername();
+    const gameId = username; // Use the page owner's username as game_id
 
     const result = await supabase
       .from('messages')
-      .insert([{ github_username: username, content: message }]);
+      .insert([{ content: message, github_username: githubUsername, game_id: gameId }]);
 
     if (result.error) {
       alert('Failed to send message: ' + result.error.message);
@@ -3661,6 +3669,12 @@
   } else {
     pageTitle.textContent = username + "'s Content";
     chatHeading.textContent = username;
+    
+    // Set the game ID to the username
+    const gameIdInput = document.getElementById('game-id');
+    if (gameIdInput) {
+      gameIdInput.value = username;
+    }
 
     incrementVipPageView();
     loadVideos();
