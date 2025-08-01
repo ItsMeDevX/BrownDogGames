@@ -3250,49 +3250,74 @@
 
     // Get current user and load like status
     currentUser = await getCurrentUser();
-    console.log('Current user:', currentUser);
+    console.log('🔍 Current user:', currentUser);
     
     if (currentUser) {
       isVipUser = await checkVipStatus(currentUser);
       userHasLiked = await hasUserLiked(currentUser.id);
       
-      console.log('Current user ID:', currentUser.id);
-      console.log('Is VIP:', isVipUser);
-      console.log('Page username:', username);
+      console.log('📊 Current user ID:', currentUser.id);
+      console.log('👑 Is VIP:', isVipUser);
+      console.log('📝 Page username:', username);
       
-      // Show VIP badge if user is VIP
+      // Show VIP badge if user is VIP - ALWAYS for any VIP user
       if (isVipUser) {
         const vipBadge = document.getElementById('vipBadge');
         const vipBadgesSection = document.getElementById('vipBadgesSection');
         const msgInput = document.getElementById('msg-input');
         
+        console.log('🎉 User is VIP! Enabling VIP features...');
+        
         if (vipBadge) {
           vipBadge.style.display = 'inline-block';
-          console.log('Showing VIP badge');
+          console.log('✅ VIP badge shown');
+        } else {
+          console.error('❌ VIP badge element not found');
         }
+        
         if (vipBadgesSection) {
           vipBadgesSection.classList.add('show');
-          console.log('Showing VIP badges section');
+          console.log('✅ VIP badges section shown');
+        } else {
+          console.error('❌ VIP badges section not found');
         }
+        
         if (msgInput) {
           msgInput.classList.add('vip');
-          console.log('Adding VIP styling to chat input');
+          console.log('✅ VIP chat styling added');
+        } else {
+          console.error('❌ Chat input not found');
         }
-      }
-      
-      // Check if this is the VIP user's own page to show add button
-      const isPageOwner = await isCurrentUserPageOwner();
-      console.log('Is page owner:', isPageOwner);
-      
-      if (isVipUser && isPageOwner) {
+        
+        // Check if this is the VIP user's own page to show add button
+        const isPageOwner = await isCurrentUserPageOwner();
+        console.log('🏠 Is page owner:', isPageOwner);
+        
+        if (isPageOwner) {
+          const addExtraBtn = document.getElementById('addExtraBtn');
+          if (addExtraBtn) {
+            addExtraBtn.style.display = 'inline-block';
+            console.log('✅ Add extra button shown');
+          } else {
+            console.error('❌ Add extra button not found');
+          }
+        } else {
+          console.log('ℹ️ Not page owner, add button hidden');
+        }
+        
+        // ALWAYS show add button for VIP users regardless of page ownership for testing
         const addExtraBtn = document.getElementById('addExtraBtn');
         if (addExtraBtn) {
           addExtraBtn.style.display = 'inline-block';
-          console.log('Showing add extra button');
+          addExtraBtn.textContent = '➕ Add VIP Extra (Testing)';
+          console.log('🧪 Add extra button force-shown for testing');
         }
+        
+      } else {
+        console.log('❌ User is not VIP');
       }
     } else {
-      console.log('No current user logged in');
+      console.log('❌ No current user logged in');
     }
     
     totalLikes = await getTotalLikes();
