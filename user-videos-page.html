@@ -3635,7 +3635,17 @@
     });
   }
 
-  // Subscribe to real-time updates for VIP extras
+    // Subscribe to real-time message updates
+    supabase.channel('messages_' + username)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `game_id=eq.${username}`
+      }, () => {
+        loadChatMessages();
+      })
+      .subscribe();
   supabase.channel(`vip_extras_${username}`)
     .on('postgres_changes', { 
       event: 'INSERT', 
