@@ -2069,6 +2069,23 @@
   let currentSort = 'alphabetical';
   let allUsers = [];
 
+  // Username consolidation function (same as game and art pages)
+  function normalizeUsername(username) {
+    const lower = username.toLowerCase();
+    
+    const manualRules = {
+      'ace': 'Ace475', // Same consolidation as other pages
+      // Add more rules as needed
+    };
+    
+    if (manualRules[lower]) {
+      console.log(`🔄 Video page consolidation: "${username}" → "${manualRules[lower]}"`);
+      return manualRules[lower];
+    }
+    
+    return username;
+  }
+
   // Enhanced function to get ALL likes for a specific user including extras (using same logic as leaderboard)
   async function getUserLikesBreakdown(username) {
     if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
