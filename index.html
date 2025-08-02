@@ -1433,8 +1433,35 @@
   window.openUserProfile = function(username) {
     const messagePreviewDropdown = document.getElementById('message-preview-dropdown');
     messagePreviewDropdown.classList.remove('show');
+    
+    // Mark messages from this user as read
+    markMessagesAsRead(username);
+    
     window.location.href = `user.html?user=${username}`;
   };
+
+  // Mark messages as read when viewing
+  async function markMessagesAsRead(senderUsername) {
+    if (!window.supabaseClient || !window.currentUsername) return;
+    
+    try {
+      const { error } = await window.supabaseClient
+        .from('direct_messages')
+        .update({ is_read: true })
+        .eq('recipient_username', window.currentUsername)
+        .eq('sender_username', senderUsername)
+        .eq('is_read', false);
+        
+      if (error) {
+        console.error('Error marking messages as read:', error);
+      } else {
+        // Update notification count immediately
+        updateMessageNotifications();
+      }
+    } catch (error) {
+      console.error('Error in markMessagesAsRead:', error);
+    }
+  }
 
   // Get avatar for username (helper function)
   async function getAvatarForUsername(username) {
@@ -2845,6 +2872,7 @@
 </script>
 
 </html>
+
 
 
 
