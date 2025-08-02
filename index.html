@@ -1167,7 +1167,10 @@
 
       const container = document.getElementById('vip-paypal-container');
       if (container) {
-        container.innerHTML = '';
+        // Only clear if no active PayPal buttons exist
+        if (!container.hasChildNodes() || !container.querySelector('.paypal-buttons')) {
+          container.innerHTML = '';
+        }
       }
 
       paypal.Buttons({
@@ -1240,17 +1243,19 @@
       }).render('#vip-paypal-container');
     }
 
-    // Check access every 5 seconds to prevent manipulation
+    // Check access every 30 seconds to prevent manipulation, only when page is not active
     setInterval(() => {
-      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-      const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
-      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+      if (document.hidden || !document.hasFocus()) {
+        const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+        const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
+        const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
 
-      // If no access or age verification, show gate
-      if (!(hasVIPAccess || hasFreeAccess) || !isAgeVerified) {
-        accessChoiceGate.classList.add('show');
+        // If no access or age verification, show gate
+        if (!(hasVIPAccess || hasFreeAccess) || !isAgeVerified) {
+          accessChoiceGate.classList.add('show');
+        }
       }
-    }, 5000);
+    }, 30000);
   });
 
   // Age Gate
@@ -1586,6 +1591,11 @@
   // Make supabase available globally
   window.supabaseClient = supabase;
 
+  // Add error handling for Supabase initialization
+  if (!supabase) {
+    console.error('Failed to initialize Supabase client');
+  }
+
   const taskbarNav = document.getElementById('taskbar-nav');
   const taskbarAuth = document.getElementById('taskbar-auth');
   const taskbarVip = document.getElementById('taskbar-vip');
@@ -1596,6 +1606,28 @@
   let currentUsername = null;
   let isInitialized = false;
   let renderingInProgress = false;
+
+  // State synchronization helper
+  function syncAccessState() {
+    const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+    const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
+    const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+    
+    // Update UI to match localStorage state
+    if (window.renderVip) {
+      window.renderVip();
+    }
+    
+    // Update access gate visibility
+    const accessChoiceGate = document.getElementById('access-choice-gate');
+    if (accessChoiceGate) {
+      if ((hasVIPAccess || hasFreeAccess) && isAgeVerified) {
+        accessChoiceGate.classList.remove('show');
+      } else {
+        accessChoiceGate.classList.add('show');
+      }
+    }
+  }
 
   // Make global variables accessible
   window.currentUser = null;
@@ -1638,6 +1670,7 @@
   }
 
   function renderNav() {
+    if (renderingInProgress) return;
     taskbarNav.innerHTML = '';
 
     // User Games (always available)
@@ -1720,6 +1753,7 @@
             accessGate.classList.add('show');
           } else {
             // User not logged in, show normal flow
+            gateUser = null; // Ensure gateUser is reset
             document.querySelector('.access-options').style.display = 'grid';
             document.getElementById('vip-process').style.display = 'none';
             document.getElementById('back-to-options').style.display = 'none';
@@ -1923,6 +1957,7 @@
         // Set up periodic message checking
         if (messageUpdateInterval) {
           clearInterval(messageUpdateInterval);
+          messageUpdateInterval = null;
         }
         messageUpdateInterval = setInterval(updateMessageNotifications, 30000); // Check every 30 seconds
 
@@ -1967,8 +2002,18 @@
       document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('user-dropdown');
         const userInfo = document.getElementById('user-info');
-        if (dropdown && userInfo && !userInfo.contains(e.target)) {
+        const messageDropdown = document.getElementById('message-preview-dropdown');
+        const messagesButton = document.getElementById('messages-button');
+        
+        // Handle user dropdown
+        if (dropdown && userInfo && !userInfo.contains(e.target) && !dropdown.contains(e.target)) {
           dropdown.style.display = 'none';
+        }
+        
+        // Handle message dropdown (ensure consistency)
+        if (messageDropdown && messagesButton && 
+            !messageDropdown.contains(e.target) && !messagesButton.contains(e.target)) {
+          messageDropdown.classList.remove('show');
         }
       });
       globalClickHandlerAdded = true;
@@ -2800,6 +2845,7 @@
 </script>
 
 </html>
+
 
 
 
