@@ -1066,6 +1066,10 @@
         if (window.renderVip) {
           window.renderVip();
         }
+        // Sync state after access grant
+        if (window.syncAccessState) {
+          window.syncAccessState();
+        }
       }, 2000);
     });
 
@@ -1169,6 +1173,11 @@
         }
       }
 
+      // Prevent multiple PayPal button initializations
+      if (container && container.querySelector('.paypal-buttons')) {
+        return;
+      }
+
       paypal.Buttons({
         style: {
           shape: 'rect',
@@ -1218,6 +1227,10 @@
               accessChoiceGate.classList.remove('show');
               if (window.renderVip) {
                 window.renderVip();
+              }
+              // Sync state after VIP activation
+              if (window.syncAccessState) {
+                window.syncAccessState();
               }
             }, 2000);
 
@@ -1355,7 +1368,7 @@
         const preview = message.message_content.substring(0, 50) + (message.message_content.length > 50 ? '...' : '');
         
         return `
-          <div class="message-preview-item unread" onclick="openUserProfile('${message.sender_username}')">
+          <div class="message-preview-item unread" onclick="openUserProfile('${message.sender_username}').catch(console.error); event.stopPropagation();">
             ${avatar ? `<img src="${avatar}" alt="${message.sender_username}" class="message-preview-avatar">` : 
                       `<div class="message-preview-avatar" style="background: #ff4f9f; display: flex; align-items: center; justify-content: center; color: #1b1b2e; font-weight: bold; font-size: 0.8rem;">${message.sender_username.charAt(0).toUpperCase()}</div>`}
             <div class="message-preview-content">
@@ -1426,12 +1439,12 @@
   }
 
   // Open user profile when clicking message preview
-  window.openUserProfile = function(username) {
+  window.openUserProfile = async function(username) {
     const messagePreviewDropdown = document.getElementById('message-preview-dropdown');
     messagePreviewDropdown.classList.remove('show');
     
-    // Mark messages from this user as read
-    markMessagesAsRead(username);
+    // Mark messages from this user as read and wait for completion
+    await markMessagesAsRead(username);
     
     window.location.href = `user.html?user=${username}`;
   };
@@ -1452,7 +1465,9 @@
         console.error('Error marking messages as read:', error);
       } else {
         // Update notification count immediately
-        updateMessageNotifications();
+        setTimeout(() => {
+          updateMessageNotifications();
+        }, 100);
       }
     } catch (error) {
       console.error('Error in markMessagesAsRead:', error);
@@ -2063,6 +2078,9 @@
             await renderAuth();
             await renderVip();
             renderNav(); // Re-render nav to update VIP features
+            
+            // Sync state after auth changes
+            syncAccessState();
           }
         }, 100);
       });
@@ -2076,6 +2094,7 @@
   window.renderVip = renderVip;
   window.renderAuth = renderAuth;
   window.renderNav = renderNav;
+  window.syncAccessState = syncAccessState;
 
   // Start the app when DOM is ready
   if (document.readyState === 'loading') {
@@ -3309,5 +3328,6 @@
   </script>
 </body>
 </html>
+
 
 
