@@ -703,6 +703,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      position: relative;
     }
 
     .taskbar-auth button {
@@ -750,15 +751,17 @@
 
     #user-dropdown {
       position: absolute;
-      top: 70px;
-      right: 16px;
+      top: 100%;
+      right: 0;
       background-color: #3b3750;
+      border: 2px solid #ff69b4;
       border-radius: 8px;
       box-shadow: 0 4px 12px #00000077;
       min-width: 150px;
       display: none;
       flex-direction: column;
       z-index: 1000;
+      margin-top: 5px;
     }
 
     #user-dropdown button {
@@ -1953,7 +1956,8 @@
     if (!globalClickHandlerAdded) {
       document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('user-dropdown');
-        if (dropdown && !taskbarAuth.contains(e.target)) {
+        const userInfo = document.getElementById('user-info');
+        if (dropdown && userInfo && !userInfo.contains(e.target)) {
           dropdown.style.display = 'none';
         }
       });
@@ -2786,4 +2790,5 @@
 </script>
 
 </html>
+
 
