@@ -2345,6 +2345,7 @@
   }
 
   // Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS
+  // Uses same consolidation logic as leaderboard
   async function getAllLikesBreakdown() {
     if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
 
@@ -2354,35 +2355,38 @@
 
       console.log(`🔍 Dashboard: Getting likes breakdown for ${username}`);
 
-      // Step 1: Get VIP extras created by this user to map extra likes
-      const { data: userExtras, error: extrasError } = await supabase
+      // Step 1: Get ALL VIP extras to map extra IDs to creators
+      const { data: vipExtras, error: extrasError } = await supabase
         .from('vip_extras')
-        .select('id, creator_name')
-        .eq('creator_name', username);
+        .select('id, creator_name, created_by');
 
       if (extrasError) {
-        console.error('Error fetching user extras:', extrasError);
+        console.error('Error fetching extras:', extrasError);
         // Continue without extras if error
       }
 
-      const userExtraIds = userExtras ? userExtras.map(extra => extra.id) : [];
-      console.log(`📋 Found ${userExtraIds.length} VIP extras created by ${username}`);
+      // Create a map from extra ID to creator info
+      const extraCreatorMap = {};
+      if (vipExtras) {
+        vipExtras.forEach(extra => {
+          extraCreatorMap[extra.id] = {
+            creatorName: extra.creator_name || 'Unknown Creator',
+            createdBy: extra.created_by
+          };
+        });
+      }
 
-      // Step 2: Get all view records and process them
+      console.log(`🗺️ Dashboard: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
+
+      // Step 2: Get all view records
       const { data: allViews, error: viewsError } = await supabase
         .from('vip_page_views')
         .select('username, view_count');
 
       if (viewsError) throw viewsError;
 
-      let pageLikes = 0;
-      let videoLikes = 0;
-      let gameLikes = 0;
-      let artLikes = 0;
-      let extraLikes = 0;
-
-      // Normalize the current username for comparison
-      const normalizedUsername = normalizeUsername(username);
+      // Step 3: Process using same logic as leaderboard
+      const usersLikesMap = {};
 
       if (allViews) {
         allViews.forEach(view => {
@@ -2391,73 +2395,79 @@
           
           if (!viewUsername) return;
 
-          let matchesUser = false;
+          let baseUsername = viewUsername;
           let contentType = 'page';
 
           // Check if this is an extra like
           if (viewUsername.startsWith('extra_')) {
             const extraId = viewUsername.replace('extra_', '');
-            // Check if this extra belongs to the current user
-            if (userExtraIds.includes(extraId)) {
-              matchesUser = true;
-              contentType = 'extras';
-              console.log(`✅ Found extra like: ${extraId} (${viewCount} likes) → ${username}`);
-            }
-          } else {
-            // Handle other content types
-            let baseUsername = viewUsername;
+            console.log(`🔍 Dashboard: Processing extra like: ${extraId} (${viewCount} likes)`);
             
-            if (viewUsername.includes('_video_')) {
-              baseUsername = viewUsername.split('_video_')[0];
-              contentType = 'videos';
-            } else if (viewUsername.includes('_game_')) {
-              baseUsername = viewUsername.split('_game_')[0];
-              contentType = 'games';
-            } else if (viewUsername.includes('_artwork_')) {
-              baseUsername = viewUsername.split('_artwork_')[0];
-              contentType = 'art';
+            // Look up the creator of this extra
+            const creatorInfo = extraCreatorMap[extraId];
+            if (creatorInfo && creatorInfo.creatorName) {
+              baseUsername = creatorInfo.creatorName;
+              contentType = 'extras';
+              console.log(`✅ Dashboard: Mapped extra ${extraId} to creator: ${baseUsername}`);
+            } else {
+              console.log(`⚠️ Dashboard: No creator found for extra ${extraId}, skipping`);
+              return; // Skip this record if we can't find the creator
             }
-
-            // Normalize and check if matches current user
-            const normalizedBaseUsername = normalizeUsername(baseUsername);
-            matchesUser = (normalizedBaseUsername === normalizedUsername);
+          } else if (viewUsername.includes('_video_')) {
+            baseUsername = viewUsername.split('_video_')[0];
+            contentType = 'videos';
+          } else if (viewUsername.includes('_game_')) {
+            baseUsername = viewUsername.split('_game_')[0];
+            contentType = 'games';
+          } else if (viewUsername.includes('_artwork_')) {
+            baseUsername = viewUsername.split('_artwork_')[0];
+            contentType = 'art';
           }
 
-          // Add to appropriate counter if it matches this user
-          if (matchesUser) {
-            switch (contentType) {
-              case 'page':
-                pageLikes += viewCount;
-                break;
-              case 'videos':
-                videoLikes += viewCount;
-                break;
-              case 'games':
-                gameLikes += viewCount;
-                break;
-              case 'art':
-                artLikes += viewCount;
-                break;
-              case 'extras':
-                extraLikes += viewCount;
-                break;
-            }
-            console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes to ${username}`);
+          // Normalize the username (same consolidation as leaderboard)
+          baseUsername = normalizeUsername(baseUsername);
+
+          // Initialize user if not exists
+          if (!usersLikesMap[baseUsername]) {
+            usersLikesMap[baseUsername] = {
+              username: baseUsername,
+              page: 0,
+              videos: 0,
+              games: 0,
+              art: 0,
+              extras: 0,
+              total: 0
+            };
           }
+
+          // Add to appropriate category
+          usersLikesMap[baseUsername][contentType] += viewCount;
+          console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes to ${baseUsername}`);
         });
       }
 
-      const breakdown = {
-        page: pageLikes,
-        videos: videoLikes,
-        games: gameLikes,
-        art: artLikes,
-        extras: extraLikes,
-        total: pageLikes + videoLikes + gameLikes + artLikes + extraLikes
-      };
+      // Step 4: Find the current user's data (after consolidation)
+      const normalizedCurrentUsername = normalizeUsername(username);
+      const userLikesData = usersLikesMap[normalizedCurrentUsername];
 
-      console.log('📊 Dashboard likes breakdown:', breakdown);
-      return breakdown;
+      if (userLikesData) {
+        // Calculate total
+        userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.extras;
+        
+        console.log(`📊 Dashboard: Final likes for ${normalizedCurrentUsername}:`, userLikesData);
+        
+        return {
+          page: userLikesData.page,
+          videos: userLikesData.videos,
+          games: userLikesData.games,
+          art: userLikesData.art,
+          extras: userLikesData.extras,
+          total: userLikesData.total
+        };
+      } else {
+        console.log(`📊 Dashboard: No likes found for ${normalizedCurrentUsername}`);
+        return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+      }
 
     } catch (error) {
       console.error('Error getting likes breakdown:', error);
@@ -3401,4 +3411,5 @@
 
 </body>
 </html>
+
 
