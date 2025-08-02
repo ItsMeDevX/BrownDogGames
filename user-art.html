@@ -1632,7 +1632,7 @@
 
     #featuredStats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
       margin-bottom: 1rem;
       position: relative;
@@ -1775,7 +1775,7 @@
 
     .user-stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
       width: 100%;
       margin-bottom: 1rem;
@@ -1930,7 +1930,7 @@
     <button class="back-link" id="sortMostLiked">❤️ Most Liked</button>
   </div>
 
-  <div id="userList" class="loading">Loading artists and calculating comprehensive likes...</div>
+  <div id="userList" class="loading">Loading artists and calculating comprehensive likes including VIP extras...</div>
 
   <!-- Art Modal -->
   <div id="artModal">
@@ -1964,56 +1964,148 @@
     let currentSort = 'alphabetical';
     let allUsers = [];
 
-    // Enhanced function to get ALL likes for a specific user (same as other pages)
+    // Username consolidation function (same as leaderboard and dashboard)
+    function normalizeUsername(username) {
+      const lower = username.toLowerCase();
+      
+      const manualRules = {
+        'ace': 'Ace475', // Same consolidation as other pages
+        // Add more rules as needed
+      };
+      
+      if (manualRules[lower]) {
+        console.log(`🔄 Art page consolidation: "${username}" → "${manualRules[lower]}"`);
+        return manualRules[lower];
+      }
+      
+      return username;
+    }
+
+    // Enhanced function to get ALL likes for a specific user INCLUDING VIP EXTRAS
+    // Uses same logic as leaderboard and dashboard
     async function getUserLikesBreakdown(username) {
-      if (!username) return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
 
       try {
-        // Get main page likes (exact username match)
-        const { count: pageLikes, error: pageError } = await supabase
+        console.log(`🔍 Art page: Getting likes breakdown for ${username}`);
+
+        // Step 1: Get ALL VIP extras to map extra IDs to creators
+        const { data: vipExtras, error: extrasError } = await supabase
+          .from('vip_extras')
+          .select('id, creator_name, created_by');
+
+        if (extrasError) {
+          console.error('Art page: Error fetching extras:', extrasError);
+          // Continue without extras if error
+        }
+
+        // Create a map from extra ID to creator info
+        const extraCreatorMap = {};
+        if (vipExtras) {
+          vipExtras.forEach(extra => {
+            extraCreatorMap[extra.id] = {
+              creatorName: extra.creator_name || 'Unknown Creator',
+              createdBy: extra.created_by
+            };
+          });
+        }
+
+        console.log(`🗺️ Art page: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
+
+        // Step 2: Get all view records
+        const { data: allViews, error: viewsError } = await supabase
           .from('vip_page_views')
-          .select('*', { count: 'exact', head: true })
-          .eq('username', username);
+          .select('username, view_count');
 
-        if (pageError) throw pageError;
+        if (viewsError) throw viewsError;
 
-        // Get video likes (username_video_*)
-        const { count: videoLikes, error: videoError } = await supabase
-          .from('vip_page_views')
-          .select('*', { count: 'exact', head: true })
-          .like('username', username + '_video_%');
+        // Step 3: Process using same logic as leaderboard/dashboard
+        const usersLikesMap = {};
 
-        if (videoError) throw videoError;
+        if (allViews) {
+          allViews.forEach(view => {
+            const viewUsername = view.username;
+            const viewCount = view.view_count || 0;
+            
+            if (!viewUsername) return;
 
-        // Get game likes (username_game_*)
-        const { count: gameLikes, error: gameError } = await supabase
-          .from('vip_page_views')
-          .select('*', { count: 'exact', head: true })
-          .like('username', username + '_game_%');
+            let baseUsername = viewUsername;
+            let contentType = 'page';
 
-        if (gameError) throw gameError;
+            // Check if this is an extra like
+            if (viewUsername.startsWith('extra_')) {
+              const extraId = viewUsername.replace('extra_', '');
+              console.log(`🔍 Art page: Processing extra like: ${extraId} (${viewCount} likes)`);
+              
+              // Look up the creator of this extra
+              const creatorInfo = extraCreatorMap[extraId];
+              if (creatorInfo && creatorInfo.creatorName) {
+                baseUsername = creatorInfo.creatorName;
+                contentType = 'extras';
+                console.log(`✅ Art page: Mapped extra ${extraId} to creator: ${baseUsername}`);
+              } else {
+                console.log(`⚠️ Art page: No creator found for extra ${extraId}, skipping`);
+                return; // Skip this record if we can't find the creator
+              }
+            } else if (viewUsername.includes('_video_')) {
+              baseUsername = viewUsername.split('_video_')[0];
+              contentType = 'videos';
+            } else if (viewUsername.includes('_game_')) {
+              baseUsername = viewUsername.split('_game_')[0];
+              contentType = 'games';
+            } else if (viewUsername.includes('_artwork_')) {
+              baseUsername = viewUsername.split('_artwork_')[0];
+              contentType = 'art';
+            }
 
-        // Get art likes (username_artwork_*)
-        const { count: artLikes, error: artError } = await supabase
-          .from('vip_page_views')
-          .select('*', { count: 'exact', head: true })
-          .like('username', username + '_artwork_%');
+            // Normalize the username (same consolidation as other pages)
+            baseUsername = normalizeUsername(baseUsername);
 
-        if (artError) throw artError;
+            // Initialize user if not exists
+            if (!usersLikesMap[baseUsername]) {
+              usersLikesMap[baseUsername] = {
+                username: baseUsername,
+                page: 0,
+                videos: 0,
+                games: 0,
+                art: 0,
+                extras: 0,
+                total: 0
+              };
+            }
 
-        const breakdown = {
-          page: pageLikes || 0,
-          videos: videoLikes || 0,
-          games: gameLikes || 0,
-          art: artLikes || 0,
-          total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0)
-        };
+            // Add to appropriate category
+            usersLikesMap[baseUsername][contentType] += viewCount;
+            console.log(`📈 Art page: Added ${viewCount} ${contentType} likes to ${baseUsername}`);
+          });
+        }
 
-        return breakdown;
+        // Step 4: Find the requested user's data (after consolidation)
+        const normalizedRequestedUsername = normalizeUsername(username);
+        const userLikesData = usersLikesMap[normalizedRequestedUsername];
+
+        if (userLikesData) {
+          // Calculate total
+          userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.extras;
+          
+          console.log(`📊 Art page: Final likes for ${normalizedRequestedUsername}:`, userLikesData);
+          
+          return {
+            page: userLikesData.page,
+            videos: userLikesData.videos,
+            games: userLikesData.games,
+            art: userLikesData.art,
+            extras: userLikesData.extras,
+            total: userLikesData.total
+          };
+        } else {
+          console.log(`📊 Art page: No likes found for ${normalizedRequestedUsername}`);
+          return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+        }
 
       } catch (error) {
-        console.error('Error getting likes breakdown for', username, ':', error);
-        return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+        console.error('Art page: Error getting likes breakdown for', username, ':', error);
+        return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
       }
     }
 
@@ -2038,15 +2130,22 @@
           .select('*', { count: 'exact', head: true })
           .eq('github_username', username);
 
+        // Get VIP extras count (new!)
+        const { count: extrasCount } = await supabase
+          .from('vip_extras')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_name', username);
+
         return {
           games: gamesCount || 0,
           videos: videosCount || 0,
           art: artCount || 0,
-          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0)
+          extras: extrasCount || 0,
+          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0) + (extrasCount || 0)
         };
       } catch (error) {
         console.error('Error getting user stats:', error);
-        return { games: 0, videos: 0, art: 0, total: 0 };
+        return { games: 0, videos: 0, art: 0, extras: 0, total: 0 };
       }
     }
 
@@ -2094,7 +2193,7 @@
     });
 
     async function loadUsers(sortMode = 'alphabetical') {
-      userListEl.innerHTML = '<div class="loading">Loading artists and calculating comprehensive likes...</div>';
+      userListEl.innerHTML = '<div class="loading">Loading artists and calculating comprehensive likes including VIP extras...</div>';
 
       try {
         const orderBy = sortMode === 'newest'
@@ -2149,7 +2248,7 @@
         );
 
         allUsers = usersWithData;
-        console.log('Loaded artists with comprehensive data:', allUsers.length);
+        console.log('Loaded artists with comprehensive data including VIP extras:', allUsers.length);
 
         // Sort and display
         sortAndDisplayUsers(sortMode);
@@ -2237,14 +2336,15 @@
           a.appendChild(titleDiv);
         }
 
-        // Stats
+        // Stats (now includes extras!)
         const statsDiv = document.createElement('div');
         statsDiv.className = 'user-stats';
         
         const stats = [
           { value: user.stats.art, label: 'Art' },
           { value: user.stats.games, label: 'Games' },
-          { value: user.stats.videos, label: 'Videos' }
+          { value: user.stats.videos, label: 'Videos' },
+          { value: user.stats.extras, label: 'Extras' }
         ];
         
         stats.forEach(stat => {
@@ -2259,12 +2359,12 @@
         
         a.appendChild(statsDiv);
 
-        // Likes Breakdown
+        // Likes Breakdown (now includes extras!)
         const likesDiv = document.createElement('div');
         likesDiv.className = 'likes-breakdown';
         likesDiv.innerHTML = `
           <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
-          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art}</div>
+          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art} • ⭐ ${user.likesBreakdown.extras}</div>
         `;
         a.appendChild(likesDiv);
 
@@ -2277,9 +2377,9 @@
     async function displayFeaturedArtist(allArt) {
       if (allUsers.length === 0) return;
 
-      // Featured artist is the one with the most art likes (since this is the art page)
-      const featuredUser = allUsers.reduce((mostArtLikes, current) => {
-        return current.likesBreakdown.art > mostArtLikes.likesBreakdown.art ? current : mostArtLikes;
+      // Featured artist is the one with the most total likes (including VIP extras)
+      const featuredUser = allUsers.reduce((mostLiked, current) => {
+        return current.likesBreakdown.total > mostLiked.likesBreakdown.total ? current : mostLiked;
       }, allUsers[0]);
 
       featuredSection.style.display = 'block';
@@ -2322,7 +2422,7 @@
       // Title
       featuredTitle.textContent = featuredUser.title || 'Untitled Artwork';
 
-      // Stats
+      // Stats (now includes extras!)
       featuredStats.innerHTML = `
         <div class="stat-item">
           <div class="stat-value">${featuredUser.stats.art}</div>
@@ -2336,12 +2436,16 @@
           <div class="stat-value">${featuredUser.stats.videos}</div>
           <div class="stat-label">Videos</div>
         </div>
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.extras}</div>
+          <div class="stat-label">VIP Extras</div>
+        </div>
       `;
 
-      // Likes
+      // Likes (now includes extras!)
       featuredLikes.innerHTML = `
         <div class="total-likes">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
-        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art</div>
+        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • ⭐ ${featuredUser.likesBreakdown.extras} Extras</div>
       `;
 
       // Click handler for featured artwork
