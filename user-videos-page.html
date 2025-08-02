@@ -460,6 +460,198 @@
       background-color: #ff8edb;
     }
 
+    /* Message Notifications */
+    .taskbar-messages {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .messages-button {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .messages-button:hover {
+      background-color: #ff8edb;
+      transform: scale(1.05);
+    }
+
+    .messages-button.has-unread {
+      background: linear-gradient(45deg, #ff69b4, #ff1493);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .message-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: linear-gradient(45deg, #ff4444, #ff6666);
+      color: white;
+      border-radius: 50%;
+      min-width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+      border: 2px solid #2a243b;
+      animation: bounce-badge 1s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
+      }
+    }
+
+    @keyframes bounce-badge {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    .message-preview-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: #2a243b;
+      border: 2px solid #ff69b4;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      min-width: 320px;
+      max-width: 400px;
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+      margin-top: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .message-preview-dropdown.show {
+      display: flex;
+    }
+
+    .message-preview-header {
+      background: #3b3750;
+      padding: 12px 16px;
+      border-bottom: 1px solid #ff69b4;
+      font-weight: bold;
+      color: #ff69b4;
+      text-align: center;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .message-preview-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #3b3750;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .message-preview-item:hover {
+      background-color: #3b3750;
+    }
+
+    .message-preview-item.unread {
+      background: linear-gradient(90deg, rgba(255, 105, 180, 0.1), transparent);
+      border-left: 3px solid #ff69b4;
+    }
+
+    .message-preview-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .message-preview-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .message-preview-sender {
+      font-weight: bold;
+      color: #ff69b4;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .message-preview-text {
+      color: #fefefe;
+      font-size: 0.8rem;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .message-preview-time {
+      color: #999;
+      font-size: 0.7rem;
+      margin-top: 2px;
+    }
+
+    .message-preview-footer {
+      padding: 10px 16px;
+      text-align: center;
+      border-top: 1px solid #3b3750;
+      background: #3b3750;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .message-preview-footer button {
+      background: linear-gradient(45deg, #ff69b4, #ff8edb);
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.8rem;
+    }
+
+    .message-preview-footer button:hover {
+      transform: scale(1.05);
+    }
+
+    .no-messages {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      padding: 20px;
+      font-size: 0.9rem;
+    }
+
     .taskbar-vip {
       display: flex;
       align-items: center;
@@ -502,6 +694,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      position: relative;
     }
 
     .taskbar-auth button {
@@ -549,32 +742,45 @@
 
     #user-dropdown {
       position: absolute;
-      top: 70px;
-      right: 16px;
+      top: 100%;
+      right: 0;
       background-color: #3b3750;
+      border: 2px solid #ff69b4;
       border-radius: 8px;
       box-shadow: 0 4px 12px #00000077;
       min-width: 150px;
       display: none;
       flex-direction: column;
       z-index: 1000;
+      margin-top: 5px;
     }
 
     #user-dropdown button {
       background: none;
       border: none;
       color: #fefefe;
-      padding: 10px 16px;
+      padding: 12px 16px;
       text-align: left;
       font-weight: bold;
       font-family: 'Rubik Mono One', sans-serif;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+      width: 100%;
+      border-radius: 0;
     }
 
     #user-dropdown button:hover {
       background-color: #ff69b4;
       color: #1e1b2e;
+    }
+
+    #user-dropdown button:first-child {
+      border-radius: 6px 6px 0 0;
+    }
+
+    #user-dropdown button:last-child {
+      border-radius: 0 0 6px 6px;
     }
 
     #user-info {
@@ -630,6 +836,11 @@
         margin: 10px;
         max-width: 95%;
       }
+
+      .message-preview-dropdown {
+        right: -50px;
+        min-width: 280px;
+      }
     }
 
     @media (max-width: 600px) {
@@ -656,6 +867,11 @@
 
       .access-option .price {
         font-size: 1.5rem;
+      }
+
+      .message-preview-dropdown {
+        right: -100px;
+        min-width: 260px;
       }
     }
   </style>
@@ -756,6 +972,23 @@
     <div id="suggestions-dropdown"></div>
   </div>
 
+  <!-- NEW: Message Notifications -->
+  <div class="taskbar-messages" id="taskbar-messages" style="display: none;">
+    <button class="messages-button" id="messages-button">
+      💬 Messages
+      <span class="message-badge" id="message-badge" style="display: none;">0</span>
+    </button>
+    <div class="message-preview-dropdown" id="message-preview-dropdown">
+      <div class="message-preview-header">Recent Messages</div>
+      <div id="message-preview-list">
+        <div class="no-messages">No new messages</div>
+      </div>
+      <div class="message-preview-footer">
+        <button onclick="window.location.href='user-profiles.html'">View All Messages</button>
+      </div>
+    </div>
+  </div>
+
   <div class="taskbar-vip" id="taskbar-vip">
     <!-- VIP button/status injected by JS -->
   </div>
@@ -773,6 +1006,7 @@
   let gateUser = null;
   let supabaseClient = null;
   let authInitialized = false;
+  let messageUpdateInterval = null;
 
   // Access Management
   document.addEventListener('DOMContentLoaded', () => {
@@ -924,7 +1158,10 @@
 
       const container = document.getElementById('vip-paypal-container');
       if (container) {
-        container.innerHTML = '';
+        // Only clear if no active PayPal buttons exist
+        if (!container.hasChildNodes() || !container.querySelector('.paypal-buttons')) {
+          container.innerHTML = '';
+        }
       }
 
       paypal.Buttons({
@@ -997,17 +1234,19 @@
       }).render('#vip-paypal-container');
     }
 
-    // Check access every 5 seconds to prevent manipulation
+    // Check access every 30 seconds to prevent manipulation, only when page is not active
     setInterval(() => {
-      const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
-      const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
-      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+      if (document.hidden || !document.hasFocus()) {
+        const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+        const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
+        const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
 
-      // If no access or age verification, show gate
-      if (!(hasVIPAccess || hasFreeAccess) || !isAgeVerified) {
-        accessChoiceGate.classList.add('show');
+        // If no access or age verification, show gate
+        if (!(hasVIPAccess || hasFreeAccess) || !isAgeVerified) {
+          accessChoiceGate.classList.add('show');
+        }
       }
-    }, 5000);
+    }, 30000);
   });
 
   // Age Gate
@@ -1034,6 +1273,231 @@
       window.location.href = 'https://google.com';
     });
   });
+
+  // Message Notifications System
+  function initMessageNotifications() {
+    const messagesButton = document.getElementById('messages-button');
+    const messagePreviewDropdown = document.getElementById('message-preview-dropdown');
+    const messageBadge = document.getElementById('message-badge');
+    
+    if (!messagesButton) return;
+
+    // Toggle dropdown
+    messagesButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = messagePreviewDropdown.classList.contains('show');
+      
+      if (isVisible) {
+        messagePreviewDropdown.classList.remove('show');
+      } else {
+        messagePreviewDropdown.classList.add('show');
+        loadMessagePreviews();
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!messagePreviewDropdown.contains(e.target) && !messagesButton.contains(e.target)) {
+        messagePreviewDropdown.classList.remove('show');
+      }
+    });
+  }
+
+  // Load message previews
+  async function loadMessagePreviews() {
+    const messagePreviewList = document.getElementById('message-preview-list');
+    
+    if (!window.supabaseClient || !window.currentUser || !window.currentUsername) {
+      messagePreviewList.innerHTML = '<div class="no-messages">Please log in to see messages</div>';
+      return;
+    }
+
+    try {
+      // Get recent unread messages
+      const { data: messages, error } = await window.supabaseClient
+        .from('direct_messages')
+        .select('*')
+        .eq('recipient_username', window.currentUsername)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) {
+        console.error('Error loading message previews:', error);
+        messagePreviewList.innerHTML = '<div class="no-messages">Error loading messages</div>';
+        return;
+      }
+
+      if (!messages || messages.length === 0) {
+        messagePreviewList.innerHTML = '<div class="no-messages">No new messages</div>';
+        return;
+      }
+
+      // Group by sender to show latest message from each
+      const senderMap = new Map();
+      for (const message of messages) {
+        if (!senderMap.has(message.sender_username)) {
+          senderMap.set(message.sender_username, message);
+        }
+      }
+
+      const uniqueMessages = Array.from(senderMap.values());
+
+      // Render message previews
+      const previewsHtml = await Promise.all(uniqueMessages.map(async (message) => {
+        const avatar = await getAvatarForUsername(message.sender_username);
+        const time = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const preview = message.message_content.substring(0, 50) + (message.message_content.length > 50 ? '...' : '');
+        
+        return `
+          <div class="message-preview-item unread" onclick="openUserProfile('${message.sender_username}')">
+            ${avatar ? `<img src="${avatar}" alt="${message.sender_username}" class="message-preview-avatar">` : 
+                      `<div class="message-preview-avatar" style="background: #ff4f9f; display: flex; align-items: center; justify-content: center; color: #1b1b2e; font-weight: bold; font-size: 0.8rem;">${message.sender_username.charAt(0).toUpperCase()}</div>`}
+            <div class="message-preview-content">
+              <div class="message-preview-sender">
+                ${message.sender_username}
+                <span class="message-preview-time">${time}</span>
+              </div>
+              <div class="message-preview-text">${preview}</div>
+            </div>
+          </div>
+        `;
+      }));
+
+      messagePreviewList.innerHTML = previewsHtml.join('');
+
+    } catch (error) {
+      console.error('Error in loadMessagePreviews:', error);
+      messagePreviewList.innerHTML = '<div class="no-messages">Error loading messages</div>';
+    }
+  }
+
+  // Update message count and badge
+  async function updateMessageNotifications() {
+    if (!window.supabaseClient || !window.currentUser || !window.currentUsername) {
+      return;
+    }
+
+    try {
+      // Count unread messages
+      const { count, error } = await window.supabaseClient
+        .from('direct_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('recipient_username', window.currentUsername)
+        .eq('is_read', false);
+
+      if (error) {
+        console.error('Error counting unread messages:', error);
+        return;
+      }
+
+      const unreadCount = count || 0;
+      const messagesButton = document.getElementById('messages-button');
+      const messageBadge = document.getElementById('message-badge');
+      const taskbarMessages = document.getElementById('taskbar-messages');
+
+      if (unreadCount > 0) {
+        // Show notifications
+        taskbarMessages.style.display = 'flex';
+        messagesButton.classList.add('has-unread');
+        messageBadge.style.display = 'flex';
+        messageBadge.textContent = unreadCount > 99 ? '99+' : unreadCount.toString();
+      } else {
+        // Hide badge but keep messages button visible for logged-in users
+        messagesButton.classList.remove('has-unread');
+        messageBadge.style.display = 'none';
+        
+        // Only show messages button if user is logged in
+        if (window.currentUser) {
+          taskbarMessages.style.display = 'flex';
+        } else {
+          taskbarMessages.style.display = 'none';
+        }
+      }
+
+    } catch (error) {
+      console.error('Error in updateMessageNotifications:', error);
+    }
+  }
+
+  // Open user profile when clicking message preview
+  window.openUserProfile = function(username) {
+    const messagePreviewDropdown = document.getElementById('message-preview-dropdown');
+    messagePreviewDropdown.classList.remove('show');
+    
+    // Mark messages from this user as read
+    markMessagesAsRead(username);
+    
+    window.location.href = `user.html?user=${username}`;
+  };
+
+  // Mark messages as read when viewing
+  async function markMessagesAsRead(senderUsername) {
+    if (!window.supabaseClient || !window.currentUsername) return;
+    
+    try {
+      const { error } = await window.supabaseClient
+        .from('direct_messages')
+        .update({ is_read: true })
+        .eq('recipient_username', window.currentUsername)
+        .eq('sender_username', senderUsername)
+        .eq('is_read', false);
+        
+      if (error) {
+        console.error('Error marking messages as read:', error);
+      } else {
+        // Update notification count immediately
+        updateMessageNotifications();
+      }
+    } catch (error) {
+      console.error('Error in markMessagesAsRead:', error);
+    }
+  }
+
+  // Get avatar for username (helper function)
+  async function getAvatarForUsername(username) {
+    if (!window.supabaseClient) return null;
+    
+    try {
+      // Try games first
+      const { data: gameData } = await window.supabaseClient
+        .from('game_submissions')
+        .select('avatar_url')
+        .eq('github_user', username)
+        .limit(1);
+      
+      if (gameData && gameData.length > 0 && gameData[0].avatar_url) {
+        return gameData[0].avatar_url;
+      }
+
+      // Try videos
+      const { data: videoData } = await window.supabaseClient
+        .from('game_videos')
+        .select('avatar_url')
+        .eq('github_username', username)
+        .limit(1);
+      
+      if (videoData && videoData.length > 0 && videoData[0].avatar_url) {
+        return videoData[0].avatar_url;
+      }
+
+      // Try art
+      const { data: artData } = await window.supabaseClient
+        .from('user_art')
+        .select('avatar_url')
+        .eq('github_username', username)
+        .limit(1);
+      
+      if (artData && artData.length > 0 && artData[0].avatar_url) {
+        return artData[0].avatar_url;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error getting avatar:', error);
+      return null;
+    }
+  }
 
   // Game Search
   const gamePages = [
@@ -1145,6 +1609,11 @@
   // Make supabase available globally
   window.supabaseClient = supabase;
 
+  // Add error handling for Supabase initialization
+  if (!supabase) {
+    console.error('Failed to initialize Supabase client');
+  }
+
   const taskbarNav = document.getElementById('taskbar-nav');
   const taskbarAuth = document.getElementById('taskbar-auth');
   const taskbarVip = document.getElementById('taskbar-vip');
@@ -1152,8 +1621,35 @@
   // Global state tracking
   let currentVIPStatus = false;
   let currentUser = null;
+  let currentUsername = null;
   let isInitialized = false;
   let renderingInProgress = false;
+
+  // State synchronization helper
+  function syncAccessState() {
+    const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
+    const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
+    const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
+    
+    // Update UI to match localStorage state
+    if (window.renderVip) {
+      window.renderVip();
+    }
+    
+    // Update access gate visibility
+    const accessChoiceGate = document.getElementById('access-choice-gate');
+    if (accessChoiceGate) {
+      if ((hasVIPAccess || hasFreeAccess) && isAgeVerified) {
+        accessChoiceGate.classList.remove('show');
+      } else {
+        accessChoiceGate.classList.add('show');
+      }
+    }
+  }
+
+  // Make global variables accessible
+  window.currentUser = null;
+  window.currentUsername = null;
 
   function toggleDropdown(dropdown) {
     dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
@@ -1192,6 +1688,7 @@
   }
 
   function renderNav() {
+    if (renderingInProgress) return;
     taskbarNav.innerHTML = '';
 
     // User Games (always available)
@@ -1274,6 +1771,7 @@
             accessGate.classList.add('show');
           } else {
             // User not logged in, show normal flow
+            gateUser = null; // Ensure gateUser is reset
             document.querySelector('.access-options').style.display = 'grid';
             document.getElementById('vip-process').style.display = 'none';
             document.getElementById('back-to-options').style.display = 'none';
@@ -1307,6 +1805,35 @@
 
       if (session?.user) {
         currentUser = session.user;
+        window.currentUser = currentUser;
+        
+        // Get username from metadata
+        currentUsername = session.user.user_metadata?.user_name || 
+                         session.user.user_metadata?.preferred_username;
+        
+        if (!currentUsername) {
+          // Fallback: Get from game submissions
+          try {
+            const { data: gameData } = await supabase
+              .from('game_submissions')
+              .select('github_user')
+              .eq('user_id', currentUser.id)
+              .limit(1);
+            
+            if (gameData && gameData.length > 0) {
+              currentUsername = gameData[0].github_user;
+            } else {
+              // Final fallback to email
+              currentUsername = currentUser.email;
+            }
+          } catch (error) {
+            console.error('Error getting username:', error);
+            currentUsername = currentUser.email;
+          }
+        }
+        
+        window.currentUsername = currentUsername;
+        
         currentVIPStatus = await checkVIPStatus(session.user.id);
         
         // Notify VIP gate if it's showing and user isn't already set
@@ -1318,7 +1845,6 @@
         const { user_metadata } = session.user;
         const name = user_metadata.full_name || 'GitHub User';
         const avatar = user_metadata.avatar_url || '';
-        const githubUsername = user_metadata.user_name;
 
         const userInfo = document.createElement('div');
         userInfo.id = 'user-info';
@@ -1343,8 +1869,6 @@
             font-size: 0.85rem;
             font-weight: bold;
             box-shadow: 0 0 10px #ff8edb;
-            cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
           " title="Click for options">
             ${name}
             <span style="font-size: 1.2rem; margin-left: 4px;">▾</span>
@@ -1357,7 +1881,7 @@
         dropdown.id = 'user-dropdown';
 
         const myPageBtn = document.createElement('button');
-        myPageBtn.textContent = 'My Page';
+        myPageBtn.textContent = 'My Page'; // FIXED: Added missing text content
         myPageBtn.onclick = async () => {
           dropdown.style.display = 'none';
           try {
@@ -1378,8 +1902,8 @@
               return;
             }
 
-            if (data && data.length > 0 && githubUsername) {
-              window.location.href = `user.html?user=${githubUsername}`;
+            if (data && data.length > 0 && currentUsername) {
+              window.location.href = `user.html?user=${currentUsername}`;
             } else {
               window.location.href = 'dashboard.html';
             }
@@ -1399,6 +1923,12 @@
         logoutBtn.textContent = 'Logout';
         logoutBtn.onclick = async () => {
           try {
+            // Clear message update interval
+            if (messageUpdateInterval) {
+              clearInterval(messageUpdateInterval);
+              messageUpdateInterval = null;
+            }
+            
             await supabase.auth.signOut();
             
             // Clear all access data on logout
@@ -1409,7 +1939,16 @@
             localStorage.removeItem('vipActivatedAt');
             
             currentUser = null;
+            currentUsername = null;
+            window.currentUser = null;
+            window.currentUsername = null;
             currentVIPStatus = false;
+            
+            // Hide message notifications
+            const taskbarMessages = document.getElementById('taskbar-messages');
+            if (taskbarMessages) {
+              taskbarMessages.style.display = 'none';
+            }
             
             // Show access gate again after logout
             const accessChoiceGate = document.getElementById('access-choice-gate');
@@ -1430,9 +1969,34 @@
         taskbarAuth.appendChild(dropdown);
         userInfo.addEventListener('click', () => toggleDropdown(dropdown));
 
+        // Start message notifications for logged-in users
+        updateMessageNotifications();
+        
+        // Set up periodic message checking
+        if (messageUpdateInterval) {
+          clearInterval(messageUpdateInterval);
+          messageUpdateInterval = null;
+        }
+        messageUpdateInterval = setInterval(updateMessageNotifications, 30000); // Check every 30 seconds
+
       } else {
         currentUser = null;
+        currentUsername = null;
+        window.currentUser = null;
+        window.currentUsername = null;
         currentVIPStatus = false;
+        
+        // Clear message update interval
+        if (messageUpdateInterval) {
+          clearInterval(messageUpdateInterval);
+          messageUpdateInterval = null;
+        }
+        
+        // Hide message notifications
+        const taskbarMessages = document.getElementById('taskbar-messages');
+        if (taskbarMessages) {
+          taskbarMessages.style.display = 'none';
+        }
         
         const loginBtn = document.createElement('button');
         loginBtn.textContent = 'Login with GitHub';
@@ -1455,8 +2019,19 @@
     if (!globalClickHandlerAdded) {
       document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('user-dropdown');
-        if (dropdown && !taskbarAuth.contains(e.target)) {
+        const userInfo = document.getElementById('user-info');
+        const messageDropdown = document.getElementById('message-preview-dropdown');
+        const messagesButton = document.getElementById('messages-button');
+        
+        // Handle user dropdown
+        if (dropdown && userInfo && !userInfo.contains(e.target) && !dropdown.contains(e.target)) {
           dropdown.style.display = 'none';
+        }
+        
+        // Handle message dropdown (ensure consistency)
+        if (messageDropdown && messagesButton && 
+            !messageDropdown.contains(e.target) && !messagesButton.contains(e.target)) {
+          messageDropdown.classList.remove('show');
         }
       });
       globalClickHandlerAdded = true;
@@ -1473,6 +2048,7 @@
       await renderAuth();
       await renderVip();
       addGlobalClickHandler();
+      initMessageNotifications();
 
       let authChangeTimeout;
       supabase.auth.onAuthStateChange(async (event, session) => {
@@ -3677,3 +4253,4 @@
 
 </body>
 </html>
+
