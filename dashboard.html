@@ -2327,60 +2327,141 @@
     return true;
   }
 
-  // Enhanced function to get ALL likes across all content types
+  // Username consolidation function (matches leaderboard logic)
+  function normalizeUsername(username) {
+    const lower = username.toLowerCase();
+    
+    const manualRules = {
+      'ace': 'Ace475', // Same consolidation as leaderboard
+      // Add more rules as needed
+    };
+    
+    if (manualRules[lower]) {
+      console.log(`🔄 Dashboard consolidation: "${username}" → "${manualRules[lower]}"`);
+      return manualRules[lower];
+    }
+    
+    return username;
+  }
+
+  // Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS
   async function getAllLikesBreakdown() {
-    if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+    if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
 
     try {
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
 
-      // Get main page likes (exact username match)
-      const { count: pageLikes, error: pageError } = await supabase
+      console.log(`🔍 Dashboard: Getting likes breakdown for ${username}`);
+
+      // Step 1: Get VIP extras created by this user to map extra likes
+      const { data: userExtras, error: extrasError } = await supabase
+        .from('vip_extras')
+        .select('id, creator_name')
+        .eq('creator_name', username);
+
+      if (extrasError) {
+        console.error('Error fetching user extras:', extrasError);
+        // Continue without extras if error
+      }
+
+      const userExtraIds = userExtras ? userExtras.map(extra => extra.id) : [];
+      console.log(`📋 Found ${userExtraIds.length} VIP extras created by ${username}`);
+
+      // Step 2: Get all view records and process them
+      const { data: allViews, error: viewsError } = await supabase
         .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', username);
+        .select('username, view_count');
 
-      if (pageError) throw pageError;
+      if (viewsError) throw viewsError;
 
-      // Get video likes (username_video_*)
-      const { count: videoLikes, error: videoError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .like('username', username + '_video_%');
+      let pageLikes = 0;
+      let videoLikes = 0;
+      let gameLikes = 0;
+      let artLikes = 0;
+      let extraLikes = 0;
 
-      if (videoError) throw videoError;
+      // Normalize the current username for comparison
+      const normalizedUsername = normalizeUsername(username);
 
-      // Get game likes (username_game_*)
-      const { count: gameLikes, error: gameError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .like('username', username + '_game_%');
+      if (allViews) {
+        allViews.forEach(view => {
+          const viewUsername = view.username;
+          const viewCount = view.view_count || 0;
+          
+          if (!viewUsername) return;
 
-      if (gameError) throw gameError;
+          let matchesUser = false;
+          let contentType = 'page';
 
-      // Get art likes (username_artwork_*)
-      const { count: artLikes, error: artError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .like('username', username + '_artwork_%');
+          // Check if this is an extra like
+          if (viewUsername.startsWith('extra_')) {
+            const extraId = viewUsername.replace('extra_', '');
+            // Check if this extra belongs to the current user
+            if (userExtraIds.includes(extraId)) {
+              matchesUser = true;
+              contentType = 'extras';
+              console.log(`✅ Found extra like: ${extraId} (${viewCount} likes) → ${username}`);
+            }
+          } else {
+            // Handle other content types
+            let baseUsername = viewUsername;
+            
+            if (viewUsername.includes('_video_')) {
+              baseUsername = viewUsername.split('_video_')[0];
+              contentType = 'videos';
+            } else if (viewUsername.includes('_game_')) {
+              baseUsername = viewUsername.split('_game_')[0];
+              contentType = 'games';
+            } else if (viewUsername.includes('_artwork_')) {
+              baseUsername = viewUsername.split('_artwork_')[0];
+              contentType = 'art';
+            }
 
-      if (artError) throw artError;
+            // Normalize and check if matches current user
+            const normalizedBaseUsername = normalizeUsername(baseUsername);
+            matchesUser = (normalizedBaseUsername === normalizedUsername);
+          }
+
+          // Add to appropriate counter if it matches this user
+          if (matchesUser) {
+            switch (contentType) {
+              case 'page':
+                pageLikes += viewCount;
+                break;
+              case 'videos':
+                videoLikes += viewCount;
+                break;
+              case 'games':
+                gameLikes += viewCount;
+                break;
+              case 'art':
+                artLikes += viewCount;
+                break;
+              case 'extras':
+                extraLikes += viewCount;
+                break;
+            }
+            console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes to ${username}`);
+          }
+        });
+      }
 
       const breakdown = {
-        page: pageLikes || 0,
-        videos: videoLikes || 0,
-        games: gameLikes || 0,
-        art: artLikes || 0,
-        total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0)
+        page: pageLikes,
+        videos: videoLikes,
+        games: gameLikes,
+        art: artLikes,
+        extras: extraLikes,
+        total: pageLikes + videoLikes + gameLikes + artLikes + extraLikes
       };
 
-      console.log('Likes breakdown:', breakdown);
+      console.log('📊 Dashboard likes breakdown:', breakdown);
       return breakdown;
 
     } catch (error) {
       console.error('Error getting likes breakdown:', error);
-      return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+      return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
     }
   }
 
@@ -2462,18 +2543,26 @@
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
-      // Get all likes breakdown
+      // Get VIP extras count
+      const { count: extrasCount } = await supabase
+        .from('vip_extras')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_name', username);
+
+      // Get all likes breakdown (including VIP extras)
       const likesBreakdown = await getAllLikesBreakdown();
 
       // Update stats display
       const statGames = document.getElementById('statGames');
       const statVideos = document.getElementById('statVideos');
       const statArt = document.getElementById('statArt');
+      const statExtras = document.getElementById('statExtras');
       const statLikes = document.getElementById('statLikes');
 
       if (statGames) statGames.textContent = gamesCount || 0;
       if (statVideos) statVideos.textContent = videosCount || 0;
       if (statArt) statArt.textContent = artCount || 0;
+      if (statExtras) statExtras.textContent = extrasCount || 0;
       if (statLikes) statLikes.textContent = likesBreakdown.total;
 
     } catch (error) {
@@ -2558,7 +2647,7 @@
     }
   }
 
-  // Enhanced VIP/Earnings Functions with ALL likes calculation
+  // Enhanced VIP/Earnings Functions with ALL likes calculation INCLUDING VIP EXTRAS
   async function loadVipPageLikes() {
     if (!currentUser) return;
 
@@ -2573,6 +2662,7 @@
       const videoLikesCountEl = document.getElementById('videoLikesCount');
       const gameLikesCountEl = document.getElementById('gameLikesCount');
       const artLikesCountEl = document.getElementById('artLikesCount');
+      const extraLikesCountEl = document.getElementById('extraLikesCount');
       const totalLikesCountEl = document.getElementById('totalLikesCount');
 
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
@@ -2588,11 +2678,12 @@
         if (videoLikesCountEl) videoLikesCountEl.textContent = '0';
         if (gameLikesCountEl) gameLikesCountEl.textContent = '0';
         if (artLikesCountEl) artLikesCountEl.textContent = '0';
+        if (extraLikesCountEl) extraLikesCountEl.textContent = '0';
         if (totalLikesCountEl) totalLikesCountEl.textContent = '0';
         return;
       }
 
-      // Get comprehensive likes breakdown
+      // Get comprehensive likes breakdown INCLUDING VIP EXTRAS
       const likesBreakdown = await getAllLikesBreakdown();
 
       // Update breakdown display
@@ -2600,17 +2691,18 @@
       if (videoLikesCountEl) videoLikesCountEl.textContent = likesBreakdown.videos;
       if (gameLikesCountEl) gameLikesCountEl.textContent = likesBreakdown.games;
       if (artLikesCountEl) artLikesCountEl.textContent = likesBreakdown.art;
+      if (extraLikesCountEl) extraLikesCountEl.textContent = likesBreakdown.extras;
       if (totalLikesCountEl) totalLikesCountEl.textContent = likesBreakdown.total;
 
-      // Update main display
+      // Update main display with VIP extras included
       const totalLikes = likesBreakdown.total;
-      vipLikeCountEl.textContent = `Total Likes: ${totalLikes} (Page: ${likesBreakdown.page}, Videos: ${likesBreakdown.videos}, Games: ${likesBreakdown.games}, Art: ${likesBreakdown.art})`;
+      vipLikeCountEl.textContent = `Total Likes: ${totalLikes} (Page: ${likesBreakdown.page}, Videos: ${likesBreakdown.videos}, Games: ${likesBreakdown.games}, Art: ${likesBreakdown.art}, Extras: ${likesBreakdown.extras})`;
 
-      // Calculate earnings based on TOTAL likes (not just page likes)
+      // Calculate earnings based on TOTAL likes INCLUDING VIP EXTRAS
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
       if (earningsValue > 0) {
-        vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)} (from ${totalLikes} total likes)`;
+        vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)} (from ${totalLikes} total likes including VIP extras)`;
         vipEarningsEl.style.display = 'block';
       } else {
         vipEarningsEl.style.display = 'none';
@@ -2632,7 +2724,7 @@
         payoutStatus.textContent = '';
       } else {
         payoutBtn.style.display = 'none';
-        payoutStatus.textContent = `Earnings (£${earningsValue.toFixed(2)}) must reach £5.00 to request payout. Need ${Math.ceil((5 - earningsValue) * 10)} more total likes.`;
+        payoutStatus.textContent = `Earnings (£${earningsValue.toFixed(2)}) must reach £5.00 to request payout. Need ${Math.ceil((5 - earningsValue) * 10)} more total likes (including VIP extras).`;
       }
     } catch (error) {
       console.error('Error loading data:', error.message);
@@ -2865,12 +2957,12 @@
         return;
       }
 
-      // Get comprehensive likes breakdown for payments tab
+      // Get comprehensive likes breakdown for payments tab INCLUDING VIP EXTRAS
       const likesBreakdown = await getAllLikesBreakdown();
       const totalLikes = likesBreakdown.total;
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
-      document.getElementById('paymentsPageLikes').textContent = `${totalLikes} (P:${likesBreakdown.page}, V:${likesBreakdown.videos}, G:${likesBreakdown.games}, A:${likesBreakdown.art})`;
+      document.getElementById('paymentsPageLikes').textContent = `${totalLikes} (P:${likesBreakdown.page}, V:${likesBreakdown.videos}, G:${likesBreakdown.games}, A:${likesBreakdown.art}, E:${likesBreakdown.extras})`;
       document.getElementById('paymentsEarnings').textContent = `£${earningsValue.toFixed(2)}`;
 
       const { data: existingRequests, error: reqError } = await supabase
@@ -2898,7 +2990,7 @@
         mainPayoutBtn.style.display = 'none';
         mainPayoutStatus.textContent = 'Below Minimum';
         mainPayoutStatus.style.color = '#ff8d8d';
-        document.getElementById('mainPayoutStatus').textContent = `Need £${(5 - earningsValue).toFixed(2)} more (${Math.ceil((5 - earningsValue) * 10)} more total likes) to request payout.`;
+        document.getElementById('mainPayoutStatus').textContent = `Need £${(5 - earningsValue).toFixed(2)} more (${Math.ceil((5 - earningsValue) * 10)} more total likes including VIP extras) to request payout.`;
       }
 
     } catch (error) {
@@ -2920,12 +3012,12 @@
         return;
       }
 
-      // Calculate actual earnings using ALL likes
+      // Calculate actual earnings using ALL likes INCLUDING VIP EXTRAS
       const likesBreakdown = await getAllLikesBreakdown();
       const totalLikes = likesBreakdown.total;
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
       
-      logToTestStatus(`📊 Total likes: ${totalLikes} (Page: ${likesBreakdown.page}, Videos: ${likesBreakdown.videos}, Games: ${likesBreakdown.games}, Art: ${likesBreakdown.art}), Earnings: £${earningsValue.toFixed(2)}`, 'info');
+      logToTestStatus(`📊 Total likes: ${totalLikes} (Page: ${likesBreakdown.page}, Videos: ${likesBreakdown.videos}, Games: ${likesBreakdown.games}, Art: ${likesBreakdown.art}, Extras: ${likesBreakdown.extras}), Earnings: £${earningsValue.toFixed(2)}`, 'info');
 
       if (earningsValue < 5.0) {
         logToTestStatus(`❌ Insufficient earnings: Need £5.00 minimum, have £${earningsValue.toFixed(2)}`, 'error');
@@ -2951,7 +3043,7 @@
         return;
       }
       
-      // Insert real payout request based on actual earnings from ALL content
+      // Insert real payout request based on actual earnings from ALL content INCLUDING VIP EXTRAS
       const payoutData = {
         user_id: currentUser.id,
         amount: earningsValue,
@@ -2959,7 +3051,7 @@
         requested_at: new Date().toISOString()
       };
       
-      logToTestStatus(`📝 Submitting real payout: £${payoutData.amount} for user ${currentUser.email} (based on ${totalLikes} total likes)`, 'info');
+      logToTestStatus(`📝 Submitting real payout: £${payoutData.amount} for user ${currentUser.email} (based on ${totalLikes} total likes including VIP extras)`, 'info');
       
       const { data, error } = await supabase
         .from('payout_requests')
@@ -3083,13 +3175,13 @@
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
       if (!username) throw new Error('Username not found.');
 
-      // Calculate earnings using ALL likes
+      // Calculate earnings using ALL likes INCLUDING VIP EXTRAS
       const likesBreakdown = await getAllLikesBreakdown();
       const totalLikes = likesBreakdown.total;
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
       if (earningsValue < 5) {
-        mainPayoutStatus.textContent = `Minimum £5 earnings required for payout. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+        mainPayoutStatus.textContent = `Minimum £5 earnings required for payout. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
         mainPayoutBtn.disabled = false;
         return;
       }
@@ -3117,7 +3209,7 @@
 
       if (error) throw error;
 
-      mainPayoutStatus.textContent = `Payout request submitted successfully! £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+      mainPayoutStatus.textContent = `Payout request submitted successfully! £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
       mainPayoutStatus.style.color = '#8dffa1';
       
       // Refresh displays
@@ -3126,7 +3218,7 @@
       
       // Log to test status if visible
       if (document.getElementById('payments-tab').classList.contains('active')) {
-        logToTestStatus(`💰 Real payout request submitted: £${earningsValue.toFixed(2)} from ${totalLikes} total likes`, 'success');
+        logToTestStatus(`💰 Real payout request submitted: £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras)`, 'success');
         await viewAllPayouts();
       }
       
@@ -3247,13 +3339,13 @@
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
       if (!username) throw new Error('Username not found.');
 
-      // Use ALL likes for earnings calculation
+      // Use ALL likes INCLUDING VIP EXTRAS for earnings calculation
       const likesBreakdown = await getAllLikesBreakdown();
       const totalLikes = likesBreakdown.total;
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
       if (earningsValue < 5) {
-        payoutStatus.textContent = `Minimum £5 earnings required for payout. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+        payoutStatus.textContent = `Minimum £5 earnings required for payout. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
         payoutBtn.disabled = false;
         return;
       }
@@ -3279,7 +3371,7 @@
 
       if (error) throw error;
 
-      payoutStatus.textContent = `Payout request submitted! £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+      payoutStatus.textContent = `Payout request submitted! £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
       payoutBtn.style.display = 'none';
       
       // Refresh displays
@@ -3309,3 +3401,4 @@
 
 </body>
 </html>
+
