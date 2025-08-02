@@ -1843,6 +1843,29 @@
 
         const usersLikesMap = {};
 
+        // Helper function to normalize usernames (consolidate similar names)
+        function normalizeUsername(username) {
+          // Convert to lowercase for comparison
+          const lower = username.toLowerCase();
+          
+          // Manual consolidation rules for specific cases
+          const manualRules = {
+            'ace': 'Ace475', // Specific case we know about
+          };
+          
+          // Check manual rules first
+          if (manualRules[lower]) {
+            console.log(`🔄 Manual consolidation: "${username}" → "${manualRules[lower]}"`);
+            return manualRules[lower];
+          }
+          
+          // Auto-consolidation: If username is just base name without numbers,
+          // and there's a numbered version, prefer the numbered version
+          // This is more complex and might need manual rules for safety
+          
+          return username; // Keep original for now
+        }
+
         // Step 3: Process each view record
         if (allViews) {
           allViews.forEach(view => {
@@ -1880,6 +1903,9 @@
               contentType = 'art';
             }
 
+            // Normalize the username
+            baseUsername = normalizeUsername(baseUsername);
+
             // Initialize user if not exists
             if (!usersLikesMap[baseUsername]) {
               usersLikesMap[baseUsername] = {
@@ -1912,6 +1938,16 @@
           .slice(0, 10);
 
         console.log(`🏆 Final results: ${sortedUsers.length} users with likes`);
+        
+        // Debug: Check for potential duplicates
+        const usernameCounts = {};
+        sortedUsers.forEach(user => {
+          const baseName = user.username.toLowerCase().replace(/[0-9]/g, '');
+          usernameCounts[baseName] = (usernameCounts[baseName] || 0) + 1;
+        });
+        
+        console.log('🔍 Checking for similar usernames:', usernameCounts);
+        
         sortedUsers.forEach((user, idx) => {
           console.log(`${idx + 1}. ${user.username}: ${user.total} total (page:${user.page}, videos:${user.videos}, games:${user.games}, art:${user.art}, extras:${user.extras})`);
         });
