@@ -1719,7 +1719,7 @@
 
     .user-stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
       width: 100%;
       margin: 0.5rem 0;
@@ -1871,7 +1871,7 @@
 
     #featuredStats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
       margin-bottom: 1rem;
       position: relative;
@@ -2030,7 +2030,7 @@
     <button class="back-link" id="sortMostLiked">❤️ Most Liked</button>
   </div>
 
-  <div id="userList" class="loading">Loading video creators and calculating comprehensive likes...</div>
+  <div id="userList" class="loading">Loading video creators and calculating comprehensive likes including VIP extras...</div>
 
   <!-- Video Modal -->
   <div id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -2069,9 +2069,9 @@
   let currentSort = 'alphabetical';
   let allUsers = [];
 
-  // Enhanced function to get ALL likes for a specific user (same as other pages)
+  // Enhanced function to get ALL likes for a specific user including extras
   async function getUserLikesBreakdown(username) {
-    if (!username) return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+    if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
 
     try {
       // Get main page likes (exact username match)
@@ -2106,23 +2106,47 @@
 
       if (artError) throw artError;
 
+      // Get extras likes by finding extras created by this user
+      const { data: userExtras, error: extrasError } = await supabase
+        .from('vip_extras')
+        .select('id')
+        .eq('creator_name', username);
+
+      if (extrasError) throw extrasError;
+
+      let extrasLikes = 0;
+      if (userExtras && userExtras.length > 0) {
+        // Get likes for all extras created by this user
+        for (const extra of userExtras) {
+          const { count: extraLikeCount, error: extraLikeError } = await supabase
+            .from('vip_page_views')
+            .select('*', { count: 'exact', head: true })
+            .eq('username', `extra_${extra.id}`);
+
+          if (!extraLikeError && extraLikeCount) {
+            extrasLikes += extraLikeCount;
+          }
+        }
+      }
+
       const breakdown = {
         page: pageLikes || 0,
         videos: videoLikes || 0,
         games: gameLikes || 0,
         art: artLikes || 0,
-        total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0)
+        extras: extrasLikes || 0,
+        total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0) + (extrasLikes || 0)
       };
 
       return breakdown;
 
     } catch (error) {
       console.error('Error getting likes breakdown for', username, ':', error);
-      return { page: 0, videos: 0, games: 0, art: 0, total: 0 };
+      return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
     }
   }
 
-  // Get comprehensive stats for a user
+  // Get comprehensive stats for a user including extras
   async function getUserStats(username) {
     try {
       // Get games count
@@ -2143,15 +2167,22 @@
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
+      // Get extras count
+      const { count: extrasCount } = await supabase
+        .from('vip_extras')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_name', username);
+
       return {
         games: gamesCount || 0,
         videos: videosCount || 0,
         art: artCount || 0,
-        total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0)
+        extras: extrasCount || 0,
+        total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0) + (extrasCount || 0)
       };
     } catch (error) {
       console.error('Error getting user stats:', error);
-      return { games: 0, videos: 0, art: 0, total: 0 };
+      return { games: 0, videos: 0, art: 0, extras: 0, total: 0 };
     }
   }
 
@@ -2442,14 +2473,15 @@
       card.appendChild(noVideoText);
     }
 
-    // Stats
+    // Stats - now includes extras
     const statsDiv = document.createElement('div');
     statsDiv.className = 'user-stats';
     
     const stats = [
       { value: user.stats.videos, label: 'Videos' },
       { value: user.stats.games, label: 'Games' },
-      { value: user.stats.art, label: 'Art' }
+      { value: user.stats.art, label: 'Art' },
+      { value: user.stats.extras, label: 'Extras' }
     ];
     
     stats.forEach(stat => {
@@ -2464,12 +2496,12 @@
     
     card.appendChild(statsDiv);
 
-    // Likes Breakdown
+    // Likes Breakdown - now includes extras
     const likesDiv = document.createElement('div');
     likesDiv.className = 'likes-breakdown';
     likesDiv.innerHTML = `
       <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
-      <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art}</div>
+      <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art} • ⭐ ${user.likesBreakdown.extras}</div>
     `;
     card.appendChild(likesDiv);
 
@@ -2481,7 +2513,7 @@
   }
 
   async function loadVideos() {
-    userListEl.innerHTML = '<div class="loading">Loading video creators and calculating comprehensive likes...</div>';
+    userListEl.innerHTML = '<div class="loading">Loading video creators and calculating comprehensive likes including VIP extras...</div>';
 
     try {
       const { data, error } = await supabase
@@ -2631,7 +2663,7 @@
       featuredSection.onclick = () => openVideoModal(featuredUser.newestVideo.video_url);
     }
 
-    // Stats
+    // Stats - now includes extras
     featuredStats.innerHTML = `
       <div class="stat-item">
         <div class="stat-value">${featuredUser.stats.videos}</div>
@@ -2645,12 +2677,16 @@
         <div class="stat-value">${featuredUser.stats.art}</div>
         <div class="stat-label">Art</div>
       </div>
+      <div class="stat-item">
+        <div class="stat-value">${featuredUser.stats.extras}</div>
+        <div class="stat-label">Extras</div>
+      </div>
     `;
 
-    // Likes
+    // Likes - now includes extras
     featuredLikes.innerHTML = `
       <div class="total-likes">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
-      <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art</div>
+      <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • ⭐ ${featuredUser.likesBreakdown.extras} Extras</div>
     `;
   }
 
