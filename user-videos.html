@@ -2069,74 +2069,118 @@
   let currentSort = 'alphabetical';
   let allUsers = [];
 
-  // Enhanced function to get ALL likes for a specific user including extras
+  // Enhanced function to get ALL likes for a specific user including extras (using same logic as leaderboard)
   async function getUserLikesBreakdown(username) {
     if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
 
     try {
-      // Get main page likes (exact username match)
-      const { count: pageLikes, error: pageError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('username', username);
-
-      if (pageError) throw pageError;
-
-      // Get video likes (username_video_*)
-      const { count: videoLikes, error: videoError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .like('username', username + '_video_%');
-
-      if (videoError) throw videoError;
-
-      // Get game likes (username_game_*)
-      const { count: gameLikes, error: gameError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .like('username', username + '_game_%');
-
-      if (gameError) throw gameError;
-
-      // Get art likes (username_artwork_*)
-      const { count: artLikes, error: artError } = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .like('username', username + '_artwork_%');
-
-      if (artError) throw artError;
-
-      // Get extras likes by finding extras created by this user
-      const { data: userExtras, error: extrasError } = await supabase
+      console.log(`🔍 Getting comprehensive likes for ${username}...`);
+      
+      // Step 1: Get all VIP extras to map extra IDs to creators
+      const { data: vipExtras, error: extrasError } = await supabase
         .from('vip_extras')
-        .select('id')
-        .eq('creator_name', username);
+        .select('id, creator_name, created_by');
 
-      if (extrasError) throw extrasError;
+      if (extrasError) {
+        console.error('Error fetching extras:', extrasError);
+        throw extrasError;
+      }
 
+      // Create a map from extra ID to creator info
+      const extraCreatorMap = {};
+      if (vipExtras) {
+        vipExtras.forEach(extra => {
+          extraCreatorMap[extra.id] = {
+            creatorName: extra.creator_name || 'Unknown Creator',
+            createdBy: extra.created_by
+          };
+        });
+      }
+
+      // Step 2: Get all view records
+      const { data: allViews, error: viewsError } = await supabase
+        .from('vip_page_views')
+        .select('username, view_count');
+
+      if (viewsError) {
+        console.error('Error fetching views:', viewsError);
+        throw viewsError;
+      }
+
+      let pageLikes = 0;
+      let videoLikes = 0;
+      let gameLikes = 0;
+      let artLikes = 0;
       let extrasLikes = 0;
-      if (userExtras && userExtras.length > 0) {
-        // Get likes for all extras created by this user
-        for (const extra of userExtras) {
-          const { count: extraLikeCount, error: extraLikeError } = await supabase
-            .from('vip_page_views')
-            .select('*', { count: 'exact', head: true })
-            .eq('username', `extra_${extra.id}`);
 
-          if (!extraLikeError && extraLikeCount) {
-            extrasLikes += extraLikeCount;
+      // Step 3: Process each view record for this specific user
+      if (allViews) {
+        allViews.forEach(view => {
+          const viewUsername = view.username;
+          const viewCount = view.view_count || 0;
+          
+          if (!viewUsername) return;
+
+          let baseUsername = viewUsername;
+          let contentType = 'page';
+
+          // Check if this is an extra like
+          if (viewUsername.startsWith('extra_')) {
+            const extraId = viewUsername.replace('extra_', '');
+            
+            // Look up the creator of this extra
+            const creatorInfo = extraCreatorMap[extraId];
+            if (creatorInfo && creatorInfo.creatorName) {
+              baseUsername = creatorInfo.creatorName;
+              contentType = 'extras';
+            } else {
+              return; // Skip if we can't find the creator
+            }
+          } else if (viewUsername.includes('_video_')) {
+            baseUsername = viewUsername.split('_video_')[0];
+            contentType = 'videos';
+          } else if (viewUsername.includes('_game_')) {
+            baseUsername = viewUsername.split('_game_')[0];
+            contentType = 'games';
+          } else if (viewUsername.includes('_artwork_')) {
+            baseUsername = viewUsername.split('_artwork_')[0];
+            contentType = 'art';
           }
-        }
+
+          // Only count if this view record is for our target username
+          if (baseUsername === username) {
+            switch (contentType) {
+              case 'page':
+                pageLikes += viewCount;
+                break;
+              case 'videos':
+                videoLikes += viewCount;
+                break;
+              case 'games':
+                gameLikes += viewCount;
+                break;
+              case 'art':
+                artLikes += viewCount;
+                break;
+              case 'extras':
+                extrasLikes += viewCount;
+                break;
+            }
+            console.log(`📈 Added ${viewCount} ${contentType} likes to ${username}`);
+          }
+        });
       }
 
       const breakdown = {
-        page: pageLikes || 0,
-        videos: videoLikes || 0,
-        games: gameLikes || 0,
-        art: artLikes || 0,
-        extras: extrasLikes || 0,
-        total: (pageLikes || 0) + (videoLikes || 0) + (gameLikes || 0) + (artLikes || 0) + (extrasLikes || 0)
+        page: pageLikes,
+        videos: videoLikes,
+        games: gameLikes,
+        art: artLikes,
+        extras: extrasLikes,
+        total: pageLikes + videoLikes + gameLikes + artLikes + extrasLikes
       };
+
+      console.log(`✅ ${username} total: ${breakdown.total} (page:${breakdown.page}, videos:${breakdown.videos}, games:${breakdown.games}, art:${breakdown.art}, extras:${breakdown.extras})`);
 
       return breakdown;
 
