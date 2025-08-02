@@ -1799,62 +1799,109 @@
       return `#${index + 1}`;
     }
 
-    // Function to get comprehensive likes breakdown for ALL users
+    // Fixed function to properly map extra likes to creators
     async function getAllUsersLikesBreakdown() {
       try {
         console.log('🔍 Starting comprehensive likes calculation...');
         
-        // Get all records from vip_page_views
-        const { data: allViews, error } = await supabase
+        // Step 1: Get all VIP extras to map extra IDs to creators
+        const { data: vipExtras, error: extrasError } = await supabase
+          .from('vip_extras')
+          .select('id, creator_name, created_by');
+
+        if (extrasError) {
+          console.error('Error fetching extras:', extrasError);
+          throw extrasError;
+        }
+
+        console.log(`📊 Found ${vipExtras?.length || 0} VIP extras`);
+        
+        // Create a map from extra ID to creator info
+        const extraCreatorMap = {};
+        if (vipExtras) {
+          vipExtras.forEach(extra => {
+            extraCreatorMap[extra.id] = {
+              creatorName: extra.creator_name || 'Unknown Creator',
+              createdBy: extra.created_by
+            };
+          });
+        }
+        
+        console.log(`🗺️ Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
+        
+        // Step 2: Get all view records
+        const { data: allViews, error: viewsError } = await supabase
           .from('vip_page_views')
           .select('username, view_count');
 
-        if (error) throw error;
+        if (viewsError) {
+          console.error('Error fetching views:', viewsError);
+          throw viewsError;
+        }
 
         console.log(`📊 Found ${allViews?.length || 0} total view records`);
 
         const usersLikesMap = {};
 
-        allViews.forEach(view => {
-          const username = view.username;
-          const viewCount = view.view_count || 0;
-          
-          if (!username) return;
+        // Step 3: Process each view record
+        if (allViews) {
+          allViews.forEach(view => {
+            const username = view.username;
+            const viewCount = view.view_count || 0;
+            
+            if (!username) return;
 
-          // Determine the base username and content type
-          let baseUsername = username;
-          let contentType = 'page';
+            let baseUsername = username;
+            let contentType = 'page';
 
-          if (username.includes('_video_')) {
-            baseUsername = username.split('_video_')[0];
-            contentType = 'video';
-          } else if (username.includes('_game_')) {
-            baseUsername = username.split('_game_')[0];
-            contentType = 'game';
-          } else if (username.includes('_artwork_')) {
-            baseUsername = username.split('_artwork_')[0];
-            contentType = 'art';
-          }
+            // Check if this is an extra like
+            if (username.startsWith('extra_')) {
+              const extraId = username.replace('extra_', '');
+              console.log(`🔍 Processing extra like: ${extraId} (${viewCount} likes)`);
+              
+              // Look up the creator of this extra
+              const creatorInfo = extraCreatorMap[extraId];
+              if (creatorInfo && creatorInfo.creatorName) {
+                baseUsername = creatorInfo.creatorName;
+                contentType = 'extras';
+                console.log(`✅ Mapped extra ${extraId} to creator: ${baseUsername}`);
+              } else {
+                console.log(`⚠️ No creator found for extra ${extraId}, skipping`);
+                return; // Skip this record if we can't find the creator
+              }
+            } else if (username.includes('_video_')) {
+              baseUsername = username.split('_video_')[0];
+              contentType = 'videos';
+            } else if (username.includes('_game_')) {
+              baseUsername = username.split('_game_')[0];
+              contentType = 'games';
+            } else if (username.includes('_artwork_')) {
+              baseUsername = username.split('_artwork_')[0];
+              contentType = 'art';
+            }
 
-          // Initialize user if not exists
-          if (!usersLikesMap[baseUsername]) {
-            usersLikesMap[baseUsername] = {
-              username: baseUsername,
-              page: 0,
-              videos: 0,
-              games: 0,
-              art: 0,
-              total: 0
-            };
-          }
+            // Initialize user if not exists
+            if (!usersLikesMap[baseUsername]) {
+              usersLikesMap[baseUsername] = {
+                username: baseUsername,
+                page: 0,
+                videos: 0,
+                games: 0,
+                art: 0,
+                extras: 0,
+                total: 0
+              };
+            }
 
-          // Add to appropriate category
-          usersLikesMap[baseUsername][contentType === 'video' ? 'videos' : contentType === 'game' ? 'games' : contentType] += viewCount;
-        });
+            // Add to appropriate category
+            usersLikesMap[baseUsername][contentType] += viewCount;
+            console.log(`📈 Added ${viewCount} ${contentType} likes to ${baseUsername}`);
+          });
+        }
 
-        // Calculate totals and convert to array
+        // Step 4: Calculate totals and convert to array
         const usersArray = Object.values(usersLikesMap).map(user => {
-          user.total = user.page + user.videos + user.games + user.art;
+          user.total = user.page + user.videos + user.games + user.art + user.extras;
           return user;
         });
 
@@ -1864,7 +1911,10 @@
           .sort((a, b) => b.total - a.total)
           .slice(0, 10);
 
-        console.log(`🏆 Found ${sortedUsers.length} users with likes:`, sortedUsers);
+        console.log(`🏆 Final results: ${sortedUsers.length} users with likes`);
+        sortedUsers.forEach((user, idx) => {
+          console.log(`${idx + 1}. ${user.username}: ${user.total} total (page:${user.page}, videos:${user.videos}, games:${user.games}, art:${user.art}, extras:${user.extras})`);
+        });
 
         return {
           users: sortedUsers,
@@ -1899,7 +1949,7 @@
 
         // Calculate statistics
         const totalEarnings = Math.floor(totalLikes / 10) * 0.01;
-        const avgLikes = Math.round(totalLikes / totalUsers);
+        const avgLikes = totalUsers > 0 ? Math.round(totalLikes / totalUsers) : 0;
 
         // Update statistics display
         document.getElementById('totalUsers').textContent = totalUsers;
@@ -1915,11 +1965,12 @@
             return `
               <div class="podium-item ${classes[idx]}">
                 <div class="podium-rank">${rankEmojis[idx]}</div>
-                <div class="podium-username">@${user.username}</div>
-                <div class="podium-likes">❤️ ${user.total}</div>
+                <div class="podium-username">${user.username}</div>
+                <div class="podium-likes">❤️ ${user.total.toLocaleString()}</div>
               </div>
             `;
           }).join('');
+          podiumEl.style.display = 'flex';
         }
 
         // Create leaderboard table
@@ -1928,12 +1979,12 @@
           return `
             <tr>
               <td class="rank-cell">${getRankEmoji(idx)}</td>
-              <td class="username-cell">@${user.username}</td>
+              <td class="username-cell">${user.username}</td>
               <td class="likes-cell">
                 <div class="total-likes">❤️ ${user.total.toLocaleString()}</div>
               </td>
               <td class="likes-breakdown">
-                📄 ${user.page} • 🎮 ${user.games} • 🎬 ${user.videos} • 🎨 ${user.art}
+                📄 ${user.page} • 🎮 ${user.games} • 🎬 ${user.videos} • 🎨 ${user.art} • ⭐ ${user.extras}
               </td>
               <td class="earnings-cell">£${earnings.toFixed(2)}</td>
             </tr>
@@ -1943,7 +1994,6 @@
         // Show results
         loadingEl.style.display = 'none';
         statsEl.style.display = 'block';
-        if (users.length >= 3) podiumEl.style.display = 'block';
         tableEl.style.display = 'table';
 
       } catch (err) {
