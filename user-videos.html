@@ -2097,7 +2097,7 @@
         });
       }
 
-      // Step 2: Get all view records
+      // Step 2: Get all view records with view_count
       const { data: allViews, error: viewsError } = await supabase
         .from('vip_page_views')
         .select('username, view_count');
@@ -2133,7 +2133,9 @@
             if (creatorInfo && creatorInfo.creatorName) {
               baseUsername = creatorInfo.creatorName;
               contentType = 'extras';
+              console.log(`✅ Mapped extra ${extraId} to creator: ${baseUsername}`);
             } else {
+              console.log(`⚠️ No creator found for extra ${extraId}, skipping`);
               return; // Skip if we can't find the creator
             }
           } else if (viewUsername.includes('_video_')) {
@@ -2147,8 +2149,11 @@
             contentType = 'art';
           }
 
-          // Only count if this view record is for our target username
-          if (baseUsername === username) {
+          // Normalize the username
+          baseUsername = normalizeUsername(baseUsername);
+
+          // Only count if this view record is for our target username (after normalization)
+          if (baseUsername === normalizeUsername(username)) {
             switch (contentType) {
               case 'page':
                 pageLikes += viewCount;
