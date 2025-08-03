@@ -3165,9 +3165,18 @@ function createBottomEmbed(url, title) {
     iframe.className = 'bottom-embed-iframe';
     iframe.src = url;
     iframe.loading = 'lazy';
-    iframe.setAttribute('scrolling', 'auto');
     iframe.setAttribute('allowfullscreen', 'true');
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+    
+    // Add error handling
+    iframe.onload = function() {
+        console.log(`Successfully loaded: ${title}`);
+    };
+    
+    iframe.onerror = function() {
+        console.log(`Failed to load: ${title}`);
+        iframe.style.background = '#ff4f9f';
+        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
+    };
 
     embedContainer.appendChild(embedHeader);
     embedContainer.appendChild(iframe);
@@ -3177,10 +3186,10 @@ function createBottomEmbed(url, title) {
 
 function autoLoadBottomEmbeds() {
     const urls = [
-        'https://otieu.com/4/9661607',
         'https://otieu.com/4/9248260',
         'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458'
+        'https://otieu.com/4/9249458',
+        'https://otieu.com/4/9661607'
     ];
     const embedsContainer = document.getElementById('bottomEmbedsContainer');
     
@@ -3202,6 +3211,7 @@ if (document.readyState === 'loading') {
   
 </body>
 </html>
+
 
 
 
