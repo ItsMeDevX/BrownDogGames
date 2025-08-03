@@ -6,7 +6,122 @@
   <title>BrownDogGames</title>
   <link rel="icon" href="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LogoDog.ico" type="image/x-icon">
 </head>
-   
+  
+   <!-- Add this CSS to your existing page's <head> section -->
+<style>
+.bottom-embeds-section {
+    background: linear-gradient(135deg, #2f1a39, #3d2147);
+    border: 2px solid #ff4f9f;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem auto;
+    text-align: center;
+    max-width: 800px;
+}
+.bottom-embeds-section h3 {
+    color: #ff4f9f;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 10px #ff4f9f;
+    font-family: 'Rubik Mono One', sans-serif;
+}
+.bottom-embeds-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.bottom-embed-container {
+    border: 2px solid #ff4f9f;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1b1b2e;
+}
+.bottom-embed-iframe {
+    width: 100%;
+    height: 200px;
+    border: none;
+    display: block;
+}
+.bottom-embed-header {
+    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
+    color: #1b1b2e;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    font-family: 'Rubik Mono One', sans-serif;
+}
+@media (max-width: 768px) {
+    .bottom-embeds-container {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+    }
+    .bottom-embeds-section {
+        padding: 1.5rem;
+        margin: 1rem auto;
+    }
+    .bottom-embed-iframe {
+        height: 180px;
+    }
+}
+</style>
+
+<!-- Add this HTML section to the bottom of your existing page -->
+<div class="bottom-embeds-section">
+    <h3>Featured Content</h3>
+    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
+        <!-- Embeds will be inserted here -->
+    </div>
+</div>
+
+<script>
+function createBottomEmbed(url, title) {
+    const embedContainer = document.createElement('div');
+    embedContainer.className = 'bottom-embed-container';
+
+    const embedHeader = document.createElement('div');
+    embedHeader.className = 'bottom-embed-header';
+    embedHeader.textContent = `Embedded: ${title}`;
+
+    const iframe = document.createElement('iframe');
+    iframe.className = 'bottom-embed-iframe';
+    iframe.src = url;
+    iframe.loading = 'lazy';
+
+    embedContainer.appendChild(embedHeader);
+    embedContainer.appendChild(iframe);
+    
+    return embedContainer;
+}
+
+function loadBottomEmbeds() {
+    const urls = [
+        'https://otieu.com/4/9661607',
+        'https://otieu.com/4/9248260',
+        'https://otieu.com/4/9249624',
+        'https://otieu.com/4/9249458'
+    ];
+    const embedsContainer = document.getElementById('bottomEmbedsContainer');
+    
+    if (embedsContainer) {
+        urls.forEach((url, index) => {
+            const embed = createBottomEmbed(url, `Content ${index + 1}`);
+            embedsContainer.appendChild(embed);
+        });
+    }
+}
+
+// Load embeds when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadBottomEmbeds);
+} else {
+    loadBottomEmbeds();
+}
+</script>
+  
  <meta name="description" content="Discover and play free games, watch videos, and explore art. Join the BrownDogGames community and support creators.">
  <meta name="keywords" content="free games, indie games, game community, discover games, videos, art, game platform, creators">
  <meta name="author" content="BrownDogGames">
@@ -3077,130 +3192,5 @@
 </body>
 </html>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bottom Links Embed</title>
-    <style>
-        .bottom-links-section {
-            background: linear-gradient(135deg, #2f1a39, #3d2147);
-            border: 2px solid #ff4f9f;
-            border-radius: 12px;
-            padding: 2rem;
-            margin: 2rem auto;
-            text-align: center;
-            max-width: 800px;
-        }
-        .bottom-links-section h3 {
-            color: #ff4f9f;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 10px #ff4f9f;
-            font-family: 'Rubik Mono One', sans-serif;
-        }
-        .embeds-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-top: 2rem;
-            justify-content: center;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .embed-container {
-            border: 2px solid #ff4f9f;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #1b1b2e;
-        }
-        .embed-iframe {
-            width: 100%;
-            height: 200px;
-            border: none;
-            display: block;
-        }
-        .embed-header {
-            background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-            color: #1b1b2e;
-            padding: 10px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            font-family: 'Rubik Mono One', sans-serif;
-        }
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .embeds-container {
-                grid-template-columns: 1fr;
-                max-width: 300px;
-            }
-            
-            .bottom-links-section {
-                padding: 1.5rem;
-                margin: 1rem auto;
-            }
-            
-            .embed-iframe {
-                height: 180px;
-            }
-        }
-    </style>
-</head>
-<body style="background-color: #1b1b2e; background-image: linear-gradient(135deg, #361c3e, #1a1328); margin: 0; padding: 20px; font-family: 'Rubik Mono One', sans-serif;">
-    <!-- Your existing page content goes above this -->
-    <!-- Bottom Links Section -->
-    <div class="bottom-links-section">
-        <h3>Featured Content</h3>
-        
-        <!-- Container for all embeds -->
-        <div class="embeds-container" id="embedsContainer">
-            <!-- Embeds will be inserted here -->
-        </div>
-    </div>
 
-    <script>
-        function createEmbed(url, title) {
-            // Create embed container
-            const embedContainer = document.createElement('div');
-            embedContainer.className = 'embed-container';
 
-            // Create header
-            const embedHeader = document.createElement('div');
-            embedHeader.className = 'embed-header';
-            embedHeader.textContent = `Embedded: ${title}`;
-
-            // Create iframe
-            const iframe = document.createElement('iframe');
-            iframe.className = 'embed-iframe';
-            iframe.src = url;
-            iframe.loading = 'lazy';
-
-            // Assemble embed
-            embedContainer.appendChild(embedHeader);
-            embedContainer.appendChild(iframe);
-            
-            return embedContainer;
-        }
-
-        // Embed all content when page loads
-        function embedAllContent() {
-            const urls = [
-                'https://otieu.com/4/9661607',
-                'https://otieu.com/4/9248260',
-                'https://otieu.com/4/9249624',
-                'https://otieu.com/4/9249458'
-            ];
-            const embedsContainer = document.getElementById('embedsContainer');
-            
-            urls.forEach((url, index) => {
-                const embed = createEmbed(url, `Content ${index + 1}`);
-                embedsContainer.appendChild(embed);
-            });
-        }
-
-        // Embed all content when the page loads
-        window.onload = embedAllContent;
-    </script>
-</body>
-</html>
