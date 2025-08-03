@@ -3194,9 +3194,29 @@ function autoLoadBottomEmbeds() {
     const embedsContainer = document.getElementById('bottomEmbedsContainer');
     
     if (embedsContainer) {
+        // Instead of embedding, create clickable previews
         urls.forEach((url, index) => {
-            const embed = createBottomEmbed(url, `Content ${index + 1}`);
-            embedsContainer.appendChild(embed);
+            const linkContainer = document.createElement('div');
+            linkContainer.className = 'bottom-embed-container';
+            linkContainer.style.cursor = 'pointer';
+            linkContainer.style.display = 'flex';
+            linkContainer.style.alignItems = 'center';
+            linkContainer.style.justifyContent = 'center';
+            linkContainer.style.textDecoration = 'none';
+            
+            linkContainer.innerHTML = `
+                <div style="text-align: center; color: #ff4f9f; padding: 20px;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🔗</div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">Click to Open Link ${index + 1}</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">Opens in new tab</div>
+                </div>
+            `;
+            
+            linkContainer.addEventListener('click', () => {
+                window.open(url, '_blank');
+            });
+            
+            embedsContainer.appendChild(linkContainer);
         });
     }
 }
@@ -3211,6 +3231,7 @@ if (document.readyState === 'loading') {
   
 </body>
 </html>
+
 
 
 
