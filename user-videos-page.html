@@ -3988,19 +3988,14 @@ crossorigin="anonymous"></script>
       <small style="opacity: 0.7; font-size: 0.8rem;">Entering fullscreen mode</small>
     `;
     
-    // For some platforms, show direct links instead of trying to embed
-    if (videoType === 'tiktok' || videoType === 'twitter') {
+    // For Twitter/X, show direct links instead of trying to embed (TikTok will be embedded normally)
+    if (videoType === 'twitter') {
       setTimeout(() => {
-        const buttonColor = videoType === 'tiktok' ? '#fe2c55' : '#1da1f2';
-        const buttonGradient = videoType === 'tiktok' ? 
-          'linear-gradient(45deg, #fe2c55, #ff4f9f)' : 
-          'linear-gradient(45deg, #1da1f2, #ff4f9f)';
-        
         placeholderElement.innerHTML = `
           <span class="play-icon">🚫</span>
-          <div style="margin-bottom: 15px;">${videoType.toUpperCase()} may block embedding</div>
+          <div style="margin-bottom: 15px;">TWITTER/X may block embedding</div>
           <button onclick="window.open('${url}', '_blank')" style="
-            background: ${buttonGradient};
+            background: linear-gradient(45deg, #1da1f2, #ff4f9f);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -4010,9 +4005,9 @@ crossorigin="anonymous"></script>
             font-family: inherit;
             font-size: 0.9rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(${videoType === 'tiktok' ? '254, 44, 85' : '29, 161, 242'}, 0.3);
+            box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
           " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            ${videoType === 'tiktok' ? '🎵' : '🐦'} Open on ${videoType.toUpperCase()}
+            🐦 Open on TWITTER/X
           </button>
           <div style="margin-top: 10px;">
             <small style="opacity: 0.7;">Click to watch in new tab</small>
@@ -4138,6 +4133,35 @@ crossorigin="anonymous"></script>
           mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
           mediaEl.allowFullscreen = true;
           mediaEl.className = 'video-embed';
+        }
+        break;
+        
+      case 'tiktok':
+        const tiktokId = extractTikTokId(url);
+        if (tiktokId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://www.tiktok.com/embed/v2/${tiktokId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '100%';
+          mediaEl.frameBorder = '0';
+          mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-embed';
+          mediaEl.style.backgroundColor = '#000';
+        }
+        break;
+        
+      case 'twitter':
+        const xId = extractXId(url);
+        if (xId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = `https://platform.twitter.com/embed/Tweet.html?id=${xId}`;
+          mediaEl.width = '100%';
+          mediaEl.height = '100%';
+          mediaEl.frameBorder = '0';
+          mediaEl.scrolling = 'no';
+          mediaEl.className = 'video-embed';
+          mediaEl.style.backgroundColor = '#000';
         }
         break;
         
@@ -4632,6 +4656,7 @@ crossorigin="anonymous"></script>
   
 </body>
 </html>
+
 
 
 
