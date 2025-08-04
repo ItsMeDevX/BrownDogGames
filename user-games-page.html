@@ -3851,7 +3851,66 @@ crossorigin="anonymous"></script>
       <small style="opacity: 0.7; font-size: 0.8rem;">Entering fullscreen mode</small>
     `;
     
-    // Create the actual game iframe
+    // For itch.io, try embedding first but have fallback ready
+    if (gameType === 'itch') {
+      // Show iframe blocked message and offer direct link
+      setTimeout(() => {
+        placeholderElement.innerHTML = `
+          <span class="play-icon">🚫</span>
+          <div style="margin-bottom: 15px;">itch.io blocks embedding</div>
+          <button onclick="window.open('${url}', '_blank')" style="
+            background: linear-gradient(45deg, #fa5c5c, #ff4f9f);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(250, 92, 92, 0.3);
+          " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            🎯 Open Game on itch.io
+          </button>
+          <div style="margin-top: 10px;">
+            <small style="opacity: 0.7;">Click to play in new tab</small>
+          </div>
+        `;
+      }, 1000);
+      return;
+    }
+    
+    // For GameJolt, also check if embedding works
+    if (gameType === 'gamejolt') {
+      setTimeout(() => {
+        placeholderElement.innerHTML = `
+          <span class="play-icon">🚫</span>
+          <div style="margin-bottom: 15px;">GameJolt may block embedding</div>
+          <button onclick="window.open('${url}', '_blank')" style="
+            background: linear-gradient(45deg, #2dd391, #ff4f9f);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(45, 211, 145, 0.3);
+          " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            ⚡ Open Game on GameJolt
+          </button>
+          <div style="margin-top: 10px;">
+            <small style="opacity: 0.7;">Click to play in new tab</small>
+          </div>
+        `;
+      }, 1000);
+      return;
+    }
+    
+    // For other platforms, try iframe embedding
     const iframe = createGameIframe(url, gameType);
     
     // Add load event handlers
@@ -3864,12 +3923,29 @@ crossorigin="anonymous"></script>
       // Restore placeholder on error
       placeholderElement.innerHTML = `
         <span class="play-icon">❌</span>
-        <div>Failed to load game</div>
-        <small style="opacity: 0.7; font-size: 0.8rem;">Click to try again</small>
+        <div style="margin-bottom: 15px;">Failed to load game</div>
+        <button onclick="window.open('${url}', '_blank')" style="
+          background: linear-gradient(45deg, #ff4f9f, #ff1493);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 25px;
+          font-weight: bold;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 0.9rem;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          🔗 Open Game Direct
+        </button>
+        <div style="margin-top: 10px;">
+          <small style="opacity: 0.7;">Click to try again</small>
+        </div>
       `;
       setTimeout(() => {
         placeholderElement.innerHTML = originalContent;
-      }, 3000);
+      }, 5000);
       return;
     };
     
@@ -3879,7 +3955,9 @@ crossorigin="anonymous"></script>
     // Enter fullscreen with platform-specific handling
     const enterFullscreen = () => {
       if (iframe.requestFullscreen) {
-        iframe.requestFullscreen();
+        iframe.requestFullscreen().catch(err => {
+          console.log('Fullscreen failed, showing in normal view');
+        });
       } else if (iframe.mozRequestFullScreen) {
         iframe.mozRequestFullScreen();
       } else if (iframe.webkitRequestFullscreen) {
@@ -4407,6 +4485,7 @@ crossorigin="anonymous"></script>
   
 </body>
 </html>
+
 
 
 
