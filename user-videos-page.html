@@ -2156,41 +2156,75 @@ crossorigin="anonymous"></script>
     }
 
     .card {
-      background-color: #2f1a39;
+      background: linear-gradient(145deg, #3a2147, #241834);
       border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 20px;
       width: 100%;
       box-sizing: border-box;
-      transition: border-color 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .card:hover::before {
+      left: 100%;
     }
 
     .card:hover {
       border-color: #ff82ba;
-      box-shadow: 0 0 10px #ff82ba;
+      box-shadow: 0 12px 40px rgba(255, 79, 159, 0.3), 0 0 20px rgba(255, 130, 186, 0.2);
+      transform: translateY(-8px) scale(1.02);
     }
 
     .card.selected {
       border-color: #ff82ba;
-      box-shadow: 0 0 15px #ff4f9f;
+      box-shadow: 0 0 30px #ff4f9f, inset 0 0 20px rgba(255, 79, 159, 0.1);
+      transform: scale(1.05);
     }
 
     .title {
       margin-top: 0;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
       text-align: center;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      font-weight: bold;
+      position: relative;
+      z-index: 2;
     }
 
     .desc {
-      color: #ddd;
-      margin: 0.5rem 0 1rem 0;
+      color: #e0e0e0;
+      margin: 0.5rem 0 1.2rem 0;
       min-height: 3rem;
       text-align: center;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
     }
 
     .image-container {
@@ -2201,10 +2235,20 @@ crossorigin="anonymous"></script>
 
     .thumbnail {
       width: 100%;
-      max-height: 150px;
+      max-height: 160px;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 12px;
+      margin-bottom: 15px;
       display: block;
+      transition: transform 0.3s ease, filter 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      position: relative;
+      z-index: 2;
+    }
+
+    .card:hover .thumbnail {
+      transform: scale(1.05);
+      filter: brightness(1.1) contrast(1.1);
     }
 
     .fullscreen-btn {
@@ -2238,35 +2282,104 @@ crossorigin="anonymous"></script>
 
     .video-player {
       width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      margin-bottom: 15px;
       background-color: black;
-      max-height: 200px;
+      min-height: 220px;
       max-width: 100%;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s ease;
+      position: relative;
+      z-index: 2;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff82ba;
+      font-size: 1rem;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .video-player:hover {
+      transform: scale(1.02);
+      background-color: #1a1328;
+    }
+
+    .video-player.fullscreen-ready {
+      background: linear-gradient(45deg, #3a2147, #241834);
+      border: 2px dashed #ff4f9f;
     }
 
     .video-embed {
       width: 100%;
-      height: 200px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      margin-bottom: 15px;
       background-color: black;
+      min-height: 220px;
+      max-width: 100%;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s ease;
+      position: relative;
+      z-index: 2;
       border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff82ba;
+      font-size: 1rem;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .video-embed:hover {
+      transform: scale(1.02);
+      background-color: #1a1328;
+    }
+
+    .video-embed.fullscreen-ready {
+      background: linear-gradient(45deg, #3a2147, #241834);
+      border: 2px dashed #ff4f9f;
     }
 
     .play-link {
       display: inline-block;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      padding: 8px 12px;
-      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 25px;
       text-decoration: none;
       font-weight: bold;
-      transition: background-color 0.2s ease;
+      font-size: 0.9rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       margin-top: auto;
+      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
     }
-    .play-link:hover { background-color: #ff82ba; }
+
+    .play-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .play-link:hover::before {
+      left: 100%;
+    }
+
+    .play-link:hover { 
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+    }
 
     /* Main Like Section Styles */
     .main-content {
@@ -2366,6 +2479,8 @@ crossorigin="anonymous"></script>
       margin-top: 12px;
       padding-top: 12px;
       border-top: 1px solid rgba(255, 79, 159, 0.3);
+      position: relative;
+      z-index: 2;
     }
 
     .video-like-btn {
@@ -2425,6 +2540,109 @@ crossorigin="anonymous"></script>
       opacity: 0.8;
     }
 
+    /* Fullscreen video placeholder */
+    .fullscreen-placeholder {
+      padding: 40px 20px;
+      text-align: center;
+      color: #ff82ba;
+      font-size: 1rem;
+      line-height: 1.5;
+      border: 2px dashed #ff4f9f;
+      border-radius: 12px;
+      background: linear-gradient(45deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.1));
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fullscreen-placeholder:hover {
+      background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
+      border-color: #ff82ba;
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+    }
+
+    .fullscreen-placeholder::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .fullscreen-placeholder:hover::before {
+      left: 100%;
+    }
+
+    .fullscreen-placeholder .play-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    /* Platform-specific placeholder styling */
+    .fullscreen-placeholder[data-platform="youtube"] {
+      background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 79, 159, 0.1));
+      border-color: #ff0000;
+    }
+
+    .fullscreen-placeholder[data-platform="youtube"]:hover {
+      background: linear-gradient(45deg, rgba(255, 0, 0, 0.2), rgba(255, 79, 159, 0.2));
+      border-color: #ff0000;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+    }
+
+    .fullscreen-placeholder[data-platform="vimeo"] {
+      background: linear-gradient(45deg, rgba(26, 183, 234, 0.1), rgba(255, 79, 159, 0.1));
+      border-color: #1ab7ea;
+    }
+
+    .fullscreen-placeholder[data-platform="vimeo"]:hover {
+      background: linear-gradient(45deg, rgba(26, 183, 234, 0.2), rgba(255, 79, 159, 0.2));
+      border-color: #1ab7ea;
+      box-shadow: 0 4px 15px rgba(26, 183, 234, 0.3);
+    }
+
+    .fullscreen-placeholder[data-platform="tiktok"] {
+      background: linear-gradient(45deg, rgba(254, 44, 85, 0.1), rgba(255, 79, 159, 0.1));
+      border-color: #fe2c55;
+    }
+
+    .fullscreen-placeholder[data-platform="tiktok"]:hover {
+      background: linear-gradient(45deg, rgba(254, 44, 85, 0.2), rgba(255, 79, 159, 0.2));
+      border-color: #fe2c55;
+      box-shadow: 0 4px 15px rgba(254, 44, 85, 0.3);
+    }
+
+    .fullscreen-placeholder[data-platform="twitter"] {
+      background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
+      border-color: #1da1f2;
+    }
+
+    .fullscreen-placeholder[data-platform="twitter"]:hover {
+      background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
+      border-color: #1da1f2;
+      box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+    }
+
     #chat-container {
       max-width: 800px;
       width: 100%;
@@ -2482,75 +2700,6 @@ crossorigin="anonymous"></script>
       background-color: #2f1a39;
       padding: 1rem;
       border-radius: 10px;
-    }
-
-    /* Fullscreen View */
-    .fullscreen-view {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      z-index: 1000;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .fullscreen-view.active {
-      display: flex;
-    }
-
-    .fullscreen-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(27, 27, 46, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1001;
-      border-bottom: 2px solid #ff4f9f;
-    }
-
-    .fullscreen-title {
-      color: #ff4f9f;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-size: 1.2rem;
-      margin: 0;
-    }
-
-    .close-fullscreen {
-      background: #ff4f9f;
-      color: #1b1b2e;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-weight: bold;
-    }
-
-    .close-fullscreen:hover {
-      background-color: #ff82ba;
-    }
-
-    .fullscreen-image {
-      max-width: 90vw;
-      max-height: 80vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      margin-top: 80px;
     }
 
     .vip-extras-section {
@@ -3093,15 +3242,6 @@ crossorigin="anonymous"></script>
     </form>
   </section>
 
-  <!-- Fullscreen View -->
-  <div id="fullscreen-view" class="fullscreen-view">
-    <div class="fullscreen-header">
-      <h2 id="fullscreen-title" class="fullscreen-title">Video</h2>
-      <button class="close-fullscreen" onclick="closeFullscreen()">✕ Close</button>
-    </div>
-    <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen video">
-  </div>
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -3128,6 +3268,7 @@ crossorigin="anonymous"></script>
   let userLikedVideos = new Set();
   let isVipUser = false;
   let selectedBadge = '👑';
+  let activeVideoElements = new Map(); // Track active video elements for cleanup
 
   // Get current user
   async function getCurrentUser() {
@@ -3682,32 +3823,6 @@ crossorigin="anonymous"></script>
     likeBtn.style.display = 'inline-block';
   }
 
-  // Fullscreen functionality
-  window.openFullscreen = function(imageSrc, altText, title) {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    const fullscreenImage = document.getElementById('fullscreen-image');
-    const fullscreenTitle = document.getElementById('fullscreen-title');
-    
-    fullscreenImage.src = imageSrc;
-    fullscreenImage.alt = altText;
-    fullscreenTitle.textContent = title || 'Video';
-    fullscreenView.classList.add('active');
-    
-    document.body.style.overflow = 'hidden';
-  }
-
-  window.closeFullscreen = function() {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    fullscreenView.classList.remove('active');
-    document.body.style.overflow = 'auto';
-  }
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      closeFullscreen();
-    }
-  });
-
   async function incrementVipPageView() {
     if (!username) return;
 
@@ -3750,7 +3865,7 @@ crossorigin="anonymous"></script>
     return match ? match[1] : null;
   }
 
-  // NEW: Extract X (Twitter) video/post ID
+  // Extract X (Twitter) video/post ID
   function extractXId(url) {
     // Matches twitter.com and x.com URLs
     const regExp = /(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/;
@@ -3758,12 +3873,383 @@ crossorigin="anonymous"></script>
     return match ? match[2] : null;
   }
 
-  // NEW: Extract TikTok video ID
+  // Extract TikTok video ID
   function extractTikTokId(url) {
     // Matches various TikTok URL formats
     const regExp = /(?:tiktok\.com\/)(?:@[\w.-]+\/video\/|.*\/video\/)(\d+)/;
     const match = url.match(regExp);
     return match ? match[1] : null;
+  }
+
+  // Video type detection
+  function detectVideoType(url) {
+    if (!url) return 'unknown';
+    
+    const urlLower = url.toLowerCase();
+    
+    // Platform detection
+    if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+    if (urlLower.includes('vimeo.com')) return 'vimeo';
+    if (urlLower.includes('tiktok.com')) return 'tiktok';
+    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+    if (urlLower.includes('drive.google.com')) return 'drive';
+    
+    // File type detection
+    const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
+    const ext = extMatch ? extMatch[1].toLowerCase() : '';
+    
+    const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
+    const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+    
+    if (imageExts.includes(ext)) return 'image';
+    if (videoExts.includes(ext)) return 'video';
+    
+    return 'unknown';
+  }
+
+  // Create fullscreen placeholder instead of immediate video embed
+  function createVideoEmbed(video) {
+    const videoType = detectVideoType(video.video_url);
+    
+    // Create placeholder that loads video only on fullscreen
+    const placeholder = document.createElement('div');
+    placeholder.className = 'fullscreen-placeholder';
+    placeholder.setAttribute('data-platform', videoType);
+    
+    // Platform-specific icons and text
+    let platformIcon = '📹';
+    let platformText = 'Click to watch in fullscreen';
+    let platformName = videoType.toUpperCase();
+    
+    switch (videoType) {
+      case 'youtube':
+        platformIcon = '📺';
+        platformText = 'Watch on YouTube in fullscreen';
+        platformName = 'YOUTUBE';
+        break;
+      case 'vimeo':
+        platformIcon = '🎬';
+        platformText = 'Watch on Vimeo in fullscreen';
+        platformName = 'VIMEO';
+        break;
+      case 'tiktok':
+        platformIcon = '🎵';
+        platformText = 'Watch on TikTok in fullscreen';
+        platformName = 'TIKTOK';
+        break;
+      case 'twitter':
+        platformIcon = '🐦';
+        platformText = 'View Twitter post in fullscreen';
+        platformName = 'TWITTER/X';
+        break;
+      case 'drive':
+        platformIcon = '💾';
+        platformText = 'Play Google Drive video in fullscreen';
+        platformName = 'GOOGLE DRIVE';
+        break;
+      case 'video':
+        platformIcon = '🎥';
+        platformText = 'Play video in fullscreen';
+        platformName = 'VIDEO';
+        break;
+      case 'image':
+        platformIcon = '🖼️';
+        platformText = 'View image in fullscreen';
+        platformName = 'IMAGE';
+        break;
+    }
+    
+    placeholder.innerHTML = `
+      <span class="play-icon">${platformIcon}</span>
+      <div>${platformText}</div>
+      <small style="opacity: 0.7; font-size: 0.8rem;">${platformName}</small>
+    `;
+    
+    // Add click handler to enter fullscreen and load video
+    placeholder.addEventListener('click', () => {
+      loadVideoInFullscreen(video.video_url, videoType, placeholder, video.title);
+    });
+    
+    return {
+      element: placeholder,
+      controls: [
+        { text: `${platformName} Fullscreen`, action: () => loadVideoInFullscreen(video.video_url, videoType, placeholder, video.title) }
+      ]
+    };
+  }
+
+  // Load video in fullscreen mode
+  function loadVideoInFullscreen(url, videoType, placeholderElement, title) {
+    // Show loading state
+    const originalContent = placeholderElement.innerHTML;
+    placeholderElement.innerHTML = `
+      <span class="play-icon">⏳</span>
+      <div>Loading ${videoType.toUpperCase()} video...</div>
+      <small style="opacity: 0.7; font-size: 0.8rem;">Entering fullscreen mode</small>
+    `;
+    
+    // For some platforms, show direct links instead of trying to embed
+    if (videoType === 'tiktok' || videoType === 'twitter') {
+      setTimeout(() => {
+        const buttonColor = videoType === 'tiktok' ? '#fe2c55' : '#1da1f2';
+        const buttonGradient = videoType === 'tiktok' ? 
+          'linear-gradient(45deg, #fe2c55, #ff4f9f)' : 
+          'linear-gradient(45deg, #1da1f2, #ff4f9f)';
+        
+        placeholderElement.innerHTML = `
+          <span class="play-icon">🚫</span>
+          <div style="margin-bottom: 15px;">${videoType.toUpperCase()} may block embedding</div>
+          <button onclick="window.open('${url}', '_blank')" style="
+            background: ${buttonGradient};
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(${videoType === 'tiktok' ? '254, 44, 85' : '29, 161, 242'}, 0.3);
+          " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            ${videoType === 'tiktok' ? '🎵' : '🐦'} Open on ${videoType.toUpperCase()}
+          </button>
+          <div style="margin-top: 10px;">
+            <small style="opacity: 0.7;">Click to watch in new tab</small>
+          </div>
+        `;
+      }, 1000);
+      return;
+    }
+    
+    // For other platforms, try video embedding
+    const videoElement = createVideoElement(url, videoType);
+    
+    // Add load event handlers
+    videoElement.onload = function() {
+      console.log(`Successfully loaded ${videoType} video:`, url);
+    };
+    
+    videoElement.onerror = function() {
+      console.error(`Failed to load ${videoType} video:`, url);
+      // Restore placeholder on error
+      placeholderElement.innerHTML = `
+        <span class="play-icon">❌</span>
+        <div style="margin-bottom: 15px;">Failed to load video</div>
+        <button onclick="window.open('${url}', '_blank')" style="
+          background: linear-gradient(45deg, #ff4f9f, #ff1493);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 25px;
+          font-weight: bold;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 0.9rem;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          🔗 Open Video Direct
+        </button>
+        <div style="margin-top: 10px;">
+          <small style="opacity: 0.7;">Click to try again</small>
+        </div>
+      `;
+      setTimeout(() => {
+        placeholderElement.innerHTML = originalContent;
+      }, 5000);
+      return;
+    };
+    
+    // Replace placeholder with video element
+    placeholderElement.parentNode.replaceChild(videoElement, placeholderElement);
+    
+    // Enter fullscreen
+    const enterFullscreen = () => {
+      if (videoElement.requestFullscreen) {
+        videoElement.requestFullscreen().catch(err => {
+          console.log('Fullscreen failed, showing in normal view');
+        });
+      } else if (videoElement.mozRequestFullScreen) {
+        videoElement.mozRequestFullScreen();
+      } else if (videoElement.webkitRequestFullscreen) {
+        videoElement.webkitRequestFullscreen();
+      } else if (videoElement.msRequestFullscreen) {
+        videoElement.msRequestFullscreen();
+      } else {
+        console.warn('Fullscreen not supported, showing video in current view');
+      }
+    };
+    
+    // Small delay to ensure video element is ready
+    setTimeout(enterFullscreen, 100);
+    
+    // Store reference for cleanup
+    const videoId = Date.now(); // Simple unique ID
+    activeVideoElements.set(videoId, { videoElement, placeholder: placeholderElement });
+    
+    // Add fullscreen change listeners
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && !document.mozFullScreenElement && 
+          !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        // Exited fullscreen - cleanup and restore placeholder
+        cleanupVideo(videoId);
+      }
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    
+    // Store cleanup function
+    videoElement._fullscreenCleanup = handleFullscreenChange;
+    videoElement._videoId = videoId;
+    videoElement._originalContent = originalContent;
+  }
+
+  // Create actual video element
+  function createVideoElement(url, videoType) {
+    let mediaEl;
+
+    switch (videoType) {
+      case 'youtube':
+        const videoIdYT = extractYouTubeId(url);
+        if (videoIdYT) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = 'https://www.youtube.com/embed/' + videoIdYT;
+          mediaEl.width = '100%';
+          mediaEl.height = '100%';
+          mediaEl.frameBorder = '0';
+          mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-embed';
+        }
+        break;
+        
+      case 'vimeo':
+        const videoIdVM = extractVimeoId(url);
+        if (videoIdVM) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = 'https://player.vimeo.com/video/' + videoIdVM;
+          mediaEl.width = '100%';
+          mediaEl.height = '100%';
+          mediaEl.frameBorder = '0';
+          mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
+          mediaEl.allowFullscreen = true;
+          mediaEl.className = 'video-embed';
+        }
+        break;
+        
+      case 'drive':
+        const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
+        const fileId = fileIdMatch ? fileIdMatch[1] : null;
+        if (fileId) {
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = 'https://drive.google.com/file/d/' + fileId + '/preview';
+          mediaEl.width = '100%';
+          mediaEl.height = '100%';
+          mediaEl.allow = 'autoplay';
+          mediaEl.frameBorder = '0';
+          mediaEl.className = 'video-embed';
+        }
+        break;
+        
+      case 'video':
+        mediaEl = document.createElement('video');
+        mediaEl.controls = true;
+        mediaEl.className = 'video-player';
+        mediaEl.src = url;
+        mediaEl.style.width = '100%';
+        mediaEl.style.height = '100%';
+        break;
+        
+      case 'image':
+        mediaEl = document.createElement('img');
+        mediaEl.src = url;
+        mediaEl.alt = 'Image';
+        mediaEl.className = 'thumbnail';
+        mediaEl.style.width = '100%';
+        mediaEl.style.height = '100%';
+        mediaEl.style.objectFit = 'contain';
+        break;
+        
+      default:
+        // Create a placeholder for unsupported formats
+        mediaEl = document.createElement('div');
+        mediaEl.className = 'video-player';
+        mediaEl.style.cssText = `
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #333;
+          color: #fff;
+          padding: 20px;
+          text-align: center;
+          width: 100%;
+          height: 100%;
+        `;
+        
+        const playLink = document.createElement('a');
+        playLink.href = url;
+        playLink.target = '_blank';
+        playLink.className = 'play-link';
+        playLink.textContent = 'View Content →';
+        
+        mediaEl.appendChild(playLink);
+        break;
+    }
+
+    if (!mediaEl) {
+      // Fallback for failed video creation
+      mediaEl = document.createElement('div');
+      mediaEl.className = 'video-player';
+      mediaEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #333;
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+      `;
+      mediaEl.textContent = 'Video format not supported';
+    }
+
+    return mediaEl;
+  }
+
+  // Cleanup video when exiting fullscreen
+  function cleanupVideo(videoId) {
+    const videoData = activeVideoElements.get(videoId);
+    if (!videoData) return;
+    
+    const { videoElement, placeholder } = videoData;
+    
+    // Remove fullscreen listeners
+    if (videoElement._fullscreenCleanup) {
+      document.removeEventListener('fullscreenchange', videoElement._fullscreenCleanup);
+      document.removeEventListener('mozfullscreenchange', videoElement._fullscreenCleanup);
+      document.removeEventListener('webkitfullscreenchange', videoElement._fullscreenCleanup);
+      document.removeEventListener('msfullscreenchange', videoElement._fullscreenCleanup);
+    }
+    
+    // Restore original placeholder content
+    if (videoElement._originalContent) {
+      placeholder.innerHTML = videoElement._originalContent;
+    }
+    
+    // Replace video element with placeholder
+    if (videoElement.parentNode) {
+      videoElement.parentNode.replaceChild(placeholder, videoElement);
+    }
+    
+    console.log('Video cleaned up and placeholder restored');
+    
+    // Clean up references
+    activeVideoElements.delete(videoId);
   }
 
   function convertDriveLinkToThumbnail(url) {
@@ -3898,131 +4384,22 @@ crossorigin="anonymous"></script>
       }
 
       if (video.video_url) {
-        const url = video.video_url;
-        let mediaEl;
+        const videoEmbed = createVideoEmbed(video);
+        card.appendChild(videoEmbed.element);
 
-        // YouTube videos
-        if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
-          const videoIdYT = extractYouTubeId(url);
-          if (videoIdYT) {
-            mediaEl = document.createElement('iframe');
-            mediaEl.src = 'https://www.youtube.com/embed/' + videoIdYT;
-            mediaEl.width = '100%';
-            mediaEl.height = '200';
-            mediaEl.frameBorder = '0';
-            mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            mediaEl.allowFullscreen = true;
-            mediaEl.className = 'video-embed';
-          }
-        }
-        
-        // Vimeo videos
-        else if (url.includes('vimeo.com/')) {
-          const videoIdVM = extractVimeoId(url);
-          if (videoIdVM) {
-            mediaEl = document.createElement('iframe');
-            mediaEl.src = 'https://player.vimeo.com/video/' + videoIdVM;
-            mediaEl.width = '100%';
-            mediaEl.height = '200';
-            mediaEl.frameBorder = '0';
-            mediaEl.allow = 'autoplay; fullscreen; picture-in-picture';
-            mediaEl.allowFullscreen = true;
-            mediaEl.className = 'video-embed';
-          }
-        }
-        
-        // X (Twitter) posts/videos
-        else if (url.includes('twitter.com/') || url.includes('x.com/')) {
-          const xId = extractXId(url);
-          if (xId) {
-            mediaEl = document.createElement('iframe');
-            mediaEl.src = `https://platform.twitter.com/embed/Tweet.html?id=${xId}`;
-            mediaEl.width = '100%';
-            mediaEl.height = '250';
-            mediaEl.frameBorder = '0';
-            mediaEl.scrolling = 'no';
-            mediaEl.className = 'video-embed';
-            mediaEl.style.backgroundColor = '#000';
-          }
-        }
-        
-        // TikTok videos
-        else if (url.includes('tiktok.com/')) {
-          const tiktokId = extractTikTokId(url);
-          if (tiktokId) {
-            mediaEl = document.createElement('iframe');
-            mediaEl.src = `https://www.tiktok.com/embed/v2/${tiktokId}`;
-            mediaEl.width = '100%';
-            mediaEl.height = '300';
-            mediaEl.frameBorder = '0';
-            mediaEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            mediaEl.allowFullscreen = true;
-            mediaEl.className = 'video-embed';
-            mediaEl.style.backgroundColor = '#000';
-          }
-        }
-        
-        // Handle Google Drive video links
-        else if (url.includes("drive.google.com")) {
-          const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-          const fileId = fileIdMatch ? fileIdMatch[1] : null;
+        if (videoEmbed.controls && videoEmbed.controls.length > 0) {
+          const controlsDiv = document.createElement('div');
+          controlsDiv.className = 'video-controls';
 
-          if (fileId) {
-            mediaEl = document.createElement('iframe');
-            mediaEl.src = 'https://drive.google.com/file/d/' + fileId + '/preview';
-            mediaEl.width = '100%';
-            mediaEl.height = '200';
-            mediaEl.allow = 'autoplay';
-            mediaEl.frameBorder = '0';
-            mediaEl.className = 'video-embed';
-          }
-        }
-        
-        // Handle direct video files
-        else {
-          const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
-          const ext = extMatch ? extMatch[1].toLowerCase() : '';
+          videoEmbed.controls.forEach(control => {
+            const btn = document.createElement('button');
+            btn.className = 'control-btn';
+            btn.textContent = control.text;
+            btn.addEventListener('click', control.action);
+            controlsDiv.appendChild(btn);
+          });
 
-          const imageExts = ['gif', 'png', 'jpg', 'jpeg', 'webp', 'svg'];
-          const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-
-          if (imageExts.includes(ext)) {
-            mediaEl = document.createElement('img');
-            mediaEl.src = url;
-            mediaEl.alt = video.title || 'Image';
-            mediaEl.className = 'thumbnail';
-          } else if (videoExts.includes(ext)) {
-            mediaEl = document.createElement('video');
-            mediaEl.controls = true;
-            mediaEl.className = 'video-player';
-            mediaEl.src = url;
-            mediaEl.type = 'video/' + ext;
-          } else {
-            // Create a play link for unsupported formats
-            mediaEl = document.createElement('div');
-            mediaEl.className = 'video-player';
-            mediaEl.style.cssText = `
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background-color: #333;
-              color: #fff;
-              padding: 20px;
-              text-align: center;
-            `;
-            
-            const playLink = document.createElement('a');
-            playLink.href = url;
-            playLink.target = '_blank';
-            playLink.className = 'play-link';
-            playLink.textContent = 'View Content →';
-            
-            mediaEl.appendChild(playLink);
-          }
-        }
-
-        if (mediaEl) {
-          card.appendChild(mediaEl);
+          card.appendChild(controlsDiv);
         }
       }
 
@@ -4252,174 +4629,10 @@ crossorigin="anonymous"></script>
     initializeBadgeSelection();
   }
 </script>
-
-<!-- Add this CSS to your existing page's <head> section -->
-<style>
-.bottom-embeds-section {
-    background: linear-gradient(135deg, #2f1a39, #3d2147);
-    border: 2px solid #ff4f9f;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem auto;
-    text-align: center;
-    max-width: 400px;
-}
-.bottom-embeds-section h3 {
-    color: #ff4f9f;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px #ff4f9f;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-.bottom-embeds-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.bottom-embed-container {
-    border: 2px solid #ff4f9f;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    height: 60px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    animation: pulse 2s infinite;
-}
-
-.bottom-embed-container:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
-    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
-}
-.bottom-embed-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow: hidden;
-}
-.bottom-embed-header {
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    color: #1b1b2e;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-@media (max-width: 768px) {
-    .bottom-embeds-container {
-        grid-template-columns: 1fr;
-        max-width: 150px;
-    }
-    .bottom-embeds-section {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .bottom-embed-container {
-        height: 50px;
-    }
-}
-</style>
-
-<!-- Add this HTML section to the bottom of your existing page -->
-<div class="bottom-embeds-section">
-    <h3>Featured Content</h3>
-    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
-        <!-- Embeds will automatically load here -->
-    </div>
-</div>
-
-<script>
-function createBottomEmbed(url, title) {
-    const embedContainer = document.createElement('div');
-    embedContainer.className = 'bottom-embed-container';
-
-    const embedHeader = document.createElement('div');
-    embedHeader.className = 'bottom-embed-header';
-    embedHeader.textContent = `Embedded: ${title}`;
-
-    const iframe = document.createElement('iframe');
-    iframe.className = 'bottom-embed-iframe';
-    iframe.src = url;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allowfullscreen', 'true');
-    
-    // Add error handling
-    iframe.onload = function() {
-        console.log(`Successfully loaded: ${title}`);
-    };
-    
-    iframe.onerror = function() {
-        console.log(`Failed to load: ${title}`);
-        iframe.style.background = '#ff4f9f';
-        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
-    };
-
-    embedContainer.appendChild(embedHeader);
-    embedContainer.appendChild(iframe);
-    
-    return embedContainer;
-}
-
-function autoLoadBottomEmbeds() {
-    const urls = [
-        'https://otieu.com/4/9248260',
-        'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458',
-        'https://otieu.com/4/9661607'
-    ];
-    const embedsContainer = document.getElementById('bottomEmbedsContainer');
-    
-    if (embedsContainer) {
-        // Instead of embedding, create clickable previews
-        urls.forEach((url, index) => {
-            const linkContainer = document.createElement('div');
-            linkContainer.className = 'bottom-embed-container';
-            linkContainer.style.cursor = 'pointer';
-            linkContainer.style.display = 'flex';
-            linkContainer.style.alignItems = 'center';
-            linkContainer.style.justifyContent = 'center';
-            linkContainer.style.textDecoration = 'none';
-            
-            linkContainer.innerHTML = `
-                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
-                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
-                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
-                </div>
-            `;
-            
-            linkContainer.addEventListener('click', () => {
-                window.open(url, '_blank');
-            });
-            
-            embedsContainer.appendChild(linkContainer);
-        });
-    }
-}
-
-// Auto-load embeds when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
-} else {
-    autoLoadBottomEmbeds();
-}
-</script>
   
 </body>
 </html>
+
 
 
 
