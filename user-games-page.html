@@ -3754,8 +3754,9 @@ crossorigin="anonymous"></script>
     
     const urlLower = url.toLowerCase();
     
-    // Platform detection
+    // Platform detection - prioritize itch.io and GameJolt
     if (urlLower.includes('itch.io')) return 'itch';
+    if (urlLower.includes('gamejolt.com')) return 'gamejolt';
     if (urlLower.includes('github.io') || urlLower.includes('netlify') || urlLower.includes('vercel')) return 'web';
     if (urlLower.includes('scratch.mit.edu')) return 'scratch';
     if (urlLower.includes('turbowarp.org')) return 'turbowarp';
@@ -3764,7 +3765,6 @@ crossorigin="anonymous"></script>
     if (urlLower.includes('kongregate.com')) return 'kongregate';
     if (urlLower.includes('addictinggames.com')) return 'addicting';
     if (urlLower.includes('codecks.io')) return 'codecks';
-    if (urlLower.includes('gamejolt.com')) return 'gamejolt';
     if (urlLower.includes('unity')) return 'unity';
     if (urlLower.includes('construct')) return 'construct';
     if (urlLower.includes('drive.google.com')) return 'drive';
@@ -3787,10 +3787,45 @@ crossorigin="anonymous"></script>
     // Create placeholder that loads game only on fullscreen
     const placeholder = document.createElement('div');
     placeholder.className = 'fullscreen-placeholder';
+    placeholder.setAttribute('data-platform', gameType);
+    
+    // Platform-specific icons and text
+    let platformIcon = '🎮';
+    let platformText = 'Click to play in fullscreen';
+    let platformName = gameType.toUpperCase();
+    
+    switch (gameType) {
+      case 'itch':
+        platformIcon = '🎯';
+        platformText = 'Play on itch.io in fullscreen';
+        platformName = 'ITCH.IO';
+        break;
+      case 'gamejolt':
+        platformIcon = '⚡';
+        platformText = 'Play on Game Jolt in fullscreen';
+        platformName = 'GAME JOLT';
+        break;
+      case 'scratch':
+        platformIcon = '🐱';
+        platformText = 'Play Scratch project in fullscreen';
+        platformName = 'SCRATCH';
+        break;
+      case 'unity':
+        platformIcon = '🔷';
+        platformText = 'Play Unity game in fullscreen';
+        platformName = 'UNITY';
+        break;
+      case 'youtube':
+        platformIcon = '📺';
+        platformText = 'Watch video in fullscreen';
+        platformName = 'YOUTUBE';
+        break;
+    }
+    
     placeholder.innerHTML = `
-      <span class="play-icon">🎮</span>
-      <div>Click to play in fullscreen</div>
-      <small style="opacity: 0.7; font-size: 0.8rem;">${gameType.toUpperCase()} Game</small>
+      <span class="play-icon">${platformIcon}</span>
+      <div>${platformText}</div>
+      <small style="opacity: 0.7; font-size: 0.8rem;">${platformName} Game</small>
     `;
     
     // Add click handler to enter fullscreen and load game
@@ -3801,29 +3836,63 @@ crossorigin="anonymous"></script>
     return {
       element: placeholder,
       controls: [
-        { text: 'Fullscreen Play', action: () => loadGameInFullscreen(game.embed_url, gameType, placeholder) }
+        { text: `${platformName} Fullscreen`, action: () => loadGameInFullscreen(game.embed_url, gameType, placeholder) }
       ]
     };
   }
 
   // Load game in fullscreen mode
   function loadGameInFullscreen(url, gameType, placeholderElement) {
+    // Show loading state
+    const originalContent = placeholderElement.innerHTML;
+    placeholderElement.innerHTML = `
+      <span class="play-icon">⏳</span>
+      <div>Loading ${gameType.toUpperCase()} game...</div>
+      <small style="opacity: 0.7; font-size: 0.8rem;">Entering fullscreen mode</small>
+    `;
+    
     // Create the actual game iframe
     const iframe = createGameIframe(url, gameType);
+    
+    // Add load event handlers
+    iframe.onload = function() {
+      console.log(`Successfully loaded ${gameType} game:`, url);
+    };
+    
+    iframe.onerror = function() {
+      console.error(`Failed to load ${gameType} game:`, url);
+      // Restore placeholder on error
+      placeholderElement.innerHTML = `
+        <span class="play-icon">❌</span>
+        <div>Failed to load game</div>
+        <small style="opacity: 0.7; font-size: 0.8rem;">Click to try again</small>
+      `;
+      setTimeout(() => {
+        placeholderElement.innerHTML = originalContent;
+      }, 3000);
+      return;
+    };
     
     // Replace placeholder with iframe
     placeholderElement.parentNode.replaceChild(iframe, placeholderElement);
     
-    // Enter fullscreen
-    if (iframe.requestFullscreen) {
-      iframe.requestFullscreen();
-    } else if (iframe.mozRequestFullScreen) {
-      iframe.mozRequestFullScreen();
-    } else if (iframe.webkitRequestFullscreen) {
-      iframe.webkitRequestFullscreen();
-    } else if (iframe.msRequestFullscreen) {
-      iframe.msRequestFullscreen();
-    }
+    // Enter fullscreen with platform-specific handling
+    const enterFullscreen = () => {
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) {
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
+      } else {
+        console.warn('Fullscreen not supported, showing game in current view');
+      }
+    };
+    
+    // Small delay to ensure iframe is ready
+    setTimeout(enterFullscreen, 100);
     
     // Store reference for cleanup
     const gameId = Date.now(); // Simple unique ID
@@ -3846,6 +3915,7 @@ crossorigin="anonymous"></script>
     // Store cleanup function
     iframe._fullscreenCleanup = handleFullscreenChange;
     iframe._gameId = gameId;
+    iframe._originalContent = originalContent;
   }
 
   // Create actual game iframe
@@ -3866,8 +3936,20 @@ crossorigin="anonymous"></script>
       case 'itch':
         if (url.includes('/embed/')) {
           embedUrl = url;
+        } else if (url.includes('itch.io/games/')) {
+          // Handle itch.io game URLs: https://username.itch.io/game-name
+          embedUrl = url + '/embed';
         } else {
-          embedUrl = url.replace(/\/([^\/]+)$/, '/embed/$1');
+          // Handle other itch.io formats
+          embedUrl = url.replace(/\/$/, '') + '/embed';
+        }
+        break;
+      case 'gamejolt':
+        if (url.includes('/embed')) {
+          embedUrl = url;
+        } else {
+          // Handle GameJolt URLs: https://gamejolt.com/games/game-name/123456
+          embedUrl = url.replace(/\/$/, '') + '/embed';
         }
         break;
       case 'scratch':
@@ -3900,8 +3982,20 @@ crossorigin="anonymous"></script>
     iframe.setAttribute('allow', 'autoplay; fullscreen; xr-spatial-tracking');
     iframe.loading = 'lazy';
     iframe.width = "100%";
-    iframe.height = "400";
+    iframe.height = "100%";
     iframe.style.border = 'none';
+    
+    // Platform-specific iframe settings
+    if (gameType === 'itch') {
+      iframe.setAttribute('frameborder', '0');
+      iframe.setAttribute('allowtransparency', 'true');
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+    } else if (gameType === 'gamejolt') {
+      iframe.setAttribute('frameborder', '0');
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+    }
     
     return iframe;
   }
@@ -3921,10 +4015,17 @@ crossorigin="anonymous"></script>
       document.removeEventListener('msfullscreenchange', iframe._fullscreenCleanup);
     }
     
+    // Restore original placeholder content
+    if (iframe._originalContent) {
+      placeholder.innerHTML = iframe._originalContent;
+    }
+    
     // Replace iframe with placeholder
     if (iframe.parentNode) {
       iframe.parentNode.replaceChild(placeholder, iframe);
     }
+    
+    console.log('Game cleaned up and placeholder restored');
     
     // Clean up references
     activeGameElements.delete(gameId);
@@ -4306,6 +4407,7 @@ crossorigin="anonymous"></script>
   
 </body>
 </html>
+
 
 
 
