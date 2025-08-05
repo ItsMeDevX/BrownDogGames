@@ -68,7 +68,7 @@ crossorigin="anonymous"></script>
       padding: 40px;
       border-radius: 16px;
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
-      max-width: 700px;
+      max-width: 800px;
       width: 90%;
       margin: 20px auto;
     }
@@ -301,53 +301,19 @@ crossorigin="anonymous"></script>
       color: white;
     }
 
-    /* Age Gate */
-    #age-gate {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 9999;
-      color: #ff69b4;
-      font-family: 'Rubik Mono One', sans-serif;
-      text-align: center;
+    .access-note {
+      background: #3b3750;
       padding: 20px;
-    }
-
-    #age-gate.show {
-      display: flex;
-    }
-
-    #age-gate h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    #age-gate p {
-      margin-bottom: 1.5rem;
-      font-size: 1.1rem;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px solid #ff69b4;
       color: #ffc0cb;
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
 
-    #age-gate button {
-      background: #ff69b4;
-      color: #1e1b2e;
-      border: none;
-      padding: 0.7rem 1.4rem;
-      font-weight: bold;
-      font-size: 1rem;
-      border-radius: 8px;
-      margin: 0.5rem;
-      cursor: pointer;
-      transition: background 0.2s;
-      min-width: 120px;
-    }
-
-    #age-gate button:hover {
-      background: #ff8edb;
+    .access-note strong {
+      color: #ff69b4;
     }
 
     /* Taskbar */
@@ -886,21 +852,25 @@ crossorigin="anonymous"></script>
     <h2>🎮 Welcome to BrownDogGames</h2>
     <p>Choose your access level - VIP membership or free browsing:</p>
 
+    <div class="access-note">
+      <strong>📌 Note:</strong> Anyone can post content, games, art, and videos to earn money! VIP membership unlocks exclusive community features and premium content sharing with other VIP members.
+    </div>
+
     <div class="access-options">
       <!-- VIP Option -->
       <div class="access-option vip" id="vip-option">
         <h3>⭐ VIP Access</h3>
         <div class="price">£2/month</div>
         <ul class="feature-list">
-          <li><span class="icon">🎮</span> Access to all premium games</li>
-          <li><span class="icon">✅</span> Verified member chats</li>
-          <li><span class="icon">💰</span> Earn money from content</li>
-          <li><span class="icon">🏅</span> VIP badges & status</li>
-          <li><span class="icon">🚀</span> Priority support</li>
-          <li><span class="icon">💬</span> Direct community access</li>
+          <li><span class="icon">👑</span> Exclusive VIP Members Dashboard</li>
+          <li><span class="icon">💬</span> Direct messaging with VIP members</li>
+          <li><span class="icon">🎁</span> Share exclusive content with VIPs</li>
+          <li><span class="icon">📊</span> Advanced member statistics</li>
+          <li><span class="icon">✨</span> VIP content creation & sharing</li>
+          <li><span class="icon">🏆</span> Priority support & features</li>
         </ul>
         <div class="vip-only-features">
-          <strong>Premium Features:</strong> Enhanced experience, priority support, and community benefits
+          <strong>Premium Features:</strong> VIP-only dashboard, exclusive content sharing, member-to-member messaging, and premium community access
         </div>
       </div>
 
@@ -909,14 +879,15 @@ crossorigin="anonymous"></script>
         <h3>🆓 Free Access</h3>
         <div class="price">Free</div>
         <ul class="feature-list">
-          <li><span class="icon">🎮</span> Browse all public games</li>
-          <li><span class="icon">👀</span> View user profiles</li>
+          <li><span class="icon">🎮</span> Browse & play all public games</li>
+          <li><span class="icon">👀</span> View all user profiles</li>
           <li><span class="icon">🖼️</span> See user art & videos</li>
+          <li><span class="icon">📤</span> Post your own content & games</li>
+          <li><span class="icon">💰</span> Earn money from your uploads</li>
           <li><span class="icon">🔍</span> Search & discover content</li>
-          <li><span class="icon">📱</span> Mobile-friendly experience</li>
         </ul>
         <div class="free-features">
-          <strong>Free Features:</strong> Perfect for casual browsing and discovering new content
+          <strong>Free Features:</strong> Full access to browse content, post your own creations, and earn money - perfect for creators and casual users
         </div>
       </div>
     </div>
@@ -932,7 +903,7 @@ crossorigin="anonymous"></script>
 
       <div class="vip-step" id="payment-step" style="display: none;">
         <h4>Step 2: Subscribe for VIP Access</h4>
-        <p>Subscribe to VIP for just £2/month - includes age verification and unlocks all premium features!</p>
+        <p>Subscribe to VIP for just £2/month - unlocks exclusive member features and premium community access!</p>
         <div id="vip-paypal-container"></div>
       </div>
     </div>
@@ -941,17 +912,8 @@ crossorigin="anonymous"></script>
       
     <div class="gate-buttons">
       <button id="back-to-options" style="display: none;">← Back to Options</button>
-      <button id="exit-btn">I'm Under 18 - Exit</button>
     </div>
   </div>
-</div>
-
-<!-- Age Gate -->
-<div id="age-gate">
-  <h2>🔞 Adults Only</h2>
-  <p>You must be 18 or older to access BrownDogGames.</p>
-  <button id="yes-btn">Yes, I'm 18+</button>
-  <button id="no-btn">No, Take Me Back</button>
 </div>
 
 <!-- Taskbar -->
@@ -974,7 +936,7 @@ crossorigin="anonymous"></script>
     <div id="suggestions-dropdown"></div>
   </div>
 
-  <!-- NEW: Message Notifications -->
+  <!-- Message Notifications -->
   <div class="taskbar-messages" id="taskbar-messages" style="display: none;">
     <button class="messages-button" id="messages-button">
       💬 Messages
@@ -1017,7 +979,6 @@ crossorigin="anonymous"></script>
     const freeOption = document.getElementById('free-option');
     const vipProcess = document.getElementById('vip-process');
     const backToOptionsBtn = document.getElementById('back-to-options');
-    const exitBtn = document.getElementById('exit-btn');
     const accessMessage = document.getElementById('access-message');
     const githubLoginBtn = document.getElementById('github-login-btn');
     const loginStep = document.getElementById('login-step');
@@ -1028,10 +989,9 @@ crossorigin="anonymous"></script>
     function checkExistingAccess() {
       const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
       const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
-      const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
 
-      // If user has any access and is age verified, don't show gate
-      if ((hasVIPAccess || hasFreeAccess) && isAgeVerified) {
+      // If user has any access, don't show gate
+      if (hasVIPAccess || hasFreeAccess) {
         return true;
       }
       return false;
@@ -1053,7 +1013,6 @@ crossorigin="anonymous"></script>
     freeOption.addEventListener('click', () => {
       // Grant free access
       localStorage.setItem('freeAccess', 'true');
-      localStorage.setItem('ageVerified', 'true');
       
       showAccessMessage('🎉 Free access granted! Welcome to BrownDogGames!');
       
@@ -1072,12 +1031,6 @@ crossorigin="anonymous"></script>
       backToOptionsBtn.style.display = 'none';
       document.querySelector('.access-options').style.display = 'grid';
       hideAccessMessage();
-    });
-
-    // Exit Button
-    exitBtn.addEventListener('click', () => {
-      alert('Thank you for being honest. Redirecting to a family-friendly site.');
-      window.location.href = 'https://google.com';
     });
 
     // GitHub Login
@@ -1205,7 +1158,6 @@ crossorigin="anonymous"></script>
 
             // Grant VIP access
             localStorage.setItem('vipAccess', 'true');
-            localStorage.setItem('ageVerified', 'true');
             localStorage.setItem('vipSubscriptionId', subscriptionID);
             localStorage.setItem('vipActivatedAt', new Date().toISOString());
 
@@ -1241,39 +1193,13 @@ crossorigin="anonymous"></script>
       if (document.hidden || !document.hasFocus()) {
         const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
         const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
-        const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
 
-        // If no access or age verification, show gate
-        if (!(hasVIPAccess || hasFreeAccess) || !isAgeVerified) {
+        // If no access, show gate
+        if (!(hasVIPAccess || hasFreeAccess)) {
           accessChoiceGate.classList.add('show');
         }
       }
     }, 30000);
-  });
-
-  // Age Gate
-  document.addEventListener('DOMContentLoaded', () => {
-    const ageGate = document.getElementById('age-gate');
-    const yesBtn = document.getElementById('yes-btn');
-    const noBtn = document.getElementById('no-btn');
-
-    // Check if user has already verified their age
-    const isVerified = localStorage.getItem('ageVerified') === 'true';
-
-    // Only show age gate if not verified
-    if (!isVerified) {
-      ageGate.classList.add('show');
-    }
-
-    yesBtn.addEventListener('click', () => {
-      localStorage.setItem('ageVerified', 'true');
-      ageGate.classList.remove('show');
-    });
-
-    noBtn.addEventListener('click', () => {
-      alert('Sorry, you must be 18 or older to enter.');
-      window.location.href = 'https://google.com';
-    });
   });
 
   // Message Notifications System
@@ -1631,7 +1557,6 @@ crossorigin="anonymous"></script>
   function syncAccessState() {
     const hasVIPAccess = localStorage.getItem('vipAccess') === 'true';
     const hasFreeAccess = localStorage.getItem('freeAccess') === 'true';
-    const isAgeVerified = localStorage.getItem('ageVerified') === 'true';
     
     // Update UI to match localStorage state
     if (window.renderVip) {
@@ -1641,7 +1566,7 @@ crossorigin="anonymous"></script>
     // Update access gate visibility
     const accessChoiceGate = document.getElementById('access-choice-gate');
     if (accessChoiceGate) {
-      if ((hasVIPAccess || hasFreeAccess) && isAgeVerified) {
+      if (hasVIPAccess || hasFreeAccess) {
         accessChoiceGate.classList.remove('show');
       } else {
         accessChoiceGate.classList.add('show');
@@ -1679,7 +1604,6 @@ crossorigin="anonymous"></script>
       // If user is VIP in database, grant local access too
       if (user?.is_vip) {
         localStorage.setItem('vipAccess', 'true');
-        localStorage.setItem('ageVerified', 'true');
       }
 
       return user?.is_vip ?? false;
@@ -1883,7 +1807,7 @@ crossorigin="anonymous"></script>
         dropdown.id = 'user-dropdown';
 
         const myPageBtn = document.createElement('button');
-        myPageBtn.textContent = 'My Page'; // FIXED: Added missing text content
+        myPageBtn.textContent = 'My Page';
         myPageBtn.onclick = async () => {
           dropdown.style.display = 'none';
           try {
@@ -1936,7 +1860,6 @@ crossorigin="anonymous"></script>
             // Clear all access data on logout
             localStorage.removeItem('vipAccess');
             localStorage.removeItem('freeAccess');
-            localStorage.removeItem('ageVerified');
             localStorage.removeItem('vipSubscriptionId');
             localStorage.removeItem('vipActivatedAt');
             
@@ -4156,3 +4079,4 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
+
