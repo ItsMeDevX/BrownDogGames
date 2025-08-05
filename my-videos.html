@@ -3622,32 +3622,54 @@ crossorigin="anonymous"></script>
 
     // Content submission functionality
     function initContentSubmission() {
-      const addContentBtn = document.getElementById('add-content-btn');
-      const contentForm = document.getElementById('content-form');
-      const submitBtn = document.getElementById('submit-content-btn');
-      const cancelBtn = document.getElementById('cancel-content-btn');
+      // Wait for elements to be available
+      const checkElements = () => {
+        const addContentBtn = document.getElementById('add-content-btn');
+        const contentForm = document.getElementById('content-form');
+        const submitBtn = document.getElementById('submit-content-btn');
+        const cancelBtn = document.getElementById('cancel-content-btn');
+        
+        if (!addContentBtn || !contentForm || !submitBtn || !cancelBtn) {
+          console.log('Content form elements not ready, retrying...');
+          setTimeout(checkElements, 500);
+          return;
+        }
+        
+        console.log('Initializing content submission form...');
+        
+        // Remove any existing listeners
+        addContentBtn.replaceWith(addContentBtn.cloneNode(true));
+        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+        submitBtn.replaceWith(submitBtn.cloneNode(true));
+        
+        // Get fresh references
+        const newAddBtn = document.getElementById('add-content-btn');
+        const newCancelBtn = document.getElementById('cancel-content-btn');
+        const newSubmitBtn = document.getElementById('submit-content-btn');
+        
+        // Show form
+        newAddBtn.addEventListener('click', () => {
+          console.log('Show content form clicked');
+          contentForm.style.display = 'block';
+          newAddBtn.style.display = 'none';
+          document.getElementById('content-title').focus();
+        });
+        
+        // Hide form
+        newCancelBtn.addEventListener('click', () => {
+          console.log('Cancel content form clicked');
+          contentForm.style.display = 'none';
+          newAddBtn.style.display = 'inline-block';
+          clearContentForm();
+        });
+        
+        // Submit content
+        newSubmitBtn.addEventListener('click', submitContent);
+        
+        console.log('Content submission initialized successfully');
+      };
       
-      if (!addContentBtn || !contentForm || !submitBtn || !cancelBtn) {
-        console.error('Content form elements not found');
-        return;
-      }
-      
-      // Show form
-      addContentBtn.addEventListener('click', () => {
-        contentForm.style.display = 'block';
-        addContentBtn.style.display = 'none';
-        document.getElementById('content-title').focus();
-      });
-      
-      // Hide form
-      cancelBtn.addEventListener('click', () => {
-        contentForm.style.display = 'none';
-        addContentBtn.style.display = 'inline-block';
-        clearContentForm();
-      });
-      
-      // Submit content
-      submitBtn.addEventListener('click', submitContent);
+      checkElements();
     }
 
     // Submit new VIP content
@@ -4065,6 +4087,11 @@ crossorigin="anonymous"></script>
           }
         });
       }
+      
+      // Initialize content submission after DOM is loaded
+      setTimeout(() => {
+        initContentSubmission();
+      }, 1000);
     });
 
     // Initialize the dashboard with better error recovery
@@ -4075,8 +4102,14 @@ crossorigin="anonymous"></script>
         if (hasAccess) {
           await loadVIPDashboard();
           
-          // Initialize content submission functionality
-          initContentSubmission();
+          // Initialize content submission functionality with retry
+          const initContentWithRetry = () => {
+            setTimeout(() => {
+              initContentSubmission();
+            }, 2000);
+          };
+          
+          initContentWithRetry();
           
           // Auto-refresh every 30 seconds with error handling
           const refreshInterval = setInterval(async () => {
