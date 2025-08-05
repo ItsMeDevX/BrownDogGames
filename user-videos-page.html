@@ -3500,14 +3500,14 @@ crossorigin="anonymous"></script>
 
         return '<div class="extra-card">' +
           '<div class="extra-header">' +
-            '<div class="extra-type">' + (extra.type || 'EXTRA').toUpperCase() + '</div>' +
+            '<div class="extra-type">' + escapeHtml(extra.type || 'EXTRA').toUpperCase() + '</div>' +
           '</div>' +
-          '<h4 class="extra-title">' + (extra.title || 'Untitled') + '</h4>' +
-          '<p class="extra-description">' + (extra.description || 'No description') + '</p>' +
+          '<h4 class="extra-title">' + escapeHtml(extra.title || 'Untitled') + '</h4>' +
+          '<p class="extra-description">' + escapeHtml(extra.description || 'No description') + '</p>' +
           '<div class="extra-footer">' +
             '<div class="extra-actions">' +
               '<span class="extra-creator">' +
-                'Added by ' + (extra.creator_name || username) + '<br>' +
+                'Added by ' + escapeHtml(extra.creator_name || username) + '<br>' +
                 '<small>' + dateStr + '</small>' +
               '</span>' +
               '<div class="like-section">' +
@@ -4315,17 +4315,6 @@ crossorigin="anonymous"></script>
       videosContainer.innerHTML = '<p class="no-content">No videos submitted by ' + username + ' yet.</p>';
       return;
     }
-
-    // DEBUG: Log the video data to see what we're getting
-    console.log('🎬 Video data from database:', result.data);
-    result.data.forEach((video, index) => {
-      console.log(`Video ${index}:`, {
-        title: video.title,
-        description: video.description,
-        hasDescription: !!video.description,
-        descriptionLength: video.description ? video.description.length : 0
-      });
-    });
 
     // Get current user and load like status
     currentUser = await getCurrentUser();
