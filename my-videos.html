@@ -2089,7 +2089,8 @@ crossorigin="anonymous"></script>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>VIP Members Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIP Members Dashboard - BrownDogGames</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
     
@@ -2137,6 +2138,45 @@ crossorigin="anonymous"></script>
       color: #ff8edb;
       font-size: 1.2rem;
       margin-bottom: 2rem;
+    }
+    
+    .access-denied {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: linear-gradient(145deg, #3d1a1a, #4a2020);
+      border: 2px solid #ff4444;
+      border-radius: 15px;
+      margin: 2rem 0;
+    }
+    
+    .access-denied h2 {
+      color: #ff4444;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .access-denied p {
+      color: #ff8888;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .access-denied button {
+      background: linear-gradient(45deg, #ff69b4, #ff8edb);
+      color: #1e1b2e;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.5rem;
+    }
+    
+    .access-denied button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
     }
     
     .loading {
@@ -2281,7 +2321,7 @@ crossorigin="anonymous"></script>
     
     .members-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 1rem;
     }
     
@@ -2289,40 +2329,99 @@ crossorigin="anonymous"></script>
       background: linear-gradient(135deg, #3b2750, #4a3157);
       border: 1px solid #8dffa1;
       border-radius: 10px;
-      padding: 1rem;
+      padding: 1.5rem;
       text-align: center;
       position: relative;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .member-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(141, 255, 161, 0.2);
+      border-color: #ffd700;
+    }
+    
+    .member-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid #8dffa1;
+      margin: 0 auto 1rem;
+      object-fit: cover;
+    }
+    
+    .member-avatar-placeholder {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid #8dffa1;
+      margin: 0 auto 1rem;
+      background: linear-gradient(45deg, #ff69b4, #8dffa1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1e1b2e;
     }
     
     .member-status {
       position: absolute;
-      top: -5px;
-      right: -5px;
+      top: 10px;
+      right: 10px;
       background: #8dffa1;
       color: #1e1b2e;
       border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      font-size: 0.8rem;
+      width: 24px;
+      height: 24px;
+      font-size: 0.9rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: bold;
     }
     
     .member-username {
       color: #8dffa1;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       margin-bottom: 0.5rem;
+      font-weight: bold;
     }
     
     .member-since {
       color: #ffc0cb;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
     }
     
     .member-expires {
       color: #ff8edb;
       font-size: 0.8rem;
+    }
+    
+    .member-actions {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .member-actions button {
+      background: linear-gradient(45deg, #ff69b4, #ff8edb);
+      color: #1e1b2e;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .member-actions button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 3px 10px rgba(255, 105, 180, 0.3);
     }
     
     .vip-message-center {
@@ -2376,7 +2475,7 @@ crossorigin="anonymous"></script>
     }
     
     .message-list {
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
       border: 1px solid #ff69b4;
       border-radius: 8px;
@@ -2390,17 +2489,27 @@ crossorigin="anonymous"></script>
       padding: 1rem;
       margin-bottom: 0.5rem;
       border-left: 3px solid #ff69b4;
+      transition: all 0.2s ease;
+    }
+    
+    .message-item:hover {
+      background: #4a3157;
+      transform: translateX(5px);
     }
     
     .message-sender {
       color: #ff8edb;
       font-weight: bold;
       margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     .message-content {
       color: #ffc0cb;
       margin-bottom: 0.5rem;
+      line-height: 1.4;
     }
     
     .message-time {
@@ -2408,7 +2517,100 @@ crossorigin="anonymous"></script>
       font-size: 0.8rem;
     }
     
+    .vip-extras-section {
+      background: linear-gradient(145deg, #2d1a3a, #3b2750);
+      border: 2px solid #ff69b4;
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .extras-title {
+      color: #ffd700;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 0 #000;
+    }
+    
+    .extras-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    
+    .extra-item {
+      background: linear-gradient(135deg, #3b2750, #4a3157);
+      border: 1px solid #ff69b4;
+      border-radius: 10px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .extra-item:hover {
+      transform: translateY(-5px);
+      border-color: #ffd700;
+      box-shadow: 0 10px 25px rgba(255, 105, 180, 0.2);
+    }
+    
+    .extra-title {
+      color: #ff69b4;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    
+    .extra-description {
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+    
+    .extra-creator {
+      color: #8dffa1;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    
+    .back-button {
+      background: linear-gradient(45deg, #666, #888);
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 2rem auto;
+      display: block;
+    }
+    
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    #error-message {
+      display: none;
+      text-align: center;
+      color: #ff8d8d;
+      font-size: 1.1rem;
+      margin: 2rem 0;
+      padding: 1rem;
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid #ff4444;
+      border-radius: 8px;
+    }
+    
     @media (max-width: 768px) {
+      body {
+        padding: 10px;
+        margin: 20px auto;
+      }
+      
       .vip-stats-grid {
         grid-template-columns: 1fr;
       }
@@ -2418,7 +2620,11 @@ crossorigin="anonymous"></script>
       }
       
       .members-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+      
+      .extras-grid {
+        grid-template-columns: 1fr;
       }
       
       .message-input-group {
@@ -2427,6 +2633,10 @@ crossorigin="anonymous"></script>
       
       h1 {
         font-size: 2.2rem;
+      }
+      
+      .vip-subtitle {
+        font-size: 1rem;
       }
     }
   </style>
@@ -2438,107 +2648,131 @@ crossorigin="anonymous"></script>
     <p class="vip-subtitle">Welcome to your exclusive VIP dashboard</p>
   </div>
 
+  <!-- Access Denied Section (shown for non-VIP users) -->
+  <div class="access-denied" id="access-denied" style="display: none;">
+    <h2>🚫 VIP Access Required</h2>
+    <p>This exclusive dashboard is only available to VIP members. Upgrade your account to access premium features, direct messaging, and connect with other VIP members!</p>
+    <button onclick="window.location.href='index.html'">🏠 Return to Home</button>
+    <button onclick="showUpgradeOptions()">⭐ Upgrade to VIP</button>
+  </div>
+
+  <!-- Loading Screen -->
   <div class="loading" id="loading">
     ✨ Loading your VIP experience...
   </div>
 
-  <!-- VIP Stats Overview -->
-  <div class="vip-stats-grid" id="vip-stats" style="display: none;">
-    <div class="vip-stat-card">
-      <div class="vip-stat-icon">💎</div>
-      <div class="vip-stat-value" id="totalVips">0</div>
-      <div class="vip-stat-label">Active VIP Members</div>
+  <!-- VIP Dashboard Content -->
+  <div id="vip-content" style="display: none;">
+    <!-- VIP Stats Overview -->
+    <div class="vip-stats-grid" id="vip-stats">
+      <div class="vip-stat-card">
+        <div class="vip-stat-icon">💎</div>
+        <div class="vip-stat-value" id="totalVips">0</div>
+        <div class="vip-stat-label">Active VIP Members</div>
+      </div>
+      
+      <div class="vip-stat-card">
+        <div class="vip-stat-icon">⏰</div>
+        <div class="vip-stat-value" id="yourExpiry">--</div>
+        <div class="vip-stat-label">Your VIP Status</div>
+      </div>
+      
+      <div class="vip-stat-card">
+        <div class="vip-stat-icon">💌</div>
+        <div class="vip-stat-value" id="unreadMessages">0</div>
+        <div class="vip-stat-label">Unread Messages</div>
+      </div>
+      
+      <div class="vip-stat-card">
+        <div class="vip-stat-icon">🎯</div>
+        <div class="vip-stat-value" id="vipSince">--</div>
+        <div class="vip-stat-label">VIP Member Since</div>
+      </div>
     </div>
-    
-    <div class="vip-stat-card">
-      <div class="vip-stat-icon">⏰</div>
-      <div class="vip-stat-value" id="yourExpiry">--</div>
-      <div class="vip-stat-label">Your VIP Status</div>
+
+    <!-- VIP Perks Section -->
+    <div class="vip-perks-section">
+      <h2 class="vip-perks-title">🌟 Your VIP Perks</h2>
+      <div class="perks-grid">
+        <div class="perk-item">
+          <div class="perk-emoji">🔓</div>
+          <div class="perk-title">Exclusive Content</div>
+          <div class="perk-desc">Access to premium games, videos, and special features not available to free users</div>
+        </div>
+        
+        <div class="perk-item">
+          <div class="perk-emoji">💬</div>
+          <div class="perk-title">Direct Messaging</div>
+          <div class="perk-desc">Send and receive private messages with other VIP members in the community</div>
+        </div>
+        
+        <div class="perk-item">
+          <div class="perk-emoji">🎮</div>
+          <div class="perk-title">VIP Games</div>
+          <div class="perk-desc">Access to exclusive games and interactive content created by community members</div>
+        </div>
+        
+        <div class="perk-item">
+          <div class="perk-emoji">🏆</div>
+          <div class="perk-title">Priority Support</div>
+          <div class="perk-desc">Get priority customer support and faster responses to your questions</div>
+        </div>
+        
+        <div class="perk-item">
+          <div class="perk-emoji">🎨</div>
+          <div class="perk-title">Custom Requests</div>
+          <div class="perk-desc">Request custom content and personalized experiences from creators</div>
+        </div>
+        
+        <div class="perk-item">
+          <div class="perk-emoji">📊</div>
+          <div class="perk-title">Advanced Stats</div>
+          <div class="perk-desc">View detailed analytics and exclusive leaderboards for games and content</div>
+        </div>
+      </div>
     </div>
-    
-    <div class="vip-stat-card">
-      <div class="vip-stat-icon">💌</div>
-      <div class="vip-stat-value" id="unreadMessages">0</div>
-      <div class="vip-stat-label">Unread Messages</div>
+
+    <!-- VIP Extras Section -->
+    <div class="vip-extras-section">
+      <h2 class="extras-title">🎁 VIP Exclusive Content</h2>
+      <div class="extras-grid" id="vip-extras-list">
+        <!-- VIP extras will be loaded here -->
+      </div>
     </div>
-    
-    <div class="vip-stat-card">
-      <div class="vip-stat-icon">🎯</div>
-      <div class="vip-stat-value" id="vipSince">--</div>
-      <div class="vip-stat-label">VIP Member Since</div>
+
+    <!-- VIP Members List -->
+    <div class="vip-members-section">
+      <h2 class="members-title">👥 Fellow VIP Members</h2>
+      <div class="members-grid" id="members-list">
+        <!-- Members will load here -->
+      </div>
+    </div>
+
+    <!-- VIP Message Center -->
+    <div class="vip-message-center">
+      <h2 class="message-title">💬 VIP Message Center</h2>
+      
+      <div class="message-input-group">
+        <input type="text" class="message-input" id="recipient-input" placeholder="Recipient username..." />
+        <input type="text" class="message-input" id="message-input" placeholder="Your message..." />
+        <button class="message-send-btn" id="send-message-btn">Send ✉️</button>
+      </div>
+      
+      <div class="message-list" id="message-list">
+        <div style="text-align: center; color: #999; padding: 2rem;">
+          📭 No messages yet. Start a conversation!
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- VIP Perks Section -->
-  <div class="vip-perks-section">
-    <h2 class="vip-perks-title">🌟 Your VIP Perks</h2>
-    <div class="perks-grid">
-      <div class="perk-item">
-        <div class="perk-emoji">🔓</div>
-        <div class="perk-title">Exclusive Content</div>
-        <div class="perk-desc">Access to premium content, videos, and special features</div>
-      </div>
-      
-      <div class="perk-item">
-        <div class="perk-emoji">💬</div>
-        <div class="perk-title">Direct Messaging</div>
-        <div class="perk-desc">Send and receive private messages with other VIP members</div>
-      </div>
-      
-      <div class="perk-item">
-        <div class="perk-emoji">🎮</div>
-        <div class="perk-title">VIP Games</div>
-        <div class="perk-desc">Access to exclusive games and interactive content</div>
-      </div>
-      
-      <div class="perk-item">
-        <div class="perk-emoji">🏆</div>
-        <div class="perk-title">Priority Support</div>
-        <div class="perk-desc">Get priority customer support and faster responses</div>
-      </div>
-      
-      <div class="perk-item">
-        <div class="perk-emoji">🎨</div>
-        <div class="perk-title">Custom Requests</div>
-        <div class="perk-desc">Request custom content and personalized experiences</div>
-      </div>
-      
-      <div class="perk-item">
-        <div class="perk-emoji">📊</div>
-        <div class="perk-title">Advanced Stats</div>
-        <div class="perk-desc">View detailed analytics and exclusive leaderboards</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- VIP Members List -->
-  <div class="vip-members-section">
-    <h2 class="members-title">👥 Fellow VIP Members</h2>
-    <div class="members-grid" id="members-list">
-      <!-- Members will load here -->
-    </div>
-  </div>
-
-  <!-- VIP Message Center -->
-  <div class="vip-message-center">
-    <h2 class="message-title">💬 VIP Message Center</h2>
-    
-    <div class="message-input-group">
-      <input type="text" class="message-input" id="recipient-input" placeholder="Recipient username...">
-      <input type="text" class="message-input" id="message-input" placeholder="Your message...">
-      <button class="message-send-btn" id="send-message-btn">Send ✉️</button>
-    </div>
-    
-    <div class="message-list" id="message-list">
-      <div style="text-align: center; color: #999; padding: 2rem;">
-        📭 No messages yet. Start a conversation!
-      </div>
-    </div>
-  </div>
-
-  <div id="error-message" style="display: none; text-align: center; color: #ff8d8d; font-size: 1.1rem; margin: 2rem 0;">
+  <div id="error-message">
     😢 Error loading VIP dashboard
   </div>
+
+  <button onclick="window.location.href='index.html'" class="back-button">
+    🏠 Return to Home
+  </button>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -2548,9 +2782,12 @@ crossorigin="anonymous"></script>
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
-    // Mock current user for demo - in real app, get from auth
-    const currentUser = 'DemoVIPUser';
+    // Global variables
+    let currentUser = null;
+    let currentUsername = null;
+    let isVIPUser = false;
 
+    // Utility functions
     function formatDate(dateString) {
       if (!dateString) return '--';
       return new Date(dateString).toLocaleDateString('en-GB', {
@@ -2575,128 +2812,547 @@ crossorigin="anonymous"></script>
       return `${days} days left`;
     }
 
-    async function loadVIPDashboard() {
-      const loadingEl = document.getElementById('loading');
-      const statsEl = document.getElementById('vip-stats');
+    function showError(message) {
       const errorEl = document.getElementById('error-message');
+      const loadingEl = document.getElementById('loading');
+      
+      loadingEl.style.display = 'none';
+      errorEl.textContent = `😢 ${message}`;
+      errorEl.style.display = 'block';
+    }
 
+    function showAccessDenied() {
+      const accessDeniedEl = document.getElementById('access-denied');
+      const loadingEl = document.getElementById('loading');
+      
+      loadingEl.style.display = 'none';
+      accessDeniedEl.style.display = 'block';
+    }
+
+    function showVIPContent() {
+      const vipContentEl = document.getElementById('vip-content');
+      const loadingEl = document.getElementById('loading');
+      
+      loadingEl.style.display = 'none';
+      vipContentEl.style.display = 'block';
+    }
+
+    // Check authentication and VIP status
+    async function checkUserAccess() {
       try {
-        // Get all VIP users
-        const { data: vipUsers, error: usersError } = await supabase
+        // Get current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          showAccessDenied();
+          return false;
+        }
+
+        if (!session?.user) {
+          console.log('No authenticated user');
+          showAccessDenied();
+          return false;
+        }
+
+        currentUser = session.user;
+        
+        // Get username from metadata with better fallback
+        currentUsername = session.user.user_metadata?.user_name || 
+                         session.user.user_metadata?.preferred_username;
+        
+        // If no username from metadata, try to get from database
+        if (!currentUsername) {
+          try {
+            const { data: gameData, error: gameError } = await supabase
+              .from('game_submissions')
+              .select('github_user')
+              .eq('user_id', currentUser.id)
+              .limit(1);
+            
+            if (gameError) {
+              console.error('Error fetching username from games:', gameError);
+            }
+            
+            if (gameData && gameData.length > 0 && gameData[0].github_user) {
+              currentUsername = gameData[0].github_user;
+            }
+          } catch (error) {
+            console.error('Error getting username from database:', error);
+          }
+        }
+        
+        // Final fallback to email prefix
+        if (!currentUsername) {
+          currentUsername = currentUser.email?.split('@')[0] || currentUser.id;
+        }
+
+        // Check VIP status in database
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
-          .eq('is_vip', true);
+          .eq('id', currentUser.id)
+          .single();
 
-        if (usersError) throw usersError;
+        if (userError && userError.code !== 'PGRST116') { // PGRST116 is "not found"
+          console.error('User lookup error:', userError);
+        }
 
-        // Get messages for current user
-        const { data: messages, error: messagesError } = await supabase
-          .from('direct_messages')
-          .select('*')
-          .or(`sender_username.eq.${currentUser},recipient_username.eq.${currentUser}`)
-          .order('created_at', { ascending: false })
-          .limit(20);
+        // Check local VIP access or database VIP status
+        const localVIP = localStorage.getItem('vipAccess') === 'true';
+        const dbVIP = userData?.is_vip === true;
+        
+        isVIPUser = localVIP || dbVIP;
 
-        if (messagesError) console.error('Messages error:', messagesError);
+        if (!isVIPUser) {
+          console.log('User is not VIP');
+          showAccessDenied();
+          return false;
+        }
 
-        // Update stats
-        const totalVips = vipUsers?.length || 0;
-        const currentUserData = vipUsers?.find(u => u.id === currentUser) || {};
-        const unreadCount = messages?.filter(m => 
-          m.recipient_username === currentUser && !m.is_read
-        ).length || 0;
+        // If local VIP but not in database, create/update user record
+        if (localVIP && !dbVIP) {
+          try {
+            await supabase
+              .from('users')
+              .upsert({
+                id: currentUser.id,
+                is_vip: true,
+                created_at: new Date().toISOString()
+              });
+          } catch (error) {
+            console.error('Error updating user VIP status:', error);
+          }
+        }
 
-        document.getElementById('totalVips').textContent = totalVips;
-        document.getElementById('yourExpiry').textContent = getTimeUntilExpiry(currentUserData.vip_expires_at);
-        document.getElementById('unreadMessages').textContent = unreadCount;
-        document.getElementById('vipSince').textContent = formatDate(currentUserData.created_at);
+        return true;
 
-        // Load VIP members
-        loadVIPMembers(vipUsers || []);
-
-        // Load messages
-        loadMessages(messages || []);
-
-        // Show dashboard
-        loadingEl.style.display = 'none';
-        statsEl.style.display = 'grid';
-
-      } catch (err) {
-        console.error('Error loading VIP dashboard:', err);
-        loadingEl.style.display = 'none';
-        errorEl.innerHTML = `😢 Error loading VIP dashboard: ${err.message}`;
-        errorEl.style.display = 'block';
+      } catch (error) {
+        console.error('Error checking user access:', error);
+        showError('Authentication check failed');
+        return false;
       }
     }
 
-    function loadVIPMembers(users) {
+    // Get user avatar from various sources
+    async function getUserAvatar(username, userId) {
+      if (!username && !userId) return null;
+      
+      try {
+        // Try to get avatar from game submissions
+        let query = supabase.from('game_submissions').select('avatar_url');
+        
+        if (userId) {
+          query = query.eq('user_id', userId);
+        } else if (username) {
+          query = query.eq('github_user', username);
+        } else {
+          return null;
+        }
+        
+        const { data: gameData, error: gameError } = await query.limit(1);
+        
+        if (gameError) {
+          console.error('Error fetching game data:', gameError);
+        }
+        
+        if (gameData && gameData.length > 0 && gameData[0].avatar_url) {
+          return gameData[0].avatar_url;
+        }
+
+        // Try videos table
+        if (username) {
+          const { data: videoData, error: videoError } = await supabase
+            .from('game_videos')
+            .select('avatar_url')
+            .eq('github_username', username)
+            .limit(1);
+          
+          if (videoError) {
+            console.error('Error fetching video data:', videoError);
+          }
+          
+          if (videoData && videoData.length > 0 && videoData[0].avatar_url) {
+            return videoData[0].avatar_url;
+          }
+        }
+
+        // Try art table
+        if (username) {
+          const { data: artData, error: artError } = await supabase
+            .from('user_art')
+            .select('avatar_url')
+            .eq('github_username', username)
+            .limit(1);
+          
+          if (artError) {
+            console.error('Error fetching art data:', artError);
+          }
+          
+          if (artData && artData.length > 0 && artData[0].avatar_url) {
+            return artData[0].avatar_url;
+          }
+        }
+
+        // Fallback to current user's GitHub avatar if checking current user
+        if (currentUser && (userId === currentUser.id || username === currentUsername) && currentUser.user_metadata?.avatar_url) {
+          return currentUser.user_metadata.avatar_url;
+        }
+
+        return null;
+      } catch (error) {
+        console.error('Error getting user avatar:', error);
+        return null;
+      }
+    }
+
+    // Load VIP dashboard data with comprehensive error handling
+    async function loadVIPDashboard() {
+      try {
+        // Show loading state
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl && loadingEl.style.display !== 'none') {
+          loadingEl.style.display = 'block';
+        }
+
+        // Parallel data fetching with individual error handling
+        const [usersResult, messagesResult, extrasResult] = await Promise.allSettled([
+          supabase
+            .from('users')
+            .select('*')
+            .eq('is_vip', true)
+            .order('created_at', { ascending: false }),
+          
+          supabase
+            .from('direct_messages')
+            .select('*')
+            .or(`sender_username.eq.${currentUsername},recipient_username.eq.${currentUsername}`)
+            .order('created_at', { ascending: false })
+            .limit(50),
+          
+          supabase
+            .from('vip_extras')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+        ]);
+
+        // Handle users data
+        let vipUsers = [];
+        if (usersResult.status === 'fulfilled' && !usersResult.value.error) {
+          vipUsers = usersResult.value.data || [];
+        } else {
+          console.error('Users fetch error:', usersResult.status === 'fulfilled' ? usersResult.value.error : usersResult.reason);
+        }
+
+        // Handle messages data
+        let messages = [];
+        if (messagesResult.status === 'fulfilled' && !messagesResult.value.error) {
+          messages = messagesResult.value.data || [];
+        } else {
+          console.error('Messages fetch error:', messagesResult.status === 'fulfilled' ? messagesResult.value.error : messagesResult.reason);
+        }
+
+        // Handle extras data
+        let vipExtras = [];
+        if (extrasResult.status === 'fulfilled' && !extrasResult.value.error) {
+          vipExtras = extrasResult.value.data || [];
+        } else {
+          console.error('VIP extras fetch error:', extrasResult.status === 'fulfilled' ? extrasResult.value.error : extrasResult.reason);
+        }
+
+        // Update components with available data
+        await updateVIPStats(vipUsers, messages);
+        await loadVIPMembers(vipUsers);
+        loadMessages(messages);
+        loadVIPExtras(vipExtras);
+
+        // Show VIP content
+        showVIPContent();
+
+        // Hide loading
+        if (loadingEl) {
+          loadingEl.style.display = 'none';
+        }
+
+      } catch (error) {
+        console.error('Critical error loading VIP dashboard:', error);
+        showError('Failed to load VIP dashboard. Please refresh the page.');
+      }
+    }
+
+    // Update VIP statistics with better error handling
+    async function updateVIPStats(vipUsers, messages) {
+      try {
+        if (!Array.isArray(vipUsers)) vipUsers = [];
+        if (!Array.isArray(messages)) messages = [];
+        
+        const totalVips = vipUsers.length;
+        const currentUserData = vipUsers.find(u => u && u.id === currentUser?.id) || {};
+        const unreadCount = messages.filter(m => 
+          m && m.recipient_username === currentUsername && !m.is_read
+        ).length;
+
+        // Safely update DOM elements
+        const totalVipsEl = document.getElementById('totalVips');
+        const yourExpiryEl = document.getElementById('yourExpiry');
+        const unreadMessagesEl = document.getElementById('unreadMessages');
+        const vipSinceEl = document.getElementById('vipSince');
+
+        if (totalVipsEl) totalVipsEl.textContent = totalVips;
+        if (yourExpiryEl) yourExpiryEl.textContent = getTimeUntilExpiry(currentUserData.vip_expires_at);
+        if (unreadMessagesEl) unreadMessagesEl.textContent = unreadCount;
+        if (vipSinceEl) vipSinceEl.textContent = formatDate(currentUserData.created_at);
+      } catch (error) {
+        console.error('Error updating VIP stats:', error);
+      }
+    }
+
+    // Load VIP members list
+    async function loadVIPMembers(users) {
       const membersList = document.getElementById('members-list');
       
+      if (!membersList) {
+        console.error('Members list element not found');
+        return;
+      }
+      
       if (users.length === 0) {
-        membersList.innerHTML = '<div style="text-align: center; color: #999; grid-column: 1/-1;">No VIP members found</div>';
+        membersList.innerHTML = '<div style="text-align: center; color: #999; grid-column: 1/-1; padding: 2rem;">No VIP members found</div>';
         return;
       }
 
-      membersList.innerHTML = users.map(user => {
-        const isActive = user.vip_expires_at ? new Date(user.vip_expires_at) > new Date() : true;
-        
-        return `
-          <div class="member-card">
-            <div class="member-status">${isActive ? '✅' : '⏰'}</div>
-            <div class="member-username">${user.id}</div>
-            <div class="member-since">Since: ${formatDate(user.created_at)}</div>
-            <div class="member-expires">
-              ${user.vip_expires_at ? 
-                `Expires: ${formatDate(user.vip_expires_at)}` : 
-                'Lifetime VIP'
+      try {
+        const membersHtml = await Promise.all(users.map(async (user) => {
+          if (!user || !user.id) {
+            console.warn('Invalid user data:', user);
+            return '';
+          }
+          
+          const isActive = user.vip_expires_at ? new Date(user.vip_expires_at) > new Date() : true;
+          
+          // Try to get username from user ID
+          let displayUsername = user.id;
+          let avatar = null;
+          
+          try {
+            // Get username from game submissions
+            const { data: gameData, error: gameError } = await supabase
+              .from('game_submissions')
+              .select('github_user, avatar_url')
+              .eq('user_id', user.id)
+              .limit(1);
+            
+            if (gameError) {
+              console.error('Error fetching game data for user:', user.id, gameError);
+            }
+            
+            if (gameData && gameData.length > 0) {
+              displayUsername = gameData[0].github_user || user.id;
+              avatar = gameData[0].avatar_url;
+            }
+            
+            if (!avatar) {
+              avatar = await getUserAvatar(displayUsername, user.id);
+            }
+          } catch (error) {
+            console.error('Error getting member data for user:', user.id, error);
+          }
+          
+          const isCurrentUser = user.id === currentUser?.id;
+          const safeUsername = displayUsername || 'Unknown User';
+          
+          return `
+            <div class="member-card" onclick="openMemberProfile('${safeUsername}')">
+              <div class="member-status">${isActive ? '✅' : '⏰'}</div>
+              ${avatar ? 
+                `<img src="${avatar}" alt="${safeUsername}" class="member-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div class="member-avatar-placeholder" style="display: none;">${safeUsername.charAt(0).toUpperCase()}</div>` : 
+                `<div class="member-avatar-placeholder">${safeUsername.charAt(0).toUpperCase()}</div>`
               }
+              <div class="member-username">${safeUsername}${isCurrentUser ? ' (You)' : ''}</div>
+              <div class="member-since">Since: ${formatDate(user.created_at)}</div>
+              <div class="member-expires">
+                ${user.vip_expires_at ? 
+                  `Expires: ${formatDate(user.vip_expires_at)}` : 
+                  'Lifetime VIP'
+                }
+              </div>
+              ${!isCurrentUser ? `
+                <div class="member-actions">
+                  <button onclick="event.stopPropagation(); startMessage('${safeUsername}')">Message</button>
+                  <button onclick="event.stopPropagation(); viewProfile('${safeUsername}')">Profile</button>
+                </div>
+              ` : ''}
             </div>
-          </div>
-        `;
-      }).join('');
+          `;
+        }));
+
+        membersList.innerHTML = membersHtml.filter(html => html !== '').join('');
+      } catch (error) {
+        console.error('Error rendering VIP members:', error);
+        membersList.innerHTML = '<div style="text-align: center; color: #ff8d8d; grid-column: 1/-1; padding: 2rem;">Error loading VIP members</div>';
+      }
     }
 
+    // Load messages
     function loadMessages(messages) {
       const messageList = document.getElementById('message-list');
       
-      if (messages.length === 0) {
+      if (!messageList) {
+        console.error('Message list element not found');
+        return;
+      }
+      
+      if (!messages || messages.length === 0) {
         messageList.innerHTML = '<div style="text-align: center; color: #999; padding: 2rem;">📭 No messages yet. Start a conversation!</div>';
         return;
       }
 
-      messageList.innerHTML = messages.map(msg => `
-        <div class="message-item">
-          <div class="message-sender">
-            ${msg.sender_username === currentUser ? '📤 You' : `📥 ${msg.sender_username}`}
-            ${msg.recipient_username !== currentUser ? ` → ${msg.recipient_username}` : ''}
-            ${!msg.is_read && msg.recipient_username === currentUser ? ' 🔴' : ''}
-          </div>
-          <div class="message-content">${msg.message_content}</div>
-          <div class="message-time">${new Date(msg.created_at).toLocaleString()}</div>
-        </div>
-      `).join('');
+      try {
+        const messagesHtml = messages.map(msg => {
+          if (!msg || !msg.id) {
+            console.warn('Invalid message data:', msg);
+            return '';
+          }
+          
+          const isUnread = !msg.is_read && msg.recipient_username === currentUsername;
+          const isFromCurrentUser = msg.sender_username === currentUsername;
+          const safeContent = (msg.message_content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          
+          return `
+            <div class="message-item ${isUnread ? 'unread' : ''}" onclick="markAsRead('${msg.id}')">
+              <div class="message-sender">
+                ${isFromCurrentUser ? '📤 You' : `📥 ${msg.sender_username || 'Unknown'}`}
+                ${!isFromCurrentUser ? ` → You` : ` → ${msg.recipient_username || 'Unknown'}`}
+                ${isUnread ? ' 🔴' : ''}
+              </div>
+              <div class="message-content">${safeContent}</div>
+              <div class="message-time">${msg.created_at ? new Date(msg.created_at).toLocaleString() : 'Unknown time'}</div>
+            </div>
+          `;
+        }).filter(html => html !== '');
+
+        messageList.innerHTML = messagesHtml.join('');
+      } catch (error) {
+        console.error('Error rendering messages:', error);
+        messageList.innerHTML = '<div style="text-align: center; color: #ff8d8d; padding: 2rem;">Error loading messages</div>';
+      }
     }
 
-    async function sendMessage() {
-      const recipientInput = document.getElementById('recipient-input');
-      const messageInput = document.getElementById('message-input');
+    // Load VIP extras
+    function loadVIPExtras(extras) {
+      const extrasList = document.getElementById('vip-extras-list');
       
-      const recipient = recipientInput.value.trim();
-      const message = messageInput.value.trim();
+      if (!extrasList) {
+        console.error('VIP extras list element not found');
+        return;
+      }
       
-      if (!recipient || !message) {
-        alert('Please enter both recipient and message');
+      if (!extras || extras.length === 0) {
+        extrasList.innerHTML = '<div style="text-align: center; color: #999; grid-column: 1/-1; padding: 2rem;">No VIP exclusive content available yet</div>';
         return;
       }
 
       try {
+        const extrasHtml = extras.map(extra => {
+          if (!extra || !extra.id) {
+            console.warn('Invalid extra data:', extra);
+            return '';
+          }
+          
+          const safeTitle = (extra.title || 'Untitled').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeDescription = (extra.description || 'No description').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeCreator = (extra.creator_name || extra.created_by || 'Unknown Creator').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          
+          return `
+            <div class="extra-item" onclick="openExtra('${extra.url || '#'}')">
+              <div class="extra-title">${safeTitle}</div>
+              <div class="extra-description">${safeDescription}</div>
+              <div class="extra-creator">By: ${safeCreator}</div>
+            </div>
+          `;
+        }).filter(html => html !== '');
+
+        extrasList.innerHTML = extrasHtml.join('');
+      } catch (error) {
+        console.error('Error rendering VIP extras:', error);
+        extrasList.innerHTML = '<div style="text-align: center; color: #ff8d8d; grid-column: 1/-1; padding: 2rem;">Error loading VIP extras</div>';
+      }
+    }
+
+    // Send message with comprehensive validation and error handling
+    async function sendMessage() {
+      const recipientInput = document.getElementById('recipient-input');
+      const messageInput = document.getElementById('message-input');
+      const sendBtn = document.getElementById('send-message-btn');
+      
+      if (!recipientInput || !messageInput || !sendBtn) {
+        console.error('Message input elements not found');
+        return;
+      }
+      
+      const recipient = recipientInput.value.trim();
+      const message = messageInput.value.trim();
+      
+      // Input validation
+      if (!recipient) {
+        alert('Please enter a recipient username');
+        recipientInput.focus();
+        return;
+      }
+      
+      if (!message) {
+        alert('Please enter a message');
+        messageInput.focus();
+        return;
+      }
+      
+      if (message.length > 1000) {
+        alert('Message is too long. Please keep it under 1000 characters.');
+        messageInput.focus();
+        return;
+      }
+
+      if (recipient === currentUsername) {
+        alert('You cannot send a message to yourself');
+        recipientInput.focus();
+        return;
+      }
+
+      // Disable send button to prevent double-sending
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+
+      try {
+        // Verify recipient is a VIP user
+        const { data: recipientCheck, error: recipientError } = await supabase
+          .from('users')
+          .select('id, is_vip')
+          .eq('id', recipient)
+          .single();
+        
+        // If not found by ID, try to find by username
+        if (recipientError && recipientError.code === 'PGRST116') {
+          const { data: gameCheck } = await supabase
+            .from('game_submissions')
+            .select('user_id')
+            .eq('github_user', recipient)
+            .limit(1);
+          
+          if (!gameCheck || gameCheck.length === 0) {
+            throw new Error('Recipient not found. Please check the username.');
+          }
+        }
+
         const { error } = await supabase
           .from('direct_messages')
           .insert({
-            sender_username: currentUser,
+            sender_username: currentUsername,
             recipient_username: recipient,
             message_content: message,
-            is_read: false
+            is_read: false,
+            created_at: new Date().toISOString()
           });
 
         if (error) throw error;
@@ -2705,38 +3361,224 @@ crossorigin="anonymous"></script>
         recipientInput.value = '';
         messageInput.value = '';
 
-        // Reload messages
+        // Reload messages and stats
         const { data: messages } = await supabase
           .from('direct_messages')
           .select('*')
-          .or(`sender_username.eq.${currentUser},recipient_username.eq.${currentUser}`)
+          .or(`sender_username.eq.${currentUsername},recipient_username.eq.${currentUsername}`)
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(50);
 
         loadMessages(messages || []);
+        
+        // Update stats
+        const { data: vipUsers } = await supabase
+          .from('users')
+          .select('*')
+          .eq('is_vip', true);
+        
+        await updateVIPStats(vipUsers || [], messages || []);
 
-        alert('Message sent! ✉️');
+        // Show success feedback
+        const successMsg = document.createElement('div');
+        successMsg.textContent = '✉️ Message sent successfully!';
+        successMsg.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: linear-gradient(45deg, #2ecc71, #27ae60);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          font-weight: bold;
+          z-index: 10000;
+          animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(successMsg);
+        
+        setTimeout(() => {
+          successMsg.remove();
+        }, 3000);
 
-      } catch (err) {
-        console.error('Error sending message:', err);
-        alert('Failed to send message: ' + err.message);
+      } catch (error) {
+        console.error('Error sending message:', error);
+        alert(`Failed to send message: ${error.message}`);
+      } finally {
+        // Re-enable send button
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send ✉️';
       }
     }
 
+    // Mark message as read
+    async function markAsRead(messageId) {
+      if (!messageId || !currentUsername) {
+        console.error('Invalid message ID or username');
+        return;
+      }
+      
+      try {
+        const { error } = await supabase
+          .from('direct_messages')
+          .update({ is_read: true })
+          .eq('id', messageId)
+          .eq('recipient_username', currentUsername);
+
+        if (error) {
+          console.error('Error marking message as read:', error);
+        } else {
+          // Refresh messages and stats without full reload
+          const { data: messages } = await supabase
+            .from('direct_messages')
+            .select('*')
+            .or(`sender_username.eq.${currentUsername},recipient_username.eq.${currentUsername}`)
+            .order('created_at', { ascending: false })
+            .limit(50);
+          
+          loadMessages(messages || []);
+          
+          // Update unread count
+          const { data: vipUsers } = await supabase
+            .from('users')
+            .select('*')
+            .eq('is_vip', true);
+          
+          await updateVIPStats(vipUsers || [], messages || []);
+        }
+      } catch (error) {
+        console.error('Error in markAsRead:', error);
+      }
+    }
+
+    // Start message to specific user
+    window.startMessage = function(username) {
+      if (!username || username.trim() === '') {
+        console.error('Invalid username for message');
+        return;
+      }
+      
+      const recipientInput = document.getElementById('recipient-input');
+      const messageInput = document.getElementById('message-input');
+      
+      if (recipientInput && messageInput) {
+        recipientInput.value = username;
+        messageInput.focus();
+        
+        // Scroll to message center
+        const messageCenter = document.querySelector('.vip-message-center');
+        if (messageCenter) {
+          messageCenter.scrollIntoView({ 
+            behavior: 'smooth' 
+          });
+        }
+      }
+    };
+
+    // View user profile
+    window.viewProfile = function(username) {
+      if (username && username.trim() !== '') {
+        window.location.href = `user.html?user=${encodeURIComponent(username)}`;
+      }
+    };
+
+    // Open member profile  
+    window.openMemberProfile = function(username) {
+      if (username && username.trim() !== '' && username !== currentUsername) {
+        window.location.href = `user.html?user=${encodeURIComponent(username)}`;
+      }
+    };
+
+    // Open VIP extra content
+    window.openExtra = function(url) {
+      if (url && url !== '#' && url.trim() !== '') {
+        try {
+          // Validate URL format
+          new URL(url);
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } catch (error) {
+          console.error('Invalid URL:', url);
+          alert('Invalid content URL');
+        }
+      } else {
+        alert('Content URL not available');
+      }
+    };
+
+    // Show upgrade options for non-VIP users
+    window.showUpgradeOptions = function() {
+      alert('Redirecting to upgrade page...');
+      window.location.href = 'index.html';
+    };
+
     // Event listeners
-    document.getElementById('send-message-btn').addEventListener('click', sendMessage);
-    
-    document.getElementById('message-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        sendMessage();
+    document.addEventListener('DOMContentLoaded', function() {
+      const sendBtn = document.getElementById('send-message-btn');
+      const messageInput = document.getElementById('message-input');
+      
+      if (sendBtn) {
+        sendBtn.addEventListener('click', sendMessage);
+      }
+      
+      if (messageInput) {
+        messageInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
       }
     });
 
-    // Load dashboard on page load
-    loadVIPDashboard();
+    // Initialize the dashboard with better error recovery
+    async function initializeDashboard() {
+      try {
+        const hasAccess = await checkUserAccess();
+        
+        if (hasAccess) {
+          await loadVIPDashboard();
+          
+          // Auto-refresh every 30 seconds with error handling
+          const refreshInterval = setInterval(async () => {
+            try {
+              // Only refresh if user is still on the page and has access
+              if (document.visibilityState === 'visible' && isVIPUser) {
+                await loadVIPDashboard();
+              }
+            } catch (error) {
+              console.error('Error in auto-refresh:', error);
+              // If too many errors, stop auto-refresh
+              if (error.message && error.message.includes('Network')) {
+                console.warn('Network issues detected, reducing refresh frequency');
+                clearInterval(refreshInterval);
+                // Retry with longer interval
+                setTimeout(() => {
+                  setInterval(async () => {
+                    try {
+                      if (document.visibilityState === 'visible' && isVIPUser) {
+                        await loadVIPDashboard();
+                      }
+                    } catch (retryError) {
+                      console.error('Retry refresh failed:', retryError);
+                    }
+                  }, 60000); // 1 minute intervals
+                }, 30000);
+              }
+            }
+          }, 30000);
+          
+          // Clean up interval when page unloads
+          window.addEventListener('beforeunload', () => {
+            clearInterval(refreshInterval);
+          });
+        }
+      } catch (error) {
+        console.error('Failed to initialize dashboard:', error);
+        showError('Failed to initialize VIP dashboard. Please refresh the page.');
+      }
+    }
 
-    // Auto-refresh every 30 seconds
-    setInterval(loadVIPDashboard, 30000);
+    // Start the application
+    initializeDashboard();
   </script>
 </body>
 </html>
