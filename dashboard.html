@@ -2105,19 +2105,25 @@ crossorigin="anonymous"></script>
       font-size: 1.5rem;
     }
 
-    #vipLikeCount {
-      color: #ff69b4;
-      font-weight: bold;
-      font-size: 1.1rem;
-      margin: 0;
+    .earnings-display {
+      background-color: #2d1a3a;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 2px solid #8dffa1;
+      text-align: center;
     }
 
-    #vipEarnings {
+    .earnings-amount {
       color: #8dffa1;
       font-weight: bold;
-      font-size: 1rem;
-      margin: 0;
-      display: none;
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .earnings-status {
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      opacity: 0.9;
     }
 
     .terms-link {
@@ -2141,23 +2147,36 @@ crossorigin="anonymous"></script>
     /* Payout Section */
     .payout-section {
       margin-bottom: 2rem;
+      text-align: center;
     }
 
-    #payoutRequestBtn {
-      display: none;
+    .payout-btn {
       background-color: #8dffa1;
       color: #1e1b2e;
       font-weight: bold;
-      padding: 0.7rem 1.2rem;
+      padding: 0.8rem 1.5rem;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       margin-bottom: 0.5rem;
+      font-size: 1rem;
+      transition: background-color 0.2s;
     }
 
-    #payoutStatus {
+    .payout-btn:hover {
+      background-color: #7de891;
+    }
+
+    .payout-btn:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .payout-status {
       margin: 0;
       font-size: 0.9rem;
+      color: #ffc0cb;
     }
 
     /* Tab Navigation */
@@ -2465,6 +2484,108 @@ crossorigin="anonymous"></script>
       color: #8dffa1;
     }
 
+    /* Payments Tab Specific */
+    .payment-overview {
+      background-color: #2d1a3a;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .payment-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .payment-stat-item {
+      background-color: #3b2750;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .payment-stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    .payment-stat-label {
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .payouts-history {
+      background-color: #2d1a3a;
+      padding: 1.5rem;
+      border-radius: 12px;
+    }
+
+    .payout-item {
+      background-color: #3b2750;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid transparent;
+    }
+
+    .payout-item.pending {
+      border-left-color: #ffc0cb;
+    }
+
+    .payout-item.completed {
+      border-left-color: #8dffa1;
+    }
+
+    .payout-item.failed {
+      border-left-color: #ff8d8d;
+    }
+
+    .payout-info {
+      flex: 1;
+    }
+
+    .payout-amount {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #8dffa1;
+    }
+
+    .payout-date {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      color: #ffc0cb;
+    }
+
+    .payout-status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .payout-status-badge.pending {
+      background-color: #ffc0cb;
+      color: #1e1b2e;
+    }
+
+    .payout-status-badge.completed {
+      background-color: #8dffa1;
+      color: #1e1b2e;
+    }
+
+    .payout-status-badge.failed {
+      background-color: #ff8d8d;
+      color: #1e1b2e;
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       .header-info {
@@ -2503,6 +2624,16 @@ crossorigin="anonymous"></script>
       .likes-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+
+      .payment-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .payout-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
     }
   </style>
 </head>
@@ -2531,6 +2662,10 @@ crossorigin="anonymous"></script>
           <div id="artLikesCount" class="likes-count">0</div>
           <div class="likes-label">Art</div>
         </div>
+        <div class="likes-item">
+          <div id="extraLikesCount" class="likes-count">0</div>
+          <div class="likes-label">VIP Extras</div>
+        </div>
       </div>
       <div class="total-likes">
         <div id="totalLikesCount" class="total-likes-count">0</div>
@@ -2538,18 +2673,23 @@ crossorigin="anonymous"></script>
       </div>
     </div>
     
-    <p id="vipLikeCount">Loading Likes...</p>
-    <p id="vipEarnings">Earnings: £0.00</p>
+    <!-- Single Earnings Display -->
+    <div class="earnings-display">
+      <div id="earningsAmount" class="earnings-amount">£0.00</div>
+      <div id="earningsStatus" class="earnings-status">Loading earnings...</div>
+    </div>
   </div>
   <a href="submission-terms.html" class="terms-link">
     Submission Terms
   </a>
 </div>
 
-<!-- Payout Section -->
+<!-- Single Payout Section -->
 <div class="payout-section">
-  <button id="payoutRequestBtn">Request Payout</button>
-  <p id="payoutStatus"></p>
+  <button id="mainPayoutBtn" class="payout-btn" style="display: none;">
+    💸 Request Payout
+  </button>
+  <p id="mainPayoutStatus" class="payout-status"></p>
 </div>
 
 <h1>Your Dashboard</h1>
@@ -2707,77 +2847,44 @@ crossorigin="anonymous"></script>
 
 <!-- Payments Tab -->
 <div id="payments-tab" class="tab-content">
-  <div class="payment-section" style="background-color: #2d1a3a; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
-    <h2 style="color: #ff69b4; margin-top: 0; margin-bottom: 1rem; font-size: 1.8rem;">💰 Payment Management</h2>
+  <!-- Payment Overview -->
+  <div class="payment-overview">
+    <h2 style="color: #ff69b4; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.8rem;">💰 Payment Overview</h2>
     
-    <!-- Current Earnings Display -->
-    <div style="background-color: #3b2750; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <div>
-          <div style="color: #ffc0cb; font-size: 0.9rem; margin-bottom: 0.25rem;">Total Likes</div>
-          <div id="paymentsPageLikes" style="color: #ff69b4; font-size: 1.5rem; font-weight: bold;">Loading...</div>
-        </div>
-        <div>
-          <div style="color: #ffc0cb; font-size: 0.9rem; margin-bottom: 0.25rem;">Current Earnings</div>
-          <div id="paymentsEarnings" style="color: #8dffa1; font-size: 1.5rem; font-weight: bold;">£0.00</div>
-        </div>
-        <div>
-          <div style="color: #ffc0cb; font-size: 0.9rem; margin-bottom: 0.25rem;">Payout Status</div>
-          <div id="paymentsStatus" style="color: #ffc0cb; font-size: 1rem; font-weight: bold;">Ready</div>
-        </div>
+    <div class="payment-stats">
+      <div class="payment-stat-item">
+        <div id="paymentTotalLikes" class="payment-stat-value" style="color: #ff69b4;">0</div>
+        <div class="payment-stat-label">Total Likes</div>
+      </div>
+      <div class="payment-stat-item">
+        <div id="paymentEarnings" class="payment-stat-value" style="color: #8dffa1;">£0.00</div>
+        <div class="payment-stat-label">Current Earnings</div>
+      </div>
+      <div class="payment-stat-item">
+        <div id="paymentStatus" class="payment-stat-value" style="color: #ffc0cb;">Ready</div>
+        <div class="payment-stat-label">Status</div>
       </div>
     </div>
     
     <!-- Payout Request Section -->
-    <div style="background-color: #3b2750; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-      <h3 style="color: #ff69b4; margin-top: 0; margin-bottom: 1rem;">Request Payout</h3>
-      <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-        <button id="mainPayoutBtn" style="background-color: #8dffa1; color: #1e1b2e; font-weight: bold; padding: 0.8rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">
-          💸 Request Payout
-        </button>
-        <div id="mainPayoutStatus" style="color: #ffc0cb; font-size: 0.9rem;"></div>
-      </div>
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <button id="paymentTabPayoutBtn" class="payout-btn" style="display: none;">
+        💸 Request Payout
+      </button>
+      <p id="paymentTabStatus" class="payout-status"></p>
       <div style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.8;">
-        Minimum £5.00 required for payout. Earnings are calculated at £0.01 per 10 total likes (all content combined).
+        Minimum £5.00 required for payout. Earnings: £0.01 per 10 total likes from all content.
       </div>
     </div>
   </div>
 
-  <!-- Payment Testing Section -->
-  <div class="payment-section" style="background-color: #2d1a3a; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border: 2px solid #ff69b4;">
-    <h2 style="color: #ff69b4; margin-top: 0; margin-bottom: 1rem; font-size: 1.5rem;">🧪 Payment Testing</h2>
-    
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
-      <button id="testPayoutBtn" style="background-color: #8dffa1; color: #1e1b2e; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
-        💰 Request Real Payout
-      </button>
-      
-      <button id="viewPayoutsBtn" style="background-color: #ffc0cb; color: #1e1b2e; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
-        📋 View All Payouts
-      </button>
-      
-      <button id="clearPayoutsBtn" style="background-color: #ff4c4c; color: white; font-weight: bold; padding: 0.7rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;">
-        🗑️ Clear Test Data
-      </button>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-      <div>
-        <div style="color: #ffc0cb; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: bold;">📜 Activity Log</div>
-        <div id="payoutTestStatus" style="background-color: #3b2750; padding: 1rem; border-radius: 8px; min-height: 150px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;"></div>
+  <!-- Payouts History -->
+  <div class="payouts-history">
+    <h3 style="color: #ff69b4; margin-top: 0; margin-bottom: 1rem;">📋 Payout History</h3>
+    <div id="payoutsHistoryContainer">
+      <div style="text-align: center; opacity: 0.7; padding: 2rem;">
+        <p>No payout requests yet.</p>
       </div>
-      
-      <div>
-        <div style="color: #ffc0cb; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: bold;">💳 Recent Requests</div>
-        <div id="payoutsList" style="background-color: #3b2750; padding: 1rem; border-radius: 8px; min-height: 150px; max-height: 200px; overflow-y: auto;">
-          <div id="payoutsContent" style="font-size: 0.85rem;">Click "View All Payouts" to load...</div>
-        </div>
-      </div>
-    </div>
-    
-    <div style="background-color: #3b2750; padding: 1rem; border-radius: 8px; font-size: 0.85rem; opacity: 0.9;">
-      <strong style="color: #ff69b4;">ℹ️ Testing Info:</strong> This section allows you to test the payout system without affecting real earnings. 
-      Use the test button to create sample payout requests and verify database functionality.
     </div>
   </div>
 </div>
@@ -2846,7 +2953,6 @@ crossorigin="anonymous"></script>
   }
 
   // Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS
-  // Uses same consolidation logic as leaderboard
   async function getAllLikesBreakdown() {
     if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
 
@@ -2863,7 +2969,6 @@ crossorigin="anonymous"></script>
 
       if (extrasError) {
         console.error('Error fetching extras:', extrasError);
-        // Continue without extras if error
       }
 
       // Create a map from extra ID to creator info
@@ -2976,6 +3081,101 @@ crossorigin="anonymous"></script>
     }
   }
 
+  // Main function to update all displays
+  async function updateAllDisplays() {
+    if (!currentUser) return;
+
+    try {
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      
+      if (!username) {
+        // Update all displays with zeros
+        document.getElementById('pageLikesCount').textContent = '0';
+        document.getElementById('videoLikesCount').textContent = '0';
+        document.getElementById('gameLikesCount').textContent = '0';
+        document.getElementById('artLikesCount').textContent = '0';
+        document.getElementById('extraLikesCount').textContent = '0';
+        document.getElementById('totalLikesCount').textContent = '0';
+        document.getElementById('earningsAmount').textContent = '£0.00';
+        document.getElementById('earningsStatus').textContent = 'No username found';
+        document.getElementById('paymentTotalLikes').textContent = '0';
+        document.getElementById('paymentEarnings').textContent = '£0.00';
+        document.getElementById('paymentStatus').textContent = 'No Username';
+        return;
+      }
+
+      // Get comprehensive likes breakdown INCLUDING VIP EXTRAS
+      const likesBreakdown = await getAllLikesBreakdown();
+      const totalLikes = likesBreakdown.total;
+      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+
+      // Update likes breakdown display
+      document.getElementById('pageLikesCount').textContent = likesBreakdown.page;
+      document.getElementById('videoLikesCount').textContent = likesBreakdown.videos;
+      document.getElementById('gameLikesCount').textContent = likesBreakdown.games;
+      document.getElementById('artLikesCount').textContent = likesBreakdown.art;
+      document.getElementById('extraLikesCount').textContent = likesBreakdown.extras;
+      document.getElementById('totalLikesCount').textContent = likesBreakdown.total;
+
+      // Update earnings display
+      document.getElementById('earningsAmount').textContent = `£${earningsValue.toFixed(2)}`;
+      
+      // Update payments tab
+      document.getElementById('paymentTotalLikes').textContent = `${totalLikes}`;
+      document.getElementById('paymentEarnings').textContent = `£${earningsValue.toFixed(2)}`;
+
+      // Check for existing pending requests
+      const { data: existingRequests, error: reqError } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (reqError) throw reqError;
+
+      const mainPayoutBtn = document.getElementById('mainPayoutBtn');
+      const paymentTabPayoutBtn = document.getElementById('paymentTabPayoutBtn');
+      const mainPayoutStatus = document.getElementById('mainPayoutStatus');
+      const paymentTabStatus = document.getElementById('paymentTabStatus');
+      const earningsStatus = document.getElementById('earningsStatus');
+      const paymentStatus = document.getElementById('paymentStatus');
+
+      if (existingRequests.length > 0) {
+        // Has pending request
+        mainPayoutBtn.style.display = 'none';
+        paymentTabPayoutBtn.style.display = 'none';
+        mainPayoutStatus.textContent = 'You have a pending payout request.';
+        paymentTabStatus.textContent = 'You have a pending payout request.';
+        earningsStatus.textContent = 'Payout request pending';
+        paymentStatus.textContent = 'Pending';
+        paymentStatus.style.color = '#ffc0cb';
+      } else if (earningsValue >= 5.0) {
+        // Ready for payout
+        mainPayoutBtn.style.display = 'inline-block';
+        paymentTabPayoutBtn.style.display = 'inline-block';
+        mainPayoutStatus.textContent = '';
+        paymentTabStatus.textContent = '';
+        earningsStatus.textContent = 'Ready for payout!';
+        paymentStatus.textContent = 'Ready';
+        paymentStatus.style.color = '#8dffa1';
+      } else {
+        // Below minimum
+        mainPayoutBtn.style.display = 'none';
+        paymentTabPayoutBtn.style.display = 'none';
+        const needMore = Math.ceil((5 - earningsValue) * 10);
+        mainPayoutStatus.textContent = `Need ${needMore} more total likes to reach £5.00 minimum.`;
+        paymentTabStatus.textContent = `Need ${needMore} more total likes to reach £5.00 minimum.`;
+        earningsStatus.textContent = `Need ${needMore} more likes for payout`;
+        paymentStatus.textContent = 'Below Min';
+        paymentStatus.style.color = '#ff8d8d';
+      }
+
+    } catch (error) {
+      console.error('Error updating displays:', error);
+      document.getElementById('earningsStatus').textContent = 'Error loading data';
+    }
+  }
+
   // Profile Functions
   async function loadProfile() {
     if (!currentUser) return;
@@ -3054,12 +3254,6 @@ crossorigin="anonymous"></script>
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
-      // Get VIP extras count
-      const { count: extrasCount } = await supabase
-        .from('vip_extras')
-        .select('*', { count: 'exact', head: true })
-        .eq('creator_name', username);
-
       // Get all likes breakdown (including VIP extras)
       const likesBreakdown = await getAllLikesBreakdown();
 
@@ -3067,13 +3261,11 @@ crossorigin="anonymous"></script>
       const statGames = document.getElementById('statGames');
       const statVideos = document.getElementById('statVideos');
       const statArt = document.getElementById('statArt');
-      const statExtras = document.getElementById('statExtras');
       const statLikes = document.getElementById('statLikes');
 
       if (statGames) statGames.textContent = gamesCount || 0;
       if (statVideos) statVideos.textContent = videosCount || 0;
       if (statArt) statArt.textContent = artCount || 0;
-      if (statExtras) statExtras.textContent = extrasCount || 0;
       if (statLikes) statLikes.textContent = likesBreakdown.total;
 
     } catch (error) {
@@ -3158,91 +3350,6 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // Enhanced VIP/Earnings Functions with ALL likes calculation INCLUDING VIP EXTRAS
-  async function loadVipPageLikes() {
-    if (!currentUser) return;
-
-    try {
-      const vipLikeCountEl = document.getElementById('vipLikeCount');
-      const vipEarningsEl = document.getElementById('vipEarnings');
-      const payoutBtn = document.getElementById('payoutRequestBtn');
-      const payoutStatus = document.getElementById('payoutStatus');
-
-      // Update the breakdown display elements
-      const pageLikesCountEl = document.getElementById('pageLikesCount');
-      const videoLikesCountEl = document.getElementById('videoLikesCount');
-      const gameLikesCountEl = document.getElementById('gameLikesCount');
-      const artLikesCountEl = document.getElementById('artLikesCount');
-      const extraLikesCountEl = document.getElementById('extraLikesCount');
-      const totalLikesCountEl = document.getElementById('totalLikesCount');
-
-      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-
-      if (!username) {
-        vipLikeCountEl.textContent = `Total Likes: 0 (No username)`;
-        vipEarningsEl.style.display = 'none';
-        payoutBtn.style.display = 'none';
-        payoutStatus.textContent = '';
-        
-        // Update breakdown
-        if (pageLikesCountEl) pageLikesCountEl.textContent = '0';
-        if (videoLikesCountEl) videoLikesCountEl.textContent = '0';
-        if (gameLikesCountEl) gameLikesCountEl.textContent = '0';
-        if (artLikesCountEl) artLikesCountEl.textContent = '0';
-        if (extraLikesCountEl) extraLikesCountEl.textContent = '0';
-        if (totalLikesCountEl) totalLikesCountEl.textContent = '0';
-        return;
-      }
-
-      // Get comprehensive likes breakdown INCLUDING VIP EXTRAS
-      const likesBreakdown = await getAllLikesBreakdown();
-
-      // Update breakdown display
-      if (pageLikesCountEl) pageLikesCountEl.textContent = likesBreakdown.page;
-      if (videoLikesCountEl) videoLikesCountEl.textContent = likesBreakdown.videos;
-      if (gameLikesCountEl) gameLikesCountEl.textContent = likesBreakdown.games;
-      if (artLikesCountEl) artLikesCountEl.textContent = likesBreakdown.art;
-      if (extraLikesCountEl) extraLikesCountEl.textContent = likesBreakdown.extras;
-      if (totalLikesCountEl) totalLikesCountEl.textContent = likesBreakdown.total;
-
-      // Update main display with VIP extras included
-      const totalLikes = likesBreakdown.total;
-      vipLikeCountEl.textContent = `Total Likes: ${totalLikes} (Page: ${likesBreakdown.page}, Videos: ${likesBreakdown.videos}, Games: ${likesBreakdown.games}, Art: ${likesBreakdown.art}, Extras: ${likesBreakdown.extras})`;
-
-      // Calculate earnings based on TOTAL likes INCLUDING VIP EXTRAS
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-
-      if (earningsValue > 0) {
-        vipEarningsEl.textContent = `Earnings: £${earningsValue.toFixed(2)} (from ${totalLikes} total likes including VIP extras)`;
-        vipEarningsEl.style.display = 'block';
-      } else {
-        vipEarningsEl.style.display = 'none';
-      }
-
-      const { data: existingRequests, error: reqError } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
-
-      if (reqError) throw reqError;
-
-      if (existingRequests.length > 0) {
-        payoutBtn.style.display = 'none';
-        payoutStatus.textContent = 'You have a pending payout request.';
-      } else if (earningsValue >= 5.0) {
-        payoutBtn.style.display = 'inline-block';
-        payoutStatus.textContent = '';
-      } else {
-        payoutBtn.style.display = 'none';
-        payoutStatus.textContent = `Earnings (£${earningsValue.toFixed(2)}) must reach £5.00 to request payout. Need ${Math.ceil((5 - earningsValue) * 10)} more total likes (including VIP extras).`;
-      }
-    } catch (error) {
-      console.error('Error loading data:', error.message);
-      document.getElementById('payoutStatus').textContent = 'Error loading stats.';
-    }
-  }
-
   // Games Functions
   async function fetchGames() {
     const { data, error } = await supabase
@@ -3299,8 +3406,8 @@ crossorigin="anonymous"></script>
         } else {
           showMessage('gameFormMessage', 'Game removed.', 'success');
           loadGames();
-          loadProfileStats(); // Update stats
-          loadVipPageLikes(); // Update likes display
+          loadProfileStats();
+          updateAllDisplays();
         }
       };
 
@@ -3364,8 +3471,8 @@ crossorigin="anonymous"></script>
         } else {
           showMessage('videoFormMessage', 'Video removed.', 'success');
           loadVideos();
-          loadProfileStats(); // Update stats
-          loadVipPageLikes(); // Update likes display
+          loadProfileStats();
+          updateAllDisplays();
         }
       };
 
@@ -3425,8 +3532,8 @@ crossorigin="anonymous"></script>
         } else {
           showMessage('artFormMessage', 'Art removed.', 'success');
           loadArt();
-          loadProfileStats(); // Update stats
-          loadVipPageLikes(); // Update likes display
+          loadProfileStats();
+          updateAllDisplays();
         }
       };
 
@@ -3435,252 +3542,52 @@ crossorigin="anonymous"></script>
     });
   }
 
-  // Payment Testing Functions
-  function logToTestStatus(message, type = 'info') {
-    const statusDiv = document.getElementById('payoutTestStatus');
-    const timestamp = new Date().toLocaleTimeString();
-    const colorMap = {
-      'info': '#8dffa1',
-      'error': '#ff8d8d',
-      'success': '#8dffa1',
-      'warning': '#ffc0cb'
-    };
-    
-    const logEntry = document.createElement('div');
-    logEntry.style.color = colorMap[type] || '#fefefe';
-    logEntry.style.marginBottom = '0.25rem';
-    logEntry.innerHTML = `<span style="opacity: 0.7;">[${timestamp}]</span> ${message}`;
-    
-    statusDiv.appendChild(logEntry);
-    statusDiv.scrollTop = statusDiv.scrollHeight;
-  }
-
-  async function updatePaymentsTabDisplay() {
-    if (!currentUser) return;
-
+  // Payout Functions
+  async function loadPayoutsHistory() {
     try {
-      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      
-      if (!username) {
-        document.getElementById('paymentsPageLikes').textContent = '0';
-        document.getElementById('paymentsEarnings').textContent = '£0.00';
-        document.getElementById('paymentsStatus').textContent = 'No Username';
-        return;
-      }
-
-      // Get comprehensive likes breakdown for payments tab INCLUDING VIP EXTRAS
-      const likesBreakdown = await getAllLikesBreakdown();
-      const totalLikes = likesBreakdown.total;
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-
-      document.getElementById('paymentsPageLikes').textContent = `${totalLikes} (P:${likesBreakdown.page}, V:${likesBreakdown.videos}, G:${likesBreakdown.games}, A:${likesBreakdown.art}, E:${likesBreakdown.extras})`;
-      document.getElementById('paymentsEarnings').textContent = `£${earningsValue.toFixed(2)}`;
-
-      const { data: existingRequests, error: reqError } = await supabase
+      const { data, error } = await supabase
         .from('payout_requests')
         .select('*')
         .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
+        .order('requested_at', { ascending: false });
 
-      if (reqError) throw reqError;
+      if (error) throw error;
 
-      const mainPayoutBtn = document.getElementById('mainPayoutBtn');
-      const mainPayoutStatus = document.getElementById('paymentsStatus');
-
-      if (existingRequests.length > 0) {
-        mainPayoutBtn.style.display = 'none';
-        mainPayoutStatus.textContent = 'Pending Request';
-        mainPayoutStatus.style.color = '#ffc0cb';
-        document.getElementById('mainPayoutStatus').textContent = 'You have a pending payout request.';
-      } else if (earningsValue >= 5.0) {
-        mainPayoutBtn.style.display = 'inline-block';
-        mainPayoutStatus.textContent = 'Ready for Payout';
-        mainPayoutStatus.style.color = '#8dffa1';
-        document.getElementById('mainPayoutStatus').textContent = '';
-      } else {
-        mainPayoutBtn.style.display = 'none';
-        mainPayoutStatus.textContent = 'Below Minimum';
-        mainPayoutStatus.style.color = '#ff8d8d';
-        document.getElementById('mainPayoutStatus').textContent = `Need £${(5 - earningsValue).toFixed(2)} more (${Math.ceil((5 - earningsValue) * 10)} more total likes including VIP extras) to request payout.`;
+      const container = document.getElementById('payoutsHistoryContainer');
+      
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div style="text-align: center; opacity: 0.7; padding: 2rem;"><p>No payout requests yet.</p></div>';
+        return;
       }
+
+      let html = '';
+      data.forEach(payout => {
+        const statusClass = payout.status.toLowerCase();
+        html += `
+          <div class="payout-item ${statusClass}">
+            <div class="payout-info">
+              <div class="payout-amount">£${parseFloat(payout.amount).toFixed(2)}</div>
+              <div class="payout-date">Requested: ${new Date(payout.requested_at).toLocaleDateString()}</div>
+              ${payout.completed_at ? `<div class="payout-date">Completed: ${new Date(payout.completed_at).toLocaleDateString()}</div>` : ''}
+            </div>
+            <div class="payout-status-badge ${statusClass}">${payout.status}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
 
     } catch (error) {
-      console.error('Error updating payments display:', error);
+      console.error('Error loading payouts history:', error);
     }
   }
 
-  async function testPayoutRequest() {
-    const testBtn = document.getElementById('testPayoutBtn');
-    testBtn.disabled = true;
+  async function requestPayout() {
+    const mainBtn = document.getElementById('mainPayoutBtn');
+    const paymentBtn = document.getElementById('paymentTabPayoutBtn');
     
-    try {
-      logToTestStatus('💰 Starting real payout request...', 'info');
-      
-      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) {
-        logToTestStatus(`❌ Error: Username not found`, 'error');
-        testBtn.disabled = false;
-        return;
-      }
-
-      // Calculate actual earnings using ALL likes INCLUDING VIP EXTRAS
-      const likesBreakdown = await getAllLikesBreakdown();
-      const totalLikes = likesBreakdown.total;
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-      
-      logToTestStatus(`📊 Total likes: ${totalLikes} (Page: ${likesBreakdown.page}, Videos: ${likesBreakdown.videos}, Games: ${likesBreakdown.games}, Art: ${likesBreakdown.art}, Extras: ${likesBreakdown.extras}), Earnings: £${earningsValue.toFixed(2)}`, 'info');
-
-      if (earningsValue < 5.0) {
-        logToTestStatus(`❌ Insufficient earnings: Need £5.00 minimum, have £${earningsValue.toFixed(2)}`, 'error');
-        testBtn.disabled = false;
-        return;
-      }
-
-      // Check for existing pending requests
-      const { data: existingRequests, error: reqError } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
-
-      if (reqError) {
-        logToTestStatus(`❌ Error checking pending requests: ${reqError.message}`, 'error');
-        throw reqError;
-      }
-
-      if (existingRequests.length > 0) {
-        logToTestStatus(`❌ Already have pending payout request`, 'error');
-        testBtn.disabled = false;
-        return;
-      }
-      
-      // Insert real payout request based on actual earnings from ALL content INCLUDING VIP EXTRAS
-      const payoutData = {
-        user_id: currentUser.id,
-        amount: earningsValue,
-        status: 'pending',
-        requested_at: new Date().toISOString()
-      };
-      
-      logToTestStatus(`📝 Submitting real payout: £${payoutData.amount} for user ${currentUser.email} (based on ${totalLikes} total likes including VIP extras)`, 'info');
-      
-      const { data, error } = await supabase
-        .from('payout_requests')
-        .insert([payoutData])
-        .select();
-      
-      if (error) {
-        logToTestStatus(`❌ Error: ${error.message}`, 'error');
-        throw error;
-      }
-      
-      logToTestStatus(`✅ Real payout request created successfully!`, 'success');
-      logToTestStatus(`📊 Request ID: ${data[0].id}, Amount: £${parseFloat(data[0].amount).toFixed(2)}`, 'success');
-      
-      // Refresh the payouts list and main display
-      await viewAllPayouts();
-      await updatePaymentsTabDisplay();
-      await loadVipPageLikes(); // Update header display too
-      
-    } catch (err) {
-      logToTestStatus(`💥 Request failed: ${err.message}`, 'error');
-    }
-    
-    testBtn.disabled = false;
-  }
-
-  async function viewAllPayouts() {
-    try {
-      logToTestStatus('📋 Fetching all payout requests...', 'info');
-      
-      const { data, error } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('requested_at', { ascending: false })
-        .limit(10);
-      
-      if (error) {
-        logToTestStatus(`❌ Error fetching payouts: ${error.message}`, 'error');
-        throw error;
-      }
-      
-      const payoutsContent = document.getElementById('payoutsContent');
-      
-      if (data.length === 0) {
-        payoutsContent.innerHTML = '<div style="opacity: 0.7; text-align: center; padding: 1rem;">No payout requests found.</div>';
-        logToTestStatus('📭 No payout requests found for this user', 'info');
-      } else {
-        let html = '';
-        data.forEach((payout, index) => {
-          const statusColor = payout.status === 'pending' ? '#ffc0cb' : 
-                            payout.status === 'completed' ? '#8dffa1' : '#ff8d8d';
-          
-          html += `
-            <div style="margin-bottom: 0.75rem; padding: 0.75rem; background-color: #2d1a3a; border-radius: 6px; border-left: 3px solid ${statusColor};">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                <strong style="color: #ff69b4;">#${payout.id}</strong>
-                <span style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">${payout.status}</span>
-              </div>
-              <div style="color: #8dffa1; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.25rem;">£${parseFloat(payout.amount).toFixed(2)}</div>
-              <div style="font-size: 0.8rem; opacity: 0.8;">Requested: ${new Date(payout.requested_at).toLocaleDateString()}</div>
-              ${payout.completed_at ? `<div style="font-size: 0.8rem; opacity: 0.8;">Completed: ${new Date(payout.completed_at).toLocaleDateString()}</div>` : ''}
-            </div>
-          `;
-        });
-        
-        payoutsContent.innerHTML = html;
-        logToTestStatus(`📊 Found ${data.length} payout request(s)`, 'success');
-      }
-      
-    } catch (err) {
-      logToTestStatus(`💥 Failed to fetch payouts: ${err.message}`, 'error');
-    }
-  }
-
-  async function clearTestPayouts() {
-    const clearBtn = document.getElementById('clearPayoutsBtn');
-    
-    if (!confirm('⚠️ This will delete ALL your payout requests. Are you sure?')) {
-      return;
-    }
-    
-    clearBtn.disabled = true;
-    
-    try {
-      logToTestStatus('🗑️ Clearing all payout requests...', 'warning');
-      
-      const { error } = await supabase
-        .from('payout_requests')
-        .delete()
-        .eq('user_id', currentUser.id);
-      
-      if (error) {
-        logToTestStatus(`❌ Error clearing payouts: ${error.message}`, 'error');
-        throw error;
-      }
-      
-      logToTestStatus('✅ All payout requests cleared successfully!', 'success');
-      
-      // Refresh the display
-      document.getElementById('payoutsContent').innerHTML = '<div style="opacity: 0.7; text-align: center; padding: 1rem;">No payout requests found.</div>';
-      await updatePaymentsTabDisplay();
-      await loadVipPageLikes(); // Refresh the header payout button status
-      
-    } catch (err) {
-      logToTestStatus(`💥 Failed to clear payouts: ${err.message}`, 'error');
-    }
-    
-    clearBtn.disabled = false;
-  }
-
-  // Main payout request function for the payments tab
-  async function requestMainPayout() {
-    const mainPayoutBtn = document.getElementById('mainPayoutBtn');
-    const mainPayoutStatus = document.getElementById('mainPayoutStatus');
-    
-    mainPayoutBtn.disabled = true;
-    mainPayoutStatus.textContent = '';
+    mainBtn.disabled = true;
+    paymentBtn.disabled = true;
 
     try {
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
@@ -3692,8 +3599,9 @@ crossorigin="anonymous"></script>
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
       if (earningsValue < 5) {
-        mainPayoutStatus.textContent = `Minimum £5 earnings required for payout. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
-        mainPayoutBtn.disabled = false;
+        const message = `Minimum £5 earnings required. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+        document.getElementById('mainPayoutStatus').textContent = message;
+        document.getElementById('paymentTabStatus').textContent = message;
         return;
       }
 
@@ -3705,8 +3613,9 @@ crossorigin="anonymous"></script>
         .eq('status', 'pending');
 
       if (existingRequests.length > 0) {
-        mainPayoutStatus.textContent = 'You have a pending payout request.';
-        mainPayoutBtn.disabled = false;
+        const message = 'You already have a pending payout request.';
+        document.getElementById('mainPayoutStatus').textContent = message;
+        document.getElementById('paymentTabStatus').textContent = message;
         return;
       }
 
@@ -3720,25 +3629,22 @@ crossorigin="anonymous"></script>
 
       if (error) throw error;
 
-      mainPayoutStatus.textContent = `Payout request submitted successfully! £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
-      mainPayoutStatus.style.color = '#8dffa1';
+      const successMessage = `Payout request submitted! £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+      document.getElementById('mainPayoutStatus').textContent = successMessage;
+      document.getElementById('paymentTabStatus').textContent = successMessage;
       
-      // Refresh displays
-      await updatePaymentsTabDisplay();
-      await loadVipPageLikes();
-      
-      // Log to test status if visible
-      if (document.getElementById('payments-tab').classList.contains('active')) {
-        logToTestStatus(`💰 Real payout request submitted: £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras)`, 'success');
-        await viewAllPayouts();
-      }
+      // Refresh all displays
+      await updateAllDisplays();
+      await loadPayoutsHistory();
       
     } catch (err) {
-      mainPayoutStatus.textContent = 'Error submitting payout request: ' + err.message;
-      mainPayoutStatus.style.color = '#ff8d8d';
+      const errorMessage = 'Error submitting payout request: ' + err.message;
+      document.getElementById('mainPayoutStatus').textContent = errorMessage;
+      document.getElementById('paymentTabStatus').textContent = errorMessage;
+    } finally {
+      mainBtn.disabled = false;
+      paymentBtn.disabled = false;
     }
-
-    mainPayoutBtn.disabled = false;
   }
 
   // Form Event Listeners
@@ -3772,8 +3678,8 @@ crossorigin="anonymous"></script>
       showMessage('gameFormMessage', 'Game added successfully!', 'success');
       document.getElementById('addGameForm').reset();
       loadGames();
-      loadProfileStats(); // Update stats
-      loadVipPageLikes(); // Update likes display
+      loadProfileStats();
+      updateAllDisplays();
     }
     submitBtn.disabled = false;
   };
@@ -3800,8 +3706,8 @@ crossorigin="anonymous"></script>
       showMessage('videoFormMessage', 'Video added successfully!', 'success');
       document.getElementById('addVideoForm').reset();
       loadVideos();
-      loadProfileStats(); // Update stats
-      loadVipPageLikes(); // Update likes display
+      loadProfileStats();
+      updateAllDisplays();
     }
     submitBtn.disabled = false;
   };
@@ -3828,84 +3734,26 @@ crossorigin="anonymous"></script>
       showMessage('artFormMessage', 'Art added successfully!', 'success');
       document.getElementById('addArtForm').reset();
       loadArt();
-      loadProfileStats(); // Update stats
-      loadVipPageLikes(); // Update likes display
+      loadProfileStats();
+      updateAllDisplays();
     }
     submitBtn.disabled = false;
   };
 
-  // Payment Testing Event Listeners
-  document.getElementById('testPayoutBtn').addEventListener('click', testPayoutRequest);
-  document.getElementById('viewPayoutsBtn').addEventListener('click', viewAllPayouts);
-  document.getElementById('clearPayoutsBtn').addEventListener('click', clearTestPayouts);
-  document.getElementById('mainPayoutBtn').addEventListener('click', requestMainPayout);
-  document.getElementById('payoutRequestBtn').addEventListener('click', async () => {
-    const payoutBtn = document.getElementById('payoutRequestBtn');
-    const payoutStatus = document.getElementById('payoutStatus');
-    
-    payoutBtn.disabled = true;
-    payoutStatus.textContent = '';
-
-    try {
-      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) throw new Error('Username not found.');
-
-      // Use ALL likes INCLUDING VIP EXTRAS for earnings calculation
-      const likesBreakdown = await getAllLikesBreakdown();
-      const totalLikes = likesBreakdown.total;
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-
-      if (earningsValue < 5) {
-        payoutStatus.textContent = `Minimum £5 earnings required for payout. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
-        payoutBtn.disabled = false;
-        return;
-      }
-
-      const { data: existingRequests } = await supabase
-        .from('payout_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'pending');
-
-      if (existingRequests.length > 0) {
-        payoutStatus.textContent = 'You have a pending payout request.';
-        payoutBtn.disabled = false;
-        return;
-      }
-
-      const { error } = await supabase.from('payout_requests').insert([{
-        user_id: currentUser.id,
-        amount: earningsValue,
-        status: 'pending',
-        requested_at: new Date().toISOString()
-      }]);
-
-      if (error) throw error;
-
-      payoutStatus.textContent = `Payout request submitted! £${earningsValue.toFixed(2)} from ${totalLikes} total likes (including VIP extras).`;
-      payoutBtn.style.display = 'none';
-      
-      // Refresh displays
-      await loadVipPageLikes();
-      await updatePaymentsTabDisplay();
-      
-    } catch (err) {
-      payoutStatus.textContent = 'Error submitting payout request: ' + err.message;
-    }
-
-    payoutBtn.disabled = false;
-  });
+  // Event Listeners for Payout Buttons
+  document.getElementById('mainPayoutBtn').addEventListener('click', requestPayout);
+  document.getElementById('paymentTabPayoutBtn').addEventListener('click', requestPayout);
 
   // Initialize
   (async () => {
     if (!(await checkAuth())) return;
 
-    await loadVipPageLikes();
+    await updateAllDisplays();
     await loadProfile();
     await loadGames();
     await loadVideos();
     await loadArt();
-    await updatePaymentsTabDisplay();
+    await loadPayoutsHistory();
   })();
 
 </script>
@@ -4077,6 +3925,3 @@ if (document.readyState === 'loading') {
 
 </body>
 </html>
-
-
-
