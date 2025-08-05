@@ -2089,451 +2089,654 @@ crossorigin="anonymous"></script>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BrownDogGames - Videos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
+  <title>VIP Members Dashboard</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+    
     body {
-      font-family: 'Rubik Mono One', sans-serif;
-      background-color: #1b1b2e;
+      background-color: #1e1b2e;
       background-image: linear-gradient(135deg, #361c3e, #1a1328);
       color: #fefefe;
-      margin: 0;
+      font-family: 'Rubik Mono One', sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
       padding: 20px;
+      line-height: 1.6;
+      text-align: left;
     }
-
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
+    
+    .vip-header {
       text-align: center;
-    }
-
-    h1 {
-      color: #ff4f9f;
       margin-bottom: 2rem;
+      position: relative;
+    }
+    
+    .vip-crown {
+      font-size: 4rem;
+      margin-bottom: 0.5rem;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    h1 {
+      color: #ffd700;
+      font-size: 3rem;
+      text-shadow: 3px 3px 0 #000, 0 0 20px #ffd700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, #ffd700, #ffed4a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .vip-subtitle {
+      color: #ff8edb;
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .loading {
+      text-align: center;
+      color: #ffd700;
+      font-size: 1.2rem;
+      margin: 2rem 0;
+    }
+    
+    .vip-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .vip-stat-card {
+      background: linear-gradient(145deg, #2d1a3a, #3b2750);
+      border: 2px solid #ffd700;
+      border-radius: 15px;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .vip-stat-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+      transform: rotate(45deg);
+      animation: shimmer 3s linear infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-200%) translateY(-200%) rotate(45deg); }
+      100% { transform: translateX(200%) translateY(200%) rotate(45deg); }
+    }
+    
+    .vip-stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(255, 215, 0, 0.3);
+    }
+    
+    .vip-stat-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .vip-stat-value {
+      color: #ffd700;
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .vip-stat-label {
+      color: #ff8edb;
+      font-size: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .vip-perks-section {
+      background: linear-gradient(145deg, #2d1a3a, #3b2750);
+      border: 2px solid #ff69b4;
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .vip-perks-title {
+      color: #ffd700;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
       text-shadow: 2px 2px 0 #000;
     }
-
-    .video-entry {
-      text-align: left;
-      background: #2f1a39;
-      border: 3px solid #ff4f9f;
-      border-radius: 12px;
-      padding: 20px 25px;
-      margin-bottom: 40px;
-      box-shadow: 0 0 10px #ff4f9faa;
+    
+    .perks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
     }
-
-    .video-entry h2 {
-      color: #ff4f9f;
-      margin-top: 0;
-      text-shadow: 1px 1px 0 #000;
+    
+    .perk-item {
+      background: linear-gradient(135deg, #3b2750, #4a3157);
+      border: 1px solid #ff69b4;
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
     }
-
-    .video-entry p {
-      font-size: 1.1em;
+    
+    .perk-item:hover {
+      transform: scale(1.05);
+      border-color: #ffd700;
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+    }
+    
+    .perk-emoji {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .perk-title {
+      color: #ff69b4;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .perk-desc {
+      color: #ffc0cb;
+      font-size: 0.9rem;
       line-height: 1.4;
-      margin-bottom: 20px;
     }
-
-    iframe {
-      width: 100%;
-      height: 340px;
-      border-radius: 12px;
-      border: none;
-      margin-bottom: 20px;
-      box-shadow: 0 0 15px #ff4f9faa;
+    
+    .vip-members-section {
+      background: linear-gradient(145deg, #2d1a3a, #3b2750);
+      border: 2px solid #8dffa1;
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
     }
-
-    .btn {
-      display: inline-block;
-      margin-right: 10px;
-      padding: 12px 30px;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.1em;
+    
+    .members-title {
+      color: #8dffa1;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 0 #000;
+    }
+    
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .member-card {
+      background: linear-gradient(135deg, #3b2750, #4a3157);
+      border: 1px solid #8dffa1;
       border-radius: 10px;
-      box-shadow: 0 0 8px #ff4f9faa;
-      transition: background-color 0.3s ease;
-      cursor: pointer;
-      user-select: none;
-      border: none;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
     }
-
-    .btn:hover {
-      background-color: #e03e8f;
-    }
-
-    a.btn-home {
-      display: inline-block;
-      margin-top: 30px;
-      padding: 12px 30px;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.1em;
-      border-radius: 10px;
-      box-shadow: 0 0 8px #ff4f9faa;
-      transition: background-color 0.3s ease;
-    }
-
-    a.btn-home:hover {
-      background-color: #e03e8f;
-    }
-
-    @media (max-width: 480px) {
-      .video-entry p {
-        font-size: 1em;
-      }
-      .btn, a.btn-home {
-        font-size: 1em;
-        padding: 10px 20px;
-      }
-      iframe {
-        height: 220px;
-      }
-    }
-
-    /* Modal Styles */
-    #shareModal {
-      display: none; /* Ensure modal is hidden by default */
-      position: fixed;
-      z-index: 1000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.7);
+    
+    .member-status {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #8dffa1;
+      color: #1e1b2e;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.8rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
     }
-    #shareModal .modal-content {
-      background: #2f1a39;
-      border-radius: 12px;
-      padding: 20px 25px;
-      max-width: 500px;
-      box-shadow: 0 0 15px #ff4f9faa;
-      color: #fefefe;
-      font-family: 'Rubik Mono One', sans-serif;
-      text-align: left;
+    
+    .member-username {
+      color: #8dffa1;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
     }
-    #shareModal h3 {
-      margin-top: 0;
-      color: #ff4f9f;
-      text-shadow: 1px 1px 0 #000;
+    
+    .member-since {
+      color: #ffc0cb;
+      font-size: 0.8rem;
     }
-    #shareModal label {
-      font-weight: bold;
-      margin-top: 15px;
-      display: block;
+    
+    .member-expires {
+      color: #ff8edb;
+      font-size: 0.8rem;
     }
-    #shareModal textarea {
-      width: 100%;
-      font-family: monospace;
-      font-size: 1em;
-      margin-top: 5px;
-      padding: 8px;
+    
+    .vip-message-center {
+      background: linear-gradient(145deg, #2d1a3a, #3b2750);
+      border: 2px solid #ff8d8d;
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .message-title {
+      color: #ff8d8d;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 0 #000;
+    }
+    
+    .message-input-group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .message-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.8rem;
+      background: #3b2750;
+      border: 2px solid #ff69b4;
       border-radius: 8px;
-      border: none;
-      resize: vertical;
-      background: #1a1328;
       color: #fefefe;
-      box-shadow: inset 0 0 5px #ff4f9f88;
+      font-family: inherit;
     }
-    #shareModal button.close-btn {
-      background: #ff4f9f;
+    
+    .message-send-btn {
+      background: linear-gradient(45deg, #ff69b4, #ff8edb);
       border: none;
-      color: #1b1b2e;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      color: #1e1b2e;
       font-weight: bold;
-      padding: 10px 20px;
-      border-radius: 10px;
-      margin-top: 20px;
       cursor: pointer;
-      box-shadow: 0 0 8px #ff4f9faa;
-      float: right;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
     }
-    #shareModal button.close-btn:hover {
-      background: #e03e8f;
+    
+    .message-send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
     }
-
-    /* Embed mode: when ?embed=1 is passed in the URL, hide all clutter */
-    .embed-mode .btn,
-    .embed-mode .btn-home,
-    .embed-mode h1,
-    .embed-mode .video-entry h2,
-    .embed-mode .video-entry p {
-      display: none;
+    
+    .message-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ff69b4;
+      border-radius: 8px;
+      padding: 1rem;
+      background: rgba(59, 39, 80, 0.5);
     }
-
-    .embed-mode .video-entry {
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      background: none;
+    
+    .message-item {
+      background: #3b2750;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid #ff69b4;
     }
-
-    .embed-mode iframe {
-      border-radius: 0;
-      box-shadow: none;
-      height: 100vh;
+    
+    .message-sender {
+      color: #ff8edb;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .message-content {
+      color: #ffc0cb;
+      margin-bottom: 0.5rem;
+    }
+    
+    .message-time {
+      color: #999;
+      font-size: 0.8rem;
+    }
+    
+    @media (max-width: 768px) {
+      .vip-stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .perks-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .members-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+      
+      .message-input-group {
+        flex-direction: column;
+      }
+      
+      h1 {
+        font-size: 2.2rem;
+      }
     }
   </style>
 </head>
 <body>
-
-<div class="container" id="mainContainer">
-  <h1>📺 Videos</h1>
-
-  <!-- Existing Video Entry: Andrew Tate’s Alpha F*ckfest -->
-  <div class="video-entry">
-    <h2>Andrew Tate’s Alpha F*ckfest</h2>
-    <p>Welcome to Andrew Tate’s Alpha F*ckfest—the ultimate multiplayer nightclub battle royale, where only the strongest, most confident players will dominate the nightlife and win the game.</p>
-    <iframe id="videoFrame" src="https://drive.google.com/file/d/1v61g_dGXdLQLmtPEoazFAFXAm2ypnSAg/preview" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    <button class="btn shareBtn">Share</button>
+  <div class="vip-header">
+    <div class="vip-crown">👑</div>
+    <h1>VIP MEMBERS ONLY</h1>
+    <p class="vip-subtitle">Welcome to your exclusive VIP dashboard</p>
   </div>
 
-  <a href="index.html" class="btn-home">🏠 Back to Home</a>
-</div>
-
-<!-- Share Modal -->
-<div id="shareModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
-  <div class="modal-content">
-    <h3 id="modalTitle">Share this video</h3>
-    <label for="shareLink">Share Link:</label>
-    <textarea id="shareLink" rows="2" readonly></textarea>
-    <label for="embedCode">Embed Code:</label>
-    <textarea id="embedCode" rows="4" readonly></textarea>
-    <button class="close-btn" id="closeModalBtn">Close</button>
+  <div class="loading" id="loading">
+    ✨ Loading your VIP experience...
   </div>
-</div>
 
-<script>
-  // Get all share buttons using their class
-  const shareBtns = document.querySelectorAll('.shareBtn');
-  const modal = document.getElementById('shareModal');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const shareLinkTextarea = document.getElementById('shareLink');
-  const embedCodeTextarea = document.getElementById('embedCode');
-
-  // Ensure modal is hidden on page load
-  modal.style.display = 'none';
-
-  // Create an array of video objects with title and video URL
-  const videos = [
-    {
-      title: "Andrew Tate’s Alpha F*ckfest",
-      url: "https://drive.google.com/file/d/16hiGBDvp8Pkaeu8ndDycppUNPVsoKMfs/preview"
-    },
-    {
-      title: "Bare Back Boxing",
-      url: "https://drive.google.com/file/d/1PRUtC3IJcBneZ73hYxm5CVu8GD8ArwCU/preview"
-    },
-    {
-      title: "Gay House",
-      url: "https://drive.google.com/file/d/1D0mNWv92QD_kpCy5CPYvjUvEERsSkFiQ/preview"
-    }
-  ]; 
-  
-  // Add event listeners to each Share button
-  shareBtns.forEach((btn, index) => {
-    btn.addEventListener('click', () => {
-      const video = videos[index]; // Get the corresponding video object
-
-      // Set the Share Link and Embed Code for the clicked video
-      const baseURL = window.location.href.split('?')[0];
-      const embedURL = `${baseURL}?embed=1`;
-
-      shareLinkTextarea.value = baseURL;
-      embedCodeTextarea.value = `<iframe src="${embedURL}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`;
-
-      modal.style.display = 'flex'; // Show the modal
-      shareLinkTextarea.focus();
-      shareLinkTextarea.select();
-    });
-  });
-
-  // Close modal when close button is clicked
-  closeModalBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-  });
-
-  // Close modal when clicking outside the modal content
-  window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.style.display = 'none';
-    }
-  });
-</script>
-
-<!-- Add this CSS to your existing page's <head> section -->
-<style>
-.bottom-embeds-section {
-    background: linear-gradient(135deg, #2f1a39, #3d2147);
-    border: 2px solid #ff4f9f;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem auto;
-    text-align: center;
-    max-width: 400px;
-}
-.bottom-embeds-section h3 {
-    color: #ff4f9f;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px #ff4f9f;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-.bottom-embeds-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.bottom-embed-container {
-    border: 2px solid #ff4f9f;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    height: 60px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    animation: pulse 2s infinite;
-}
-
-.bottom-embed-container:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
-    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
-}
-.bottom-embed-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow: hidden;
-}
-.bottom-embed-header {
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    color: #1b1b2e;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-@media (max-width: 768px) {
-    .bottom-embeds-container {
-        grid-template-columns: 1fr;
-        max-width: 150px;
-    }
-    .bottom-embeds-section {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .bottom-embed-container {
-        height: 50px;
-    }
-}
-</style>
-
-<!-- Add this HTML section to the bottom of your existing page -->
-<div class="bottom-embeds-section">
-    <h3>Featured Content</h3>
-    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
-        <!-- Embeds will automatically load here -->
+  <!-- VIP Stats Overview -->
+  <div class="vip-stats-grid" id="vip-stats" style="display: none;">
+    <div class="vip-stat-card">
+      <div class="vip-stat-icon">💎</div>
+      <div class="vip-stat-value" id="totalVips">0</div>
+      <div class="vip-stat-label">Active VIP Members</div>
     </div>
-</div>
-
-<script>
-function createBottomEmbed(url, title) {
-    const embedContainer = document.createElement('div');
-    embedContainer.className = 'bottom-embed-container';
-
-    const embedHeader = document.createElement('div');
-    embedHeader.className = 'bottom-embed-header';
-    embedHeader.textContent = `Embedded: ${title}`;
-
-    const iframe = document.createElement('iframe');
-    iframe.className = 'bottom-embed-iframe';
-    iframe.src = url;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allowfullscreen', 'true');
     
-    // Add error handling
-    iframe.onload = function() {
-        console.log(`Successfully loaded: ${title}`);
-    };
+    <div class="vip-stat-card">
+      <div class="vip-stat-icon">⏰</div>
+      <div class="vip-stat-value" id="yourExpiry">--</div>
+      <div class="vip-stat-label">Your VIP Status</div>
+    </div>
     
-    iframe.onerror = function() {
-        console.log(`Failed to load: ${title}`);
-        iframe.style.background = '#ff4f9f';
-        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
-    };
+    <div class="vip-stat-card">
+      <div class="vip-stat-icon">💌</div>
+      <div class="vip-stat-value" id="unreadMessages">0</div>
+      <div class="vip-stat-label">Unread Messages</div>
+    </div>
+    
+    <div class="vip-stat-card">
+      <div class="vip-stat-icon">🎯</div>
+      <div class="vip-stat-value" id="vipSince">--</div>
+      <div class="vip-stat-label">VIP Member Since</div>
+    </div>
+  </div>
 
-    embedContainer.appendChild(embedHeader);
-    embedContainer.appendChild(iframe);
-    
-    return embedContainer;
-}
+  <!-- VIP Perks Section -->
+  <div class="vip-perks-section">
+    <h2 class="vip-perks-title">🌟 Your VIP Perks</h2>
+    <div class="perks-grid">
+      <div class="perk-item">
+        <div class="perk-emoji">🔓</div>
+        <div class="perk-title">Exclusive Content</div>
+        <div class="perk-desc">Access to premium content, videos, and special features</div>
+      </div>
+      
+      <div class="perk-item">
+        <div class="perk-emoji">💬</div>
+        <div class="perk-title">Direct Messaging</div>
+        <div class="perk-desc">Send and receive private messages with other VIP members</div>
+      </div>
+      
+      <div class="perk-item">
+        <div class="perk-emoji">🎮</div>
+        <div class="perk-title">VIP Games</div>
+        <div class="perk-desc">Access to exclusive games and interactive content</div>
+      </div>
+      
+      <div class="perk-item">
+        <div class="perk-emoji">🏆</div>
+        <div class="perk-title">Priority Support</div>
+        <div class="perk-desc">Get priority customer support and faster responses</div>
+      </div>
+      
+      <div class="perk-item">
+        <div class="perk-emoji">🎨</div>
+        <div class="perk-title">Custom Requests</div>
+        <div class="perk-desc">Request custom content and personalized experiences</div>
+      </div>
+      
+      <div class="perk-item">
+        <div class="perk-emoji">📊</div>
+        <div class="perk-title">Advanced Stats</div>
+        <div class="perk-desc">View detailed analytics and exclusive leaderboards</div>
+      </div>
+    </div>
+  </div>
 
-function autoLoadBottomEmbeds() {
-    const urls = [
-        'https://otieu.com/4/9248260',
-        'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458',
-        'https://otieu.com/4/9661607'
-    ];
-    const embedsContainer = document.getElementById('bottomEmbedsContainer');
+  <!-- VIP Members List -->
+  <div class="vip-members-section">
+    <h2 class="members-title">👥 Fellow VIP Members</h2>
+    <div class="members-grid" id="members-list">
+      <!-- Members will load here -->
+    </div>
+  </div>
+
+  <!-- VIP Message Center -->
+  <div class="vip-message-center">
+    <h2 class="message-title">💬 VIP Message Center</h2>
     
-    if (embedsContainer) {
-        // Instead of embedding, create clickable previews
-        urls.forEach((url, index) => {
-            const linkContainer = document.createElement('div');
-            linkContainer.className = 'bottom-embed-container';
-            linkContainer.style.cursor = 'pointer';
-            linkContainer.style.display = 'flex';
-            linkContainer.style.alignItems = 'center';
-            linkContainer.style.justifyContent = 'center';
-            linkContainer.style.textDecoration = 'none';
-            
-            linkContainer.innerHTML = `
-                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
-                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
-                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
-                </div>
-            `;
-            
-            linkContainer.addEventListener('click', () => {
-                window.open(url, '_blank');
-            });
-            
-            embedsContainer.appendChild(linkContainer);
-        });
+    <div class="message-input-group">
+      <input type="text" class="message-input" id="recipient-input" placeholder="Recipient username...">
+      <input type="text" class="message-input" id="message-input" placeholder="Your message...">
+      <button class="message-send-btn" id="send-message-btn">Send ✉️</button>
+    </div>
+    
+    <div class="message-list" id="message-list">
+      <div style="text-align: center; color: #999; padding: 2rem;">
+        📭 No messages yet. Start a conversation!
+      </div>
+    </div>
+  </div>
+
+  <div id="error-message" style="display: none; text-align: center; color: #ff8d8d; font-size: 1.1rem; margin: 2rem 0;">
+    😢 Error loading VIP dashboard
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    
+    const supabase = createClient(
+      'https://fwslmbzfukriibnkpzou.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    );
+
+    // Mock current user for demo - in real app, get from auth
+    const currentUser = 'DemoVIPUser';
+
+    function formatDate(dateString) {
+      if (!dateString) return '--';
+      return new Date(dateString).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
     }
-}
 
-// Auto-load embeds when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
-} else {
-    autoLoadBottomEmbeds();
-}
-</script>
+    function getTimeUntilExpiry(expiryDate) {
+      if (!expiryDate) return 'Lifetime';
+      
+      const expiry = new Date(expiryDate);
+      const now = new Date();
+      const diff = expiry - now;
+      
+      if (diff <= 0) return 'Expired';
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      if (days === 0) return 'Expires today';
+      if (days === 1) return '1 day left';
+      return `${days} days left`;
+    }
 
+    async function loadVIPDashboard() {
+      const loadingEl = document.getElementById('loading');
+      const statsEl = document.getElementById('vip-stats');
+      const errorEl = document.getElementById('error-message');
+
+      try {
+        // Get all VIP users
+        const { data: vipUsers, error: usersError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('is_vip', true);
+
+        if (usersError) throw usersError;
+
+        // Get messages for current user
+        const { data: messages, error: messagesError } = await supabase
+          .from('direct_messages')
+          .select('*')
+          .or(`sender_username.eq.${currentUser},recipient_username.eq.${currentUser}`)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (messagesError) console.error('Messages error:', messagesError);
+
+        // Update stats
+        const totalVips = vipUsers?.length || 0;
+        const currentUserData = vipUsers?.find(u => u.id === currentUser) || {};
+        const unreadCount = messages?.filter(m => 
+          m.recipient_username === currentUser && !m.is_read
+        ).length || 0;
+
+        document.getElementById('totalVips').textContent = totalVips;
+        document.getElementById('yourExpiry').textContent = getTimeUntilExpiry(currentUserData.vip_expires_at);
+        document.getElementById('unreadMessages').textContent = unreadCount;
+        document.getElementById('vipSince').textContent = formatDate(currentUserData.created_at);
+
+        // Load VIP members
+        loadVIPMembers(vipUsers || []);
+
+        // Load messages
+        loadMessages(messages || []);
+
+        // Show dashboard
+        loadingEl.style.display = 'none';
+        statsEl.style.display = 'grid';
+
+      } catch (err) {
+        console.error('Error loading VIP dashboard:', err);
+        loadingEl.style.display = 'none';
+        errorEl.innerHTML = `😢 Error loading VIP dashboard: ${err.message}`;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    function loadVIPMembers(users) {
+      const membersList = document.getElementById('members-list');
+      
+      if (users.length === 0) {
+        membersList.innerHTML = '<div style="text-align: center; color: #999; grid-column: 1/-1;">No VIP members found</div>';
+        return;
+      }
+
+      membersList.innerHTML = users.map(user => {
+        const isActive = user.vip_expires_at ? new Date(user.vip_expires_at) > new Date() : true;
+        
+        return `
+          <div class="member-card">
+            <div class="member-status">${isActive ? '✅' : '⏰'}</div>
+            <div class="member-username">${user.id}</div>
+            <div class="member-since">Since: ${formatDate(user.created_at)}</div>
+            <div class="member-expires">
+              ${user.vip_expires_at ? 
+                `Expires: ${formatDate(user.vip_expires_at)}` : 
+                'Lifetime VIP'
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadMessages(messages) {
+      const messageList = document.getElementById('message-list');
+      
+      if (messages.length === 0) {
+        messageList.innerHTML = '<div style="text-align: center; color: #999; padding: 2rem;">📭 No messages yet. Start a conversation!</div>';
+        return;
+      }
+
+      messageList.innerHTML = messages.map(msg => `
+        <div class="message-item">
+          <div class="message-sender">
+            ${msg.sender_username === currentUser ? '📤 You' : `📥 ${msg.sender_username}`}
+            ${msg.recipient_username !== currentUser ? ` → ${msg.recipient_username}` : ''}
+            ${!msg.is_read && msg.recipient_username === currentUser ? ' 🔴' : ''}
+          </div>
+          <div class="message-content">${msg.message_content}</div>
+          <div class="message-time">${new Date(msg.created_at).toLocaleString()}</div>
+        </div>
+      `).join('');
+    }
+
+    async function sendMessage() {
+      const recipientInput = document.getElementById('recipient-input');
+      const messageInput = document.getElementById('message-input');
+      
+      const recipient = recipientInput.value.trim();
+      const message = messageInput.value.trim();
+      
+      if (!recipient || !message) {
+        alert('Please enter both recipient and message');
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('direct_messages')
+          .insert({
+            sender_username: currentUser,
+            recipient_username: recipient,
+            message_content: message,
+            is_read: false
+          });
+
+        if (error) throw error;
+
+        // Clear inputs
+        recipientInput.value = '';
+        messageInput.value = '';
+
+        // Reload messages
+        const { data: messages } = await supabase
+          .from('direct_messages')
+          .select('*')
+          .or(`sender_username.eq.${currentUser},recipient_username.eq.${currentUser}`)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        loadMessages(messages || []);
+
+        alert('Message sent! ✉️');
+
+      } catch (err) {
+        console.error('Error sending message:', err);
+        alert('Failed to send message: ' + err.message);
+      }
+    }
+
+    // Event listeners
+    document.getElementById('send-message-btn').addEventListener('click', sendMessage);
+    
+    document.getElementById('message-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // Load dashboard on page load
+    loadVIPDashboard();
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadVIPDashboard, 30000);
+  </script>
 </body>
 </html>
-
