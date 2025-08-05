@@ -2642,38 +2642,7 @@ crossorigin="anonymous"></script>
 <!-- Header with Earnings and Terms -->
 <div class="header-info">
   <div class="earnings-section">
-    <!-- Detailed Likes Breakdown -->
-    <div class="likes-breakdown">
-      <h3>📊 All Your Likes</h3>
-      <div class="likes-grid">
-        <div class="likes-item">
-          <div id="pageLikesCount" class="likes-count">0</div>
-          <div class="likes-label">Page</div>
-        </div>
-        <div class="likes-item">
-          <div id="videoLikesCount" class="likes-count">0</div>
-          <div class="likes-label">Videos</div>
-        </div>
-        <div class="likes-item">
-          <div id="gameLikesCount" class="likes-count">0</div>
-          <div class="likes-label">Games</div>
-        </div>
-        <div class="likes-item">
-          <div id="artLikesCount" class="likes-count">0</div>
-          <div class="likes-label">Art</div>
-        </div>
-        <div class="likes-item">
-          <div id="extraLikesCount" class="likes-count">0</div>
-          <div class="likes-label">VIP Extras</div>
-        </div>
-      </div>
-      <div class="total-likes">
-        <div id="totalLikesCount" class="total-likes-count">0</div>
-        <div class="likes-label">TOTAL LIKES</div>
-      </div>
-    </div>
-    
-    <!-- Single Earnings Display -->
+    <!-- Simple Earnings Display -->
     <div class="earnings-display">
       <div id="earningsAmount" class="earnings-amount">£0.00</div>
       <div id="earningsStatus" class="earnings-status">Loading earnings...</div>
@@ -3089,13 +3058,7 @@ crossorigin="anonymous"></script>
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
       
       if (!username) {
-        // Update all displays with zeros
-        document.getElementById('pageLikesCount').textContent = '0';
-        document.getElementById('videoLikesCount').textContent = '0';
-        document.getElementById('gameLikesCount').textContent = '0';
-        document.getElementById('artLikesCount').textContent = '0';
-        document.getElementById('extraLikesCount').textContent = '0';
-        document.getElementById('totalLikesCount').textContent = '0';
+        // Update displays with zeros
         document.getElementById('earningsAmount').textContent = '£0.00';
         document.getElementById('earningsStatus').textContent = 'No username found';
         document.getElementById('paymentTotalLikes').textContent = '0';
@@ -3106,22 +3069,19 @@ crossorigin="anonymous"></script>
 
       // Get comprehensive likes breakdown INCLUDING VIP EXTRAS
       const likesBreakdown = await getAllLikesBreakdown();
+      if (!likesBreakdown) {
+        console.error('Failed to get likes breakdown');
+        return;
+      }
+      
       const totalLikes = likesBreakdown.total;
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
-
-      // Update likes breakdown display
-      document.getElementById('pageLikesCount').textContent = likesBreakdown.page;
-      document.getElementById('videoLikesCount').textContent = likesBreakdown.videos;
-      document.getElementById('gameLikesCount').textContent = likesBreakdown.games;
-      document.getElementById('artLikesCount').textContent = likesBreakdown.art;
-      document.getElementById('extraLikesCount').textContent = likesBreakdown.extras;
-      document.getElementById('totalLikesCount').textContent = likesBreakdown.total;
 
       // Update earnings display
       document.getElementById('earningsAmount').textContent = `£${earningsValue.toFixed(2)}`;
       
       // Update payments tab
-      document.getElementById('paymentTotalLikes').textContent = `${totalLikes}`;
+      document.getElementById('paymentTotalLikes').textContent = `${totalLikes} likes`;
       document.getElementById('paymentEarnings').textContent = `£${earningsValue.toFixed(2)}`;
 
       // Check for existing pending requests
@@ -3162,10 +3122,11 @@ crossorigin="anonymous"></script>
         // Below minimum
         mainPayoutBtn.style.display = 'none';
         paymentTabPayoutBtn.style.display = 'none';
-        const needMore = Math.ceil((5 - earningsValue) * 10);
-        mainPayoutStatus.textContent = `Need ${needMore} more total likes to reach £5.00 minimum.`;
-        paymentTabStatus.textContent = `Need ${needMore} more total likes to reach £5.00 minimum.`;
-        earningsStatus.textContent = `Need ${needMore} more likes for payout`;
+        const amountNeeded = 5.0 - earningsValue;
+        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10; // £0.01 per 10 likes, so divide amount by 0.01 then multiply by 10
+        mainPayoutStatus.textContent = `Need ${likesNeeded} more total likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
+        paymentTabStatus.textContent = `Need ${likesNeeded} more total likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
+        earningsStatus.textContent = `Need ${likesNeeded} more likes for payout`;
         paymentStatus.textContent = 'Below Min';
         paymentStatus.style.color = '#ff8d8d';
       }
@@ -3599,7 +3560,9 @@ crossorigin="anonymous"></script>
       const earningsValue = Math.floor(totalLikes / 10) * 0.01;
 
       if (earningsValue < 5) {
-        const message = `Minimum £5 earnings required. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+        const amountNeeded = 5.0 - earningsValue;
+        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10; // £0.01 per 10 likes
+        const message = `Minimum £5 earnings required. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes. Need ${likesNeeded} more likes (£${amountNeeded.toFixed(2)} more).`;
         document.getElementById('mainPayoutStatus').textContent = message;
         document.getElementById('paymentTabStatus').textContent = message;
         return;
