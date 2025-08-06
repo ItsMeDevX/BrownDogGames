@@ -464,15 +464,23 @@
 
   // Update points with optimistic UI updates
   async function updatePoints(userId, username, newPoints) {
-    // Optimistically update the UI first
-    currentPoints = newPoints;
-    elements.gamePointsDisplay.textContent = currentPoints;
-    pointsCache.set(userId, newPoints);
-
     try {
-      console.log('Attempting to update points for user:', userId, 'to:', newPoints);
+      console.log('=== UPDATING POINTS ===');
+      console.log('User ID:', userId);
+      console.log('Username:', username);
+      console.log('New Points:', newPoints);
+      console.log('Current Points before update:', currentPoints);
 
-      // Simple upsert that works with your existing table structure
+      // Check what's currently in the database first
+      const { data: beforeData } = await supabase
+        .from('vip_page_views')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('username', username);
+      
+      console.log('Data in DB before update:', beforeData);
+
+      // Perform the upsert
       const { data, error } = await supabase
         .from('vip_page_views')
         .upsert({
@@ -484,25 +492,33 @@
         })
         .select();
 
-      console.log('Upsert result:', { data, error });
+      console.log('Upsert response:', { data, error });
 
       if (error) {
-        console.error('Database error details:', error.message, error.details, error.hint);
-        // Revert optimistic update
-        currentPoints = newPoints - 1;
-        elements.gamePointsDisplay.textContent = currentPoints;
-        pointsCache.set(userId, currentPoints);
+        console.error('Database error:', error);
+        showMessage(elements.errorMsg, `Database error: ${error.message}`);
         return false;
       }
 
-      console.log('Points updated successfully to:', newPoints, 'Data:', data);
+      // Check what's in the database after update
+      const { data: afterData } = await supabase
+        .from('vip_page_views')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('username', username);
+      
+      console.log('Data in DB after update:', afterData);
+
+      // Update UI and cache
+      currentPoints = newPoints;
+      elements.gamePointsDisplay.textContent = currentPoints;
+      pointsCache.set(userId, newPoints);
+
+      console.log('=== UPDATE COMPLETE ===');
       return true;
     } catch (err) {
       console.error('Exception in updatePoints:', err);
-      // Revert optimistic update
-      currentPoints = newPoints - 1;
-      elements.gamePointsDisplay.textContent = currentPoints;
-      pointsCache.set(userId, currentPoints);
+      showMessage(elements.errorMsg, 'Error updating points');
       return false;
     }
   }
