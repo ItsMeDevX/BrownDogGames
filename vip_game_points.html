@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Game Point Page</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+        body {
+            background-color: #1b1b2e;
+            color: #fefefe;
+            font-family: 'Rubik Mono One', sans-serif;
+            margin: 0;
+            padding: 10px;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Mobile-first responsive padding */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        main {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #content {
+            background-color: #2f1a39;
+            border: 3px solid #ff4f9f;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 10px #ff4f9f88;
+            text-align: center;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 768px) {
+            #content {
+                padding: 30px;
+            }
+        }
+
+        h1 {
+            color: #ff4f9f;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 30px;
+            }
+        }
+
+        button {
+            background-color: #ff4f9f;
+            color: #1b1b2e;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            font-family: 'Rubik Mono One', sans-serif;
+            margin: 15px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 79, 159, 0.5);
+            min-height: 50px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            button {
+                padding: 12px 24px;
+                font-size: 1em;
+            }
+        }
+
+        button:hover {
+            background-color: #e33f8a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(227, 63, 138, 0.7);
+        }
+
+        button:disabled {
+            background-color: #666;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled:hover {
+            background-color: #666;
+            transform: none;
+        }
+
+        p {
+            font-size: 0.8em;
+            color: #e1c5f5;
+            margin: 15px 0;
+        }
+
+        @media (min-width: 768px) {
+            p {
+                font-size: 0.9em;
+            }
+        }
+
+        #game-points {
+            font-weight: 700;
+            font-size: 2em;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        @media (min-width: 768px) {
+            #game-points {
+                font-size: 2.5em;
+            }
+        }
+
+        .vip-status {
+            color: #2ecc71;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background-color: #2d4a3a;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #2ecc71;
+        }
+
+        .not-vip {
+            color: #e74c3c;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background-color: #4a2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e74c3c;
+        }
+
+        .loading {
+            color: #3498db;
+            font-style: italic;
+            background-color: #2d3e4a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #3498db;
+        }
+
+        .user-info {
+            background-color: #2a233a;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ff4f9f;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (min-width: 768px) {
+            .user-info {
+                padding: 25px;
+                margin-bottom: 30px;
+            }
+        }
+
+        .user-info h3 {
+            margin-top: 0;
+            color: #ff4f9f;
+            font-size: 1.2em;
+        }
+
+        @media (min-width: 768px) {
+            .user-info h3 {
+                font-size: 1.4em;
+            }
+        }
+
+        .user-info img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #ff4f9f;
+            margin: 10px 0;
+        }
+
+        @media (min-width: 768px) {
+            .user-info img {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        .error-message {
+            background-color: #4a2d2d;
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #e74c3c;
+            font-size: 0.8em;
+        }
+
+        @media (min-width: 768px) {
+            .error-message {
+                font-size: 0.9em;
+            }
+        }
+
+        .success-message {
+            background-color: #2d4a3a;
+            color: #5dff5d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #2ecc71;
+            font-size: 0.8em;
+        }
+
+        @media (min-width: 768px) {
+            .success-message {
+                font-size: 0.9em;
+            }
+        }
+
+        .login-prompt {
+            background-color: #4a3d2d;
+            color: #ffd700;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #ffc107;
+        }
+
+        .points-threshold {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #2d3e4a;
+            border-radius: 8px;
+            color: #64b5f6;
+            border: 2px solid #3498db;
+            font-size: 0.8em;
+        }
+
+        @media (min-width: 768px) {
+            .points-threshold {
+                font-size: 0.9em;
+                padding: 20px;
+            }
+        }
+
+        .points-display {
+            background-color: #2a233a;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        @media (min-width: 768px) {
+            .points-display {
+                padding: 30px;
+                margin: 30px 0;
+            }
+        }
+
+        .points-label {
+            color: #e1c5f5;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .points-label {
+                font-size: 1em;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) {
+            button:hover {
+                transform: none;
+            }
+            
+            button:active {
+                transform: scale(0.95);
+            }
+        }
+
+        /* Responsive text scaling */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.2em;
+            }
+            
+            #game-points {
+                font-size: 1.8em;
+            }
+            
+            button {
+                padding: 12px 15px;
+                font-size: 0.8em;
+                margin: 10px 0;
+                width: 100%;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section id="content">
+            <h1>🎮 VIP Game Point Page</h1>
+            
+            <div id="loading-message" class="loading">
+                <p>Loading user information...</p>
+            </div>
+
+            <div id="not-logged-in" style="display: none;">
+                <div class="login-prompt">
+                    <p>Please log in to earn game points!</p>
+                    <button id="login-button">Login with GitHub</button>
+                </div>
+            </div>
+
+            <div id="not-vip" style="display: none;">
+                <div class="not-vip">
+                    <p>This page is for VIP members only!</p>
+                    <p>Upgrade to VIP to start earning game points.</p>
+                </div>
+            </div>
+
+            <div id="vip-content" style="display: none;">
+                <div class="user-info" id="user-info">
+                    <!-- User info will be populated here -->
+                </div>
+
+                <div class="vip-status">
+                    <p>⭐ VIP Member - Game Points Available!</p>
+                </div>
+
+                <p>By viewing this page, you can earn game points.</p>
+                <div class="points-display">
+                    <div class="points-label">Your Current Game Points:</div>
+                    <div id="game-points">0</div>
+                </div>
+                
+                <div class="points-threshold">
+                    <p>Reach 10 points and this page will close automatically!</p>
+                </div>
+
+                <button id="earn-point-button">Earn Game Point</button>
+
+                <div id="success-message" class="success-message" style="display: none;">
+                    <p>Game point earned successfully! 🎉</p>
+                </div>
+
+                <div id="max-points-message" class="success-message" style="display: none;">
+                    <p>🎊 Congratulations! You've reached the maximum points!</p>
+                </div>
+            </div>
+
+            <div id="error-message" class="error-message" style="display: none;">
+                <!-- Error messages will appear here -->
+            </div>
+        </section>
+    </main>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
+  // DOM elements
+  const loadingMessage = document.getElementById("loading-message");
+  const notLoggedIn = document.getElementById("not-logged-in");
+  const notVip = document.getElementById("not-vip");
+  const vipContent = document.getElementById("vip-content");
+  const userInfoDiv = document.getElementById("user-info");
+  const gamePointsDisplay = document.getElementById("game-points");
+  const earnPointButton = document.getElementById("earn-point-button");
+  const loginButton = document.getElementById("login-button");
+  const errorMessage = document.getElementById("error-message");
+  const successMessage = document.getElementById("success-message");
+  const maxPointsMessage = document.getElementById("max-points-message");
+
+  let currentUser = null;
+  let currentUsername = null;
+  let isVip = false;
+
+  // Show error message
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    setTimeout(() => {
+      errorMessage.style.display = 'none';
+    }, 5000);
+  }
+
+  // Show success message
+  function showSuccess() {
+    successMessage.style.display = 'block';
+    setTimeout(() => {
+      successMessage.style.display = 'none';
+    }, 3000);
+  }
+
+  // Check if user is VIP
+  async function checkVipStatus(userId) {
+    try {
+      // First check localStorage for quick access
+      const localVIP = localStorage.getItem('vipAccess') === 'true';
+      if (localVIP) return true;
+
+      // Check database
+      const { data, error } = await supabase
+        .from('users')
+        .select('is_vip, github_username')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error checking VIP status:', error);
+        return false;
+      }
+
+      if (data?.is_vip) {
+        localStorage.setItem('vipAccess', 'true');
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Exception in checkVipStatus:', error);
+      return false;
+    }
+  }
+
+  // Get or create user record in users table
+  async function ensureUserRecord(user, username) {
+    try {
+      // Check if user exists
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching user:', fetchError);
+        return null;
+      }
+
+      if (existingUser) {
+        // Update username if it's missing
+        if (!existingUser.github_username && username) {
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ github_username: username })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.error('Error updating username:', updateError);
+          }
+        }
+        return existingUser;
+      }
+
+      // Create new user record
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: user.id,
+          is_vip: false,
+          github_username: username,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error creating user record:', insertError);
+        return null;
+      }
+
+      return newUser;
+    } catch (error) {
+      console.error('Exception in ensureUserRecord:', error);
+      return null;
+    }
+  }
+
+  // Get user's game points from vip_page_views table
+  async function getUserPoints(userId, username) {
+    try {
+      const { data, error } = await supabase
+        .from('vip_page_views')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching game points:', error);
+        return 0;
+      }
+
+      if (!data) {
+        // Create initial record
+        const { data: newRecord, error: insertError } = await supabase
+          .from('vip_page_views')
+          .insert({
+            user_id: userId,
+            username: username,
+            view_count: 1,
+            game_points: 0,
+            first_viewed_at: new Date().toISOString(),
+            last_viewed_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating points record:', insertError);
+          return 0;
+        }
+
+        return 0;
+      }
+
+      // Update last viewed time
+      const { error: updateError } = await supabase
+        .from('vip_page_views')
+        .update({ 
+          last_viewed_at: new Date().toISOString(),
+          view_count: (data.view_count || 0) + 1
+        })
+        .eq('user_id', userId);
+
+      if (updateError) {
+        console.error('Error updating last viewed:', updateError);
+      }
+
+      return data.game_points || 0;
+    } catch (error) {
+      console.error('Exception in getUserPoints:', error);
+      return 0;
+    }
+  }
+
+  // Update game points in the database
+  async function updateGamePoints(userId, newPoints) {
+    try {
+      const { data, error } = await supabase
+        .from('vip_page_views')
+        .update({
+          game_points: newPoints,
+          last_viewed_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating game points:', error);
+        return false;
+      }
+
+      console.log('Game points updated successfully:', data);
+      return true;
+    } catch (error) {
+      console.error('Exception in updateGamePoints:', error);
+      return false;
+    }
+  }
+
+  // Initialize the page based on user status
+  async function initializePage() {
+    try {
+      // Get current session
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        showError('Error loading user session');
+        loadingMessage.style.display = 'none';
+        notLoggedIn.style.display = 'block';
+        return;
+      }
+
+      if (!session?.user) {
+        // Not logged in
+        loadingMessage.style.display = 'none';
+        notLoggedIn.style.display = 'block';
+        return;
+      }
+
+      currentUser = session.user;
+      
+      // Get username from metadata
+      currentUsername = session.user.user_metadata?.user_name || 
+                       session.user.user_metadata?.preferred_username;
+
+      if (!currentUsername) {
+        // Try to get from game submissions as fallback
+        try {
+          const { data: gameData } = await supabase
+            .from('game_submissions')
+            .select('github_user')
+            .eq('user_id', currentUser.id)
+            .limit(1);
+          
+          if (gameData && gameData.length > 0) {
+            currentUsername = gameData[0].github_user;
+          } else {
+            currentUsername = currentUser.email?.split('@')[0] || 'User';
+          }
+        } catch (fallbackError) {
+          console.error('Error getting username fallback:', fallbackError);
+          currentUsername = currentUser.email?.split('@')[0] || 'User';
+        }
+      }
+
+      // Ensure user record exists in users table
+      const userRecord = await ensureUserRecord(currentUser, currentUsername);
+      
+      // Check VIP status
+      isVip = await checkVipStatus(currentUser.id);
+
+      if (!isVip) {
+        // Not VIP
+        loadingMessage.style.display = 'none';
+        notVip.style.display = 'block';
+        return;
+      }
+
+      // User is VIP - show VIP content
+      loadingMessage.style.display = 'none';
+      vipContent.style.display = 'block';
+
+      // Display user info
+      const avatar = currentUser.user_metadata?.avatar_url || '';
+      const fullName = currentUser.user_metadata?.full_name || currentUsername;
+      
+      userInfoDiv.innerHTML = `
+        <h3>Welcome, ${fullName}!</h3>
+        ${avatar ? `<img src="${avatar}" alt="${fullName}" style="width: 50px; height: 50px; border-radius: 50%; margin: 10px 0;">` : ''}
+        <p><strong>Username:</strong> ${currentUsername}</p>
+        <p><strong>Status:</strong> ⭐ VIP Member</p>
+      `;
+
+      // Load and display current points
+      const currentPoints = await getUserPoints(currentUser.id, currentUsername);
+      gamePointsDisplay.textContent = currentPoints;
+
+      // Check if already at max points
+      if (currentPoints >= 10) {
+        earnPointButton.disabled = true;
+        earnPointButton.textContent = 'Maximum Points Reached!';
+        maxPointsMessage.style.display = 'block';
+      }
+
+    } catch (error) {
+      console.error('Error initializing page:', error);
+      showError('Failed to initialize page. Please refresh and try again.');
+      loadingMessage.style.display = 'none';
+    }
+  }
+
+  // Handle login button click
+  loginButton.addEventListener('click', async () => {
+    try {
+      loginButton.disabled = true;
+      loginButton.textContent = 'Logging in...';
+      
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider: 'github',
+        options: {
+          redirectTo: window.location.href
+        }
+      });
+      
+      if (error) {
+        console.error('Login error:', error);
+        showError('Login failed. Please try again.');
+        loginButton.disabled = false;
+        loginButton.textContent = 'Login with GitHub';
+      }
+    } catch (error) {
+      console.error('Exception during login:', error);
+      showError('Login failed. Please try again.');
+      loginButton.disabled = false;
+      loginButton.textContent = 'Login with GitHub';
+    }
+  });
+
+  // Handle earn point button click
+  earnPointButton.addEventListener('click', async () => {
+    if (!currentUser || !isVip) {
+      showError('You must be a VIP member to earn points.');
+      return;
+    }
+
+    try {
+      earnPointButton.disabled = true;
+      earnPointButton.textContent = 'Adding Point...';
+
+      // Get current points
+      const currentPoints = await getUserPoints(currentUser.id, currentUsername);
+      
+      if (currentPoints >= 10) {
+        showError('You have already reached the maximum points!');
+        earnPointButton.textContent = 'Maximum Points Reached!';
+        maxPointsMessage.style.display = 'block';
+        return;
+      }
+
+      const newPoints = currentPoints + 1;
+
+      // Update points in database
+      const success = await updateGamePoints(currentUser.id, newPoints);
+
+      if (success) {
+        // Update display
+        gamePointsDisplay.textContent = newPoints;
+        showSuccess();
+
+        // Check if reached threshold
+        if (newPoints >= 10) {
+          earnPointButton.textContent = 'Maximum Points Reached!';
+          maxPointsMessage.style.display = 'block';
+          
+          setTimeout(() => {
+            alert("🎊 Congratulations! You've reached the maximum points. The page will now close.");
+            window.close(); // Try to close the page
+          }, 2000);
+        } else {
+          earnPointButton.disabled = false;
+          earnPointButton.textContent = 'Earn Game Point';
+        }
+      } else {
+        showError('Failed to update points. Please try again.');
+        earnPointButton.disabled = false;
+        earnPointButton.textContent = 'Earn Game Point';
+      }
+
+    } catch (error) {
+      console.error('Error earning point:', error);
+      showError('Failed to earn point. Please try again.');
+      earnPointButton.disabled = false;
+      earnPointButton.textContent = 'Earn Game Point';
+    }
+  });
+
+  // Listen for auth state changes
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN') {
+      // Reload page to initialize with new session
+      window.location.reload();
+    } else if (event === 'SIGNED_OUT') {
+      // Clear current user data
+      currentUser = null;
+      currentUsername = null;
+      isVip = false;
+      
+      // Show not logged in state
+      vipContent.style.display = 'none';
+      notVip.style.display = 'none';
+      loadingMessage.style.display = 'none';
+      notLoggedIn.style.display = 'block';
+    }
+  });
+
+  // Initialize page when DOM is loaded
+  document.addEventListener('DOMContentLoaded', initializePage);
+
+  // Also initialize immediately if DOM is already loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePage);
+  } else {
+    initializePage();
+  }
+</script>
+
+</body>
+</html>
