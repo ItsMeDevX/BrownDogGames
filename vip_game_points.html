@@ -2419,29 +2419,39 @@
     try {
       // First check localStorage for quick access
       const localVIP = localStorage.getItem('vipAccess') === 'true';
-      if (localVIP) return true;
-
-      // Check database
+      
+      // Always check database for authoritative VIP status
       const { data, error } = await supabase
         .from('users')
         .select('is_vip, github_username')
         .eq('id', userId)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
         console.error('Error checking VIP status:', error);
+        return localVIP; // Fallback to localStorage if database error
+      }
+
+      // If user doesn't exist in database, they're not VIP
+      if (!data) {
+        localStorage.removeItem('vipAccess'); // Clear invalid local VIP
         return false;
       }
 
-      if (data?.is_vip) {
+      // Database is authoritative - update localStorage to match
+      if (data.is_vip === true) {
         localStorage.setItem('vipAccess', 'true');
         return true;
+      } else {
+        localStorage.removeItem('vipAccess'); // Clear localStorage if not VIP in DB
+        return false;
       }
 
-      return false;
     } catch (error) {
       console.error('Exception in checkVipStatus:', error);
-      return false;
+      // On exception, fallback to localStorage but log warning
+      console.warn('Using localStorage VIP status due to database error');
+      return localStorage.getItem('vipAccess') === 'true';
     }
   }
 
@@ -2475,12 +2485,12 @@
         return existingUser;
       }
 
-      // Create new user record
+      // Create new user record - default is_vip to false
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert({
           id: user.id,
-          is_vip: false,
+          is_vip: false, // Explicitly set to false for new users
           github_username: username,
           created_at: new Date().toISOString()
         })
@@ -2632,13 +2642,16 @@
       // Ensure user record exists in users table
       const userRecord = await ensureUserRecord(currentUser, currentUsername);
       
-      // Check VIP status
+      // Check VIP status - this now checks the database is_vip column authoritatively
       isVip = await checkVipStatus(currentUser.id);
 
+      console.log('VIP Status Check:', { userId: currentUser.id, isVip, userRecord });
+
       if (!isVip) {
-        // Not VIP
+        // Not VIP - show not VIP message
         loadingMessage.style.display = 'none';
         notVip.style.display = 'block';
+        console.log('User is not VIP - showing not VIP message');
         return;
       }
 
