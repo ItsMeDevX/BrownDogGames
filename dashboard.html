@@ -3113,7 +3113,7 @@ crossorigin="anonymous"></script>
 
       // Calculate available (unpaid) likes and earnings
       const availableLikes = Math.max(0, totalLikes - paidLikes);
-      const availableEarnings = Math.floor(availableLikes / 10) * 0.01;
+      const availableEarnings = availableLikes * 0.001; // NEW: £0.001 per point (5000 points = £5.00)
 
       console.log(`💰 Payment calculation for ${username}:`, {
         totalLikes,
@@ -3174,9 +3174,9 @@ crossorigin="anonymous"></script>
       // Show earnings breakdown in status if user has had payouts
       let earningsStatusText = '';
       if (completedPayouts > 0) {
-        earningsStatusText = `${availableLikes} new likes (${paidLikes} already paid from ${completedPayouts} payout${completedPayouts > 1 ? 's' : ''})`;
+        earningsStatusText = `${availableLikes} new points (${paidLikes} already paid from ${completedPayouts} payout${completedPayouts > 1 ? 's' : ''})`;
       } else {
-        earningsStatusText = `${availableLikes} total likes`;
+        earningsStatusText = `${availableLikes} total points`;
       }
 
       // Check for existing pending requests
@@ -3205,7 +3205,7 @@ crossorigin="anonymous"></script>
         paymentStatus.textContent = 'Pending';
         paymentStatus.style.color = '#ffc0cb';
       } else if (availableEarnings >= 5.0) {
-        // Ready for payout
+        // Ready for payout (5000+ points)
         mainPayoutBtn.style.display = 'inline-block';
         paymentTabPayoutBtn.style.display = 'inline-block';
         mainPayoutStatus.textContent = '';
@@ -3214,19 +3214,19 @@ crossorigin="anonymous"></script>
         paymentStatus.textContent = 'Ready';
         paymentStatus.style.color = '#8dffa1';
       } else {
-        // Below minimum
+        // Below minimum (less than 5000 points)
         mainPayoutBtn.style.display = 'none';
         paymentTabPayoutBtn.style.display = 'none';
         const amountNeeded = 5.0 - availableEarnings;
-        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10;
+        const pointsNeeded = Math.ceil(amountNeeded / 0.001); // Points needed at £0.001 per point
         
-        mainPayoutStatus.textContent = `Need ${likesNeeded} more likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
-        paymentTabStatus.textContent = `Need ${likesNeeded} more likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
+        mainPayoutStatus.textContent = `Need ${pointsNeeded} more points to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
+        paymentTabStatus.textContent = `Need ${pointsNeeded} more points to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
         
         if (availableEarnings === 0 && completedPayouts > 0) {
-          earningsStatus.textContent = `All earnings paid out - need ${likesNeeded} more likes`;
+          earningsStatus.textContent = `All earnings paid out - need ${pointsNeeded} more points`;
         } else {
-          earningsStatus.textContent = `Need ${likesNeeded} more likes for payout (${earningsStatusText})`;
+          earningsStatus.textContent = `Need ${pointsNeeded} more points for payout (${earningsStatusText})`;
         }
         
         paymentStatus.textContent = 'Below Min';
@@ -3676,8 +3676,8 @@ crossorigin="anonymous"></script>
 
       if (availableEarnings < 5) {
         const amountNeeded = 5.0 - availableEarnings;
-        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10;
-        const message = `Minimum £5 earnings required. You have £${availableEarnings.toFixed(2)} from ${availableLikes} available likes. Need ${likesNeeded} more likes (£${amountNeeded.toFixed(2)} more).`;
+        const pointsNeeded = Math.ceil(amountNeeded / 0.001); // Points needed at £0.001 per point
+        const message = `Minimum £5 earnings required. You have £${availableEarnings.toFixed(2)} from ${availableLikes} available points. Need ${pointsNeeded} more points (£${amountNeeded.toFixed(2)} more).`;
         document.getElementById('mainPayoutStatus').textContent = message;
         document.getElementById('paymentTabStatus').textContent = message;
         return;
@@ -3710,7 +3710,7 @@ crossorigin="anonymous"></script>
 
       if (error) throw error;
 
-      const successMessage = `Payout request submitted! £${availableEarnings.toFixed(2)} from ${availableLikes} available likes (${totalLikes} total likes).`;
+      const successMessage = `Payout request submitted! £${availableEarnings.toFixed(2)} from ${availableLikes} available points (${totalLikes} total points).`;
       document.getElementById('mainPayoutStatus').textContent = successMessage;
       document.getElementById('paymentTabStatus').textContent = successMessage;
       
@@ -4178,5 +4178,6 @@ if (document.readyState === 'loading') {
 
 </body>
 </html>
+
 
 
