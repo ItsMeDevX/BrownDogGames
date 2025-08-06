@@ -2001,314 +2001,364 @@
         @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
         body {
-            background-color: #1b1b2e;
+            background: linear-gradient(135deg, #1b1b2e, #2c1b33);
             color: #fefefe;
             font-family: 'Rubik Mono One', sans-serif;
             margin: 0;
-            padding: 10px;
+            padding: 0;
             line-height: 1.5;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        /* Mobile-first responsive padding */
-        @media (min-width: 768px) {
-            body {
-                padding: 20px;
-            }
+            overflow-x: hidden;
         }
 
         main {
             width: 100%;
             max-width: 600px;
-            margin: 0 auto;
-            min-height: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         #content {
-            background-color: #2f1a39;
+            background: linear-gradient(135deg, #2f1a39, #3d2447);
             border: 3px solid #ff4f9f;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 0 10px #ff4f9f88;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(255, 79, 159, 0.3);
             text-align: center;
             width: 100%;
-            max-width: 100%;
             box-sizing: border-box;
-            min-height: 350px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            position: relative;
+            backdrop-filter: blur(10px);
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
+            main {
+                padding: 15px;
+            }
+            
             #content {
-                padding: 30px;
+                padding: 25px 20px;
             }
         }
 
         h1 {
             color: #ff4f9f;
-            font-size: 1.4em;
-            margin-bottom: 20px;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 79, 159, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
         }
 
-        @media (min-width: 768px) {
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255, 79, 159, 0.5); }
+            to { text-shadow: 0 0 30px rgba(255, 79, 159, 0.8); }
+        }
+
+        @media (max-width: 768px) {
             h1 {
-                font-size: 1.8em;
-                margin-bottom: 30px;
+                font-size: 1.6em;
+                margin-bottom: 20px;
             }
         }
 
         button {
-            background-color: #ff4f9f;
+            background: linear-gradient(135deg, #ff4f9f, #e33f8a);
             color: #1b1b2e;
-            padding: 15px 20px;
+            padding: 16px 32px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em;
             font-weight: 700;
             font-family: 'Rubik Mono One', sans-serif;
             margin: 15px 5px;
-            box-shadow: 0 4px 10px rgba(255, 79, 159, 0.5);
-            min-height: 50px;
+            box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+            min-height: 56px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        @media (min-width: 768px) {
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        @media (max-width: 768px) {
             button {
-                padding: 12px 24px;
-                font-size: 1em;
+                padding: 14px 24px;
+                font-size: 0.9em;
+                margin: 12px 0;
+                width: 100%;
+                max-width: 300px;
             }
         }
 
         button:hover {
-            background-color: #e33f8a;
-            box-shadow: 0 6px 14px rgba(227, 63, 138, 0.7);
+            background: linear-gradient(135deg, #e33f8a, #cc357a);
+            box-shadow: 0 8px 25px rgba(227, 63, 138, 0.6);
+            transform: translateY(-2px);
         }
 
         button:disabled {
-            background-color: #666;
+            background: linear-gradient(135deg, #555, #444);
             color: #999;
             cursor: not-allowed;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transform: none;
         }
 
         button:disabled:hover {
-            background-color: #666;
+            background: linear-gradient(135deg, #555, #444);
+            transform: none;
+        }
+
+        button:disabled::before {
+            display: none;
         }
 
         p {
-            font-size: 0.8em;
+            font-size: 1em;
             color: #e1c5f5;
-            margin: 15px 0;
+            margin: 20px 0;
+            line-height: 1.6;
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             p {
                 font-size: 0.9em;
+                margin: 15px 0;
             }
         }
 
         #game-points {
             font-weight: 700;
-            font-size: 2em;
+            font-size: 3.5em;
             color: #ffd700;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            animation: pointsGlow 1.5s ease-in-out infinite alternate;
         }
 
-        @media (min-width: 768px) {
+        @keyframes pointsGlow {
+            from { 
+                transform: scale(1);
+                text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            }
+            to { 
+                transform: scale(1.05);
+                text-shadow: 0 0 40px rgba(255, 215, 0, 1);
+            }
+        }
+
+        @media (max-width: 768px) {
             #game-points {
                 font-size: 2.5em;
             }
         }
 
+        .status-card {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border: 2px solid;
+            backdrop-filter: blur(10px);
+            font-weight: 700;
+        }
+
         .vip-status {
             color: #2ecc71;
-            font-weight: 700;
-            margin-bottom: 15px;
-            background-color: #2d4a3a;
-            padding: 10px;
-            border-radius: 8px;
-            border: 2px solid #2ecc71;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
+            border-color: #2ecc71;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
         }
 
         .not-vip {
             color: #e74c3c;
-            font-weight: 700;
-            margin-bottom: 15px;
-            background-color: #4a2d2d;
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #e74c3c;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+            border-color: #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
         }
 
         .loading {
             color: #3498db;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
+            border-color: #3498db;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
             font-style: italic;
-            background-color: #2d3e4a;
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #3498db;
         }
 
         .user-info {
-            background-color: #2a233a;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, rgba(42, 35, 58, 0.8), rgba(47, 26, 57, 0.8));
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
             border: 2px solid #ff4f9f;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             .user-info {
-                padding: 25px;
-                margin-bottom: 30px;
+                padding: 20px;
+                margin-bottom: 20px;
             }
         }
 
         .user-info h3 {
             margin-top: 0;
             color: #ff4f9f;
-            font-size: 1.2em;
+            font-size: 1.4em;
+            text-shadow: 0 0 10px rgba(255, 79, 159, 0.5);
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             .user-info h3 {
-                font-size: 1.4em;
+                font-size: 1.2em;
             }
         }
 
         .user-info img {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             border: 3px solid #ff4f9f;
-            margin: 10px 0;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             .user-info img {
-                width: 80px;
-                height: 80px;
+                width: 60px;
+                height: 60px;
             }
+        }
+
+        .message {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px solid;
+            font-size: 0.95em;
+            backdrop-filter: blur(10px);
         }
 
         .error-message {
-            background-color: #4a2d2d;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
             color: #ff6b6b;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 2px solid #e74c3c;
-            font-size: 0.8em;
-        }
-
-        @media (min-width: 768px) {
-            .error-message {
-                font-size: 0.9em;
-            }
+            border-color: #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
         }
 
         .success-message {
-            background-color: #2d4a3a;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
             color: #5dff5d;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 2px solid #2ecc71;
-            font-size: 0.8em;
-        }
-
-        @media (min-width: 768px) {
-            .success-message {
-                font-size: 0.9em;
-            }
+            border-color: #2ecc71;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
         }
 
         .login-prompt {
-            background-color: #4a3d2d;
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(243, 156, 18, 0.1));
             color: #ffd700;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 2px solid #ffc107;
+            border-color: #ffc107;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
         }
 
         .points-threshold {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #2d3e4a;
-            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
             color: #64b5f6;
-            border: 2px solid #3498db;
-            font-size: 0.8em;
-        }
-
-        @media (min-width: 768px) {
-            .points-threshold {
-                font-size: 0.9em;
-                padding: 20px;
-            }
+            border-color: #3498db;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
         }
 
         .points-display {
-            background-color: #2a233a;
-            padding: 25px;
-            border-radius: 12px;
-            margin: 20px 0;
+            background: linear-gradient(135deg, rgba(42, 35, 58, 0.9), rgba(47, 26, 57, 0.9));
+            padding: 40px;
+            border-radius: 16px;
+            margin: 30px 0;
             border: 3px solid #ffd700;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+            backdrop-filter: blur(10px);
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             .points-display {
-                padding: 30px;
-                margin: 30px 0;
+                padding: 25px;
+                margin: 20px 0;
             }
         }
 
         .points-label {
             color: #e1c5f5;
-            font-size: 0.8em;
-            margin-bottom: 10px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(225, 197, 245, 0.5);
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             .points-label {
                 font-size: 1em;
+                margin-bottom: 10px;
             }
         }
 
-        /* Touch-friendly improvements */
-        @media (hover: none) {
-            button:active {
-                background-color: #e33f8a;
-            }
+        /* Loading animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #3498db;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
         }
 
-        /* Responsive text scaling */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive improvements */
         @media (max-width: 480px) {
             h1 {
-                font-size: 1.2em;
+                font-size: 1.4em;
             }
             
             #game-points {
-                font-size: 1.8em;
+                font-size: 2em;
             }
             
             button {
-                padding: 12px 15px;
-                font-size: 0.8em;
-                margin: 10px 0;
-                width: 100%;
-                max-width: 280px;
+                font-size: 0.85em;
+                padding: 12px 20px;
+            }
+
+            .status-card, .message {
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            .points-display {
+                padding: 20px;
             }
         }
     </style>
@@ -2318,21 +2368,23 @@
         <section id="content">
             <h1>🎮 VIP Game Point Page</h1>
             
-            <div id="loading-message" class="loading">
+            <div id="loading-message" class="status-card loading">
+                <div class="loading-spinner"></div>
                 <p>Loading user information...</p>
             </div>
 
             <div id="not-logged-in" style="display: none;">
-                <div class="login-prompt">
-                    <p>Please log in to earn game points!</p>
+                <div class="message login-prompt">
+                    <p>🔐 Please log in to earn game points!</p>
                     <button id="login-button">Login with GitHub</button>
                 </div>
             </div>
 
             <div id="not-vip" style="display: none;">
-                <div class="not-vip">
-                    <p>This page is for VIP members only!</p>
+                <div class="status-card not-vip">
+                    <p>⭐ This page is for VIP members only!</p>
                     <p>Upgrade to VIP to start earning game points.</p>
+                    <button id="upgrade-button">Upgrade to VIP</button>
                 </div>
             </div>
 
@@ -2341,32 +2393,33 @@
                     <!-- User info will be populated here -->
                 </div>
 
-                <div class="vip-status">
+                <div class="status-card vip-status">
                     <p>⭐ VIP Member - Game Points Available!</p>
                 </div>
 
-                <p>By viewing this page, you can earn game points.</p>
+                <p>By viewing this page, you can earn game points. Click the button below to add points to your account!</p>
+                
                 <div class="points-display">
                     <div class="points-label">Your Current Game Points:</div>
                     <div id="game-points">0</div>
                 </div>
                 
-                <div class="points-threshold">
-                    <p>Reach 10 points and this page will close automatically!</p>
+                <div class="message points-threshold">
+                    <p>🎯 Reach 10 points and this page will close automatically!</p>
                 </div>
 
                 <button id="earn-point-button">Earn Game Point</button>
 
-                <div id="success-message" class="success-message" style="display: none;">
-                    <p>Game point earned successfully! 🎉</p>
+                <div id="success-message" class="message success-message" style="display: none;">
+                    <p>🎉 Game point earned successfully!</p>
                 </div>
 
-                <div id="max-points-message" class="success-message" style="display: none;">
+                <div id="max-points-message" class="message success-message" style="display: none;">
                     <p>🎊 Congratulations! You've reached the maximum points!</p>
                 </div>
             </div>
 
-            <div id="error-message" class="error-message" style="display: none;">
+            <div id="error-message" class="message error-message" style="display: none;">
                 <!-- Error messages will appear here -->
             </div>
         </section>
@@ -2389,6 +2442,7 @@
   const gamePointsDisplay = document.getElementById("game-points");
   const earnPointButton = document.getElementById("earn-point-button");
   const loginButton = document.getElementById("login-button");
+  const upgradeButton = document.getElementById("upgrade-button");
   const errorMessage = document.getElementById("error-message");
   const successMessage = document.getElementById("success-message");
   const maxPointsMessage = document.getElementById("max-points-message");
@@ -2414,50 +2468,65 @@
     }, 3000);
   }
 
-  // Check if user is VIP
+  // Enhanced VIP status check - checks both localStorage AND database
   async function checkVipStatus(userId) {
     try {
-      // First check localStorage for quick access
-      const localVIP = localStorage.getItem('vipAccess') === 'true';
+      console.log('Checking VIP status for user:', userId);
       
-      // Always check database for authoritative VIP status
+      // Check localStorage first for quick response
+      const localVIP = localStorage.getItem('vipAccess') === 'true';
+      console.log('localStorage VIP status:', localVIP);
+      
+      // Always verify with database for authoritative status
       const { data, error } = await supabase
         .from('users')
-        .select('is_vip, github_username')
+        .select('is_vip, github_username, paypal_transaction_id')
         .eq('id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('Error checking VIP status:', error);
-        return localVIP; // Fallback to localStorage if database error
+      if (error) {
+        console.error('Database VIP check error:', error);
+        if (error.code === 'PGRST116') {
+          // User doesn't exist in users table - create them as non-VIP
+          console.log('User not found in database, creating record...');
+          await ensureUserRecord({ id: userId }, currentUsername);
+          return false;
+        }
+        // If database error but localStorage says VIP, trust localStorage temporarily
+        console.warn('Database error, falling back to localStorage VIP status');
+        return localVIP;
       }
 
-      // If user doesn't exist in database, they're not VIP
-      if (!data) {
-        localStorage.removeItem('vipAccess'); // Clear invalid local VIP
-        return false;
-      }
+      console.log('Database VIP data:', data);
 
-      // Database is authoritative - update localStorage to match
-      if (data.is_vip === true) {
+      // Database is authoritative
+      const dbVipStatus = data?.is_vip === true;
+      
+      // Sync localStorage with database
+      if (dbVipStatus) {
         localStorage.setItem('vipAccess', 'true');
-        return true;
+        console.log('User is VIP in database, localStorage synced');
       } else {
-        localStorage.removeItem('vipAccess'); // Clear localStorage if not VIP in DB
-        return false;
+        localStorage.removeItem('vipAccess');
+        console.log('User is not VIP in database, localStorage cleared');
       }
+
+      return dbVipStatus;
 
     } catch (error) {
       console.error('Exception in checkVipStatus:', error);
-      // On exception, fallback to localStorage but log warning
-      console.warn('Using localStorage VIP status due to database error');
-      return localStorage.getItem('vipAccess') === 'true';
+      // On exception, use localStorage as fallback but log warning
+      const fallbackVip = localStorage.getItem('vipAccess') === 'true';
+      console.warn('Using localStorage VIP status due to exception:', fallbackVip);
+      return fallbackVip;
     }
   }
 
-  // Get or create user record in users table
+  // Enhanced user record creation with proper VIP handling
   async function ensureUserRecord(user, username) {
     try {
+      console.log('Ensuring user record for:', { userId: user.id, username });
+      
       // Check if user exists
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
@@ -2465,12 +2534,13 @@
         .eq('id', user.id)
         .single();
 
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching user:', fetchError);
         return null;
       }
 
       if (existingUser) {
+        console.log('User exists in database:', existingUser);
         // Update username if it's missing
         if (!existingUser.github_username && username) {
           const { error: updateError } = await supabase
@@ -2480,18 +2550,27 @@
 
           if (updateError) {
             console.error('Error updating username:', updateError);
+          } else {
+            console.log('Username updated for existing user');
           }
         }
         return existingUser;
       }
 
-      // Create new user record - default is_vip to false
+      // Check if localStorage says user is VIP (from successful payment)
+      const localVipStatus = localStorage.getItem('vipAccess') === 'true';
+      const subscriptionId = localStorage.getItem('vipSubscriptionId');
+      
+      console.log('Creating new user record with VIP status:', localVipStatus);
+
+      // Create new user record
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert({
           id: user.id,
-          is_vip: false, // Explicitly set to false for new users
+          is_vip: localVipStatus, // Use localStorage VIP status for new users
           github_username: username,
+          paypal_transaction_id: subscriptionId,
           created_at: new Date().toISOString()
         })
         .select()
@@ -2502,7 +2581,9 @@
         return null;
       }
 
+      console.log('New user record created:', newUser);
       return newUser;
+
     } catch (error) {
       console.error('Exception in ensureUserRecord:', error);
       return null;
@@ -2518,7 +2599,7 @@
         .eq('user_id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching game points:', error);
         return 0;
       }
@@ -2546,7 +2627,7 @@
         return 0;
       }
 
-      // Update last viewed time
+      // Update last viewed time and increment view count
       const { error: updateError } = await supabase
         .from('vip_page_views')
         .update({ 
@@ -2595,6 +2676,8 @@
   // Initialize the page based on user status
   async function initializePage() {
     try {
+      console.log('Initializing VIP game point page...');
+      
       // Get current session
       const { data: { session }, error } = await supabase.auth.getSession();
       
@@ -2607,13 +2690,14 @@
       }
 
       if (!session?.user) {
-        // Not logged in
+        console.log('No user session found');
         loadingMessage.style.display = 'none';
         notLoggedIn.style.display = 'block';
         return;
       }
 
       currentUser = session.user;
+      console.log('User session found:', currentUser.id);
       
       // Get username from metadata
       currentUsername = session.user.user_metadata?.user_name || 
@@ -2639,24 +2723,26 @@
         }
       }
 
-      // Ensure user record exists in users table
+      console.log('Username determined:', currentUsername);
+
+      // Ensure user record exists in users table (this handles VIP status properly)
       const userRecord = await ensureUserRecord(currentUser, currentUsername);
       
-      // Check VIP status - this now checks the database is_vip column authoritatively
+      // Check VIP status with enhanced logic
       isVip = await checkVipStatus(currentUser.id);
 
-      console.log('VIP Status Check:', { userId: currentUser.id, isVip, userRecord });
+      console.log('Final VIP status check result:', { userId: currentUser.id, isVip, userRecord });
+
+      loadingMessage.style.display = 'none';
 
       if (!isVip) {
-        // Not VIP - show not VIP message
-        loadingMessage.style.display = 'none';
+        console.log('User is not VIP - showing upgrade prompt');
         notVip.style.display = 'block';
-        console.log('User is not VIP - showing not VIP message');
         return;
       }
 
       // User is VIP - show VIP content
-      loadingMessage.style.display = 'none';
+      console.log('User is VIP - showing VIP content');
       vipContent.style.display = 'block';
 
       // Display user info
@@ -2665,9 +2751,10 @@
       
       userInfoDiv.innerHTML = `
         <h3>Welcome, ${fullName}!</h3>
-        ${avatar ? `<img src="${avatar}" alt="${fullName}" style="width: 50px; height: 50px; border-radius: 50%; margin: 10px 0;">` : ''}
+        ${avatar ? `<img src="${avatar}" alt="${fullName}">` : ''}
         <p><strong>Username:</strong> ${currentUsername}</p>
         <p><strong>Status:</strong> ⭐ VIP Member</p>
+        <p><strong>User ID:</strong> ${currentUser.id}</p>
       `;
 
       // Load and display current points
@@ -2679,6 +2766,11 @@
         earnPointButton.disabled = true;
         earnPointButton.textContent = 'Maximum Points Reached!';
         maxPointsMessage.style.display = 'block';
+        
+        setTimeout(() => {
+          alert("🎊 Congratulations! You've reached the maximum points. The page will now close.");
+          window.close();
+        }, 3000);
       }
 
     } catch (error) {
@@ -2713,6 +2805,12 @@
       loginButton.disabled = false;
       loginButton.textContent = 'Login with GitHub';
     }
+  });
+
+  // Handle upgrade button click
+  upgradeButton.addEventListener('click', () => {
+    // Redirect to main page where they can upgrade
+    window.location.href = 'index.html';
   });
 
   // Handle earn point button click
@@ -2775,14 +2873,19 @@
 
   // Listen for auth state changes
   supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log('Auth state changed:', event);
+    
     if (event === 'SIGNED_IN') {
       // Reload page to initialize with new session
+      console.log('User signed in, reloading page...');
       window.location.reload();
     } else if (event === 'SIGNED_OUT') {
       // Clear current user data
       currentUser = null;
       currentUsername = null;
       isVip = false;
+      
+      console.log('User signed out, clearing data...');
       
       // Show not logged in state
       vipContent.style.display = 'none';
@@ -2793,9 +2896,6 @@
   });
 
   // Initialize page when DOM is loaded
-  document.addEventListener('DOMContentLoaded', initializePage);
-
-  // Also initialize immediately if DOM is already loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializePage);
   } else {
