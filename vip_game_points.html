@@ -472,50 +472,22 @@
     try {
       console.log('Attempting to update points for user:', userId, 'to:', newPoints);
 
-      // First check if record exists (handle the error properly)
-      const { data: existingRecord, error: selectError } = await supabase
+      // Simple upsert that works with your existing table structure
+      const { data, error } = await supabase
         .from('vip_page_views')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single to avoid error when no record
+        .upsert({
+          user_id: userId,
+          username: username,
+          game_points: newPoints,
+          view_count: 1,
+          last_viewed_at: new Date().toISOString()
+        })
+        .select();
 
-      console.log('Existing record:', existingRecord, 'Select error:', selectError);
+      console.log('Upsert result:', { data, error });
 
-      let result;
-      
-      if (existingRecord && !selectError) {
-        // Update existing record
-        console.log('Updating existing record...');
-        result = await supabase
-          .from('vip_page_views')
-          .update({
-            game_points: newPoints,
-            username: username, // Ensure username is always current
-            view_count: (existingRecord.view_count || 0) + 1,
-            last_viewed_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-          .select();
-      } else {
-        // Insert new record
-        console.log('Inserting new record...');
-        result = await supabase
-          .from('vip_page_views')
-          .insert({
-            user_id: userId,
-            username: username,
-            game_points: newPoints,
-            view_count: 1,
-            first_viewed_at: new Date().toISOString(),
-            last_viewed_at: new Date().toISOString()
-          })
-          .select();
-      }
-
-      console.log('Database operation result:', result);
-
-      if (result.error) {
-        console.error('Database error:', result.error);
+      if (error) {
+        console.error('Database error details:', error.message, error.details, error.hint);
         // Revert optimistic update
         currentPoints = newPoints - 1;
         elements.gamePointsDisplay.textContent = currentPoints;
@@ -523,7 +495,7 @@
         return false;
       }
 
-      console.log('Points updated successfully to:', newPoints);
+      console.log('Points updated successfully to:', newPoints, 'Data:', data);
       return true;
     } catch (err) {
       console.error('Exception in updatePoints:', err);
