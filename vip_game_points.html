@@ -470,21 +470,27 @@
     pointsCache.set(userId, newPoints);
 
     try {
-      // First check if record exists
-      const { data: existingRecord } = await supabase
+      console.log('Attempting to update points for user:', userId, 'to:', newPoints);
+
+      // First check if record exists (handle the error properly)
+      const { data: existingRecord, error: selectError } = await supabase
         .from('vip_page_views')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid error when no record
+
+      console.log('Existing record:', existingRecord, 'Select error:', selectError);
 
       let result;
       
-      if (existingRecord) {
+      if (existingRecord && !selectError) {
         // Update existing record
+        console.log('Updating existing record...');
         result = await supabase
           .from('vip_page_views')
           .update({
             game_points: newPoints,
+            username: username, // Ensure username is always current
             view_count: (existingRecord.view_count || 0) + 1,
             last_viewed_at: new Date().toISOString()
           })
@@ -492,6 +498,7 @@
           .select();
       } else {
         // Insert new record
+        console.log('Inserting new record...');
         result = await supabase
           .from('vip_page_views')
           .insert({
@@ -505,8 +512,10 @@
           .select();
       }
 
+      console.log('Database operation result:', result);
+
       if (result.error) {
-        console.log('Points update error:', result.error);
+        console.error('Database error:', result.error);
         // Revert optimistic update
         currentPoints = newPoints - 1;
         elements.gamePointsDisplay.textContent = currentPoints;
@@ -514,10 +523,10 @@
         return false;
       }
 
-      console.log('Points updated successfully:', result.data);
+      console.log('Points updated successfully to:', newPoints);
       return true;
     } catch (err) {
-      console.log('Points update error:', err);
+      console.error('Exception in updatePoints:', err);
       // Revert optimistic update
       currentPoints = newPoints - 1;
       elements.gamePointsDisplay.textContent = currentPoints;
