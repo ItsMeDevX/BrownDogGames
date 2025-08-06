@@ -34,34 +34,6 @@
             max-width: 600px;
             box-shadow: 0 8px 32px rgba(255, 79, 159, 0.3);
             min-height: 400px;
-            position: relative;
-        }
-
-        /* Smooth transitions for all sections */
-        .section {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease-in-out;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) translateY(20px);
-            width: calc(100% - 80px);
-        }
-
-        .section.active {
-            opacity: 1;
-            transform: translate(-50%, -50%) translateY(0);
-        }
-
-        .section.loading {
-            position: static;
-            transform: none;
-            width: auto;
-        }
-
-        .section.loading.active {
-            transform: none;
         }
 
         h1 {
@@ -69,6 +41,27 @@
             font-size: 2.2em;
             margin-bottom: 30px;
             text-shadow: 0 0 20px rgba(255, 79, 159, 0.5);
+        }
+
+        /* Section visibility classes */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .status-card {
@@ -113,8 +106,13 @@
             transition: transform 0.3s ease;
         }
 
-        #game-points.updated {
-            transform: scale(1.2);
+        #game-points.pulse {
+            animation: pointsPulse 0.5s ease-in-out;
+        }
+
+        @keyframes pointsPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         button {
@@ -148,14 +146,23 @@
             border-radius: 12px;
             margin: 20px 0;
             border: 2px solid;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
+            display: none;
         }
 
         .message.show {
-            opacity: 1;
-            transform: translateY(0);
+            display: block;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .success-message {
@@ -219,10 +226,6 @@
                 width: 100%;
                 max-width: 300px;
             }
-
-            .section {
-                width: calc(100% - 40px);
-            }
         }
     </style>
 </head>
@@ -231,7 +234,7 @@
         <h1>🎮 VIP Game Point Page</h1>
         
         <!-- Loading State -->
-        <div id="loading" class="section loading active">
+        <div id="loading" class="section active">
             <div class="status-card loading">
                 <div class="spinner"></div>
                 <p>Loading...</p>
@@ -316,19 +319,20 @@
   const errorText = document.getElementById('error-text');
   const maxPointsMsg = document.getElementById('max-points-msg');
 
-  // Smooth transition function
+  // Simple section switching with fade animation
   function showSection(targetSection) {
-    const sections = [loading, notLoggedIn, notVip, vipContent];
+    console.log('Showing section:', targetSection.id);
     
+    // Hide all sections first
+    const sections = [loading, notLoggedIn, notVip, vipContent];
     sections.forEach(section => {
-      if (section === targetSection) {
-        setTimeout(() => {
-          section.classList.add('active');
-        }, 50);
-      } else {
-        section.classList.remove('active');
-      }
+      section.classList.remove('active');
     });
+    
+    // Show target section after a brief delay for smooth transition
+    setTimeout(() => {
+      targetSection.classList.add('active');
+    }, 100);
   }
 
   function showMessage(messageEl, text = null, duration = 3000) {
@@ -348,14 +352,14 @@
     });
   }
 
-  function animatePointsUpdate() {
-    gamePointsDisplay.classList.add('updated');
+  function animatePoints() {
+    gamePointsDisplay.classList.add('pulse');
     setTimeout(() => {
-      gamePointsDisplay.classList.remove('updated');
-    }, 300);
+      gamePointsDisplay.classList.remove('pulse');
+    }, 500);
   }
 
-  // Check VIP status - SIMPLE VERSION
+  // Check VIP status
   async function checkVIPStatus(userId) {
     try {
       // First check localStorage
@@ -436,18 +440,18 @@
     }
   }
 
-  // Initialize page with smooth transitions
+  // Initialize page
   async function init() {
     try {
+      console.log('Starting initialization...');
       hideAllMessages();
-      
-      // Add a small delay to ensure smooth loading
-      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Get session
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session:', session ? 'Found' : 'None');
       
       if (!session?.user) {
+        console.log('No user session, showing login');
         showSection(notLoggedIn);
         return;
       }
@@ -464,11 +468,14 @@
       console.log('Is VIP:', isVIP);
 
       if (!isVIP) {
+        console.log('User not VIP, showing not-vip section');
         showSection(notVip);
         return;
       }
 
-      // Prepare VIP content before showing
+      console.log('User is VIP, preparing content...');
+
+      // Prepare VIP content
       const avatar = currentUser.user_metadata?.avatar_url || '';
       const fullName = currentUser.user_metadata?.full_name || currentUsername;
       
@@ -482,6 +489,7 @@
       // Get current points
       currentPoints = await getCurrentPoints(currentUser.id);
       gamePointsDisplay.textContent = currentPoints;
+      console.log('Current points:', currentPoints);
 
       // Check if maxed out
       if (currentPoints >= 10) {
@@ -490,6 +498,7 @@
       }
 
       // Show VIP content
+      console.log('Showing VIP content...');
       showSection(vipContent);
 
       // Show max points message if needed
@@ -500,11 +509,13 @@
             alert('🎊 Congratulations! Maximum points reached!');
             window.close();
           }, 3000);
-        }, 500);
+        }, 1000);
       }
 
+      console.log('Initialization complete');
+
     } catch (err) {
-      console.log('Init error:', err);
+      console.error('Init error:', err);
       showMessage(errorMsg, 'Failed to load page');
       showSection(notLoggedIn);
     }
@@ -512,6 +523,7 @@
 
   // Event listeners
   loginBtn.addEventListener('click', () => {
+    console.log('Login button clicked');
     supabase.auth.signInWithOAuth({ 
       provider: 'github',
       options: { redirectTo: window.location.href }
@@ -527,6 +539,8 @@
 
       if (currentPoints >= 10) {
         showMessage(errorMsg, 'Maximum points already reached!');
+        earnPointBtn.disabled = false;
+        earnPointBtn.textContent = 'Earn Game Point';
         return;
       }
 
@@ -536,7 +550,7 @@
       if (success) {
         currentPoints = newPoints;
         gamePointsDisplay.textContent = currentPoints;
-        animatePointsUpdate();
+        animatePoints();
         showMessage(successMsg);
 
         if (currentPoints >= 10) {
@@ -556,7 +570,7 @@
         earnPointBtn.textContent = 'Earn Game Point';
       }
     } catch (err) {
-      console.log('Earn point error:', err);
+      console.error('Earn point error:', err);
       showMessage(errorMsg, 'Error earning point');
       earnPointBtn.disabled = false;
       earnPointBtn.textContent = 'Earn Game Point';
@@ -564,7 +578,8 @@
   });
 
   // Auth listener
-  supabase.auth.onAuthStateChange((event) => {
+  supabase.auth.onAuthStateChange((event, session) => {
+    console.log('Auth state change:', event);
     if (event === 'SIGNED_IN') {
       window.location.reload();
     } else if (event === 'SIGNED_OUT') {
@@ -572,7 +587,8 @@
     }
   });
 
-  // Start
+  // Start initialization when page loads
+  console.log('Page loaded, starting init...');
   init();
 </script>
 
