@@ -2921,13 +2921,13 @@ crossorigin="anonymous"></script>
     return username;
   }
 
-  // Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS
+  // Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS AND GAME POINTS
   async function getAllLikesBreakdown() {
-    if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+    if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
 
     try {
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
 
       console.log(`🔍 Dashboard: Getting likes breakdown for ${username}`);
 
@@ -2953,20 +2953,21 @@ crossorigin="anonymous"></script>
 
       console.log(`🗺️ Dashboard: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
 
-      // Step 2: Get all view records
+      // Step 2: Get all view records INCLUDING GAME POINTS
       const { data: allViews, error: viewsError } = await supabase
         .from('vip_page_views')
-        .select('username, view_count');
+        .select('username, view_count, game_points');
 
       if (viewsError) throw viewsError;
 
-      // Step 3: Process using same logic as leaderboard
+      // Step 3: Process using same logic as leaderboard + game points
       const usersLikesMap = {};
 
       if (allViews) {
         allViews.forEach(view => {
           const viewUsername = view.username;
           const viewCount = view.view_count || 0;
+          const gamePoints = view.game_points || 0; // NEW: Get game points
           
           if (!viewUsername) return;
 
@@ -2976,7 +2977,7 @@ crossorigin="anonymous"></script>
           // Check if this is an extra like
           if (viewUsername.startsWith('extra_')) {
             const extraId = viewUsername.replace('extra_', '');
-            console.log(`🔍 Dashboard: Processing extra like: ${extraId} (${viewCount} likes)`);
+            console.log(`🔍 Dashboard: Processing extra like: ${extraId} (${viewCount} likes, ${gamePoints} game points)`);
             
             // Look up the creator of this extra
             const creatorInfo = extraCreatorMap[extraId];
@@ -3011,13 +3012,18 @@ crossorigin="anonymous"></script>
               games: 0,
               art: 0,
               extras: 0,
+              gamePoints: 0, // NEW: Track game points separately
               total: 0
             };
           }
 
           // Add to appropriate category
           usersLikesMap[baseUsername][contentType] += viewCount;
-          console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes to ${baseUsername}`);
+          
+          // Add game points (these apply to all content types)
+          usersLikesMap[baseUsername].gamePoints += gamePoints;
+          
+          console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes + ${gamePoints} game points to ${baseUsername}`);
         });
       }
 
@@ -3026,10 +3032,15 @@ crossorigin="anonymous"></script>
       const userLikesData = usersLikesMap[normalizedCurrentUsername];
 
       if (userLikesData) {
-        // Calculate total
-        userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.extras;
+        // Calculate total: likes + game points
+        const likesTotal = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.extras;
+        userLikesData.total = likesTotal + userLikesData.gamePoints; // Include game points in total
         
-        console.log(`📊 Dashboard: Final likes for ${normalizedCurrentUsername}:`, userLikesData);
+        console.log(`📊 Dashboard: Final breakdown for ${normalizedCurrentUsername}:`, {
+          ...userLikesData,
+          likesOnly: likesTotal,
+          totalWithGamePoints: userLikesData.total
+        });
         
         return {
           page: userLikesData.page,
@@ -3037,16 +3048,17 @@ crossorigin="anonymous"></script>
           games: userLikesData.games,
           art: userLikesData.art,
           extras: userLikesData.extras,
+          gamePoints: userLikesData.gamePoints, // NEW: Return game points separately
           total: userLikesData.total
         };
       } else {
-        console.log(`📊 Dashboard: No likes found for ${normalizedCurrentUsername}`);
-        return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+        console.log(`📊 Dashboard: No data found for ${normalizedCurrentUsername}`);
+        return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
       }
 
     } catch (error) {
       console.error('Error getting likes breakdown:', error);
-      return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+      return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
     }
   }
 
@@ -3310,7 +3322,7 @@ crossorigin="anonymous"></script>
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
-      // Get all likes breakdown (including VIP extras)
+      // Get all likes breakdown (including VIP extras AND game points)
       const likesBreakdown = await getAllLikesBreakdown();
 
       // Update stats display
@@ -3322,7 +3334,13 @@ crossorigin="anonymous"></script>
       if (statGames) statGames.textContent = gamesCount || 0;
       if (statVideos) statVideos.textContent = videosCount || 0;
       if (statArt) statArt.textContent = artCount || 0;
-      if (statLikes) statLikes.textContent = likesBreakdown.total;
+      
+      // Show total with breakdown in title/tooltip
+      if (statLikes) {
+        statLikes.textContent = likesBreakdown.total;
+        const likesOnly = likesBreakdown.total - likesBreakdown.gamePoints;
+        statLikes.title = `Likes: ${likesOnly} | Game Points: ${likesBreakdown.gamePoints} | Total: ${likesBreakdown.total}`;
+      }
 
     } catch (error) {
       console.error('Stats load error:', error);
@@ -4160,4 +4178,5 @@ if (document.readyState === 'loading') {
 
 </body>
 </html>
+
 
