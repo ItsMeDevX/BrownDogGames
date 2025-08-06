@@ -2366,7 +2366,7 @@ crossorigin="anonymous"></script>
       gap: 12px;
     }
 
-    .art-item {
+    .art-item, .music-item {
       flex-direction: column !important;
       align-items: flex-start !important;
     }
@@ -2401,6 +2401,18 @@ crossorigin="anonymous"></script>
       border-radius: 8px;
       box-shadow: 0 0 8px #ff69b488;
       margin: 10px 0;
+    }
+
+    /* Music Player Styles */
+    .music-player {
+      width: 100%;
+      margin: 10px 0;
+      border-radius: 8px;
+      background-color: #3b2750;
+    }
+
+    .music-player::-webkit-media-controls-panel {
+      background-color: #3b2750;
     }
 
     .remove-btn {
@@ -2586,6 +2598,72 @@ crossorigin="anonymous"></script>
       color: #1e1b2e;
     }
 
+    /* Bottom Embeds */
+    .bottom-embeds-section {
+        background: linear-gradient(135deg, #2f1a39, #3d2147);
+        border: 2px solid #ff4f9f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem auto;
+        text-align: center;
+        max-width: 400px;
+    }
+    .bottom-embeds-section h3 {
+        color: #ff4f9f;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 0 10px #ff4f9f;
+        font-family: 'Rubik Mono One', sans-serif;
+    }
+    .bottom-embeds-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        margin-top: 2rem;
+        justify-content: center;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .bottom-embed-container {
+        border: 2px solid #ff4f9f;
+        border-radius: 8px;
+        overflow: hidden;
+        background: linear-gradient(45deg, #ff4f9f, #ff82ba);
+        height: 60px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        animation: pulse 2s infinite;
+    }
+
+    .bottom-embed-container:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
+        background: linear-gradient(45deg, #ff82ba, #ffb3d1);
+    }
+
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
+        50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
+    }
+    .bottom-embed-iframe {
+        width: 100%;
+        height: 400px;
+        border: none;
+        display: block;
+        transform: scale(0.8);
+        transform-origin: top left;
+        overflow: hidden;
+    }
+    .bottom-embed-header {
+        background: linear-gradient(45deg, #ff4f9f, #ff82ba);
+        color: #1b1b2e;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        font-family: 'Rubik Mono One', sans-serif;
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       .header-info {
@@ -2634,6 +2712,18 @@ crossorigin="anonymous"></script>
         align-items: flex-start;
         gap: 0.5rem;
       }
+
+      .bottom-embeds-container {
+          grid-template-columns: 1fr;
+          max-width: 150px;
+      }
+      .bottom-embeds-section {
+          padding: 1rem;
+          margin: 1rem auto;
+      }
+      .bottom-embed-container {
+          height: 50px;
+      }
     }
   </style>
 </head>
@@ -2668,6 +2758,7 @@ crossorigin="anonymous"></script>
   <button class="tab-button active" onclick="showTab('profile')">Profile</button>
   <button class="tab-button" onclick="showTab('games')">Games</button>
   <button class="tab-button" onclick="showTab('videos')">Videos</button>
+  <button class="tab-button" onclick="showTab('music')">Music</button>
   <button class="tab-button" onclick="showTab('art')">Art</button>
   <button class="tab-button" onclick="showTab('payments')">Payments</button>
 </div>
@@ -2694,6 +2785,10 @@ crossorigin="anonymous"></script>
       <div class="stat-item">
         <div id="statVideos" class="stat-value">0</div>
         <div class="stat-label">Videos</div>
+      </div>
+      <div class="stat-item">
+        <div id="statMusic" class="stat-value">0</div>
+        <div class="stat-label">Music</div>
       </div>
       <div class="stat-item">
         <div id="statArt" class="stat-value">0</div>
@@ -2794,6 +2889,26 @@ crossorigin="anonymous"></script>
   <p class="message" id="videoFormMessage" aria-live="polite"></p>
 </div>
 
+<!-- Music Tab -->
+<div id="music-tab" class="tab-content">
+  <ul id="music-list" class="content-list"></ul>
+
+  <form id="addMusicForm" class="content-form">
+    <label for="musicTitle">Music Title:</label>
+    <input type="text" id="musicTitle" placeholder="Enter music title" required />
+
+    <label for="musicDescription">Description:</label>
+    <textarea id="musicDescription" rows="4" placeholder="Describe your music" required></textarea>
+
+    <label for="musicUrl">Music URL:</label>
+    <input type="url" id="musicUrl" placeholder="Link to your music file (MP3, WAV, OGG)" required />
+
+    <button type="submit" id="musicSubmitBtn">Add New Music</button>
+  </form>
+
+  <p class="message" id="musicFormMessage" aria-live="polite"></p>
+</div>
+
 <!-- Art Tab -->
 <div id="art-tab" class="tab-content">
   <ul id="art-list" class="content-list"></ul>
@@ -2842,7 +2957,7 @@ crossorigin="anonymous"></script>
       </button>
       <p id="paymentTabStatus" class="payout-status"></p>
       <div style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.8;">
-        Minimum £5.00 required for payout. Earnings: £0.01 per 10 total likes from all content.
+        Minimum £5.00 required for payout. Earnings: £0.001 per point (5000 points = £5.00).
       </div>
     </div>
   </div>
@@ -4117,174 +4232,10 @@ if (document.readyState === 'loading') {
     autoLoadBottomEmbeds();
 }
 </script>
-  
-<!-- Add this CSS to your existing page's <head> section -->
-<style>
-.bottom-embeds-section {
-    background: linear-gradient(135deg, #2f1a39, #3d2147);
-    border: 2px solid #ff4f9f;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem auto;
-    text-align: center;
-    max-width: 400px;
-}
-.bottom-embeds-section h3 {
-    color: #ff4f9f;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px #ff4f9f;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-.bottom-embeds-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.bottom-embed-container {
-    border: 2px solid #ff4f9f;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    height: 60px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    animation: pulse 2s infinite;
-}
-
-.bottom-embed-container:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
-    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
-}
-.bottom-embed-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow: hidden;
-}
-.bottom-embed-header {
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    color: #1b1b2e;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-@media (max-width: 768px) {
-    .bottom-embeds-container {
-        grid-template-columns: 1fr;
-        max-width: 150px;
-    }
-    .bottom-embeds-section {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .bottom-embed-container {
-        height: 50px;
-    }
-}
-</style>
-
-<!-- Add this HTML section to the bottom of your existing page -->
-<div class="bottom-embeds-section">
-    <h3>Featured Content</h3>
-    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
-        <!-- Embeds will automatically load here -->
-    </div>
-</div>
-
-<script>
-function createBottomEmbed(url, title) {
-    const embedContainer = document.createElement('div');
-    embedContainer.className = 'bottom-embed-container';
-
-    const embedHeader = document.createElement('div');
-    embedHeader.className = 'bottom-embed-header';
-    embedHeader.textContent = `Embedded: ${title}`;
-
-    const iframe = document.createElement('iframe');
-    iframe.className = 'bottom-embed-iframe';
-    iframe.src = url;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allowfullscreen', 'true');
-    
-    // Add error handling
-    iframe.onload = function() {
-        console.log(`Successfully loaded: ${title}`);
-    };
-    
-    iframe.onerror = function() {
-        console.log(`Failed to load: ${title}`);
-        iframe.style.background = '#ff4f9f';
-        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
-    };
-
-    embedContainer.appendChild(embedHeader);
-    embedContainer.appendChild(iframe);
-    
-    return embedContainer;
-}
-
-function autoLoadBottomEmbeds() {
-    const urls = [
-        'https://otieu.com/4/9248260',
-        'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458',
-        'https://otieu.com/4/9661607'
-    ];
-    const embedsContainer = document.getElementById('bottomEmbedsContainer');
-    
-    if (embedsContainer) {
-        // Instead of embedding, create clickable previews
-        urls.forEach((url, index) => {
-            const linkContainer = document.createElement('div');
-            linkContainer.className = 'bottom-embed-container';
-            linkContainer.style.cursor = 'pointer';
-            linkContainer.style.display = 'flex';
-            linkContainer.style.alignItems = 'center';
-            linkContainer.style.justifyContent = 'center';
-            linkContainer.style.textDecoration = 'none';
-            
-            linkContainer.innerHTML = `
-                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
-                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
-                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
-                </div>
-            `;
-            
-            linkContainer.addEventListener('click', () => {
-                window.open(url, '_blank');
-            });
-            
-            embedsContainer.appendChild(linkContainer);
-        });
-    }
-}
-
-// Auto-load embeds when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
-} else {
-    autoLoadBottomEmbeds();
-}
-</script>
 
 </body>
 </html>
+
 
 
 
