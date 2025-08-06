@@ -2347,10 +2347,13 @@ crossorigin="anonymous"></script>
         const manualRules = {
           'browndoggames': 'itsmedevx',
           'ace': 'Ace475',
+          'itsmedevx': 'itsmedevx',      // Normalize case
+          'itsmedevX': 'itsmedevx',      // Handle capital X
         };
 
         Object.entries(manualRules).forEach(([from, to]) => {
           consolidationMap[from] = to;
+          consolidationMap[from.toLowerCase()] = to; // Add lowercase version too
           console.log(`🔧 Manual mapping: "${from}" → "${to}"`);
         });
 
@@ -2608,5 +2611,6 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
+
 
 
