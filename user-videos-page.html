@@ -4222,182 +4222,188 @@ crossorigin="anonymous"></script>
     return url;
   }
 
-  async function loadVideos() {
-    const result = await supabase
-      .from('game_videos')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: false });
+ async function loadVideos() {
+  const result = await supabase
+    .from('game_videos')
+    .select('*')
+    .eq('github_username', username)
+    .order('created_at', { ascending: false });
 
-    if (result.error) {
-      videosContainer.innerHTML = '<div class="no-content">❌ Error loading videos: ' + result.error.message + '</div>';
-      return;
-    }
-
-    if (!result.data.length) {
-      videosContainer.innerHTML = '<p class="no-content">No videos submitted by ' + username + ' yet.</p>';
-      return;
-    }
-
-    // Get current user and load like status
-    currentUser = await getCurrentUser();
-    console.log('🔍 Current user:', currentUser);
-    
-    if (currentUser) {
-      isVipUser = await checkVipStatus(currentUser);
-      userHasLiked = await hasUserLiked(currentUser.id);
-      
-      console.log('📊 Current user ID:', currentUser.id);
-      console.log('👑 Is VIP:', isVipUser);
-      console.log('📝 Page username:', username);
-      
-      // Show VIP badge and features if user is VIP
-      if (isVipUser) {
-        const vipBadge = document.getElementById('vipBadge');
-        const vipBadgesSection = document.getElementById('vipBadgesSection');
-        const msgInput = document.getElementById('msg-input');
-        const addExtraBtn = document.getElementById('addExtraBtn');
-        
-        console.log('🎉 User is VIP! Enabling VIP features...');
-        
-        if (vipBadge) {
-          vipBadge.style.display = 'inline-block';
-          console.log('✅ VIP badge shown');
-        }
-        
-        if (vipBadgesSection) {
-          vipBadgesSection.classList.add('show');
-          console.log('✅ VIP badges section shown');
-        }
-        
-        if (msgInput) {
-          msgInput.classList.add('vip');
-          console.log('✅ VIP chat styling added');
-        }
-        
-        // Show add extra button for ALL VIP users (no page owner restriction)
-        if (addExtraBtn) {
-          addExtraBtn.style.display = 'inline-block';
-          addExtraBtn.textContent = '➕ Add VIP Extra';
-          console.log('✅ Add extra button shown for VIP user');
-        }
-        
-      } else {
-        console.log('❌ User is not VIP');
-      }
-    } else {
-      console.log('❌ No current user logged in');
-    }
-    
-    totalLikes = await getTotalLikes();
-
-    // Update the like status display
-    updateLikeStatus();
-
-    // Add event listener for main like button
-    const mainLikeBtn = document.getElementById('main-like-btn');
-    if (mainLikeBtn) {
-      mainLikeBtn.addEventListener('click', async function() {
-        const success = await likeUserPage();
-        if (success) {
-          userHasLiked = true;
-          totalLikes = await getTotalLikes();
-          updateLikeStatus();
-        }
-      });
-    }
-
-    // Get video likes data
-    const videoIds = result.data.map(video => video.id || 'video-' + result.data.indexOf(video));
-    videoLikes = await getVideoLikes(videoIds);
-    if (currentUser) {
-      userLikedVideos = await getUserLikedVideos(currentUser.id, videoIds);
-    }
-
-    videosContainer.innerHTML = '';
-    result.data.forEach(function(video, index) {
-      const videoId = video.id || 'video-' + index;
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.setAttribute('data-video-id', videoId);
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = video.title || 'Untitled Video';
-      card.appendChild(title);
-
-      // Always add description element - show placeholder if empty
-      const desc = document.createElement('p');
-      desc.className = 'desc';
-      desc.textContent = video.description || 'No description provided';
-      card.appendChild(desc);
-      
-      // DEBUG: Log what was added
-      console.log(`Added description for video ${index}:`, desc.textContent);
-
-      if (video.video_url) {
-        const videoEmbed = createVideoEmbed(video);
-        card.appendChild(videoEmbed.element);
-
-        if (videoEmbed.controls && videoEmbed.controls.length > 0) {
-          const controlsDiv = document.createElement('div');
-          controlsDiv.className = 'video-controls';
-
-          videoEmbed.controls.forEach(control => {
-            const btn = document.createElement('button');
-            btn.className = 'control-btn';
-            btn.textContent = control.text;
-            btn.addEventListener('click', control.action);
-            controlsDiv.appendChild(btn);
-          });
-
-          card.appendChild(controlsDiv);
-        }
-      }
-
-      // Add video like section
-      const videoLikeSection = document.createElement('div');
-      videoLikeSection.className = 'video-like-section';
-
-      const videoLikeBtn = document.createElement('button');
-      videoLikeBtn.className = 'video-like-btn';
-      const isLiked = userLikedVideos.has(videoId);
-      videoLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
-      if (isLiked) videoLikeBtn.classList.add('liked');
-      
-      if (!currentUser) {
-        videoLikeBtn.disabled = true;
-        videoLikeBtn.innerHTML = '🤍 Like';
-      }
-
-      videoLikeBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleVideoLike(videoId);
-      });
-
-      const videoLikeCount = document.createElement('div');
-      videoLikeCount.className = 'video-like-count';
-      videoLikeCount.innerHTML = '❤️ ' + (videoLikes[videoId] || 0);
-
-      videoLikeSection.appendChild(videoLikeBtn);
-      videoLikeSection.appendChild(videoLikeCount);
-      card.appendChild(videoLikeSection);
-
-      // Add login prompt if user not logged in
-      if (!currentUser) {
-        const loginPrompt = document.createElement('p');
-        loginPrompt.className = 'video-login-prompt';
-        loginPrompt.textContent = 'Log in to like videos';
-        card.appendChild(loginPrompt);
-      }
-
-      videosContainer.appendChild(card);
-    });
-
-    // Load VIP extras after videos are loaded
-    await loadVipExtras();
+  if (result.error) {
+    videosContainer.innerHTML = '<div class="no-content">❌ Error loading videos: ' + result.error.message + '</div>';
+    return;
   }
 
+  if (!result.data.length) {
+    videosContainer.innerHTML = '<p class="no-content">No videos submitted by ' + username + ' yet.</p>';
+    return;
+  }
+
+  // Get current user and load like status
+  currentUser = await getCurrentUser();
+  console.log('🔍 Current user:', currentUser);
+  
+  if (currentUser) {
+    isVipUser = await checkVipStatus(currentUser);
+    userHasLiked = await hasUserLiked(currentUser.id);
+    
+    console.log('📊 Current user ID:', currentUser.id);
+    console.log('👑 Is VIP:', isVipUser);
+    console.log('📝 Page username:', username);
+    
+    // Show VIP badge and features if user is VIP
+    if (isVipUser) {
+      const vipBadge = document.getElementById('vipBadge');
+      const vipBadgesSection = document.getElementById('vipBadgesSection');
+      const msgInput = document.getElementById('msg-input');
+      const addExtraBtn = document.getElementById('addExtraBtn');
+      
+      console.log('🎉 User is VIP! Enabling VIP features...');
+      
+      if (vipBadge) {
+        vipBadge.style.display = 'inline-block';
+        console.log('✅ VIP badge shown');
+      }
+      
+      if (vipBadgesSection) {
+        vipBadgesSection.classList.add('show');
+        console.log('✅ VIP badges section shown');
+      }
+      
+      if (msgInput) {
+        msgInput.classList.add('vip');
+        console.log('✅ VIP chat styling added');
+      }
+      
+      // Show add extra button for ALL VIP users (no page owner restriction)
+      if (addExtraBtn) {
+        addExtraBtn.style.display = 'inline-block';
+        addExtraBtn.textContent = '➕ Add VIP Extra';
+        console.log('✅ Add extra button shown for VIP user');
+      }
+      
+    } else {
+      console.log('❌ User is not VIP');
+    }
+  } else {
+    console.log('❌ No current user logged in');
+  }
+  
+  totalLikes = await getTotalLikes();
+
+  // Update the like status display
+  updateLikeStatus();
+
+  // Add event listener for main like button
+  const mainLikeBtn = document.getElementById('main-like-btn');
+  if (mainLikeBtn) {
+    mainLikeBtn.addEventListener('click', async function() {
+      const success = await likeUserPage();
+      if (success) {
+        userHasLiked = true;
+        totalLikes = await getTotalLikes();
+        updateLikeStatus();
+      }
+    });
+  }
+
+  // Get video likes data
+  const videoIds = result.data.map(video => video.id || 'video-' + result.data.indexOf(video));
+  videoLikes = await getVideoLikes(videoIds);
+  if (currentUser) {
+    userLikedVideos = await getUserLikedVideos(currentUser.id, videoIds);
+  }
+
+  videosContainer.innerHTML = '';
+  result.data.forEach(function(video, index) {
+    const videoId = video.id || 'video-' + index;
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.setAttribute('data-video-id', videoId);
+
+    const title = document.createElement('h3');
+    title.className = 'title';
+    title.textContent = video.title || 'Untitled Video';
+    card.appendChild(title);
+
+    // FIX: Check for the correct column name - it should be 'description' not 'content'
+    // Based on your database schema, the column is likely named 'description'
+    const desc = document.createElement('p');
+    desc.className = 'desc';
+    
+    // Try multiple possible column names for description
+    const descriptionText = video.description || video.desc || video.content || 'No description provided';
+    desc.textContent = descriptionText;
+    card.appendChild(desc);
+    
+    // Enhanced DEBUG: Log the entire video object to see what fields are available
+    console.log(`Video ${index} data:`, video);
+    console.log(`Description field value:`, video.description);
+    console.log(`Content field value:`, video.content);
+    console.log(`Final description text:`, descriptionText);
+
+    if (video.video_url) {
+      const videoEmbed = createVideoEmbed(video);
+      card.appendChild(videoEmbed.element);
+
+      if (videoEmbed.controls && videoEmbed.controls.length > 0) {
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'video-controls';
+
+        videoEmbed.controls.forEach(control => {
+          const btn = document.createElement('button');
+          btn.className = 'control-btn';
+          btn.textContent = control.text;
+          btn.addEventListener('click', control.action);
+          controlsDiv.appendChild(btn);
+        });
+
+        card.appendChild(controlsDiv);
+      }
+    }
+
+    // Add video like section
+    const videoLikeSection = document.createElement('div');
+    videoLikeSection.className = 'video-like-section';
+
+    const videoLikeBtn = document.createElement('button');
+    videoLikeBtn.className = 'video-like-btn';
+    const isLiked = userLikedVideos.has(videoId);
+    videoLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+    if (isLiked) videoLikeBtn.classList.add('liked');
+    
+    if (!currentUser) {
+      videoLikeBtn.disabled = true;
+      videoLikeBtn.innerHTML = '🤍 Like';
+    }
+
+    videoLikeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleVideoLike(videoId);
+    });
+
+    const videoLikeCount = document.createElement('div');
+    videoLikeCount.className = 'video-like-count';
+    videoLikeCount.innerHTML = '❤️ ' + (videoLikes[videoId] || 0);
+
+    videoLikeSection.appendChild(videoLikeBtn);
+    videoLikeSection.appendChild(videoLikeCount);
+    card.appendChild(videoLikeSection);
+
+    // Add login prompt if user not logged in
+    if (!currentUser) {
+      const loginPrompt = document.createElement('p');
+      loginPrompt.className = 'video-login-prompt';
+      loginPrompt.textContent = 'Log in to like videos';
+      card.appendChild(loginPrompt);
+    }
+
+    videosContainer.appendChild(card);
+  });
+
+  // Load VIP extras after videos are loaded
+  await loadVipExtras();
+}
   // Badge selection functionality
   function initializeBadgeSelection() {
     document.querySelectorAll('.badge-item').forEach(badge => {
@@ -4749,6 +4755,7 @@ if (document.readyState === 'loading') {
   
 </body>
 </html>
+
 
 
 
