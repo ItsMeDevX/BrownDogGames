@@ -2982,6 +2982,7 @@ crossorigin="anonymous"></script>
   );
 
   let currentUser;
+  let consolidationMap = {}; // Store consolidation mapping
 
   // Tab Management
   window.showTab = function(tabName) {
@@ -3019,168 +3020,229 @@ crossorigin="anonymous"></script>
     return true;
   }
 
-  // FIXED: Username consolidation function - only consolidate specific cases, not generic names
-  function normalizeUsername(username) {
-    if (!username) return username;
-    
-    // FIXED: Only consolidate very specific cases where we know there's duplication
-    // Remove the generic "ace" -> "Ace475" rule that was causing problems
-    const specificConsolidationRules = {
-      // Add specific consolidation rules here ONLY if you're certain about duplication
-      // For example, if you know "user123_alt" should be "user123":
-      // 'user123_alt': 'user123',
+  // NEW: Get consolidation mapping from users table + game submissions (same as VIP)
+  async function getConsolidationMapping() {
+    try {
+      console.log('🔍 Dashboard: Getting consolidation mappings...');
       
-      // DO NOT add generic name mappings like 'ace': 'Ace475' 
-      // unless you're absolutely certain about the specific case
-    };
+      // Get users with github_username
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id, github_username');
+      
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+        return {};
+      }
+
+      // Get game submissions to link content names to user IDs
+      const { data: gameSubmissions, error: submissionsError } = await supabase
+        .from('game_submissions')
+        .select('user_id, github_user');
+      
+      if (submissionsError) {
+        console.error('Error fetching submissions:', submissionsError);
+        return {};
+      }
+
+      console.log(`👥 Dashboard: Found ${users?.length || 0} users`);
+      console.log(`🎮 Dashboard: Found ${gameSubmissions?.length || 0} game submissions`);
+
+      // Create mapping
+      const consolidationMap = {};
+      
+      if (users && gameSubmissions) {
+        gameSubmissions.forEach(submission => {
+          if (submission.user_id && submission.github_user) {
+            const user = users.find(u => u.id === submission.user_id);
+            if (user && user.github_username) {
+              consolidationMap[submission.github_user] = user.github_username;
+              console.log(`🔗 Dashboard mapping: "${submission.github_user}" → "${user.github_username}"`);
+            }
+          }
+        });
+      }
+
+      // Add manual consolidation rules for users not in database yet
+      const manualRules = {
+        'browndoggames': 'itsmedevx',
+        'ace': 'Ace475',
+        'itsmedevx': 'itsmedevx',      // Normalize case
+        'itsmedevX': 'itsmedevx',      // Handle capital X
+      };
+
+      Object.entries(manualRules).forEach(([from, to]) => {
+        consolidationMap[from] = to;
+        consolidationMap[from.toLowerCase()] = to; // Add lowercase version too
+        console.log(`🔧 Dashboard manual mapping: "${from}" → "${to}"`);
+      });
+
+      console.log(`🗺️ Dashboard: Total mappings: ${Object.keys(consolidationMap).length}`);
+      return consolidationMap;
+      
+    } catch (error) {
+      console.error('Error getting consolidation mapping:', error);
+      return {};
+    }
+  }
+
+  // NEW: Apply consolidation to username (same as VIP)
+  function consolidateUsername(username, consolidationMap) {
+    const lower = username.toLowerCase();
     
-    const normalizedKey = username.toLowerCase();
-    if (specificConsolidationRules[normalizedKey]) {
-      console.log(`🔄 Dashboard consolidation: "${username}" → "${specificConsolidationRules[normalizedKey]}"`);
-      return specificConsolidationRules[normalizedKey];
+    // Check exact match first
+    if (consolidationMap[username]) {
+      console.log(`✅ Dashboard consolidating: "${username}" → "${consolidationMap[username]}"`);
+      return consolidationMap[username];
     }
     
-    // Return username as-is for all other cases
+    // Check lowercase match
+    if (consolidationMap[lower]) {
+      console.log(`✅ Dashboard consolidating (lowercase): "${username}" → "${consolidationMap[lower]}"`);
+      return consolidationMap[lower];
+    }
+    
     return username;
   }
 
-  // Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS AND GAME POINTS
- async function getAllLikesBreakdown() {
-  if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
+  // UPDATED: Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS AND GAME POINTS with proper consolidation
+  async function getAllLikesBreakdown() {
+    if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
 
-  try {
-    const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-    if (!username) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
+    try {
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
 
-    console.log(`🔍 Dashboard: Getting likes breakdown for ${username}`);
+      console.log(`🔍 Dashboard: Getting likes breakdown for ${username}`);
 
-    // Step 1: Get ALL VIP extras to map extra IDs to creators
-    const { data: vipExtras, error: extrasError } = await supabase
-      .from('vip_extras')
-      .select('id, creator_name, created_by');
+      // Get fresh consolidation mapping
+      consolidationMap = await getConsolidationMapping();
 
-    if (extrasError) {
-      console.error('Error fetching extras:', extrasError);
-    }
+      // Step 1: Get ALL VIP extras to map extra IDs to creators
+      const { data: vipExtras, error: extrasError } = await supabase
+        .from('vip_extras')
+        .select('id, creator_name, created_by');
 
-    // Create a map from extra ID to creator info
-    const extraCreatorMap = {};
-    if (vipExtras) {
-      vipExtras.forEach(extra => {
-        extraCreatorMap[extra.id] = {
-          creatorName: extra.creator_name || 'Unknown Creator',
-          createdBy: extra.created_by
-        };
-      });
-    }
+      if (extrasError) {
+        console.error('Error fetching extras:', extrasError);
+      }
 
-    console.log(`🗺️ Dashboard: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
+      // Create a map from extra ID to creator info
+      const extraCreatorMap = {};
+      if (vipExtras) {
+        vipExtras.forEach(extra => {
+          extraCreatorMap[extra.id] = {
+            creatorName: extra.creator_name || 'Unknown Creator',
+            createdBy: extra.created_by
+          };
+        });
+      }
 
-    // Step 2: Get all view records INCLUDING GAME POINTS
-    const { data: allViews, error: viewsError } = await supabase
-      .from('vip_page_views')
-      .select('username, view_count, game_points');
+      console.log(`🗺️ Dashboard: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
 
-    if (viewsError) throw viewsError;
+      // Step 2: Get all view records INCLUDING GAME POINTS
+      const { data: allViews, error: viewsError } = await supabase
+        .from('vip_page_views')
+        .select('username, view_count, game_points');
 
-    // Step 3: Initialize the current user's data
-    const userLikesData = {
-      username: username,
-      page: 0,
-      videos: 0,
-      games: 0,
-      art: 0,
-      music: 0,
-      extras: 0,
-      gamePoints: 0,
-      total: 0
-    };
+      if (viewsError) throw viewsError;
 
-    // Step 4: Process all views and filter for current user
-    if (allViews) {
-      allViews.forEach(view => {
-        const viewUsername = view.username;
-        const viewCount = view.view_count || 0;
-        const gamePoints = view.game_points || 0;
-        
-        if (!viewUsername) return;
+      // Step 3: Initialize the current user's data
+      const userLikesData = {
+        username: username,
+        page: 0,
+        videos: 0,
+        games: 0,
+        art: 0,
+        music: 0,
+        extras: 0,
+        gamePoints: 0,
+        total: 0
+      };
 
-        let shouldInclude = false;
-        let contentType = 'page';
-
-        // Check if this is an extra like
-        if (viewUsername.startsWith('extra_')) {
-          const extraId = viewUsername.replace('extra_', '');
-          console.log(`🔍 Dashboard: Processing extra like: ${extraId} (${viewCount} likes, ${gamePoints} game points)`);
+      // Step 4: Process all views and filter for current user
+      if (allViews) {
+        allViews.forEach(view => {
+          const viewUsername = view.username;
+          const viewCount = view.view_count || 0;
+          const gamePoints = view.game_points || 0;
           
-          // Look up the creator of this extra
-          const creatorInfo = extraCreatorMap[extraId];
-          if (creatorInfo && creatorInfo.creatorName) {
-            console.log(`✅ Dashboard: Extra ${extraId} created by: ${creatorInfo.creatorName}`);
+          if (!viewUsername) return;
+
+          let shouldInclude = false;
+          let contentType = 'page';
+          let baseUsername = viewUsername;
+
+          // Check if this is an extra like
+          if (viewUsername.startsWith('extra_')) {
+            const extraId = viewUsername.replace('extra_', '');
+            console.log(`🔍 Dashboard: Processing extra like: ${extraId} (${viewCount} likes, ${gamePoints} game points)`);
             
-            // FIXED: Check if this extra belongs to the current user
-            // Compare both creator_name and created_by user ID
-            if (creatorInfo.creatorName === username || 
-                (creatorInfo.createdBy && currentUser && creatorInfo.createdBy === currentUser.id)) {
-              shouldInclude = true;
+            // Look up the creator of this extra
+            const creatorInfo = extraCreatorMap[extraId];
+            if (creatorInfo && creatorInfo.creatorName) {
+              baseUsername = creatorInfo.creatorName;
               contentType = 'extras';
-              console.log(`🎯 Dashboard: Including extra ${extraId} for user ${username}`);
+              console.log(`✅ Dashboard: Extra ${extraId} created by: ${baseUsername}`);
+            } else {
+              console.log(`⚠️ Dashboard: No creator found for extra ${extraId}`);
+              return; // Skip if we can't find the creator
             }
           } else {
-            console.log(`⚠️ Dashboard: No creator found for extra ${extraId}`);
+            // Handle regular content
+            if (viewUsername.includes('_video_')) {
+              baseUsername = viewUsername.split('_video_')[0];
+              contentType = 'videos';
+            } else if (viewUsername.includes('_game_')) {
+              baseUsername = viewUsername.split('_game_')[0];
+              contentType = 'games';
+            } else if (viewUsername.includes('_artwork_')) {
+              baseUsername = viewUsername.split('_artwork_')[0];
+              contentType = 'art';
+            } else if (viewUsername.includes('_music_')) {
+              baseUsername = viewUsername.split('_music_')[0];
+              contentType = 'music';
+            }
+            // else it's a page view, baseUsername stays as viewUsername
           }
-        } else {
-          // Handle regular content
-          let baseUsername = viewUsername;
-          
-          if (viewUsername.includes('_video_')) {
-            baseUsername = viewUsername.split('_video_')[0];
-            contentType = 'videos';
-          } else if (viewUsername.includes('_game_')) {
-            baseUsername = viewUsername.split('_game_')[0];
-            contentType = 'games';
-          } else if (viewUsername.includes('_artwork_')) {
-            baseUsername = viewUsername.split('_artwork_')[0];
-            contentType = 'art';
-          } else if (viewUsername.includes('_music_')) {
-            baseUsername = viewUsername.split('_music_')[0];
-            contentType = 'music';
-          }
-          // else it's a page view, baseUsername stays as viewUsername
 
-          // Check if this content belongs to the current user
-          if (baseUsername === username) {
+          // FIXED: Apply consolidation to baseUsername
+          baseUsername = consolidateUsername(baseUsername, consolidationMap);
+
+          // Check if this content belongs to the current user (after consolidation)
+          const consolidatedCurrentUser = consolidateUsername(username, consolidationMap);
+          
+          if (baseUsername === consolidatedCurrentUser) {
             shouldInclude = true;
           }
-        }
 
-        // Add to user's data if it belongs to them
-        if (shouldInclude) {
-          userLikesData[contentType] += viewCount;
-          userLikesData.gamePoints += gamePoints;
-          
-          console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes + ${gamePoints} game points to ${username}`);
-        }
+          // Add to user's data if it belongs to them
+          if (shouldInclude) {
+            userLikesData[contentType] += viewCount;
+            userLikesData.gamePoints += gamePoints;
+            
+            console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes + ${gamePoints} game points to ${username} (consolidated: ${consolidatedCurrentUser})`);
+          }
+        });
+      }
+
+      // Step 5: Calculate total
+      const likesTotal = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.music + userLikesData.extras;
+      userLikesData.total = likesTotal + userLikesData.gamePoints;
+
+      console.log(`📊 Dashboard: Final breakdown for ${username}:`, {
+        ...userLikesData,
+        likesOnly: likesTotal,
+        totalWithGamePoints: userLikesData.total
       });
+
+      return userLikesData;
+
+    } catch (error) {
+      console.error('Error getting likes breakdown:', error);
+      return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
     }
-
-    // Step 5: Calculate total
-    const likesTotal = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.music + userLikesData.extras;
-    userLikesData.total = likesTotal + userLikesData.gamePoints;
-
-    console.log(`📊 Dashboard: Final breakdown for ${username}:`, {
-      ...userLikesData,
-      likesOnly: likesTotal,
-      totalWithGamePoints: userLikesData.total
-    });
-
-    return userLikesData;
-
-  } catch (error) {
-    console.error('Error getting likes breakdown:', error);
-    return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
   }
-}
   
   // Enhanced function to calculate available earnings (after completed payouts)
   async function getAvailableEarnings() {
@@ -3202,7 +3264,7 @@ crossorigin="anonymous"></script>
         completedPayouts: 0 
       };
 
-      // Get current total likes (using existing getAllLikesBreakdown function)
+      // Get current total likes (using updated getAllLikesBreakdown function)
       const likesBreakdown = await getAllLikesBreakdown();
       const totalLikes = likesBreakdown.total;
 
@@ -3448,7 +3510,7 @@ crossorigin="anonymous"></script>
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
-      // Get all likes breakdown (including VIP extras AND game points)
+      // Get all likes breakdown (including VIP extras AND game points with proper consolidation)
       const likesBreakdown = await getAllLikesBreakdown();
 
       // Update stats display
@@ -4070,6 +4132,7 @@ crossorigin="anonymous"></script>
   
 </body>
 </html>
+
 
 
 
