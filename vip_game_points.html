@@ -33,7 +33,6 @@
             width: 100%;
             max-width: 600px;
             box-shadow: 0 8px 32px rgba(255, 79, 159, 0.3);
-            min-height: 400px;
         }
 
         h1 {
@@ -41,27 +40,6 @@
             font-size: 2.2em;
             margin-bottom: 30px;
             text-shadow: 0 0 20px rgba(255, 79, 159, 0.5);
-        }
-
-        /* Section visibility classes */
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .status-card {
@@ -103,16 +81,6 @@
             color: #ffd700;
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
             margin: 15px 0;
-            transition: transform 0.3s ease;
-        }
-
-        #game-points.pulse {
-            animation: pointsPulse 0.5s ease-in-out;
-        }
-
-        @keyframes pointsPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         button {
@@ -149,22 +117,6 @@
             display: none;
         }
 
-        .message.show {
-            display: block;
-            animation: slideIn 0.3s ease-in-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         .success-message {
             background: rgba(46, 204, 113, 0.1);
             color: #5dff5d;
@@ -193,22 +145,6 @@
             margin: 10px 0;
         }
 
-        /* Loading spinner */
-        .spinner {
-            border: 4px solid rgba(52, 152, 219, 0.3);
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 25px 20px;
@@ -234,15 +170,14 @@
         <h1>🎮 VIP Game Point Page</h1>
         
         <!-- Loading State -->
-        <div id="loading" class="section active">
+        <div id="loading">
             <div class="status-card loading">
-                <div class="spinner"></div>
                 <p>Loading...</p>
             </div>
         </div>
 
         <!-- Not Logged In -->
-        <div id="not-logged-in" class="section">
+        <div id="not-logged-in" style="display: none;">
             <div class="status-card not-vip">
                 <p>🔐 Please log in to access VIP features!</p>
                 <button id="login-btn">Login with GitHub</button>
@@ -250,7 +185,7 @@
         </div>
 
         <!-- Not VIP -->
-        <div id="not-vip" class="section">
+        <div id="not-vip" style="display: none;">
             <div class="status-card not-vip">
                 <p>⭐ This page is for VIP members only!</p>
                 <p>Upgrade to VIP to earn game points.</p>
@@ -259,7 +194,7 @@
         </div>
 
         <!-- VIP Content -->
-        <div id="vip-content" class="section">
+        <div id="vip-content" style="display: none;">
             <div class="user-info" id="user-info">
                 <!-- User info populated by JS -->
             </div>
@@ -276,19 +211,19 @@
             <p>🎯 Reach 10 points and this page will close!</p>
 
             <button id="earn-point-btn">Earn Game Point</button>
+        </div>
 
-            <!-- Messages -->
-            <div id="success-msg" class="message success-message">
-                <p>🎉 Game point earned successfully!</p>
-            </div>
+        <!-- Messages -->
+        <div id="success-msg" class="message success-message">
+            <p>🎉 Game point earned successfully!</p>
+        </div>
 
-            <div id="error-msg" class="message error-message">
-                <p id="error-text">An error occurred</p>
-            </div>
+        <div id="error-msg" class="message error-message">
+            <p id="error-text">An error occurred</p>
+        </div>
 
-            <div id="max-points-msg" class="message success-message">
-                <p>🎊 Maximum points reached! Page will close soon...</p>
-            </div>
+        <div id="max-points-msg" class="message success-message">
+            <p>🎊 Maximum points reached! Page will close soon...</p>
         </div>
     </div>
 
@@ -319,47 +254,25 @@
   const errorText = document.getElementById('error-text');
   const maxPointsMsg = document.getElementById('max-points-msg');
 
-  // Simple section switching with fade animation
-  function showSection(targetSection) {
-    console.log('Showing section:', targetSection.id);
-    
-    // Hide all sections first
-    const sections = [loading, notLoggedIn, notVip, vipContent];
-    sections.forEach(section => {
-      section.classList.remove('active');
-    });
-    
-    // Show target section after a brief delay for smooth transition
-    setTimeout(() => {
-      targetSection.classList.add('active');
-    }, 100);
+  // Utility functions
+  function showSection(section) {
+    [loading, notLoggedIn, notVip, vipContent].forEach(el => el.style.display = 'none');
+    section.style.display = 'block';
   }
 
   function showMessage(messageEl, text = null, duration = 3000) {
     if (text && messageEl === errorMsg) {
       errorText.textContent = text;
     }
-    
-    messageEl.classList.add('show');
-    setTimeout(() => {
-      messageEl.classList.remove('show');
-    }, duration);
+    messageEl.style.display = 'block';
+    setTimeout(() => messageEl.style.display = 'none', duration);
   }
 
   function hideAllMessages() {
-    [successMsg, errorMsg, maxPointsMsg].forEach(el => {
-      el.classList.remove('show');
-    });
+    [successMsg, errorMsg, maxPointsMsg].forEach(el => el.style.display = 'none');
   }
 
-  function animatePoints() {
-    gamePointsDisplay.classList.add('pulse');
-    setTimeout(() => {
-      gamePointsDisplay.classList.remove('pulse');
-    }, 500);
-  }
-
-  // Check VIP status
+  // Check VIP status - SIMPLE VERSION
   async function checkVIPStatus(userId) {
     try {
       // First check localStorage
@@ -443,15 +356,12 @@
   // Initialize page
   async function init() {
     try {
-      console.log('Starting initialization...');
       hideAllMessages();
       
       // Get session
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session:', session ? 'Found' : 'None');
       
       if (!session?.user) {
-        console.log('No user session, showing login');
         showSection(notLoggedIn);
         return;
       }
@@ -468,14 +378,14 @@
       console.log('Is VIP:', isVIP);
 
       if (!isVIP) {
-        console.log('User not VIP, showing not-vip section');
         showSection(notVip);
         return;
       }
 
-      console.log('User is VIP, preparing content...');
+      // Show VIP content
+      showSection(vipContent);
 
-      // Prepare VIP content
+      // Display user info
       const avatar = currentUser.user_metadata?.avatar_url || '';
       const fullName = currentUser.user_metadata?.full_name || currentUsername;
       
@@ -489,33 +399,20 @@
       // Get current points
       currentPoints = await getCurrentPoints(currentUser.id);
       gamePointsDisplay.textContent = currentPoints;
-      console.log('Current points:', currentPoints);
 
       // Check if maxed out
       if (currentPoints >= 10) {
         earnPointBtn.disabled = true;
         earnPointBtn.textContent = 'Max Points Reached!';
-      }
-
-      // Show VIP content
-      console.log('Showing VIP content...');
-      showSection(vipContent);
-
-      // Show max points message if needed
-      if (currentPoints >= 10) {
+        showMessage(maxPointsMsg, null, 5000);
         setTimeout(() => {
-          showMessage(maxPointsMsg, null, 5000);
-          setTimeout(() => {
-            alert('🎊 Congratulations! Maximum points reached!');
-            window.close();
-          }, 3000);
-        }, 1000);
+          alert('🎊 Congratulations! Maximum points reached!');
+          window.close();
+        }, 3000);
       }
-
-      console.log('Initialization complete');
 
     } catch (err) {
-      console.error('Init error:', err);
+      console.log('Init error:', err);
       showMessage(errorMsg, 'Failed to load page');
       showSection(notLoggedIn);
     }
@@ -523,7 +420,6 @@
 
   // Event listeners
   loginBtn.addEventListener('click', () => {
-    console.log('Login button clicked');
     supabase.auth.signInWithOAuth({ 
       provider: 'github',
       options: { redirectTo: window.location.href }
@@ -539,8 +435,6 @@
 
       if (currentPoints >= 10) {
         showMessage(errorMsg, 'Maximum points already reached!');
-        earnPointBtn.disabled = false;
-        earnPointBtn.textContent = 'Earn Game Point';
         return;
       }
 
@@ -550,7 +444,6 @@
       if (success) {
         currentPoints = newPoints;
         gamePointsDisplay.textContent = currentPoints;
-        animatePoints();
         showMessage(successMsg);
 
         if (currentPoints >= 10) {
@@ -570,7 +463,7 @@
         earnPointBtn.textContent = 'Earn Game Point';
       }
     } catch (err) {
-      console.error('Earn point error:', err);
+      console.log('Earn point error:', err);
       showMessage(errorMsg, 'Error earning point');
       earnPointBtn.disabled = false;
       earnPointBtn.textContent = 'Earn Game Point';
@@ -578,8 +471,7 @@
   });
 
   // Auth listener
-  supabase.auth.onAuthStateChange((event, session) => {
-    console.log('Auth state change:', event);
+  supabase.auth.onAuthStateChange((event) => {
     if (event === 'SIGNED_IN') {
       window.location.reload();
     } else if (event === 'SIGNED_OUT') {
@@ -587,8 +479,7 @@
     }
   });
 
-  // Start initialization when page loads
-  console.log('Page loaded, starting init...');
+  // Start
   init();
 </script>
 
