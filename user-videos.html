@@ -2422,6 +2422,8 @@ crossorigin="anonymous"></script>
       align-items: center;
       z-index: 9999;
       user-select: none;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
     #modalContent {
@@ -2430,8 +2432,9 @@ crossorigin="anonymous"></script>
       padding: 1rem;
       border-radius: 16px;
       max-width: 90vw;
-      max-height: 80vh;
+      max-height: 90vh;
       box-shadow: 0 0 25px #ff69b4;
+      overflow-y: auto;
     }
 
     #videoPlayerIframe {
@@ -2458,6 +2461,7 @@ crossorigin="anonymous"></script>
       cursor: pointer;
       line-height: 1;
       user-select: none;
+      z-index: 10001;
     }
 
     #closeModalBtn:hover {
@@ -2484,6 +2488,45 @@ crossorigin="anonymous"></script>
       text-decoration: underline;
     }
 
+    /* Twitter embed container styling */
+    .twitter-embed-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+      background: #000;
+      border-radius: 12px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .twitter-embed-container blockquote {
+      margin: 0 !important;
+      max-width: 100% !important;
+    }
+
+    .twitter-loading {
+      color: #1da1f2;
+      text-align: center;
+      font-size: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .twitter-loading::before {
+      content: "🐦";
+      font-size: 2rem;
+    }
+
+    .twitter-error {
+      color: #ff6b6b;
+      text-align: center;
+      font-size: 1rem;
+      padding: 20px;
+    }
+
     @media (max-width: 768px) {
       #userList {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -2500,9 +2543,20 @@ crossorigin="anonymous"></script>
       #videoPlayerIframe {
         height: 300px;
       }
+
+      .twitter-embed-container {
+        min-height: 300px;
+        padding: 10px;
+      }
       
       h1 {
         font-size: 2.2rem;
+      }
+
+      #modalContent {
+        max-width: 95vw;
+        max-height: 95vh;
+        padding: 0.5rem;
       }
     }
   </style>
@@ -2540,7 +2594,8 @@ crossorigin="anonymous"></script>
       <div id="externalLinkNotice" class="external-link-notice" style="display: none;">
         <p>This video is hosted on an external platform. <a id="externalLink" href="#" target="_blank" rel="noopener noreferrer">Click here to view on the original platform</a></p>
       </div>
-      <iframe id="videoPlayerIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <iframe id="videoPlayerIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display: none;"></iframe>
+      <div id="twitterEmbedContainer" class="twitter-embed-container" style="display: none;"></div>
     </div>
   </div>
 
@@ -2563,12 +2618,63 @@ crossorigin="anonymous"></script>
 
   const videoModal = document.getElementById('videoModal');
   const videoPlayerIframe = document.getElementById('videoPlayerIframe');
+  const twitterEmbedContainer = document.getElementById('twitterEmbedContainer');
   const closeModalBtn = document.getElementById('closeModalBtn');
   const externalLinkNotice = document.getElementById('externalLinkNotice');
   const externalLink = document.getElementById('externalLink');
 
   let currentSort = 'alphabetical';
   let allUsers = [];
+
+  // Load Twitter widgets script
+  function loadTwitterWidgets() {
+    return new Promise((resolve) => {
+      if (window.twttr && window.twttr.widgets) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.async = true;
+      script.charset = 'utf-8';
+      script.onload = resolve;
+      script.onerror = resolve; // Still resolve to prevent hanging
+      document.head.appendChild(script);
+    });
+  }
+
+  // Extract tweet ID from various Twitter/X URL formats
+  function extractTweetId(url) {
+    const patterns = [
+      /(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/,
+      /(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/statuses\/(\d+)/,
+      /(?:twitter\.com|x\.com)\/statuses\/(\d+)/,
+      /(?:twitter\.com|x\.com)\/status\/(\d+)/,
+      /(?:twitter\.com|x\.com)\/.*\/status\/(\d+)/,
+      /(?:twitter\.com|x\.com)\/.*\/statuses\/(\d+)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) {
+        // Return the last capturing group, which should be the tweet ID
+        return match[match.length - 1];
+      }
+    }
+    return null;
+  }
+
+  // Create Twitter embed HTML
+  function createTwitterEmbedHTML(tweetId, username = null) {
+    const tweetUrl = `https://twitter.com/${username || 'i'}/status/${tweetId}`;
+    return `
+      <blockquote class="twitter-tweet" data-theme="dark" data-width="500" data-dnt="true">
+        <p>Loading tweet...</p>
+        <a href="${tweetUrl}">View on X</a>
+      </blockquote>
+    `;
+  }
 
   // Username consolidation function (same as game and art pages)
   function normalizeUsername(username) {
@@ -2944,14 +3050,21 @@ crossorigin="anonymous"></script>
     return container;
   }
 
-  function openVideoModal(url) {
+  async function openVideoModal(url) {
     let embedUrl = url;
     let showExternalNotice = false;
+    let isTwitterEmbed = false;
+
+    // Hide both containers initially
+    videoPlayerIframe.style.display = 'none';
+    twitterEmbedContainer.style.display = 'none';
+    externalLinkNotice.style.display = 'none';
 
     // YouTube - convert to embed URL with autoplay
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
     if (ytMatch) {
       embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+      videoPlayerIframe.style.display = 'block';
     }
     // Google Drive - convert to embed URL
     else if (url.includes('drive.google.com')) {
@@ -2959,6 +3072,7 @@ crossorigin="anonymous"></script>
       if (driveMatch) {
         embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
       }
+      videoPlayerIframe.style.display = 'block';
     }
     // TikTok - show external notice since TikTok doesn't allow embedding in many cases
     else if (url.includes('tiktok.com')) {
@@ -2978,25 +3092,69 @@ crossorigin="anonymous"></script>
           </body></html>
         `);
       }
+      videoPlayerIframe.style.display = 'block';
     }
-    // X/Twitter - show external notice since Twitter videos have restrictions
+    // X/Twitter - use proper embed system
     else if (url.includes('twitter.com') || url.includes('x.com')) {
-      showExternalNotice = true;
-      externalLink.href = url;
-      // Show placeholder since Twitter embed is complex
-      embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-          <h2>🐦 X (Twitter) Video</h2>
-          <p>This video is hosted on X (formerly Twitter).</p>
-          <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
-        </body></html>
-      `);
+      isTwitterEmbed = true;
+      twitterEmbedContainer.style.display = 'block';
+      
+      // Show loading state
+      twitterEmbedContainer.innerHTML = '<div class="twitter-loading">Loading X post...</div>';
+      
+      try {
+        // Load Twitter widgets if not already loaded
+        await loadTwitterWidgets();
+        
+        // Extract tweet ID and username if possible
+        const tweetId = extractTweetId(url);
+        
+        if (tweetId) {
+          // Create the embed HTML
+          const embedHTML = createTwitterEmbedHTML(tweetId);
+          twitterEmbedContainer.innerHTML = embedHTML;
+          
+          // Initialize the Twitter widget
+          if (window.twttr && window.twttr.widgets) {
+            try {
+              await window.twttr.widgets.load(twitterEmbedContainer);
+              console.log('Twitter embed loaded successfully');
+            } catch (embedError) {
+              console.error('Twitter embed failed:', embedError);
+              // Show fallback with external link
+              twitterEmbedContainer.innerHTML = `
+                <div class="twitter-error">
+                  <p>Unable to load X post embed</p>
+                  <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:16px;">► View on X</a></p>
+                </div>
+              `;
+            }
+          } else {
+            throw new Error('Twitter widgets not available');
+          }
+        } else {
+          throw new Error('Could not extract tweet ID');
+        }
+      } catch (error) {
+        console.error('Twitter embed error:', error);
+        // Show fallback with external link
+        twitterEmbedContainer.innerHTML = `
+          <div class="twitter-error">
+            <p>Unable to load X post</p>
+            <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:16px;">► View on X</a></p>
+          </div>
+        `;
+      }
     }
 
     // Show/hide external link notice
     externalLinkNotice.style.display = showExternalNotice ? 'block' : 'none';
     
-    videoPlayerIframe.src = embedUrl;
+    // Set iframe source only if not Twitter embed
+    if (!isTwitterEmbed) {
+      videoPlayerIframe.src = embedUrl;
+    }
+    
     videoModal.style.display = 'flex';
     videoModal.focus();
   }
@@ -3004,6 +3162,9 @@ crossorigin="anonymous"></script>
   function closeVideoModal() {
     videoModal.style.display = 'none';
     videoPlayerIframe.src = '';
+    videoPlayerIframe.style.display = 'none';
+    twitterEmbedContainer.style.display = 'none';
+    twitterEmbedContainer.innerHTML = '';
     externalLinkNotice.style.display = 'none';
   }
 
@@ -3288,8 +3449,15 @@ crossorigin="anonymous"></script>
     });
   }
 
-  // Initialize
-  loadVideos();
+  // Initialize - Load Twitter widgets on page load
+  loadTwitterWidgets().then(() => {
+    console.log('Twitter widgets loaded');
+    loadVideos();
+  }).catch((error) => {
+    console.error('Failed to load Twitter widgets:', error);
+    // Still load videos even if Twitter widgets fail
+    loadVideos();
+  });
   
   // Set initial button state
   setTimeout(() => updateButtonStates('sortAlpha'), 100);
@@ -3462,6 +3630,7 @@ if (document.readyState === 'loading') {
   
 </body>
 </html>
+
 
 
 
