@@ -2365,37 +2365,102 @@ crossorigin="anonymous"></script>
 
         const usersLikesMap = {};
 
-        // FIXED: Conservative username consolidation - only for specific confirmed cases
-        function normalizeUsername(username) {
+        // ENHANCED: Get primary GitHub usernames from users table (source of truth)
+        async function getUserPrimaryIdentities() {
+          try {
+            // Get all authenticated users with their primary GitHub usernames
+            const { data: users, error: usersError } = await supabase
+              .from('users')
+              .select('id, github_username');
+            
+            if (usersError) {
+              console.error('Error fetching users:', usersError);
+              return {};
+            }
+
+            // Get all game submissions to link content creators to authenticated users
+            const { data: gameSubmissions, error: submissionsError } = await supabase
+              .from('game_submissions')
+              .select('user_id, github_user');
+            
+            if (submissionsError) {
+              console.error('Error fetching submissions:', submissionsError);
+              return {};
+            }
+
+            console.log(`👥 Found ${users?.length || 0} authenticated users`);
+            console.log(`🎮 Found ${gameSubmissions?.length || 0} game submissions`);
+
+            // Create comprehensive identity mapping
+            const identityMap = {};
+            
+            if (users && gameSubmissions) {
+              // For each game submission, map the content creator name to the primary GitHub username
+              gameSubmissions.forEach(submission => {
+                if (submission.user_id && submission.github_user) {
+                  // Find the authenticated user
+                  const user = users.find(u => u.id === submission.user_id);
+                  if (user && user.github_username) {
+                    // Map content creator name → primary GitHub username
+                    identityMap[submission.github_user] = user.github_username;
+                    console.log(`🔗 Mapping: "${submission.github_user}" → "${user.github_username}"`);
+                  }
+                }
+              });
+
+              // Also map primary usernames to themselves (direct mapping)
+              users.forEach(user => {
+                if (user.github_username) {
+                  identityMap[user.github_username] = user.github_username;
+                }
+              });
+            }
+            
+            console.log(`🗺️ Created ${Object.keys(identityMap).length} identity mappings`);
+            return identityMap;
+          } catch (error) {
+            console.error('Error getting primary identities:', error);
+            return {};
+          }
+        }
+
+        // Simplified consolidation using database as source of truth
+        function getConsolidatedUsername(username, primaryIdentities) {
           if (!username) return username;
           
-          // Only consolidate very specific cases where we're absolutely certain
-          const specificConsolidationRules = {
-            // Add specific consolidation rules here ONLY if you're certain about duplication
-            // For example, if you know "user123_alt" should be "user123":
-            // 'user123_alt': 'user123',
-            
-            // DO NOT add generic name mappings unless you're absolutely certain
-          };
-          
-          const normalizedKey = username.toLowerCase();
-          if (specificConsolidationRules[normalizedKey]) {
-            console.log(`🔄 Leaderboard consolidation: "${username}" → "${specificConsolidationRules[normalizedKey]}"`);
-            return specificConsolidationRules[normalizedKey];
+          // Check database mappings first (source of truth)
+          if (primaryIdentities[username]) {
+            console.log(`✅ Database mapping: "${username}" → "${primaryIdentities[username]}"`);
+            return primaryIdentities[username];
           }
           
-          // Return username as-is for all other cases
+          // Manual overrides only for edge cases not in database
+          const manualOverrides = {
+            // Add only if needed for users not properly linked in database
+            // 'old_username': 'new_username'
+          };
+          
+          const lowerUsername = username.toLowerCase();
+          if (manualOverrides[lowerUsername]) {
+            console.log(`🔧 Manual override: "${username}" → "${manualOverrides[lowerUsername]}"`);
+            return manualOverrides[lowerUsername];
+          }
+          
+          // Keep original if no mapping found
           return username;
         }
 
+        // Get primary identities for proper consolidation
+        const primaryIdentities = await getUserPrimaryIdentities();
+        
         // Step 4: Process each view record
         if (allViews) {
-          allViews.forEach(view => {
+          for (const view of allViews) {
             const viewUsername = view.username;
             const viewCount = view.view_count || 0;
             const gamePoints = view.game_points || 0;
             
-            if (!viewUsername) return;
+            if (!viewUsername) continue;
 
             let baseUsername = viewUsername;
             let contentType = 'page';
@@ -2412,7 +2477,7 @@ crossorigin="anonymous"></script>
                 contentType = 'extras';
                 console.log(`✅ Mapped extra ${extraId} to creator: ${baseUsername} (via creator_name)`);
               } else if (creatorInfo && creatorInfo.createdBy) {
-                // FIXED: Try to map via created_by user ID
+                // Try to map via created_by user ID
                 const creatorUsername = userIdToUsernameMap[creatorInfo.createdBy];
                 if (creatorUsername) {
                   baseUsername = creatorUsername;
@@ -2420,11 +2485,11 @@ crossorigin="anonymous"></script>
                   console.log(`✅ Mapped extra ${extraId} to creator: ${baseUsername} (via created_by user ID)`);
                 } else {
                   console.log(`⚠️ User ID ${creatorInfo.createdBy} for extra ${extraId} not found in users table`);
-                  return; // Skip this record
+                  continue; // Skip this record
                 }
               } else {
                 console.log(`⚠️ No creator found for extra ${extraId}, skipping`);
-                return; // Skip this record if we can't find the creator
+                continue; // Skip this record if we can't find the creator
               }
             } else if (viewUsername.includes('_video_')) {
               baseUsername = viewUsername.split('_video_')[0];
@@ -2440,8 +2505,8 @@ crossorigin="anonymous"></script>
               contentType = 'music';
             }
 
-            // Apply conservative consolidation
-            baseUsername = normalizeUsername(baseUsername);
+            // ENHANCED: Apply database-driven consolidation
+            baseUsername = getConsolidatedUsername(baseUsername, primaryIdentities);
 
             // Initialize user if not exists
             if (!usersLikesMap[baseUsername]) {
@@ -2465,7 +2530,7 @@ crossorigin="anonymous"></script>
             usersLikesMap[baseUsername].gamePoints += gamePoints;
             
             console.log(`📈 Added ${viewCount} ${contentType} likes + ${gamePoints} game points to ${baseUsername}`);
-          });
+          }
         }
 
         // Step 5: Calculate totals and convert to array
@@ -2583,5 +2648,3 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
-
-
