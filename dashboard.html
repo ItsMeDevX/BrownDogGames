@@ -2923,11 +2923,11 @@ crossorigin="anonymous"></script>
 
   // Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS AND GAME POINTS
   async function getAllLikesBreakdown() {
-    if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
+    if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
 
     try {
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
-      if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
 
       console.log(`🔍 Dashboard: Getting likes breakdown for ${username}`);
 
@@ -2998,6 +2998,9 @@ crossorigin="anonymous"></script>
           } else if (viewUsername.includes('_artwork_')) {
             baseUsername = viewUsername.split('_artwork_')[0];
             contentType = 'art';
+          } else if (viewUsername.includes('_music_')) {
+            baseUsername = viewUsername.split('_music_')[0];
+            contentType = 'music';
           }
 
           // Normalize the username (same consolidation as leaderboard)
@@ -3011,6 +3014,7 @@ crossorigin="anonymous"></script>
               videos: 0,
               games: 0,
               art: 0,
+              music: 0, // NEW: Track music likes
               extras: 0,
               gamePoints: 0, // NEW: Track game points separately
               total: 0
@@ -3033,7 +3037,7 @@ crossorigin="anonymous"></script>
 
       if (userLikesData) {
         // Calculate total: likes + game points
-        const likesTotal = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.extras;
+        const likesTotal = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.music + userLikesData.extras;
         userLikesData.total = likesTotal + userLikesData.gamePoints; // Include game points in total
         
         console.log(`📊 Dashboard: Final breakdown for ${normalizedCurrentUsername}:`, {
@@ -3047,18 +3051,19 @@ crossorigin="anonymous"></script>
           videos: userLikesData.videos,
           games: userLikesData.games,
           art: userLikesData.art,
+          music: userLikesData.music, // NEW: Return music likes
           extras: userLikesData.extras,
           gamePoints: userLikesData.gamePoints, // NEW: Return game points separately
           total: userLikesData.total
         };
       } else {
         console.log(`📊 Dashboard: No data found for ${normalizedCurrentUsername}`);
-        return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
+        return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
       }
 
     } catch (error) {
       console.error('Error getting likes breakdown:', error);
-      return { page: 0, videos: 0, games: 0, art: 0, extras: 0, gamePoints: 0, total: 0 };
+      return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
     }
   }
 
@@ -3316,6 +3321,12 @@ crossorigin="anonymous"></script>
         .select('*', { count: 'exact', head: true })
         .eq('github_username', username);
 
+      // Get music count
+      const { count: musicCount } = await supabase
+        .from('user_music')
+        .select('*', { count: 'exact', head: true })
+        .eq('github_username', username);
+
       // Get art count
       const { count: artCount } = await supabase
         .from('user_art')
@@ -3328,11 +3339,13 @@ crossorigin="anonymous"></script>
       // Update stats display
       const statGames = document.getElementById('statGames');
       const statVideos = document.getElementById('statVideos');
+      const statMusic = document.getElementById('statMusic');
       const statArt = document.getElementById('statArt');
       const statLikes = document.getElementById('statLikes');
 
       if (statGames) statGames.textContent = gamesCount || 0;
       if (statVideos) statVideos.textContent = videosCount || 0;
+      if (statMusic) statMusic.textContent = musicCount || 0;
       if (statArt) statArt.textContent = artCount || 0;
       
       // Show total with breakdown in title/tooltip
@@ -3553,6 +3566,71 @@ crossorigin="anonymous"></script>
       li.appendChild(infoDiv);
       li.appendChild(removeBtn);
       videosList.appendChild(li);
+    });
+  }
+
+  // Music Functions
+  async function fetchMusic() {
+    const { data, error } = await supabase
+      .from('user_music')
+      .select('*')
+      .eq('github_username', currentUser.user_metadata?.user_name || currentUser.email)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showMessage('musicFormMessage', 'Failed to load music: ' + error.message, 'error');
+      return [];
+    }
+    return data;
+  }
+
+  async function loadMusic() {
+    const musicPieces = await fetchMusic();
+    const musicList = document.getElementById('music-list');
+    musicList.innerHTML = '';
+
+    if (musicPieces.length === 0) {
+      musicList.innerHTML = '<li>No music submitted yet.</li>';
+      return;
+    }
+
+    musicPieces.forEach(music => {
+      const li = document.createElement('li');
+      li.className = 'music-item';
+
+      li.innerHTML = `
+        <div class="item-title">${music.title}</div>
+        <div class="item-desc">${music.description}</div>
+        <audio controls class="music-player" style="width: 100%; margin: 10px 0;">
+          <source src="${music.music_url}" type="audio/mpeg">
+          <source src="${music.music_url}" type="audio/wav">
+          <source src="${music.music_url}" type="audio/ogg">
+          Your browser does not support the audio element.
+        </audio>
+      `;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = 'Remove';
+      removeBtn.onclick = async () => {
+        if (!confirm(`Remove "${music.title}"?`)) return;
+        const { error } = await supabase
+          .from('user_music')
+          .delete()
+          .eq('id', music.id);
+
+        if (error) {
+          showMessage('musicFormMessage', 'Error removing music: ' + error.message, 'error');
+        } else {
+          showMessage('musicFormMessage', 'Music removed.', 'success');
+          loadMusic();
+          loadProfileStats();
+          updateAllDisplays();
+        }
+      };
+
+      li.appendChild(removeBtn);
+      musicList.appendChild(li);
     });
   }
 
@@ -3800,6 +3878,34 @@ crossorigin="anonymous"></script>
     submitBtn.disabled = false;
   };
 
+  document.getElementById('addMusicForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('musicSubmitBtn');
+    submitBtn.disabled = true;
+    showMessage('musicFormMessage', '');
+
+    const data = {
+      github_username: currentUser.user_metadata?.user_name || currentUser.email,
+      avatar_url: currentUser.user_metadata?.avatar_url || '',
+      title: document.getElementById('musicTitle').value.trim(),
+      description: document.getElementById('musicDescription').value.trim(),
+      music_url: document.getElementById('musicUrl').value.trim(),
+      created_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase.from('user_music').insert([data]);
+    if (error) {
+      showMessage('musicFormMessage', 'Adding music failed: ' + error.message, 'error');
+    } else {
+      showMessage('musicFormMessage', 'Music added successfully!', 'success');
+      document.getElementById('addMusicForm').reset();
+      loadMusic();
+      loadProfileStats();
+      updateAllDisplays();
+    }
+    submitBtn.disabled = false;
+  };
+
   document.getElementById('addArtForm').onsubmit = async (e) => {
     e.preventDefault();
     const submitBtn = document.getElementById('artSubmitBtn');
@@ -3840,6 +3946,7 @@ crossorigin="anonymous"></script>
     await loadProfile();
     await loadGames();
     await loadVideos();
+    await loadMusic();
     await loadArt();
     await loadPayoutsHistory();
   })();
@@ -4178,6 +4285,7 @@ if (document.readyState === 'loading') {
 
 </body>
 </html>
+
 
 
 
