@@ -3050,7 +3050,88 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // Main function to update all displays
+  // Enhanced function to calculate available earnings (after completed payouts)
+  async function getAvailableEarnings() {
+    if (!currentUser) return { 
+      availableLikes: 0, 
+      availableEarnings: 0, 
+      totalLikes: 0, 
+      paidLikes: 0,
+      completedPayouts: 0 
+    };
+
+    try {
+      const username = currentUser.user_metadata?.user_name || currentUser.email || null;
+      if (!username) return { 
+        availableLikes: 0, 
+        availableEarnings: 0, 
+        totalLikes: 0, 
+        paidLikes: 0,
+        completedPayouts: 0 
+      };
+
+      // Get current total likes (using existing getAllLikesBreakdown function)
+      const likesBreakdown = await getAllLikesBreakdown();
+      const totalLikes = likesBreakdown.total;
+
+      // Get all completed payouts for this user
+      const { data: completedPayouts, error: payoutError } = await supabase
+        .from('payout_requests')
+        .select('likes_at_payout, amount, completed_at')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false });
+
+      if (payoutError) {
+        console.error('Error fetching completed payouts:', payoutError);
+        // If we can't fetch payouts, show full earnings (safe fallback)
+        return { 
+          availableLikes: totalLikes, 
+          availableEarnings: Math.floor(totalLikes / 10) * 0.01, 
+          totalLikes, 
+          paidLikes: 0,
+          completedPayouts: 0 
+        };
+      }
+
+      // Calculate total likes that have been paid out
+      const paidLikes = completedPayouts?.reduce((sum, payout) => {
+        return sum + (payout.likes_at_payout || 0);
+      }, 0) || 0;
+
+      // Calculate available (unpaid) likes and earnings
+      const availableLikes = Math.max(0, totalLikes - paidLikes);
+      const availableEarnings = Math.floor(availableLikes / 10) * 0.01;
+
+      console.log(`💰 Payment calculation for ${username}:`, {
+        totalLikes,
+        paidLikes,
+        availableLikes,
+        availableEarnings: `£${availableEarnings.toFixed(2)}`,
+        completedPayoutsCount: completedPayouts?.length || 0
+      });
+
+      return {
+        availableLikes,
+        availableEarnings,
+        totalLikes,
+        paidLikes,
+        completedPayouts: completedPayouts?.length || 0
+      };
+
+    } catch (error) {
+      console.error('Error calculating available earnings:', error);
+      return { 
+        availableLikes: 0, 
+        availableEarnings: 0, 
+        totalLikes: 0, 
+        paidLikes: 0,
+        completedPayouts: 0 
+      };
+    }
+  }
+
+  // Updated main display function with proper payment reset logic
   async function updateAllDisplays() {
     if (!currentUser) return;
 
@@ -3067,22 +3148,24 @@ crossorigin="anonymous"></script>
         return;
       }
 
-      // Get comprehensive likes breakdown INCLUDING VIP EXTRAS
-      const likesBreakdown = await getAllLikesBreakdown();
-      if (!likesBreakdown) {
-        console.error('Failed to get likes breakdown');
-        return;
-      }
-      
-      const totalLikes = likesBreakdown.total;
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+      // Get available earnings (after accounting for completed payouts)
+      const earningsData = await getAvailableEarnings();
+      const { availableEarnings, availableLikes, totalLikes, paidLikes, completedPayouts } = earningsData;
 
-      // Update earnings display
-      document.getElementById('earningsAmount').textContent = `£${earningsValue.toFixed(2)}`;
+      // Update main earnings display
+      document.getElementById('earningsAmount').textContent = `£${availableEarnings.toFixed(2)}`;
       
-      // Update payments tab
-      document.getElementById('paymentTotalLikes').textContent = `${totalLikes} likes`;
-      document.getElementById('paymentEarnings').textContent = `£${earningsValue.toFixed(2)}`;
+      // Update payments tab with detailed breakdown
+      document.getElementById('paymentTotalLikes').textContent = `${totalLikes}`;
+      document.getElementById('paymentEarnings').textContent = `£${availableEarnings.toFixed(2)}`;
+
+      // Show earnings breakdown in status if user has had payouts
+      let earningsStatusText = '';
+      if (completedPayouts > 0) {
+        earningsStatusText = `${availableLikes} new likes (${paidLikes} already paid from ${completedPayouts} payout${completedPayouts > 1 ? 's' : ''})`;
+      } else {
+        earningsStatusText = `${availableLikes} total likes`;
+      }
 
       // Check for existing pending requests
       const { data: existingRequests, error: reqError } = await supabase
@@ -3109,27 +3192,39 @@ crossorigin="anonymous"></script>
         earningsStatus.textContent = 'Payout request pending';
         paymentStatus.textContent = 'Pending';
         paymentStatus.style.color = '#ffc0cb';
-      } else if (earningsValue >= 5.0) {
+      } else if (availableEarnings >= 5.0) {
         // Ready for payout
         mainPayoutBtn.style.display = 'inline-block';
         paymentTabPayoutBtn.style.display = 'inline-block';
         mainPayoutStatus.textContent = '';
         paymentTabStatus.textContent = '';
-        earningsStatus.textContent = 'Ready for payout!';
+        earningsStatus.textContent = `Ready for payout! (${earningsStatusText})`;
         paymentStatus.textContent = 'Ready';
         paymentStatus.style.color = '#8dffa1';
       } else {
         // Below minimum
         mainPayoutBtn.style.display = 'none';
         paymentTabPayoutBtn.style.display = 'none';
-        const amountNeeded = 5.0 - earningsValue;
-        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10; // £0.01 per 10 likes, so divide amount by 0.01 then multiply by 10
-        mainPayoutStatus.textContent = `Need ${likesNeeded} more total likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
-        paymentTabStatus.textContent = `Need ${likesNeeded} more total likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
-        earningsStatus.textContent = `Need ${likesNeeded} more likes for payout`;
+        const amountNeeded = 5.0 - availableEarnings;
+        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10;
+        
+        mainPayoutStatus.textContent = `Need ${likesNeeded} more likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
+        paymentTabStatus.textContent = `Need ${likesNeeded} more likes to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
+        
+        if (availableEarnings === 0 && completedPayouts > 0) {
+          earningsStatus.textContent = `All earnings paid out - need ${likesNeeded} more likes`;
+        } else {
+          earningsStatus.textContent = `Need ${likesNeeded} more likes for payout (${earningsStatusText})`;
+        }
+        
         paymentStatus.textContent = 'Below Min';
         paymentStatus.style.color = '#ff8d8d';
       }
+
+      console.log('🔄 Display updated:', {
+        availableEarnings: `£${availableEarnings.toFixed(2)}`,
+        status: availableEarnings >= 5 ? 'Ready' : availableEarnings === 0 && completedPayouts > 0 ? 'Reset' : 'Below Min'
+      });
 
     } catch (error) {
       console.error('Error updating displays:', error);
@@ -3503,7 +3598,7 @@ crossorigin="anonymous"></script>
     });
   }
 
-  // Payout Functions
+  // Enhanced payout history with reset information
   async function loadPayoutsHistory() {
     try {
       const { data, error } = await supabase
@@ -3524,10 +3619,12 @@ crossorigin="anonymous"></script>
       let html = '';
       data.forEach(payout => {
         const statusClass = payout.status.toLowerCase();
+        const likesInfo = payout.likes_at_payout ? ` (${payout.likes_at_payout} total likes)` : '';
+        
         html += `
           <div class="payout-item ${statusClass}">
             <div class="payout-info">
-              <div class="payout-amount">£${parseFloat(payout.amount).toFixed(2)}</div>
+              <div class="payout-amount">£${parseFloat(payout.amount).toFixed(2)}${likesInfo}</div>
               <div class="payout-date">Requested: ${new Date(payout.requested_at).toLocaleDateString()}</div>
               ${payout.completed_at ? `<div class="payout-date">Completed: ${new Date(payout.completed_at).toLocaleDateString()}</div>` : ''}
             </div>
@@ -3543,6 +3640,7 @@ crossorigin="anonymous"></script>
     }
   }
 
+  // Updated payout request function
   async function requestPayout() {
     const mainBtn = document.getElementById('mainPayoutBtn');
     const paymentBtn = document.getElementById('paymentTabPayoutBtn');
@@ -3554,15 +3652,14 @@ crossorigin="anonymous"></script>
       const username = currentUser.user_metadata?.user_name || currentUser.email || null;
       if (!username) throw new Error('Username not found.');
 
-      // Calculate earnings using ALL likes INCLUDING VIP EXTRAS
-      const likesBreakdown = await getAllLikesBreakdown();
-      const totalLikes = likesBreakdown.total;
-      const earningsValue = Math.floor(totalLikes / 10) * 0.01;
+      // Get current available earnings
+      const earningsData = await getAvailableEarnings();
+      const { availableEarnings, availableLikes, totalLikes } = earningsData;
 
-      if (earningsValue < 5) {
-        const amountNeeded = 5.0 - earningsValue;
-        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10; // £0.01 per 10 likes
-        const message = `Minimum £5 earnings required. You have £${earningsValue.toFixed(2)} from ${totalLikes} total likes. Need ${likesNeeded} more likes (£${amountNeeded.toFixed(2)} more).`;
+      if (availableEarnings < 5) {
+        const amountNeeded = 5.0 - availableEarnings;
+        const likesNeeded = Math.ceil(amountNeeded / 0.01) * 10;
+        const message = `Minimum £5 earnings required. You have £${availableEarnings.toFixed(2)} from ${availableLikes} available likes. Need ${likesNeeded} more likes (£${amountNeeded.toFixed(2)} more).`;
         document.getElementById('mainPayoutStatus').textContent = message;
         document.getElementById('paymentTabStatus').textContent = message;
         return;
@@ -3582,19 +3679,28 @@ crossorigin="anonymous"></script>
         return;
       }
 
-      // Insert payout request
+      // Insert payout request with current total likes count
+      // This is crucial: we store the TOTAL likes at time of request
+      // When admin marks as completed, this number is used to calculate what's been paid
       const { error } = await supabase.from('payout_requests').insert([{
         user_id: currentUser.id,
-        amount: earningsValue,
+        amount: availableEarnings,
+        likes_at_payout: totalLikes, // Store TOTAL likes, not just available likes
         status: 'pending',
         requested_at: new Date().toISOString()
       }]);
 
       if (error) throw error;
 
-      const successMessage = `Payout request submitted! £${earningsValue.toFixed(2)} from ${totalLikes} total likes.`;
+      const successMessage = `Payout request submitted! £${availableEarnings.toFixed(2)} from ${availableLikes} available likes (${totalLikes} total likes).`;
       document.getElementById('mainPayoutStatus').textContent = successMessage;
       document.getElementById('paymentTabStatus').textContent = successMessage;
+      
+      console.log('💸 Payout requested:', {
+        amount: `£${availableEarnings.toFixed(2)}`,
+        availableLikes,
+        totalLikesAtRequest: totalLikes
+      });
       
       // Refresh all displays
       await updateAllDisplays();
@@ -3604,6 +3710,7 @@ crossorigin="anonymous"></script>
       const errorMessage = 'Error submitting payout request: ' + err.message;
       document.getElementById('mainPayoutStatus').textContent = errorMessage;
       document.getElementById('paymentTabStatus').textContent = errorMessage;
+      console.error('💸 Payout request failed:', err);
     } finally {
       mainBtn.disabled = false;
       paymentBtn.disabled = false;
@@ -3885,6 +3992,172 @@ if (document.readyState === 'loading') {
     autoLoadBottomEmbeds();
 }
 </script>
+  
+<!-- Add this CSS to your existing page's <head> section -->
+<style>
+.bottom-embeds-section {
+    background: linear-gradient(135deg, #2f1a39, #3d2147);
+    border: 2px solid #ff4f9f;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem auto;
+    text-align: center;
+    max-width: 400px;
+}
+.bottom-embeds-section h3 {
+    color: #ff4f9f;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 10px #ff4f9f;
+    font-family: 'Rubik Mono One', sans-serif;
+}
+.bottom-embeds-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 2rem;
+    justify-content: center;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.bottom-embed-container {
+    border: 2px solid #ff4f9f;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
+    height: 60px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+.bottom-embed-container:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
+    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
+}
+.bottom-embed-iframe {
+    width: 100%;
+    height: 400px;
+    border: none;
+    display: block;
+    transform: scale(0.8);
+    transform-origin: top left;
+    overflow: hidden;
+}
+.bottom-embed-header {
+    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
+    color: #1b1b2e;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    font-family: 'Rubik Mono One', sans-serif;
+}
+@media (max-width: 768px) {
+    .bottom-embeds-container {
+        grid-template-columns: 1fr;
+        max-width: 150px;
+    }
+    .bottom-embeds-section {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+    .bottom-embed-container {
+        height: 50px;
+    }
+}
+</style>
+
+<!-- Add this HTML section to the bottom of your existing page -->
+<div class="bottom-embeds-section">
+    <h3>Featured Content</h3>
+    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
+        <!-- Embeds will automatically load here -->
+    </div>
+</div>
+
+<script>
+function createBottomEmbed(url, title) {
+    const embedContainer = document.createElement('div');
+    embedContainer.className = 'bottom-embed-container';
+
+    const embedHeader = document.createElement('div');
+    embedHeader.className = 'bottom-embed-header';
+    embedHeader.textContent = `Embedded: ${title}`;
+
+    const iframe = document.createElement('iframe');
+    iframe.className = 'bottom-embed-iframe';
+    iframe.src = url;
+    iframe.loading = 'lazy';
+    iframe.setAttribute('allowfullscreen', 'true');
+    
+    // Add error handling
+    iframe.onload = function() {
+        console.log(`Successfully loaded: ${title}`);
+    };
+    
+    iframe.onerror = function() {
+        console.log(`Failed to load: ${title}`);
+        iframe.style.background = '#ff4f9f';
+        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
+    };
+
+    embedContainer.appendChild(embedHeader);
+    embedContainer.appendChild(iframe);
+    
+    return embedContainer;
+}
+
+function autoLoadBottomEmbeds() {
+    const urls = [
+        'https://otieu.com/4/9248260',
+        'https://otieu.com/4/9249624',
+        'https://otieu.com/4/9249458',
+        'https://otieu.com/4/9661607'
+    ];
+    const embedsContainer = document.getElementById('bottomEmbedsContainer');
+    
+    if (embedsContainer) {
+        // Instead of embedding, create clickable previews
+        urls.forEach((url, index) => {
+            const linkContainer = document.createElement('div');
+            linkContainer.className = 'bottom-embed-container';
+            linkContainer.style.cursor = 'pointer';
+            linkContainer.style.display = 'flex';
+            linkContainer.style.alignItems = 'center';
+            linkContainer.style.justifyContent = 'center';
+            linkContainer.style.textDecoration = 'none';
+            
+            linkContainer.innerHTML = `
+                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
+                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
+                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
+                </div>
+            `;
+            
+            linkContainer.addEventListener('click', () => {
+                window.open(url, '_blank');
+            });
+            
+            embedsContainer.appendChild(linkContainer);
+        });
+    }
+}
+
+// Auto-load embeds when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
+} else {
+    autoLoadBottomEmbeds();
+}
+</script>
 
 </body>
 </html>
+
