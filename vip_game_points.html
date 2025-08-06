@@ -470,19 +470,43 @@
     pointsCache.set(userId, newPoints);
 
     try {
-      const { data, error } = await supabase
+      // First check if record exists
+      const { data: existingRecord } = await supabase
         .from('vip_page_views')
-        .upsert({
-          user_id: userId,
-          username: username,
-          game_points: newPoints,
-          view_count: 1,
-          last_viewed_at: new Date().toISOString()
-        })
-        .select();
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-      if (error) {
-        console.log('Points update error:', error);
+      let result;
+      
+      if (existingRecord) {
+        // Update existing record
+        result = await supabase
+          .from('vip_page_views')
+          .update({
+            game_points: newPoints,
+            view_count: (existingRecord.view_count || 0) + 1,
+            last_viewed_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+          .select();
+      } else {
+        // Insert new record
+        result = await supabase
+          .from('vip_page_views')
+          .insert({
+            user_id: userId,
+            username: username,
+            game_points: newPoints,
+            view_count: 1,
+            first_viewed_at: new Date().toISOString(),
+            last_viewed_at: new Date().toISOString()
+          })
+          .select();
+      }
+
+      if (result.error) {
+        console.log('Points update error:', result.error);
         // Revert optimistic update
         currentPoints = newPoints - 1;
         elements.gamePointsDisplay.textContent = currentPoints;
@@ -490,6 +514,7 @@
         return false;
       }
 
+      console.log('Points updated successfully:', result.data);
       return true;
     } catch (err) {
       console.log('Points update error:', err);
