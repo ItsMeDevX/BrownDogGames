@@ -2759,20 +2759,20 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Use a dedicated approach for extra likes - avoid vip_page_views confusion
+    // Use actual usernames for like tracking - no more cryptic extra IDs
     async function getExtraLikes(extraId) {
       try {
-        // Count likes by counting entries in vip_page_views for this extra
-        const { count, error } = await supabase
+        // Count unique users who liked this extra by looking for entries with the pattern
+        const { data, error } = await supabase
           .from('vip_page_views')
-          .select('*', { count: 'exact', head: true })
-          .eq('username', `extra_like_${extraId}`); // Use a clear prefix
+          .select('username')
+          .like('username', `%_liked_extra_${extraId}`);
 
         if (error) {
           console.error('Error getting likes:', error);
           return 0;
         }
-        return count || 0;
+        return data?.length || 0;
       } catch (error) {
         console.error('Error getting extra likes:', error);
         return 0;
@@ -2785,10 +2785,14 @@ crossorigin="anonymous"></script>
       if (!session?.session?.user) return false;
 
       try {
+        // Get current user's GitHub username
+        const githubUsername = await getCurrentUserGitHubUsername();
+        const likeUsername = `${githubUsername}_liked_extra_${extraId}`;
+        
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', `extra_like_${extraId}`) // Use consistent prefix
+          .eq('username', likeUsername)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2802,7 +2806,31 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Toggle like for an extra
+    // Get current user's GitHub username
+    async function getCurrentUserGitHubUsername() {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) return 'Guest';
+
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', session.session.user.id)
+          .single();
+
+        if (!error && data?.github_username) {
+          return data.github_username;
+        }
+        
+        // Fallback to user metadata
+        return session.session.user.user_metadata?.full_name || 'VIP_User';
+      } catch (error) {
+        console.error('Error getting current user GitHub username:', error);
+        return 'VIP_User';
+      }
+    }
+
+    // Toggle like for an extra using readable usernames
     async function toggleExtraLike(extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
@@ -2811,7 +2839,8 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      const username = `extra_like_${extraId}`; // Use clear prefix
+      const githubUsername = await getCurrentUserGitHubUsername();
+      const username = `${githubUsername}_liked_extra_${extraId}`; // e.g. "johnsmith_liked_extra_123"
 
       console.log('Toggling like for:', { extraId, userId, username });
 
@@ -2841,11 +2870,11 @@ crossorigin="anonymous"></script>
           console.log('Like removed');
           return false; // unliked
         } else {
-          // Add like - insert new row
+          // Add like - insert new row with readable username
           const { error: insertError } = await supabase
             .from('vip_page_views')
             .insert([{
-              username: username,
+              username: username, // Now stores "johnsmith_liked_extra_123" instead of "extra_123"
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
