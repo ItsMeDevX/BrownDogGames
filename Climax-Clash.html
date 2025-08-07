@@ -36,12 +36,9 @@ crossorigin="anonymous"></script>
       background-color: #1e1b2e;
       color: #fefefe;
       min-height: 100vh;
-      margin: 0;
       padding: 20px;
-      padding-top: 140px !important; /* Force space for fixed taskbar */
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
-      position: relative;
     }
 
     /* Access Choice Gate */
@@ -319,40 +316,21 @@ crossorigin="anonymous"></script>
       color: #ff69b4;
     }
 
-    /* Fixed Taskbar - NEVER SCROLLS */
+    /* Taskbar */
     #taskbar {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      margin: 0 !important;
+      max-width: 1200px;
+      margin: 20px auto;
       background-color: #2a243b;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border-radius: 12px;
+      box-shadow: 0 0 12px #00000055;
       padding: 15px 20px;
       font-family: 'Rubik Mono One', sans-serif;
       color: #fefefe;
+      position: relative;
       user-select: none;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      z-index: 9999 !important;
-      backdrop-filter: blur(10px);
-      border-bottom: 2px solid rgba(255, 105, 180, 0.3);
-      transform: none !important;
-    }
-
-    .taskbar-top-row {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .taskbar-bottom-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      width: 100%;
       flex-wrap: wrap;
       gap: 20px;
     }
@@ -360,47 +338,41 @@ crossorigin="anonymous"></script>
     .taskbar-logo {
       display: flex;
       align-items: center;
-      flex-shrink: 0;
     }
 
     .taskbar-logo img {
-      height: 60px;
+      height: 90px;
       width: auto;
       cursor: pointer;
       transition: transform 0.2s;
     }
 
     .taskbar-logo img:hover {
-      transform: scale(1.05);
+      transform: scale(1.1);
     }
 
     .taskbar-nav {
       display: flex;
-      gap: 12px;
+      gap: 15px;
       align-items: center;
       flex-wrap: wrap;
-      justify-content: center;
-      min-width: 0;
     }
 
     .taskbar-nav button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 0.5rem 1rem;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background-color 0.2s;
       white-space: nowrap;
-      flex-shrink: 0;
-      min-width: fit-content;
     }
 
     .taskbar-nav button:hover {
       background-color: #ff8edb;
-      transform: translateY(-1px);
     }
 
     .taskbar-nav button.vip-only {
@@ -429,15 +401,14 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
-      flex-shrink: 0;
     }
 
     .taskbar-search input {
-      width: 180px;
+      width: 200px;
       padding: 8px 12px;
       border: none;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 1rem;
       background-color: #3b3750;
       color: #fefefe;
     }
@@ -463,16 +434,15 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
-      flex-shrink: 0;
     }
 
     .messages-button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -654,16 +624,15 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-shrink: 0;
     }
 
     .taskbar-vip button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -679,7 +648,6 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.85rem;
     }
 
     .free-status {
@@ -688,7 +656,6 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.85rem;
     }
 
     .taskbar-auth {
@@ -696,16 +663,15 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
-      flex-shrink: 0;
     }
 
     .taskbar-auth button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -793,103 +759,34 @@ crossorigin="anonymous"></script>
     }
 
     #user-info img {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       border: 2px solid #ff69b4;
       object-fit: cover;
     }
 
-    /* Mobile responsive */
-    @media (max-width: 1100px) {
-      #taskbar {
-        padding: 10px 15px;
-        gap: 10px;
-      }
-
-      .taskbar-nav {
-        gap: 6px;
-      }
-
-      .taskbar-nav button {
-        padding: 5px 8px;
-        font-size: 0.75rem;
-      }
-
-      .taskbar-search input {
-        width: 120px;
-        font-size: 0.8rem;
-      }
-
-      .taskbar-logo img {
-        height: 45px;
-      }
-    }
-
     @media (max-width: 900px) {
-      body {
-        padding-top: 100px !important;
-      }
-
       #taskbar {
-        padding: 8px 10px !important;
-        gap: 8px !important;
-        position: fixed !important;
-        top: 0 !important;
-      }
-
-      .taskbar-bottom-row {
-        gap: 10px;
+        max-width: 95%;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 20px;
       }
 
       .taskbar-logo img {
-        height: 40px;
+        height: 75px;
       }
 
       .taskbar-nav {
-        gap: 4px;
-      }
-
-      .taskbar-nav button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
       }
 
       .taskbar-search input {
-        width: 100px;
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      .taskbar-search button {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      .messages-button {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      .taskbar-auth button,
-      .taskbar-vip button {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      #user-info strong {
-        font-size: 0.75rem !important;
-        padding: 4px 8px !important;
-      }
-
-      #user-info img {
-        width: 30px !important;
-        height: 30px !important;
-      }
-
-      .vip-status,
-      .free-status {
-        font-size: 0.75rem;
+        width: 200px;
       }
 
       .access-options {
@@ -916,63 +813,11 @@ crossorigin="anonymous"></script>
 
     @media (max-width: 600px) {
       body {
-        padding: 5px;
-        padding-top: 85px !important;
-      }
-
-      #taskbar {
-        padding: 5px 8px !important;
-        gap: 5px !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
+        padding: 10px;
       }
 
       .taskbar-logo img {
-        height: 30px;
-      }
-
-      .taskbar-nav button {
-        padding: 3px 4px;
-        font-size: 0.65rem;
-      }
-
-      .taskbar-search input {
-        width: 70px;
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      .taskbar-search button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      .messages-button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      .taskbar-auth button,
-      .taskbar-vip button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      #user-info strong {
-        font-size: 0.65rem !important;
-        padding: 3px 6px !important;
-      }
-
-      #user-info img {
-        width: 25px !important;
-        height: 25px !important;
-      }
-
-      .vip-status,
-      .free-status {
-        font-size: 0.65rem;
+        height: 65px;
       }
 
       .choice-gate-content {
@@ -1026,7 +871,7 @@ crossorigin="anonymous"></script>
           <li><span class="icon">🏆</span> Priority support & features</li>
         </ul>
         <div class="vip-only-features">
-          <strong>Premium Features:</strong> VIP-only dashboard, exclusive content sharing, member-to-member messaging, premium community access, and earn money while playing games!
+          <strong>Premium Features:</strong> VIP-only dashboard, exclusive content sharing, member-to-member messaging, and premium community access
         </div>
       </div>
 
@@ -1059,7 +904,7 @@ crossorigin="anonymous"></script>
 
       <div class="vip-step" id="payment-step" style="display: none;">
         <h4>Step 2: Subscribe for VIP Access</h4>
-        <p>Subscribe to VIP for just £2/month - unlocks exclusive member features, premium community access, and get paid for playing games!</p>
+        <p>Subscribe to VIP for just £2/month - unlocks exclusive member features and premium community access!</p>
         <div id="vip-paypal-container"></div>
       </div>
     </div>
@@ -1072,55 +917,49 @@ crossorigin="anonymous"></script>
   </div>
 </div>
 
-<!-- Fixed Taskbar -->
+<!-- Taskbar -->
 <div id="taskbar">
-  <!-- Top Row: Navigation Buttons -->
-  <div class="taskbar-top-row">
-    <div class="taskbar-nav" id="taskbar-nav">
-      <!-- Navigation buttons injected by JS -->
+  <div class="taskbar-logo">
+    <img 
+      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+      alt="BrownDogGames Logo"
+      onclick="window.location.href='index.html'"
+    >
+  </div>
+
+  <div class="taskbar-nav" id="taskbar-nav">
+    <!-- Navigation buttons injected by JS -->
+  </div>
+  
+  <div class="taskbar-search">
+    <input type="text" id="game-search-input" placeholder="Search games..." />
+    <button id="search-button">Search</button>
+    <div id="suggestions-dropdown"></div>
+  </div>
+
+  <!-- Message Notifications -->
+  <div class="taskbar-messages" id="taskbar-messages" style="display: none;">
+    <button class="messages-button" id="messages-button">
+      💬 Messages
+      <span class="message-badge" id="message-badge" style="display: none;">0</span>
+    </button>
+    <div class="message-preview-dropdown" id="message-preview-dropdown">
+      <div class="message-preview-header">Recent Messages</div>
+      <div id="message-preview-list">
+        <div class="no-messages">No new messages</div>
+      </div>
+      <div class="message-preview-footer">
+        <button onclick="window.location.href='user-profiles.html'">View All Messages</button>
+      </div>
     </div>
   </div>
 
-  <!-- Bottom Row: Logo, Search, Messages, VIP, Auth -->
-  <div class="taskbar-bottom-row">
-    <div class="taskbar-logo">
-      <img 
-        src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-        alt="BrownDogGames Logo"
-        onclick="window.location.href='index.html'"
-      >
-    </div>
-    
-    <div class="taskbar-search">
-      <input type="text" id="game-search-input" placeholder="Search games..." />
-      <button id="search-button">Search</button>
-      <div id="suggestions-dropdown"></div>
-    </div>
-
-    <!-- Message Notifications -->
-    <div class="taskbar-messages" id="taskbar-messages" style="display: none;">
-      <button class="messages-button" id="messages-button">
-        💬 Messages
-        <span class="message-badge" id="message-badge" style="display: none;">0</span>
-      </button>
-      <div class="message-preview-dropdown" id="message-preview-dropdown">
-        <div class="message-preview-header">Recent Messages</div>
-        <div id="message-preview-list">
-          <div class="no-messages">No new messages</div>
-        </div>
-        <div class="message-preview-footer">
-          <button onclick="window.location.href='user-profiles.html'">View All Messages</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="taskbar-vip" id="taskbar-vip">
-      <!-- VIP button/status injected by JS -->
-    </div>
-    
-    <div class="taskbar-auth" id="taskbar-auth">
-      <!-- Auth content injected by JS -->
-    </div>
+  <div class="taskbar-vip" id="taskbar-vip">
+    <!-- VIP button/status injected by JS -->
+  </div>
+  
+  <div class="taskbar-auth" id="taskbar-auth">
+    <!-- Auth content injected by JS -->
   </div>
 </div>
 
@@ -1791,17 +1630,17 @@ crossorigin="anonymous"></script>
     userVideoBtn.addEventListener('click', () => window.location.href = 'user-videos.html');
     taskbarNav.appendChild(userVideoBtn);
 
-    // User Art (always available)
-    const userArtBtn = document.createElement('button');
-    userArtBtn.textContent = 'User Art';
-    userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
-    taskbarNav.appendChild(userArtBtn);
-
     // User Music (always available)
     const userMusicBtn = document.createElement('button');
     userMusicBtn.textContent = 'User Music';
     userMusicBtn.addEventListener('click', () => window.location.href = 'user-music.html');
     taskbarNav.appendChild(userMusicBtn);
+
+    // User Art (always available)
+    const userArtBtn = document.createElement('button');
+    userArtBtn.textContent = 'User Art';
+    userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
+    taskbarNav.appendChild(userArtBtn);
 
     // User Profiles (always available)
     const userProfilesBtn = document.createElement('button');
@@ -2920,13 +2759,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Get likes for a specific extra
+    // NEW: Create a dedicated likes table structure for VIP extras
     async function getExtraLikes(extraId) {
       try {
         const { count, error } = await supabase
-          .from('vip_page_views')
+          .from('vip_extra_likes')
           .select('*', { count: 'exact', head: true })
-          .eq('username', `extra_${extraId}`);
+          .eq('extra_id', extraId);
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2939,16 +2778,16 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Check if current user has liked an extra
+    // NEW: Check if current user has liked an extra using the proper likes table
     async function hasUserLikedExtra(extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return false;
 
       try {
         const { data, error } = await supabase
-          .from('vip_page_views')
+          .from('vip_extra_likes')
           .select('user_id')
-          .eq('username', `extra_${extraId}`)
+          .eq('extra_id', extraId)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2962,7 +2801,7 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Toggle like for an extra
+    // NEW: Toggle like using a proper VIP extra likes table
     async function toggleExtraLike(extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
@@ -2971,16 +2810,15 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      const username = `extra_${extraId}`;
 
-      console.log('Toggling like for:', { extraId, userId, username });
+      console.log('Toggling like for:', { extraId, userId });
 
       try {
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
-          .from('vip_page_views')
+          .from('vip_extra_likes')
           .select('user_id')
-          .eq('username', username)
+          .eq('extra_id', extraId)
           .eq('user_id', userId)
           .single();
 
@@ -2989,9 +2827,9 @@ crossorigin="anonymous"></script>
         if (existingLike) {
           // Remove like - delete the row
           const { error: deleteError } = await supabase
-            .from('vip_page_views')
+            .from('vip_extra_likes')
             .delete()
-            .eq('username', username)
+            .eq('extra_id', extraId)
             .eq('user_id', userId);
 
           if (deleteError) {
@@ -3003,13 +2841,11 @@ crossorigin="anonymous"></script>
         } else {
           // Add like - insert new row
           const { error: insertError } = await supabase
-            .from('vip_page_views')
+            .from('vip_extra_likes')
             .insert([{
-              username: username,
+              extra_id: extraId,
               user_id: userId,
-              view_count: 1,
-              first_viewed_at: new Date().toISOString(),
-              last_viewed_at: new Date().toISOString()
+              created_at: new Date().toISOString()
             }]);
 
           if (insertError) {
@@ -3026,16 +2862,22 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Load VIP Extras - UPDATED FOR CLIMAX CLASH
+    // Load VIP Extras with proper creator names from the users table
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
       console.log('Loading VIP extras for Climax Clash...');
       
       try {
+        // Join with users table to get the github_username
         const { data: extras, error } = await supabase
           .from('vip_extras')
-          .select('*')
-          .eq('game_id', 'climax-clash') // Only load Climax Clash extras
+          .select(`
+            *,
+            users!vip_extras_created_by_fkey (
+              github_username
+            )
+          `)
+          .eq('game_id', 'climax-clash')
           .order('created_at', { ascending: false });
 
         console.log('Supabase response:', { extras, error });
@@ -3063,7 +2905,8 @@ crossorigin="anonymous"></script>
           return {
             ...extra,
             likeCount,
-            userHasLiked
+            userHasLiked,
+            creatorName: extra.users?.github_username || extra.creator_name || 'Anonymous'
           };
         }));
 
@@ -3093,7 +2936,7 @@ crossorigin="anonymous"></script>
             <div class="extra-footer">
               <div class="extra-actions">
                 <span class="extra-creator">
-                  Added by <span class="vip-creator">👑 ${extra.creator_name || 'Anonymous'}</span>
+                  Added by <span class="vip-creator">👑 ${extra.creatorName}</span>
                   <br>
                   <small>${dateStr}</small>
                 </span>
@@ -3151,7 +2994,7 @@ crossorigin="anonymous"></script>
       likeBtn.disabled = false;
     };
 
-    // Add VIP Extra - UPDATED FOR CLIMAX CLASH
+    // Add VIP Extra with proper user association
     async function addVipExtra(extraData) {
       if (!currentUser) {
         alert('Please login first');
@@ -3166,7 +3009,7 @@ crossorigin="anonymous"></script>
             description: extraData.description,
             url: extraData.url,
             type: extraData.type,
-            game_id: 'climax-clash', // Add game ID for Climax Clash
+            game_id: 'climax-clash',
             created_by: currentUser.id,
             creator_name: currentUser.user_metadata?.full_name || 'VIP User'
           }]);
@@ -3291,13 +3134,24 @@ crossorigin="anonymous"></script>
       }, 30000);
     }
 
-    // Real-time updates for VIP extras - UPDATED FOR CLIMAX CLASH
+    // Real-time updates for VIP extras
     supabase.channel('vip_extras_climax')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'vip_extras',
         filter: 'game_id=eq.climax-clash'
+      }, () => {
+        loadVipExtras();
+      })
+      .subscribe();
+
+    // Real-time updates for VIP extra likes
+    supabase.channel('vip_extra_likes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'vip_extra_likes'
       }, () => {
         loadVipExtras();
       })
@@ -3312,6 +3166,18 @@ crossorigin="anonymous"></script>
     async function getUserGitHubUsername() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        // Try to get github username from users table first
+        const { data: userData } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (userData?.github_username) {
+          return userData.github_username;
+        }
+        
+        // Fallback to user metadata
         const { user_metadata } = session.user;
         return user_metadata.full_name || 'GitHub User';
       }
@@ -3395,174 +3261,12 @@ crossorigin="anonymous"></script>
     showDownloadIfVIP(); // Check VIP access
     loadMessages();
   </script>
-
-<!-- Add this CSS to your existing page's <head> section -->
-<style>
-.bottom-embeds-section {
-    background: linear-gradient(135deg, #2f1a39, #3d2147);
-    border: 2px solid #ff4f9f;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem auto;
-    text-align: center;
-    max-width: 400px;
-}
-.bottom-embeds-section h3 {
-    color: #ff4f9f;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px #ff4f9f;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-.bottom-embeds-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.bottom-embed-container {
-    border: 2px solid #ff4f9f;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    height: 60px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    animation: pulse 2s infinite;
-}
-
-.bottom-embed-container:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
-    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
-}
-.bottom-embed-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow: hidden;
-}
-.bottom-embed-header {
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    color: #1b1b2e;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-@media (max-width: 768px) {
-    .bottom-embeds-container {
-        grid-template-columns: 1fr;
-        max-width: 150px;
-    }
-    .bottom-embeds-section {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .bottom-embed-container {
-        height: 50px;
-    }
-}
-</style>
-
-<!-- Add this HTML section to the bottom of your existing page -->
-<div class="bottom-embeds-section">
-    <h3>Featured Content</h3>
-    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
-        <!-- Embeds will automatically load here -->
-    </div>
-</div>
-
-<script>
-function createBottomEmbed(url, title) {
-    const embedContainer = document.createElement('div');
-    embedContainer.className = 'bottom-embed-container';
-
-    const embedHeader = document.createElement('div');
-    embedHeader.className = 'bottom-embed-header';
-    embedHeader.textContent = `Embedded: ${title}`;
-
-    const iframe = document.createElement('iframe');
-    iframe.className = 'bottom-embed-iframe';
-    iframe.src = url;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allowfullscreen', 'true');
-    
-    // Add error handling
-    iframe.onload = function() {
-        console.log(`Successfully loaded: ${title}`);
-    };
-    
-    iframe.onerror = function() {
-        console.log(`Failed to load: ${title}`);
-        iframe.style.background = '#ff4f9f';
-        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
-    };
-
-    embedContainer.appendChild(embedHeader);
-    embedContainer.appendChild(iframe);
-    
-    return embedContainer;
-}
-
-function autoLoadBottomEmbeds() {
-    const urls = [
-        'https://otieu.com/4/9248260',
-        'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458',
-        'https://otieu.com/4/9661607'
-    ];
-    const embedsContainer = document.getElementById('bottomEmbedsContainer');
-    
-    if (embedsContainer) {
-        // Instead of embedding, create clickable previews
-        urls.forEach((url, index) => {
-            const linkContainer = document.createElement('div');
-            linkContainer.className = 'bottom-embed-container';
-            linkContainer.style.cursor = 'pointer';
-            linkContainer.style.display = 'flex';
-            linkContainer.style.alignItems = 'center';
-            linkContainer.style.justifyContent = 'center';
-            linkContainer.style.textDecoration = 'none';
-            
-            linkContainer.innerHTML = `
-                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
-                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
-                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
-                </div>
-            `;
-            
-            linkContainer.addEventListener('click', () => {
-                window.open(url, '_blank');
-            });
-            
-            embedsContainer.appendChild(linkContainer);
-        });
-    }
-}
-
-// Auto-load embeds when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
-} else {
-    autoLoadBottomEmbeds();
-}
-</script>
+</body>
+</html>
   
 </body>
 </html>
+
 
 
 
