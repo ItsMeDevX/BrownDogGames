@@ -2782,6 +2782,20 @@ crossorigin="anonymous"></script>
       if (!session?.session?.user) return false;
 
       try {
+        // Get current user's GitHub username to compare
+        const { data: currentUserData } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', session.session.user.id)
+          .single();
+        
+        const currentUserGithub = currentUserData?.github_username || session.session.user.user_metadata?.full_name || 'Guest';
+        
+        // Don't show as liked if this is the user's own content
+        if (currentUserGithub === creatorGithubUsername) {
+          return false;
+        }
+
         // Use creator's GitHub username with _extra suffix for checking likes
         const usernameWithSuffix = `${creatorGithubUsername}_extra`;
 
@@ -3011,6 +3025,8 @@ crossorigin="anonymous"></script>
           .single();
         
         const githubUsername = userData?.github_username || currentUser.user_metadata?.full_name || 'VIP User';
+        
+        console.log('Adding extra with GitHub username:', githubUsername);
         
         const { error } = await supabase
           .from('vip_extras')
@@ -3251,6 +3267,7 @@ crossorigin="anonymous"></script>
   
 </body>
 </html>
+
 
 
 
