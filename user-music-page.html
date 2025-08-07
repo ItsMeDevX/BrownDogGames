@@ -2121,9 +2121,14 @@ crossorigin="anonymous"></script>
       font-size: 0.9rem;
     }
 
-    .music-player {
+    .music-container {
+      position: relative;
       width: 100%;
       margin-bottom: 15px;
+    }
+
+    .music-player {
+      width: 100%;
       background-color: #3b2750;
       border-radius: 12px;
       border: 2px solid #ff69b4;
@@ -2143,6 +2148,35 @@ crossorigin="anonymous"></script>
       width: 100%;
       border: none;
       border-radius: 10px;
+    }
+
+    .fullscreen-music-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 79, 159, 0.9);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 3;
+      font-family: 'Rubik Mono One', sans-serif;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .music-container:hover .fullscreen-music-btn {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fullscreen-music-btn:hover {
+      background: rgba(255, 130, 186, 1);
+      transform: scale(1.1);
     }
 
     .play-link {
@@ -2363,6 +2397,85 @@ crossorigin="anonymous"></script>
       transition: background-color 0.2s ease;
     }
     button:hover { background-color: #ff82ba; }
+
+    /* Fullscreen Music View */
+    .fullscreen-music-view {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .fullscreen-music-view.active {
+      display: flex;
+    }
+
+    .fullscreen-music-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(27, 27, 46, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1001;
+      border-bottom: 2px solid #ff4f9f;
+    }
+
+    .fullscreen-music-title {
+      color: #ff4f9f;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .close-fullscreen-music {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-weight: bold;
+    }
+
+    .close-fullscreen-music:hover {
+      background-color: #ff82ba;
+    }
+
+    .fullscreen-music-player {
+      width: 90vw;
+      max-width: 800px;
+      height: 60vh;
+      max-height: 600px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      margin-top: 80px;
+      background-color: #3b2750;
+      border: 3px solid #ff69b4;
+    }
+
+    .fullscreen-music-player iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+    }
 
     .no-content {
       font-size: 1.1rem;
@@ -2918,6 +3031,15 @@ crossorigin="anonymous"></script>
       <button type="submit">Send</button>
     </form>
   </section>
+
+  <!-- Fullscreen Music View -->
+  <div id="fullscreen-music-view" class="fullscreen-music-view">
+    <div class="fullscreen-music-header">
+      <h2 id="fullscreen-music-title" class="fullscreen-music-title">Music Player</h2>
+      <button class="close-fullscreen-music" onclick="closeMusicFullscreen()">✕ Close</button>
+    </div>
+    <div id="fullscreen-music-player" class="fullscreen-music-player"></div>
+  </div>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -3475,7 +3597,93 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // Update like status display
+  // Fullscreen music functionality
+  let currentFullscreenMusic = null;
+
+  window.openMusicFullscreen = function(musicUrl, title) {
+    const fullscreenView = document.getElementById('fullscreen-music-view');
+    const fullscreenPlayer = document.getElementById('fullscreen-music-player');
+    const fullscreenTitle = document.getElementById('fullscreen-music-title');
+    
+    // Clear previous content
+    fullscreenPlayer.innerHTML = '';
+    
+    // Create the music player for fullscreen
+    const player = createMusicPlayer(musicUrl);
+    player.className = 'fullscreen-music-player';
+    
+    // For audio elements, add special styling
+    if (player.tagName === 'AUDIO') {
+      player.style.width = '100%';
+      player.style.height = '80px';
+      player.style.marginTop = '40%';
+      player.style.background = 'transparent';
+    }
+    
+    fullscreenPlayer.appendChild(player);
+    fullscreenTitle.textContent = title || 'Music Player';
+    
+    currentFullscreenMusic = { url: musicUrl, element: player };
+    
+    fullscreenView.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
+    // Auto-play if it's a direct audio file
+    if (player.tagName === 'AUDIO') {
+      player.play().catch(() => {
+        // Auto-play failed, that's okay
+      });
+    }
+  }
+
+  window.closeMusicFullscreen = function() {
+    const fullscreenView = document.getElementById('fullscreen-music-view');
+    const fullscreenPlayer = document.getElementById('fullscreen-music-player');
+    
+    // Stop any playing audio
+    if (currentFullscreenMusic && currentFullscreenMusic.element.tagName === 'AUDIO') {
+      currentFullscreenMusic.element.pause();
+      currentFullscreenMusic.element.currentTime = 0;
+    }
+    
+    fullscreenView.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    // Clear the player content
+    fullscreenPlayer.innerHTML = '';
+    currentFullscreenMusic = null;
+    
+    // Remove fullscreen change listeners
+    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+  }
+
+  function handleFullscreenChange() {
+    // Check if we've exited fullscreen
+    const isFullscreen = !!(document.fullscreenElement || 
+                           document.webkitFullscreenElement || 
+                           document.mozFullScreenElement || 
+                           document.msFullscreenElement);
+    
+    if (!isFullscreen && currentFullscreenMusic) {
+      // We've exited fullscreen, so close our fullscreen music view
+      closeMusicFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && currentFullscreenMusic) {
+      closeMusicFullscreen();
+    }
+  });
   function updateLikeStatus() {
     const status = document.getElementById('like-status');
     const likeBtn = document.getElementById('main-like-btn');
@@ -3499,86 +3707,87 @@ crossorigin="anonymous"></script>
     likeBtn.style.display = 'inline-block';
   }
 
-  // Create music player based on URL type
-  function createMusicPlayer(musicUrl) {
-    if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
-      // YouTube embed
-      let videoId = '';
-      if (musicUrl.includes('youtu.be/')) {
-        videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
-      } else if (musicUrl.includes('youtube.com/watch?v=')) {
-        videoId = musicUrl.split('v=')[1].split('&')[0];
-      }
+  // Fixed createMusicPlayer function - syntax error corrected
+function createMusicPlayer(musicUrl, withFullscreenBtn = false, title = '') {
+  const container = document.createElement('div');
+  container.className = 'music-container';
+  
+  let player;
+  
+  if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
+    // YouTube embed
+    let videoId = '';
+    if (musicUrl.includes('youtu.be/')) {
+      videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
+    } else if (musicUrl.includes('youtube.com/watch?v=')) {
+      videoId = musicUrl.split('v=')[1].split('&')[0];
+    }
+    
+    if (videoId) {
+      player = document.createElement('iframe');
+      player.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
+      player.style.width = '100%';
+      player.style.height = '140px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      player.setAttribute('allowfullscreen', 'true');
       
-      if (videoId) {
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
-        iframe.style.width = '100%';
-        iframe.style.height = '140px';
-        iframe.style.border = 'none';
-        iframe.style.borderRadius = '10px';
-        iframe.setAttribute('allowfullscreen', 'true');
-        
-        iframe.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-        
-        return iframe;
-      }
-    } else if (musicUrl.includes('soundcloud.com')) {
-      // SoundCloud embed
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(musicUrl)}&color=%23ff69b4&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
-      iframe.style.width = '100%';
-      iframe.style.height = '140px';
-      iframe.style.border = 'none';
-      iframe.style.borderRadius = '10px';
-      
-      iframe.onclick = (e) => {
+      player.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
       };
-      
-      return iframe;
-    } else if (musicUrl.includes('spotify.com')) {
-      // Spotify embed
-      let spotifyId = '';
-      let embedType = '';
-      
-      if (musicUrl.includes('track/')) {
-        spotifyId = musicUrl.split('track/')[1].split('?')[0];
-        embedType = 'track';
-      } else if (musicUrl.includes('album/')) {
-        spotifyId = musicUrl.split('album/')[1].split('?')[0];
-        embedType = 'album';
-      } else if (musicUrl.includes('playlist/')) {
-        spotifyId = musicUrl.split('playlist/')[1].split('?')[0];
-        embedType = 'playlist';
-      }
-      
-      if (spotifyId && embedType) {
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
-        iframe.style.width = '100%';
-        iframe.style.height = embedType === 'track' ? '152px' : '140px';
-        iframe.style.border = 'none';
-        iframe.style.borderRadius = '10px';
-        
-        iframe.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-        
-        return iframe;
-      }
+    }
+  } else if (musicUrl.includes('soundcloud.com')) {
+    // SoundCloud embed
+    player = document.createElement('iframe');
+    player.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(musicUrl)}&color=%23ff69b4&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
+    player.style.width = '100%';
+    player.style.height = '140px';
+    player.style.border = 'none';
+    player.style.borderRadius = '10px';
+    
+    player.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+  } else if (musicUrl.includes('spotify.com')) {
+    // Spotify embed
+    let spotifyId = '';
+    let embedType = '';
+    
+    if (musicUrl.includes('track/')) {
+      spotifyId = musicUrl.split('track/')[1].split('?')[0];
+      embedType = 'track';
+    } else if (musicUrl.includes('album/')) {
+      spotifyId = musicUrl.split('album/')[1].split('?')[0];
+      embedType = 'album';
+    } else if (musicUrl.includes('playlist/')) {
+      spotifyId = musicUrl.split('playlist/')[1].split('?')[0];
+      embedType = 'playlist';
     }
     
-    // Fallback to audio player for direct audio files
-    const audio = document.createElement('audio');
-    audio.controls = true;
-    audio.style.width = '100%';
-    audio.style.background = 'transparent';
+    if (spotifyId && embedType) {
+      player = document.createElement('iframe');
+      player.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
+      player.style.width = '100%';
+      player.style.height = embedType === 'track' ? '152px' : '140px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      
+      player.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    }
+  }
+  // REMOVED EXTRA CLOSING BRACE HERE - THIS WAS THE SYNTAX ERROR
+  
+  // Fallback to audio player for direct audio files (NOW REACHABLE)
+  if (!player) {
+    player = document.createElement('audio');
+    player.controls = true;
+    player.style.width = '100%';
+    player.style.background = 'transparent';
     
     const sourceMP3 = document.createElement('source');
     sourceMP3.src = musicUrl;
@@ -3592,18 +3801,37 @@ crossorigin="anonymous"></script>
     sourceOGG.src = musicUrl;
     sourceOGG.type = 'audio/ogg';
     
-    audio.appendChild(sourceMP3);
-    audio.appendChild(sourceWAV);
-    audio.appendChild(sourceOGG);
-    audio.appendChild(document.createTextNode('Your browser does not support the audio element.'));
+    player.appendChild(sourceMP3);
+    player.appendChild(sourceWAV);
+    player.appendChild(sourceOGG);
+    player.appendChild(document.createTextNode('Your browser does not support the audio element.'));
     
-    audio.onclick = (e) => {
+    player.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
     };
-    
-    return audio;
   }
+  
+  if (withFullscreenBtn) {
+    player.className = 'music-player';
+    container.appendChild(player);
+    
+    // Add fullscreen button
+    const fullscreenBtn = document.createElement('button');
+    fullscreenBtn.className = 'fullscreen-music-btn';
+    fullscreenBtn.textContent = '⛶';
+    fullscreenBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openMusicFullscreen(musicUrl, title);
+    };
+    
+    container.appendChild(fullscreenBtn);
+    return container;
+  } else {
+    return player;
+  }
+}
 
   async function incrementVipPageView() {
     if (!username) return;
@@ -3745,9 +3973,8 @@ crossorigin="anonymous"></script>
       }
 
       if (music.music_url) {
-        const musicPlayer = createMusicPlayer(music.music_url);
-        musicPlayer.className = 'music-player';
-        card.appendChild(musicPlayer);
+        const musicPlayerContainer = createMusicPlayer(music.music_url, true, music.title);
+        card.appendChild(musicPlayerContainer);
       }
 
       // Add music like section
@@ -4064,6 +4291,7 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
+
 
 
 
