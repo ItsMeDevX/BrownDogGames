@@ -2374,12 +2374,14 @@ crossorigin="anonymous"></script>
     <h2>🎵 Featured Musician</h2>
     <div class="avatar-img" id="featuredAvatar"></div>
     <div class="username-text" id="featuredUsername"></div>
-    <audio controls class="music-player" id="featuredMusic" style="display: none;">
-      <source id="featuredMusicSource" src="" type="audio/mpeg">
-      <source id="featuredMusicSourceWav" src="" type="audio/wav">
-      <source id="featuredMusicSourceOgg" src="" type="audio/ogg">
-      Your browser does not support the audio element.
-    </audio>
+    <div id="featuredMusicContainer" style="width: 100%; max-width: 350px; margin: 0 auto 1rem auto; background-color: #4a3157; border-radius: 16px; border: 3px solid #ff8bd8; box-shadow: 0 0 15px #ff8bd8cc; position: relative; z-index: 2;">
+      <audio controls class="music-player" id="featuredMusic" style="display: none; width: 100%;">
+        <source id="featuredMusicSource" src="" type="audio/mpeg">
+        <source id="featuredMusicSourceWav" src="" type="audio/wav">
+        <source id="featuredMusicSourceOgg" src="" type="audio/ogg">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
     <div id="featuredTitle" class="music-title"></div>
     <div id="featuredStats"></div>
     <div id="featuredLikes"></div>
@@ -2406,7 +2408,7 @@ crossorigin="anonymous"></script>
     const featuredSection = document.getElementById('featuredArtist');
     const featuredAvatar = document.getElementById('featuredAvatar');
     const featuredUsername = document.getElementById('featuredUsername');
-    const featuredMusic = document.getElementById('featuredMusic');
+    const featuredMusicContainer = document.getElementById('featuredMusicContainer');
     const featuredMusicSource = document.getElementById('featuredMusicSource');
     const featuredMusicSourceWav = document.getElementById('featuredMusicSourceWav');
     const featuredMusicSourceOgg = document.getElementById('featuredMusicSourceOgg');
@@ -2918,7 +2920,9 @@ crossorigin="anonymous"></script>
       // Music Player - Support for YouTube, SoundCloud, Spotify, and direct audio
       if (featuredUser.music_url) {
         const musicUrl = featuredUser.music_url;
-        featuredMusic.innerHTML = ''; // Clear existing content
+        
+        // Clear the container
+        featuredMusicContainer.innerHTML = '';
         
         if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
           // YouTube embed
@@ -2935,10 +2939,15 @@ crossorigin="anonymous"></script>
             iframe.style.width = '100%';
             iframe.style.height = '200px';
             iframe.style.border = 'none';
-            iframe.style.borderRadius = '16px';
+            iframe.style.borderRadius = '12px';
             iframe.setAttribute('allowfullscreen', 'true');
-            featuredMusic.appendChild(iframe);
-            featuredMusic.style.display = 'block';
+            
+            iframe.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            };
+            
+            featuredMusicContainer.appendChild(iframe);
           }
         } else if (musicUrl.includes('soundcloud.com')) {
           // SoundCloud embed
@@ -2947,9 +2956,14 @@ crossorigin="anonymous"></script>
           iframe.style.width = '100%';
           iframe.style.height = '200px';
           iframe.style.border = 'none';
-          iframe.style.borderRadius = '16px';
-          featuredMusic.appendChild(iframe);
-          featuredMusic.style.display = 'block';
+          iframe.style.borderRadius = '12px';
+          
+          iframe.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          };
+          
+          featuredMusicContainer.appendChild(iframe);
         } else if (musicUrl.includes('spotify.com')) {
           // Spotify embed
           let spotifyId = '';
@@ -2970,19 +2984,47 @@ crossorigin="anonymous"></script>
             const iframe = document.createElement('iframe');
             iframe.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
             iframe.style.width = '100%';
-            iframe.style.height = '200px';
+            iframe.style.height = embedType === 'track' ? '152px' : '200px';
             iframe.style.border = 'none';
-            iframe.style.borderRadius = '16px';
-            featuredMusic.appendChild(iframe);
-            featuredMusic.style.display = 'block';
+            iframe.style.borderRadius = '12px';
+            
+            iframe.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            };
+            
+            featuredMusicContainer.appendChild(iframe);
           }
         } else {
-          // Direct audio file - use original audio element approach
-          featuredMusicSource.src = musicUrl;
-          featuredMusicSourceWav.src = musicUrl;
-          featuredMusicSourceOgg.src = musicUrl;
-          featuredMusic.style.display = 'block';
-          featuredMusic.load(); // Reload the audio element with new sources
+          // Direct audio file - create new audio element
+          const audioElement = document.createElement('audio');
+          audioElement.controls = true;
+          audioElement.style.width = '100%';
+          audioElement.style.background = 'transparent';
+          
+          const sourceMP3 = document.createElement('source');
+          sourceMP3.src = musicUrl;
+          sourceMP3.type = 'audio/mpeg';
+          
+          const sourceWAV = document.createElement('source');
+          sourceWAV.src = musicUrl;
+          sourceWAV.type = 'audio/wav';
+          
+          const sourceOGG = document.createElement('source');
+          sourceOGG.src = musicUrl;
+          sourceOGG.type = 'audio/ogg';
+          
+          audioElement.appendChild(sourceMP3);
+          audioElement.appendChild(sourceWAV);
+          audioElement.appendChild(sourceOGG);
+          audioElement.appendChild(document.createTextNode('Your browser does not support the audio element.'));
+          
+          audioElement.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          };
+          
+          featuredMusicContainer.appendChild(audioElement);
         }
       }
 
@@ -3015,9 +3057,9 @@ crossorigin="anonymous"></script>
         <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • 🎵 ${featuredUser.likesBreakdown.music} Music • ⭐ ${featuredUser.likesBreakdown.extras} Extras</div>
       `;
       
-      // Click handler for featured section (but not on the audio player)
+      // Click handler for featured section (but not on the music player)
       featuredSection.onclick = (e) => {
-        if (e.target !== featuredMusic && !featuredMusic.contains(e.target)) {
+        if (e.target !== featuredMusicContainer && !featuredMusicContainer.contains(e.target)) {
           window.location.href = `user-music-page.html?user=${encodeURIComponent(featuredUser.username)}`;
         }
       };
