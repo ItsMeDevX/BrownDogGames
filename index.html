@@ -37,6 +37,7 @@ crossorigin="anonymous"></script>
       color: #fefefe;
       min-height: 100vh;
       padding: 20px;
+      padding-top: 120px; /* Space for fixed taskbar */
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
     }
@@ -316,63 +317,76 @@ crossorigin="anonymous"></script>
       color: #ff69b4;
     }
 
-    /* Taskbar */
+    /* Fixed Taskbar */
     #taskbar {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
       max-width: 1200px;
-      margin: 20px auto;
       background-color: #2a243b;
-      border-radius: 12px;
-      box-shadow: 0 0 12px #00000055;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
       padding: 15px 20px;
       font-family: 'Rubik Mono One', sans-serif;
       color: #fefefe;
-      position: relative;
       user-select: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 20px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 105, 180, 0.3);
     }
 
     .taskbar-logo {
       display: flex;
       align-items: center;
+      flex-shrink: 0;
     }
 
     .taskbar-logo img {
-      height: 90px;
+      height: 60px;
       width: auto;
       cursor: pointer;
       transition: transform 0.2s;
     }
 
     .taskbar-logo img:hover {
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
 
     .taskbar-nav {
       display: flex;
-      gap: 15px;
+      gap: 12px;
       align-items: center;
       flex-wrap: wrap;
+      flex: 1;
+      justify-content: center;
+      min-width: 0;
     }
 
     .taskbar-nav button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 0.5rem 1rem;
+      padding: 8px 14px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
       white-space: nowrap;
+      flex-shrink: 0;
+      min-width: fit-content;
     }
 
     .taskbar-nav button:hover {
       background-color: #ff8edb;
+      transform: translateY(-1px);
     }
 
     .taskbar-nav button.vip-only {
@@ -401,14 +415,15 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
+      flex-shrink: 0;
     }
 
     .taskbar-search input {
-      width: 200px;
+      width: 180px;
       padding: 8px 12px;
       border: none;
       border-radius: 6px;
-      font-size: 1rem;
+      font-size: 0.9rem;
       background-color: #3b3750;
       color: #fefefe;
     }
@@ -434,15 +449,16 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
+      flex-shrink: 0;
     }
 
     .messages-button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 14px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -624,15 +640,16 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-shrink: 0;
     }
 
     .taskbar-vip button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 14px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -648,6 +665,7 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
+      font-size: 0.85rem;
     }
 
     .free-status {
@@ -656,6 +674,7 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
+      font-size: 0.85rem;
     }
 
     .taskbar-auth {
@@ -663,15 +682,16 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
+      flex-shrink: 0;
     }
 
     .taskbar-auth button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 14px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -759,34 +779,64 @@ crossorigin="anonymous"></script>
     }
 
     #user-info img {
-      width: 40px;
-      height: 40px;
+      width: 35px;
+      height: 35px;
       border-radius: 50%;
       border: 2px solid #ff69b4;
       object-fit: cover;
     }
 
-    @media (max-width: 900px) {
+    /* Mobile responsive */
+    @media (max-width: 1100px) {
       #taskbar {
-        max-width: 95%;
-        flex-direction: column;
+        padding: 12px 15px;
         gap: 15px;
+      }
+
+      .taskbar-nav {
+        gap: 8px;
+      }
+
+      .taskbar-nav button {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+      }
+
+      .taskbar-search input {
+        width: 150px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding-top: 140px;
+      }
+
+      #taskbar {
+        width: calc(100% - 20px);
+        flex-direction: column;
+        gap: 12px;
         text-align: center;
-        padding: 20px;
+        padding: 15px;
       }
 
       .taskbar-logo img {
-        height: 75px;
+        height: 50px;
       }
 
       .taskbar-nav {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 10px;
+        gap: 8px;
+      }
+
+      .taskbar-nav button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
       }
 
       .taskbar-search input {
-        width: 200px;
+        width: 160px;
       }
 
       .access-options {
@@ -814,10 +864,22 @@ crossorigin="anonymous"></script>
     @media (max-width: 600px) {
       body {
         padding: 10px;
+        padding-top: 160px;
+      }
+
+      #taskbar {
+        width: calc(100% - 10px);
+        padding: 10px;
+        gap: 10px;
       }
 
       .taskbar-logo img {
-        height: 65px;
+        height: 45px;
+      }
+
+      .taskbar-nav button {
+        padding: 5px 8px;
+        font-size: 0.75rem;
       }
 
       .choice-gate-content {
@@ -840,6 +902,11 @@ crossorigin="anonymous"></script>
       .message-preview-dropdown {
         right: -100px;
         min-width: 260px;
+      }
+
+      .taskbar-search input {
+        width: 120px;
+        font-size: 0.8rem;
       }
     }
   </style>
@@ -865,12 +932,13 @@ crossorigin="anonymous"></script>
           <li><span class="icon">👑</span> Exclusive VIP Members Dashboard</li>
           <li><span class="icon">💬</span> Direct messaging with VIP members</li>
           <li><span class="icon">🎁</span> Share exclusive content with VIPs</li>
+          <li><span class="icon">💰</span> Get paid for playing games</li>
           <li><span class="icon">📊</span> Advanced member statistics</li>
           <li><span class="icon">✨</span> VIP content creation & sharing</li>
           <li><span class="icon">🏆</span> Priority support & features</li>
         </ul>
         <div class="vip-only-features">
-          <strong>Premium Features:</strong> VIP-only dashboard, exclusive content sharing, member-to-member messaging, and premium community access
+          <strong>Premium Features:</strong> VIP-only dashboard, exclusive content sharing, member-to-member messaging, premium community access, and earn money while playing games!
         </div>
       </div>
 
@@ -903,7 +971,7 @@ crossorigin="anonymous"></script>
 
       <div class="vip-step" id="payment-step" style="display: none;">
         <h4>Step 2: Subscribe for VIP Access</h4>
-        <p>Subscribe to VIP for just £2/month - unlocks exclusive member features and premium community access!</p>
+        <p>Subscribe to VIP for just £2/month - unlocks exclusive member features, premium community access, and get paid for playing games!</p>
         <div id="vip-paypal-container"></div>
       </div>
     </div>
@@ -916,7 +984,7 @@ crossorigin="anonymous"></script>
   </div>
 </div>
 
-<!-- Taskbar -->
+<!-- Fixed Taskbar -->
 <div id="taskbar">
   <div class="taskbar-logo">
     <img 
@@ -1634,6 +1702,12 @@ crossorigin="anonymous"></script>
     userArtBtn.textContent = 'User Art';
     userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
     taskbarNav.appendChild(userArtBtn);
+
+    // User Music (always available)
+    const userMusicBtn = document.createElement('button');
+    userMusicBtn.textContent = 'User Music';
+    userMusicBtn.addEventListener('click', () => window.location.href = 'user-music.html');
+    taskbarNav.appendChild(userMusicBtn);
 
     // User Profiles (always available)
     const userProfilesBtn = document.createElement('button');
@@ -2789,6 +2863,7 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
+
 
 
 
