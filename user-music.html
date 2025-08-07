@@ -2013,7 +2013,7 @@ crossorigin="anonymous"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All User Art Submissions</title>
+  <title>All User Music Submissions</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet" />
 
@@ -2118,15 +2118,14 @@ crossorigin="anonymous"></script>
       z-index: 2;
     }
 
-    #featuredArtist .cover-img {
+    #featuredArtist .music-player {
       width: 100%;
       max-width: 350px;
-      height: 180px;
-      object-fit: cover;
+      margin: 0 auto 1rem auto;
+      background-color: #4a3157;
       border-radius: 16px;
       border: 3px solid #ff8bd8;
       box-shadow: 0 0 15px #ff8bd8cc;
-      margin-bottom: 1rem;
       position: relative;
       z-index: 2;
     }
@@ -2255,23 +2254,25 @@ crossorigin="anonymous"></script>
       font-weight: bold;
     }
 
-    .cover-img {
+    .music-player {
       width: 100%;
       max-width: 220px;
-      height: 140px;
-      object-fit: cover;
+      margin-bottom: 1rem;
+      background-color: #3b2750;
       border-radius: 12px;
       border: 2px solid #ff69b4;
-      background: #1a1020;
       box-shadow: 0 0 10px #ff69b4aa;
-      margin-bottom: 1rem;
       position: relative;
       z-index: 2;
       transition: transform 0.3s ease;
     }
 
-    .user-btn:hover .cover-img {
+    .user-btn:hover .music-player {
       transform: scale(1.05);
+    }
+
+    .music-player::-webkit-media-controls-panel {
+      background-color: #3b2750;
     }
 
     .user-stats {
@@ -2327,7 +2328,7 @@ crossorigin="anonymous"></script>
       font-size: 0.65rem;
     }
 
-    .art-title {
+    .music-title {
       font-size: 0.9rem;
       color: #ffb6c1;
       font-style: italic;
@@ -2341,52 +2342,7 @@ crossorigin="anonymous"></script>
       text-overflow: ellipsis;
     }
 
-    /* Fullscreen Art Viewer */
-    #artModal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.9);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      user-select: none;
-    }
 
-    #artModalContent {
-      position: relative;
-      max-width: 90vw;
-      max-height: 90vh;
-    }
-
-    #artModalImage {
-      max-width: 100%;
-      max-height: 90vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
-    }
-
-    #closeArtModalBtn {
-      position: absolute;
-      top: -40px;
-      right: 0;
-      background: #ff69b4;
-      color: #1e1b2e;
-      border: none;
-      font-weight: 700;
-      font-size: 1.3rem;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      cursor: pointer;
-      line-height: 1;
-      user-select: none;
-    }
-
-    #closeArtModalBtn:hover {
-      background: #ff8bd8;
-    }
 
     @media (max-width: 768px) {
       #userList {
@@ -2411,15 +2367,20 @@ crossorigin="anonymous"></script>
 
   <a href="index.html" class="back-link">⬅️ Back to Home</a>
 
-  <h1>All User Art Submissions</h1>
+  <h1>All User Music Submissions</h1>
 
   <!-- Featured Artist Section -->
   <section id="featuredArtist" aria-label="Featured Artist">
-    <h2>🎨 Featured Artist</h2>
+    <h2>🎵 Featured Musician</h2>
     <div class="avatar-img" id="featuredAvatar"></div>
     <div class="username-text" id="featuredUsername"></div>
-    <img src="" alt="Featured artwork" class="cover-img" id="featuredArtwork" />
-    <div id="featuredTitle" class="art-title"></div>
+    <audio controls class="music-player" id="featuredMusic" style="display: none;">
+      <source id="featuredMusicSource" src="" type="audio/mpeg">
+      <source id="featuredMusicSourceWav" src="" type="audio/wav">
+      <source id="featuredMusicSourceOgg" src="" type="audio/ogg">
+      Your browser does not support the audio element.
+    </audio>
+    <div id="featuredTitle" class="music-title"></div>
     <div id="featuredStats"></div>
     <div id="featuredLikes"></div>
   </section>
@@ -2427,19 +2388,11 @@ crossorigin="anonymous"></script>
   <div>
     <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
     <button class="back-link" id="sortNewest">🆕 Newest</button>
-    <button class="back-link" id="sortMostArt">🎨 Most Art</button>
+    <button class="back-link" id="sortMostMusic">🎵 Most Music</button>
     <button class="back-link" id="sortMostLiked">❤️ Most Liked</button>
   </div>
 
-  <div id="userList" class="loading">Loading artists and calculating comprehensive likes including VIP extras...</div>
-
-  <!-- Art Modal -->
-  <div id="artModal">
-    <div id="artModalContent">
-      <button id="closeArtModalBtn">×</button>
-      <img id="artModalImage" src="" alt="Full size artwork" />
-    </div>
-  </div>
+  <div id="userList" class="loading">Loading musicians and calculating comprehensive likes including VIP extras...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -2453,14 +2406,13 @@ crossorigin="anonymous"></script>
     const featuredSection = document.getElementById('featuredArtist');
     const featuredAvatar = document.getElementById('featuredAvatar');
     const featuredUsername = document.getElementById('featuredUsername');
-    const featuredArtwork = document.getElementById('featuredArtwork');
+    const featuredMusic = document.getElementById('featuredMusic');
+    const featuredMusicSource = document.getElementById('featuredMusicSource');
+    const featuredMusicSourceWav = document.getElementById('featuredMusicSourceWav');
+    const featuredMusicSourceOgg = document.getElementById('featuredMusicSourceOgg');
     const featuredTitle = document.getElementById('featuredTitle');
     const featuredStats = document.getElementById('featuredStats');
     const featuredLikes = document.getElementById('featuredLikes');
-
-    const artModal = document.getElementById('artModal');
-    const artModalImage = document.getElementById('artModalImage');
-    const closeArtModalBtn = document.getElementById('closeArtModalBtn');
 
     let currentSort = 'alphabetical';
     let allUsers = [];
@@ -2475,7 +2427,7 @@ crossorigin="anonymous"></script>
       };
       
       if (manualRules[lower]) {
-        console.log(`🔄 Art page consolidation: "${username}" → "${manualRules[lower]}"`);
+        console.log(`🔄 Music page consolidation: "${username}" → "${manualRules[lower]}"`);
         return manualRules[lower];
       }
       
@@ -2485,10 +2437,10 @@ crossorigin="anonymous"></script>
     // Enhanced function to get ALL likes for a specific user INCLUDING VIP EXTRAS
     // Uses same logic as leaderboard and dashboard
     async function getUserLikesBreakdown(username) {
-      if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, total: 0 };
 
       try {
-        console.log(`🔍 Art page: Getting likes breakdown for ${username}`);
+        console.log(`🔍 Music page: Getting likes breakdown for ${username}`);
 
         // Step 1: Get ALL VIP extras to map extra IDs to creators
         const { data: vipExtras, error: extrasError } = await supabase
@@ -2496,7 +2448,7 @@ crossorigin="anonymous"></script>
           .select('id, creator_name, created_by');
 
         if (extrasError) {
-          console.error('Art page: Error fetching extras:', extrasError);
+          console.error('Music page: Error fetching extras:', extrasError);
           // Continue without extras if error
         }
 
@@ -2511,7 +2463,7 @@ crossorigin="anonymous"></script>
           });
         }
 
-        console.log(`🗺️ Art page: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
+        console.log(`🗺️ Music page: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
 
         // Step 2: Get all view records
         const { data: allViews, error: viewsError } = await supabase
@@ -2536,16 +2488,16 @@ crossorigin="anonymous"></script>
             // Check if this is an extra like
             if (viewUsername.startsWith('extra_')) {
               const extraId = viewUsername.replace('extra_', '');
-              console.log(`🔍 Art page: Processing extra like: ${extraId} (${viewCount} likes)`);
+              console.log(`🔍 Music page: Processing extra like: ${extraId} (${viewCount} likes)`);
               
               // Look up the creator of this extra
               const creatorInfo = extraCreatorMap[extraId];
               if (creatorInfo && creatorInfo.creatorName) {
                 baseUsername = creatorInfo.creatorName;
                 contentType = 'extras';
-                console.log(`✅ Art page: Mapped extra ${extraId} to creator: ${baseUsername}`);
+                console.log(`✅ Music page: Mapped extra ${extraId} to creator: ${baseUsername}`);
               } else {
-                console.log(`⚠️ Art page: No creator found for extra ${extraId}, skipping`);
+                console.log(`⚠️ Music page: No creator found for extra ${extraId}, skipping`);
                 return; // Skip this record if we can't find the creator
               }
             } else if (viewUsername.includes('_video_')) {
@@ -2557,6 +2509,9 @@ crossorigin="anonymous"></script>
             } else if (viewUsername.includes('_artwork_')) {
               baseUsername = viewUsername.split('_artwork_')[0];
               contentType = 'art';
+            } else if (viewUsername.includes('_music_')) {
+              baseUsername = viewUsername.split('_music_')[0];
+              contentType = 'music';
             }
 
             // Normalize the username (same consolidation as other pages)
@@ -2570,6 +2525,7 @@ crossorigin="anonymous"></script>
                 videos: 0,
                 games: 0,
                 art: 0,
+                music: 0,
                 extras: 0,
                 total: 0
               };
@@ -2577,7 +2533,7 @@ crossorigin="anonymous"></script>
 
             // Add to appropriate category
             usersLikesMap[baseUsername][contentType] += viewCount;
-            console.log(`📈 Art page: Added ${viewCount} ${contentType} likes to ${baseUsername}`);
+            console.log(`📈 Music page: Added ${viewCount} ${contentType} likes to ${baseUsername}`);
           });
         }
 
@@ -2587,26 +2543,27 @@ crossorigin="anonymous"></script>
 
         if (userLikesData) {
           // Calculate total
-          userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.extras;
+          userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.music + userLikesData.extras;
           
-          console.log(`📊 Art page: Final likes for ${normalizedRequestedUsername}:`, userLikesData);
+          console.log(`📊 Music page: Final likes for ${normalizedRequestedUsername}:`, userLikesData);
           
           return {
             page: userLikesData.page,
             videos: userLikesData.videos,
             games: userLikesData.games,
             art: userLikesData.art,
+            music: userLikesData.music,
             extras: userLikesData.extras,
             total: userLikesData.total
           };
         } else {
-          console.log(`📊 Art page: No likes found for ${normalizedRequestedUsername}`);
-          return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+          console.log(`📊 Music page: No likes found for ${normalizedRequestedUsername}`);
+          return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, total: 0 };
         }
 
       } catch (error) {
-        console.error('Art page: Error getting likes breakdown for', username, ':', error);
-        return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+        console.error('Music page: Error getting likes breakdown for', username, ':', error);
+        return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, total: 0 };
       }
     }
 
@@ -2631,7 +2588,13 @@ crossorigin="anonymous"></script>
           .select('*', { count: 'exact', head: true })
           .eq('github_username', username);
 
-        // Get VIP extras count (new!)
+        // Get music count
+        const { count: musicCount } = await supabase
+          .from('user_music')
+          .select('*', { count: 'exact', head: true })
+          .eq('github_username', username);
+
+        // Get VIP extras count
         const { count: extrasCount } = await supabase
           .from('vip_extras')
           .select('*', { count: 'exact', head: true })
@@ -2641,60 +2604,18 @@ crossorigin="anonymous"></script>
           games: gamesCount || 0,
           videos: videosCount || 0,
           art: artCount || 0,
+          music: musicCount || 0,
           extras: extrasCount || 0,
-          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0) + (extrasCount || 0)
+          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0) + (musicCount || 0) + (extrasCount || 0)
         };
       } catch (error) {
         console.error('Error getting user stats:', error);
-        return { games: 0, videos: 0, art: 0, extras: 0, total: 0 };
+        return { games: 0, videos: 0, art: 0, music: 0, extras: 0, total: 0 };
       }
     }
-
-    function getDriveThumbnailUrl(url) {
-      if (!url) return '';
-      const regex = /\/d\/([^\/]+)\//;
-      const match = url.match(regex);
-      if (match && match[1]) {
-        return `https://drive.google.com/thumbnail?id=${match[1]}`;
-      }
-      return url;
-    }
-
-    function getDriveDirectUrl(url) {
-      if (!url) return '';
-      const regex = /\/d\/([^\/]+)\//;
-      const match = url.match(regex);
-      if (match && match[1]) {
-        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-      }
-      return url;
-    }
-
-    function openArtModal(imageUrl, altText) {
-      const fullImageUrl = imageUrl.includes('drive.google.com') ? getDriveDirectUrl(imageUrl) : imageUrl;
-      artModalImage.src = fullImageUrl;
-      artModalImage.alt = altText;
-      artModal.style.display = 'flex';
-    }
-
-    function closeArtModal() {
-      artModal.style.display = 'none';
-      artModalImage.src = '';
-    }
-
-    closeArtModalBtn.onclick = closeArtModal;
-    artModal.onclick = (e) => {
-      if (e.target === artModal) closeArtModal();
-    };
-
-    window.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && artModal.style.display === 'flex') {
-        closeArtModal();
-      }
-    });
 
     async function loadUsers(sortMode = 'alphabetical') {
-      userListEl.innerHTML = '<div class="loading">Loading artists and calculating comprehensive likes including VIP extras...</div>';
+      userListEl.innerHTML = '<div class="loading">Loading musicians and calculating comprehensive likes including VIP extras...</div>';
 
       try {
         const orderBy = sortMode === 'newest'
@@ -2702,32 +2623,33 @@ crossorigin="anonymous"></script>
           : { column: 'github_username', ascending: true };
 
         const { data, error } = await supabase
-          .from('user_art')
-          .select('github_username, image_url, title, avatar_url, created_at')
+          .from('user_music')
+          .select('github_username, music_url, title, avatar_url, created_at, description')
           .order(orderBy.column, { ascending: orderBy.ascending });
 
         if (error) {
-          userListEl.textContent = `Error loading art submissions: ${error.message}`;
+          userListEl.textContent = `Error loading music submissions: ${error.message}`;
           featuredSection.style.display = 'none';
           return;
         }
 
         if (!data.length) {
-          userListEl.textContent = 'No art submissions found.';
+          userListEl.textContent = 'No music submissions found.';
           featuredSection.style.display = 'none';
           return;
         }
 
-        // Build unique users map with their newest art
+        // Build unique users map with their newest music
         const usersMap = new Map();
-        data.forEach(({ github_username, image_url, title, avatar_url, created_at }) => {
+        data.forEach(({ github_username, music_url, title, avatar_url, created_at, description }) => {
           if (github_username && !usersMap.has(github_username)) {
             usersMap.set(github_username, { 
               username: github_username,
-              image_url, 
+              music_url, 
               title, 
               avatar_url,
-              created_at
+              created_at,
+              description
             });
           }
         });
@@ -2749,15 +2671,15 @@ crossorigin="anonymous"></script>
         );
 
         allUsers = usersWithData;
-        console.log('Loaded artists with comprehensive data including VIP extras:', allUsers.length);
+        console.log('Loaded musicians with comprehensive data including VIP extras:', allUsers.length);
 
         // Sort and display
         sortAndDisplayUsers(sortMode);
         await displayFeaturedArtist(data);
 
       } catch (error) {
-        console.error('Error loading art:', error);
-        userListEl.innerHTML = `<div style="color: #ff8d8d;">Error loading art: ${error.message}</div>`;
+        console.error('Error loading music:', error);
+        userListEl.innerHTML = `<div style="color: #ff8d8d;">Error loading music: ${error.message}</div>`;
         featuredSection.style.display = 'none';
       }
     }
@@ -2772,8 +2694,8 @@ crossorigin="anonymous"></script>
         case 'newest':
           sortedUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           break;
-        case 'mostArt':
-          sortedUsers.sort((a, b) => b.stats.art - a.stats.art);
+        case 'mostMusic':
+          sortedUsers.sort((a, b) => b.stats.music - a.stats.music);
           break;
         case 'mostLiked':
           sortedUsers.sort((a, b) => b.likesBreakdown.total - a.likesBreakdown.total);
@@ -2790,7 +2712,7 @@ crossorigin="anonymous"></script>
       for (const user of users) {
         const a = document.createElement('a');
         a.className = 'user-btn';
-        a.href = `user-art-page.html?user=${encodeURIComponent(user.username)}`;
+        a.href = `user-music-page.html?user=${encodeURIComponent(user.username)}`;
 
         const avatar = document.createElement('div');
         avatar.className = 'avatar-img';
@@ -2813,26 +2735,42 @@ crossorigin="anonymous"></script>
         usernameSpan.textContent = user.username;
         a.appendChild(usernameSpan);
 
-        const img = document.createElement('img');
-        img.src = user.image_url && user.image_url.includes('drive.google.com')
-          ? getDriveThumbnailUrl(user.image_url)
-          : (user.image_url || 'https://via.placeholder.com/220x140?text=No+Image');
-        img.alt = `${user.username}'s artwork titled "${user.title}"`;
-        img.className = 'cover-img';
+        const audio = document.createElement('audio');
+        audio.className = 'music-player';
+        audio.controls = true;
         
-        // Add click handler for fullscreen view
-        img.onclick = (e) => {
+        // Add multiple source formats
+        const sourceMP3 = document.createElement('source');
+        sourceMP3.src = user.music_url;
+        sourceMP3.type = 'audio/mpeg';
+        
+        const sourceWAV = document.createElement('source');
+        sourceWAV.src = user.music_url;
+        sourceWAV.type = 'audio/wav';
+        
+        const sourceOGG = document.createElement('source');
+        sourceOGG.src = user.music_url;
+        sourceOGG.type = 'audio/ogg';
+        
+        audio.appendChild(sourceMP3);
+        audio.appendChild(sourceWAV);
+        audio.appendChild(sourceOGG);
+        
+        // Add fallback text
+        audio.appendChild(document.createTextNode('Your browser does not support the audio element.'));
+        
+        // Prevent navigation when clicking on audio player
+        audio.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
-          openArtModal(user.image_url, img.alt);
         };
         
-        a.appendChild(img);
+        a.appendChild(audio);
 
-        // Art title
+        // Music title
         if (user.title) {
           const titleDiv = document.createElement('div');
-          titleDiv.className = 'art-title';
+          titleDiv.className = 'music-title';
           titleDiv.textContent = user.title;
           a.appendChild(titleDiv);
         }
@@ -2842,7 +2780,7 @@ crossorigin="anonymous"></script>
         statsDiv.className = 'user-stats';
         
         const stats = [
-          { value: user.stats.art, label: 'Art' },
+          { value: user.stats.music, label: 'Music' },
           { value: user.stats.games, label: 'Games' },
           { value: user.stats.videos, label: 'Videos' },
           { value: user.stats.extras, label: 'Extras' }
@@ -2865,7 +2803,7 @@ crossorigin="anonymous"></script>
         likesDiv.className = 'likes-breakdown';
         likesDiv.innerHTML = `
           <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
-          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art} • ⭐ ${user.likesBreakdown.extras}</div>
+          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art} • 🎵 ${user.likesBreakdown.music} • ⭐ ${user.likesBreakdown.extras}</div>
         `;
         a.appendChild(likesDiv);
 
@@ -2875,10 +2813,10 @@ crossorigin="anonymous"></script>
       userListEl.appendChild(fragment);
     }
 
-    async function displayFeaturedArtist(allArt) {
+    async function displayFeaturedArtist(allMusic) {
       if (allUsers.length === 0) return;
 
-      // Featured artist is the one with the most total likes (including VIP extras)
+      // Featured musician is the one with the most total likes (including VIP extras)
       const featuredUser = allUsers.reduce((mostLiked, current) => {
         return current.likesBreakdown.total > mostLiked.likesBreakdown.total ? current : mostLiked;
       }, allUsers[0]);
@@ -2914,20 +2852,23 @@ crossorigin="anonymous"></script>
       // Username
       featuredUsername.textContent = featuredUser.username;
 
-      // Artwork
-      featuredArtwork.src = featuredUser.image_url && featuredUser.image_url.includes('drive.google.com')
-        ? getDriveThumbnailUrl(featuredUser.image_url)
-        : (featuredUser.image_url || 'https://via.placeholder.com/350x180?text=No+Image');
-      featuredArtwork.alt = `${featuredUser.username}'s artwork titled "${featuredUser.title}"`;
+      // Music Player
+      if (featuredUser.music_url) {
+        featuredMusicSource.src = featuredUser.music_url;
+        featuredMusicSourceWav.src = featuredUser.music_url;
+        featuredMusicSourceOgg.src = featuredUser.music_url;
+        featuredMusic.style.display = 'block';
+        featuredMusic.load(); // Reload the audio element with new sources
+      }
 
       // Title
-      featuredTitle.textContent = featuredUser.title || 'Untitled Artwork';
+      featuredTitle.textContent = featuredUser.title || 'Untitled Track';
 
       // Stats (now includes extras!)
       featuredStats.innerHTML = `
         <div class="stat-item">
-          <div class="stat-value">${featuredUser.stats.art}</div>
-          <div class="stat-label">Art Pieces</div>
+          <div class="stat-value">${featuredUser.stats.music}</div>
+          <div class="stat-label">Music Tracks</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">${featuredUser.stats.games}</div>
@@ -2946,16 +2887,13 @@ crossorigin="anonymous"></script>
       // Likes (now includes extras!)
       featuredLikes.innerHTML = `
         <div class="total-likes">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
-        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • ⭐ ${featuredUser.likesBreakdown.extras} Extras</div>
+        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • 🎵 ${featuredUser.likesBreakdown.music} Music • ⭐ ${featuredUser.likesBreakdown.extras} Extras</div>
       `;
-
-      // Click handler for featured artwork
-      featuredArtwork.onclick = () => openArtModal(featuredUser.image_url, featuredArtwork.alt);
       
-      // Click handler for featured section
+      // Click handler for featured section (but not on the audio player)
       featuredSection.onclick = (e) => {
-        if (e.target !== featuredArtwork) {
-          window.location.href = `user-art-page.html?user=${encodeURIComponent(featuredUser.username)}`;
+        if (e.target !== featuredMusic && !featuredMusic.contains(e.target)) {
+          window.location.href = `user-music-page.html?user=${encodeURIComponent(featuredUser.username)}`;
         }
       };
     }
@@ -2973,10 +2911,10 @@ crossorigin="anonymous"></script>
       updateButtonStates('sortNewest');
     });
 
-    document.getElementById('sortMostArt').addEventListener('click', () => {
-      currentSort = 'mostArt';
+    document.getElementById('sortMostMusic').addEventListener('click', () => {
+      currentSort = 'mostMusic';
       sortAndDisplayUsers(currentSort);
-      updateButtonStates('sortMostArt');
+      updateButtonStates('sortMostMusic');
     });
 
     document.getElementById('sortMostLiked').addEventListener('click', () => {
@@ -3000,173 +2938,9 @@ crossorigin="anonymous"></script>
     setTimeout(() => updateButtonStates('sortAlpha'), 100);
   </script>
   
-<!-- Add this CSS to your existing page's <head> section -->
-<style>
-.bottom-embeds-section {
-    background: linear-gradient(135deg, #2f1a39, #3d2147);
-    border: 2px solid #ff4f9f;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem auto;
-    text-align: center;
-    max-width: 400px;
-}
-.bottom-embeds-section h3 {
-    color: #ff4f9f;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px #ff4f9f;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-.bottom-embeds-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.bottom-embed-container {
-    border: 2px solid #ff4f9f;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    height: 60px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    animation: pulse 2s infinite;
-}
-
-.bottom-embed-container:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
-    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
-}
-.bottom-embed-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow: hidden;
-}
-.bottom-embed-header {
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    color: #1b1b2e;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-@media (max-width: 768px) {
-    .bottom-embeds-container {
-        grid-template-columns: 1fr;
-        max-width: 150px;
-    }
-    .bottom-embeds-section {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .bottom-embed-container {
-        height: 50px;
-    }
-}
-</style>
-
-<!-- Add this HTML section to the bottom of your existing page -->
-<div class="bottom-embeds-section">
-    <h3>Featured Content</h3>
-    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
-        <!-- Embeds will automatically load here -->
-    </div>
-</div>
-
-<script>
-function createBottomEmbed(url, title) {
-    const embedContainer = document.createElement('div');
-    embedContainer.className = 'bottom-embed-container';
-
-    const embedHeader = document.createElement('div');
-    embedHeader.className = 'bottom-embed-header';
-    embedHeader.textContent = `Embedded: ${title}`;
-
-    const iframe = document.createElement('iframe');
-    iframe.className = 'bottom-embed-iframe';
-    iframe.src = url;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allowfullscreen', 'true');
-    
-    // Add error handling
-    iframe.onload = function() {
-        console.log(`Successfully loaded: ${title}`);
-    };
-    
-    iframe.onerror = function() {
-        console.log(`Failed to load: ${title}`);
-        iframe.style.background = '#ff4f9f';
-        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
-    };
-
-    embedContainer.appendChild(embedHeader);
-    embedContainer.appendChild(iframe);
-    
-    return embedContainer;
-}
-
-function autoLoadBottomEmbeds() {
-    const urls = [
-        'https://otieu.com/4/9248260',
-        'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458',
-        'https://otieu.com/4/9661607'
-    ];
-    const embedsContainer = document.getElementById('bottomEmbedsContainer');
-    
-    if (embedsContainer) {
-        // Instead of embedding, create clickable previews
-        urls.forEach((url, index) => {
-            const linkContainer = document.createElement('div');
-            linkContainer.className = 'bottom-embed-container';
-            linkContainer.style.cursor = 'pointer';
-            linkContainer.style.display = 'flex';
-            linkContainer.style.alignItems = 'center';
-            linkContainer.style.justifyContent = 'center';
-            linkContainer.style.textDecoration = 'none';
-            
-            linkContainer.innerHTML = `
-                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
-                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
-                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
-                </div>
-            `;
-            
-            linkContainer.addEventListener('click', () => {
-                window.open(url, '_blank');
-            });
-            
-            embedsContainer.appendChild(linkContainer);
-        });
-    }
-}
-
-// Auto-load embeds when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
-} else {
-    autoLoadBottomEmbeds();
-}
-</script>
-  
 </body>
 </html>
+
 
 
 
