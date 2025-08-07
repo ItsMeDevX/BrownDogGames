@@ -2759,13 +2759,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // NEW: Create a dedicated likes table structure for VIP extras
+    // Keep using existing vip_page_views table but fix the display names
     async function getExtraLikes(extraId) {
       try {
         const { count, error } = await supabase
-          .from('vip_extra_likes')
+          .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('extra_id', extraId);
+          .eq('username', `extra_${extraId}`);
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2778,16 +2778,16 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // NEW: Check if current user has liked an extra using the proper likes table
+    // Check if current user has liked an extra
     async function hasUserLikedExtra(extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return false;
 
       try {
         const { data, error } = await supabase
-          .from('vip_extra_likes')
+          .from('vip_page_views')
           .select('user_id')
-          .eq('extra_id', extraId)
+          .eq('username', `extra_${extraId}`)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2801,7 +2801,7 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // NEW: Toggle like using a proper VIP extra likes table
+    // Toggle like for an extra
     async function toggleExtraLike(extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
@@ -2810,15 +2810,16 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
+      const username = `extra_${extraId}`;
 
-      console.log('Toggling like for:', { extraId, userId });
+      console.log('Toggling like for:', { extraId, userId, username });
 
       try {
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
-          .from('vip_extra_likes')
+          .from('vip_page_views')
           .select('user_id')
-          .eq('extra_id', extraId)
+          .eq('username', username)
           .eq('user_id', userId)
           .single();
 
@@ -2827,9 +2828,9 @@ crossorigin="anonymous"></script>
         if (existingLike) {
           // Remove like - delete the row
           const { error: deleteError } = await supabase
-            .from('vip_extra_likes')
+            .from('vip_page_views')
             .delete()
-            .eq('extra_id', extraId)
+            .eq('username', username)
             .eq('user_id', userId);
 
           if (deleteError) {
@@ -2841,11 +2842,13 @@ crossorigin="anonymous"></script>
         } else {
           // Add like - insert new row
           const { error: insertError } = await supabase
-            .from('vip_extra_likes')
+            .from('vip_page_views')
             .insert([{
-              extra_id: extraId,
+              username: username,
               user_id: userId,
-              created_at: new Date().toISOString()
+              view_count: 1,
+              first_viewed_at: new Date().toISOString(),
+              last_viewed_at: new Date().toISOString()
             }]);
 
           if (insertError) {
@@ -2862,21 +2865,35 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Load VIP Extras with proper creator names from the users table
+    // Get GitHub username for a user by their ID
+    async function getGitHubUsername(userId) {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          console.error('Error getting GitHub username:', error);
+          return 'VIP User';
+        }
+        return data?.github_username || 'VIP User';
+      } catch (error) {
+        console.error('Error in getGitHubUsername:', error);
+        return 'VIP User';
+      }
+    }
+
+    // Load VIP Extras with proper GitHub usernames
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
       console.log('Loading VIP extras for Climax Clash...');
       
       try {
-        // Join with users table to get the github_username
         const { data: extras, error } = await supabase
           .from('vip_extras')
-          .select(`
-            *,
-            users!vip_extras_created_by_fkey (
-              github_username
-            )
-          `)
+          .select('*')
           .eq('game_id', 'climax-clash')
           .order('created_at', { ascending: false });
 
@@ -2895,18 +2912,19 @@ crossorigin="anonymous"></script>
 
         console.log('Found', extras.length, 'extras for Climax Clash');
 
-        // Get likes for all extras
+        // Get likes and GitHub usernames for all extras
         const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
-          const [likeCount, userHasLiked] = await Promise.all([
+          const [likeCount, userHasLiked, githubUsername] = await Promise.all([
             getExtraLikes(extra.id),
-            hasUserLikedExtra(extra.id)
+            hasUserLikedExtra(extra.id),
+            getGitHubUsername(extra.created_by)
           ]);
           
           return {
             ...extra,
             likeCount,
             userHasLiked,
-            creatorName: extra.users?.github_username || extra.creator_name || 'Anonymous'
+            githubUsername
           };
         }));
 
@@ -2936,7 +2954,7 @@ crossorigin="anonymous"></script>
             <div class="extra-footer">
               <div class="extra-actions">
                 <span class="extra-creator">
-                  Added by <span class="vip-creator">👑 ${extra.creatorName}</span>
+                  Added by <span class="vip-creator">👑 ${extra.githubUsername}</span>
                   <br>
                   <small>${dateStr}</small>
                 </span>
@@ -2994,7 +3012,7 @@ crossorigin="anonymous"></script>
       likeBtn.disabled = false;
     };
 
-    // Add VIP Extra with proper user association
+    // Add VIP Extra with proper GitHub username storage
     async function addVipExtra(extraData) {
       if (!currentUser) {
         alert('Please login first');
@@ -3002,6 +3020,9 @@ crossorigin="anonymous"></script>
       }
 
       try {
+        // Get the current user's GitHub username
+        const githubUsername = await getGitHubUsername(currentUser.id);
+        
         const { error } = await supabase
           .from('vip_extras')
           .insert([{
@@ -3011,7 +3032,7 @@ crossorigin="anonymous"></script>
             type: extraData.type,
             game_id: 'climax-clash',
             created_by: currentUser.id,
-            creator_name: currentUser.user_metadata?.full_name || 'VIP User'
+            creator_name: githubUsername // Store the GitHub username
           }]);
 
         if (error) {
@@ -3146,17 +3167,6 @@ crossorigin="anonymous"></script>
       })
       .subscribe();
 
-    // Real-time updates for VIP extra likes
-    supabase.channel('vip_extra_likes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'vip_extra_likes'
-      }, () => {
-        loadVipExtras();
-      })
-      .subscribe();
-
     // Chat functionality with VIP features
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
@@ -3166,15 +3176,10 @@ crossorigin="anonymous"></script>
     async function getUserGitHubUsername() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        // Try to get github username from users table first
-        const { data: userData } = await supabase
-          .from('users')
-          .select('github_username')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (userData?.github_username) {
-          return userData.github_username;
+        // Try to get GitHub username from users table first
+        const githubUsername = await getGitHubUsername(session.user.id);
+        if (githubUsername !== 'VIP User') {
+          return githubUsername;
         }
         
         // Fallback to user metadata
@@ -3263,9 +3268,7 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
-  
-</body>
-</html>
+
 
 
 
