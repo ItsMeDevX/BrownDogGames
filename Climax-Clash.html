@@ -2759,13 +2759,14 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Keep using existing vip_page_views table but fix the display names
+    // Use a dedicated approach for extra likes - avoid vip_page_views confusion
     async function getExtraLikes(extraId) {
       try {
+        // Count likes by counting entries in vip_page_views for this extra
         const { count, error } = await supabase
           .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('username', `extra_${extraId}`);
+          .eq('username', `extra_like_${extraId}`); // Use a clear prefix
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2787,7 +2788,7 @@ crossorigin="anonymous"></script>
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', `extra_${extraId}`)
+          .eq('username', `extra_like_${extraId}`) // Use consistent prefix
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2810,7 +2811,7 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      const username = `extra_${extraId}`;
+      const username = `extra_like_${extraId}`; // Use clear prefix
 
       console.log('Toggling like for:', { extraId, userId, username });
 
