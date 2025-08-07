@@ -2784,10 +2784,20 @@ crossorigin="anonymous"></script>
       if (!session?.session?.user) return false;
 
       try {
+        // Get current user's GitHub username
+        const { data: userData } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', session.session.user.id)
+          .single();
+        
+        const currentUserGithub = userData?.github_username || 'user';
+        const likeUsername = `${currentUserGithub}_extra`;
+
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', creatorGithubUsername) // Use creator's GitHub username
+          .eq('username', likeUsername)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -3228,6 +3238,7 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
+
 
 
 
