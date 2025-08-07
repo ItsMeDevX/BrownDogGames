@@ -2866,13 +2866,19 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Get GitHub username for a user by their ID
-    async function getGitHubUsername(userId) {
+    // Get GitHub username - handle both UUID and direct username storage
+    async function getGitHubUsername(createdBy) {
+      // If created_by is already a GitHub username (text), return it directly
+      if (createdBy && !createdBy.includes('-')) {
+        return createdBy;
+      }
+      
+      // If it's a UUID, look it up in the users table
       try {
         const { data, error } = await supabase
           .from('users')
           .select('github_username')
-          .eq('id', userId)
+          .eq('id', createdBy)
           .single();
 
         if (error) {
@@ -2913,19 +2919,26 @@ crossorigin="anonymous"></script>
 
         console.log('Found', extras.length, 'extras for Climax Clash');
 
-        // Get likes and GitHub usernames for all extras
+        // Get likes and resolve creator names
         const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
-          const [likeCount, userHasLiked, githubUsername] = await Promise.all([
+          const [likeCount, userHasLiked] = await Promise.all([
             getExtraLikes(extra.id),
-            hasUserLikedExtra(extra.id),
-            getGitHubUsername(extra.created_by)
+            hasUserLikedExtra(extra.id)
           ]);
+          
+          // Use creator_name if it exists, otherwise try to resolve created_by
+          let displayName = extra.creator_name || 'Anonymous';
+          
+          // If creator_name looks like a UUID, try to resolve it
+          if (displayName.includes('-') && displayName.length > 20) {
+            displayName = await getGitHubUsername(extra.created_by);
+          }
           
           return {
             ...extra,
             likeCount,
             userHasLiked,
-            githubUsername
+            displayName
           };
         }));
 
@@ -2955,7 +2968,7 @@ crossorigin="anonymous"></script>
             <div class="extra-footer">
               <div class="extra-actions">
                 <span class="extra-creator">
-                  Added by <span class="vip-creator">👑 ${extra.githubUsername}</span>
+                  Added by <span class="vip-creator">👑 ${extra.displayName}</span>
                   <br>
                   <small>${dateStr}</small>
                 </span>
@@ -3013,7 +3026,7 @@ crossorigin="anonymous"></script>
       likeBtn.disabled = false;
     };
 
-    // Add VIP Extra with proper GitHub username storage
+    // Add VIP Extra with current user's GitHub username
     async function addVipExtra(extraData) {
       if (!currentUser) {
         alert('Please login first');
@@ -3021,8 +3034,14 @@ crossorigin="anonymous"></script>
       }
 
       try {
-        // Get the current user's GitHub username first
-        const githubUsername = await getGitHubUsername(currentUser.id);
+        // Get current user's GitHub username from users table
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', currentUser.id)
+          .single();
+        
+        const githubUsername = userData?.github_username || currentUser.user_metadata?.full_name || 'VIP User';
         console.log('Adding extra with GitHub username:', githubUsername);
         
         const { error } = await supabase
@@ -3033,8 +3052,8 @@ crossorigin="anonymous"></script>
             url: extraData.url,
             type: extraData.type,
             game_id: 'climax-clash',
-            created_by: currentUser.id,
-            creator_name: githubUsername // Store the actual GitHub username, not UUID
+            created_by: githubUsername, // Store GitHub username directly since it's text field
+            creator_name: githubUsername
           }]);
 
         if (error) {
