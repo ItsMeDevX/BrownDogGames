@@ -2763,13 +2763,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Get likes for a specific extra
-    async function getExtraLikes(extraId) {
+    // Get likes for a specific extra - use creator's GitHub username with _extra suffix
+    async function getExtraLikes(creatorGithubUsername) {
       try {
         const { count, error } = await supabase
           .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('username', `extra_${extraId}`);
+          .eq('username', `${creatorGithubUsername}_extra`); // Add _extra suffix
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2783,15 +2783,18 @@ crossorigin="anonymous"></script>
     }
 
     // Check if current user has liked an extra
-    async function hasUserLikedExtra(extraId) {
+    async function hasUserLikedExtra(creatorGithubUsername) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return false;
 
       try {
+        // Use creator's GitHub username with _extra suffix for checking likes
+        const usernameWithSuffix = `${creatorGithubUsername}_extra`;
+
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', `extra_${extraId}`)
+          .eq('username', usernameWithSuffix)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2805,8 +2808,8 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Toggle like for an extra
-    async function toggleExtraLike(extraId) {
+    // Toggle like for an extra using upsert to handle RLS
+    async function toggleExtraLike(creatorGithubUsername) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
         alert('Please login to like extras');
@@ -2814,53 +2817,45 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      const username = `extra_${extraId}`;
-
-      console.log('Toggling like for:', { extraId, userId, username });
+      // Add _extra suffix to the creator's GitHub username for storage
+      const usernameWithSuffix = `${creatorGithubUsername}_extra`;
 
       try {
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', username)
+          .eq('username', usernameWithSuffix)
           .eq('user_id', userId)
           .single();
 
-        console.log('Existing like check:', { existingLike, checkError });
-
         if (existingLike) {
-          // Remove like - delete the row
+          // Remove like
           const { error: deleteError } = await supabase
             .from('vip_page_views')
             .delete()
-            .eq('username', username)
+            .eq('username', usernameWithSuffix)
             .eq('user_id', userId);
 
-          if (deleteError) {
-            console.error('Delete error:', deleteError);
-            throw deleteError;
-          }
-          console.log('Like removed');
-          return false; // unliked
+          if (deleteError) throw deleteError;
+          return false;
         } else {
-          // Add like - insert new row
-          const { error: insertError } = await supabase
+          // Add like using upsert - ONLY increment view_count, no game_points
+          const { error: upsertError } = await supabase
             .from('vip_page_views')
-            .insert([{
-              username: username,
+            .upsert({
+              username: usernameWithSuffix,
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
               last_viewed_at: new Date().toISOString()
-            }]);
+              // Removed game_points: 1 - only track view count for likes
+            }, {
+              onConflict: 'user_id,username'
+            });
 
-          if (insertError) {
-            console.error('Insert error:', insertError);
-            throw insertError;
-          }
-          console.log('Like added');
-          return true; // liked
+          if (upsertError) throw upsertError;
+          return true;
         }
       } catch (error) {
         console.error('Error toggling like:', error);
@@ -2869,7 +2864,7 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Load VIP Extras - UPDATED FOR SHAFTED
+    // Load VIP Extras with creator GitHub usernames - UPDATED FOR SHAFTED
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
       console.log('Loading VIP extras for Shafted...');
@@ -2896,17 +2891,36 @@ crossorigin="anonymous"></script>
 
         console.log('Found', extras.length, 'extras for Shafted');
 
-        // Get likes for all extras
         const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
+          // Get GitHub username first
+          let githubUsername = extra.creator_name || 'Anonymous';
+          
+          if (extra.created_by && extra.created_by.includes('-') && extra.created_by.length > 20) {
+            try {
+              const { data: userData } = await supabase
+                .from('users')
+                .select('github_username')
+                .eq('id', extra.created_by)
+                .single();
+              
+              if (userData?.github_username) {
+                githubUsername = userData.github_username;
+              }
+            } catch (error) {
+              console.error('Error getting creator username:', error);
+            }
+          }
+
           const [likeCount, userHasLiked] = await Promise.all([
-            getExtraLikes(extra.id),
-            hasUserLikedExtra(extra.id)
+            getExtraLikes(githubUsername), // Pass GitHub username instead of extraId
+            hasUserLikedExtra(githubUsername) // Pass GitHub username instead of extraId
           ]);
           
           return {
             ...extra,
             likeCount,
-            userHasLiked
+            userHasLiked,
+            githubUsername
           };
         }));
 
@@ -2926,34 +2940,37 @@ crossorigin="anonymous"></script>
             }
           }
 
-          return '<div class="extra-card">' +
-            '<div class="extra-header">' +
-              '<div class="extra-type">' + (extra.type || 'EXTRA').toUpperCase() + '</div>' +
-            '</div>' +
-            '<h4 class="extra-title">' + (extra.title || 'Untitled') + '</h4>' +
-            '<p class="extra-description">' + (extra.description || 'No description') + '</p>' +
-            '<div class="extra-footer">' +
-              '<div class="extra-actions">' +
-                '<span class="extra-creator">' +
-                  'Added by <span class="vip-creator">👑 ' + (extra.creator_name || 'Anonymous') + '</span>' +
-                  '<br>' +
-                  '<small>' + dateStr + '</small>' +
-                '</span>' +
-                '<div class="like-section">' +
-                  '<button class="like-btn ' + (extra.userHasLiked ? 'liked' : '') + '" onclick="handleLikeClick(\'' + extra.id + '\')">' +
-                    (extra.userHasLiked ? '❤️' : '🤍') + ' Like' +
-                  '</button>' +
-                  '<span class="like-count">' + extra.likeCount + '</span>' +
-                '</div>' +
-              '</div>' +
-              '<a href="' + (extra.url || '#') + '" target="_blank" class="extra-link">' +
-                (extra.type === 'download' ? '⬇ Download' : 
-                 extra.type === 'link' ? '🔗 Open Link' : 
-                 extra.type === 'code' ? '📋 Get Code' : 
-                 '🎯 Access') +
-              '</a>' +
-            '</div>' +
-          '</div>';
+          return `
+          <div class="extra-card">
+            <div class="extra-header">
+              <div class="extra-type">${(extra.type || 'EXTRA').toUpperCase()}</div>
+            </div>
+            <h4 class="extra-title">${extra.title || 'Untitled'}</h4>
+            <p class="extra-description">${extra.description || 'No description'}</p>
+            <div class="extra-footer">
+              <div class="extra-actions">
+                <span class="extra-creator">
+                  Added by <span class="vip-creator">👑 ${extra.githubUsername}</span>
+                  <br>
+                  <small>${dateStr}</small>
+                </span>
+                <div class="like-section">
+                  <button class="like-btn ${extra.userHasLiked ? 'liked' : ''}" 
+                          onclick="handleLikeClick('${extra.githubUsername}')">
+                    ${extra.userHasLiked ? '❤️' : '🤍'} Like
+                  </button>
+                  <span class="like-count">${extra.likeCount}</span>
+                </div>
+              </div>
+              <a href="${extra.url || '#'}" target="_blank" class="extra-link">
+                ${extra.type === 'download' ? '⬇ Download' : 
+                  extra.type === 'link' ? '🔗 Open Link' : 
+                  extra.type === 'code' ? '📋 Get Code' : 
+                  '🎯 Access'}
+              </a>
+            </div>
+          </div>
+        `;
         }).join('');
 
       } catch (err) {
@@ -2963,14 +2980,14 @@ crossorigin="anonymous"></script>
     }
 
     // Handle like button clicks
-    window.handleLikeClick = async function(extraId) {
-      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${extraId}')"]`);
+    window.handleLikeClick = async function(creatorGithubUsername) {
+      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${creatorGithubUsername}')"]`);
       const likeCountSpan = likeBtn.parentElement.querySelector('.like-count');
       
       // Disable button during request
       likeBtn.disabled = true;
       
-      const isLiked = await toggleExtraLike(extraId);
+      const isLiked = await toggleExtraLike(creatorGithubUsername);
       
       if (isLiked !== null) {
         // Update UI
@@ -2983,7 +3000,7 @@ crossorigin="anonymous"></script>
         }
         
         // Update count
-        const newCount = await getExtraLikes(extraId);
+        const newCount = await getExtraLikes(creatorGithubUsername);
         likeCountSpan.textContent = newCount;
       }
       
@@ -2999,6 +3016,14 @@ crossorigin="anonymous"></script>
       }
 
       try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', currentUser.id)
+          .single();
+        
+        const githubUsername = userData?.github_username || currentUser.user_metadata?.full_name || 'VIP User';
+        
         const { error } = await supabase
           .from('vip_extras')
           .insert([{
@@ -3008,7 +3033,7 @@ crossorigin="anonymous"></script>
             type: extraData.type,
             game_id: 'shafted', // Add game ID for Shafted
             created_by: currentUser.id,
-            creator_name: currentUser.user_metadata?.full_name || 'VIP User'
+            creator_name: githubUsername
           }]);
 
         if (error) {
@@ -3188,14 +3213,14 @@ crossorigin="anonymous"></script>
         const userBadge = isCurrentUserVip ? selectedBadge : '';
         const messageTime = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        return '<div class="' + messageClass + '">' +
-          '<div class="message-header">' +
-            '<span class="' + usernameClass + '">' + (m.github_username || 'Guest') + '</span>' +
-            (userBadge ? '<span class="user-badge">' + userBadge + '</span>' : '') +
-            '<span class="message-time">' + messageTime + '</span>' +
-          '</div>' +
-          '<div class="message-content">' + m.content + '</div>' +
-        '</div>';
+        return `<div class="${messageClass}">
+          <div class="message-header">
+            <span class="${usernameClass}">${m.github_username || 'Guest'}</span>
+            ${userBadge ? `<span class="user-badge">${userBadge}</span>` : ''}
+            <span class="message-time">${messageTime}</span>
+          </div>
+          <div class="message-content">${m.content}</div>
+        </div>`;
       }).join('');
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
