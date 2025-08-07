@@ -865,6 +865,7 @@ crossorigin="anonymous"></script>
           <li><span class="icon">👑</span> Exclusive VIP Members Dashboard</li>
           <li><span class="icon">💬</span> Direct messaging with VIP members</li>
           <li><span class="icon">🎁</span> Share exclusive content with VIPs</li>
+          <li><span class="icon">💰</span> Get paid for playing games</li>
           <li><span class="icon">📊</span> Advanced member statistics</li>
           <li><span class="icon">✨</span> VIP content creation & sharing</li>
           <li><span class="icon">🏆</span> Priority support & features</li>
@@ -1628,6 +1629,12 @@ crossorigin="anonymous"></script>
     userVideoBtn.textContent = 'User Video';
     userVideoBtn.addEventListener('click', () => window.location.href = 'user-videos.html');
     taskbarNav.appendChild(userVideoBtn);
+
+    // User Music (always available)
+    const userMusicBtn = document.createElement('button');
+    userMusicBtn.textContent = 'User Music';
+    userMusicBtn.addEventListener('click', () => window.location.href = 'user-music.html');
+    taskbarNav.appendChild(userMusicBtn);
 
     // User Art (always available)
     const userArtBtn = document.createElement('button');
@@ -2750,13 +2757,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Get likes for a specific extra
-    async function getExtraLikes(extraId) {
+    // Get likes for a specific extra - use creator's GitHub username with _extra suffix
+    async function getExtraLikes(creatorGithubUsername) {
       try {
         const { count, error } = await supabase
           .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('username', `extra_${extraId}`);
+          .eq('username', `${creatorGithubUsername}_extra`); // Add _extra suffix
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2770,15 +2777,18 @@ crossorigin="anonymous"></script>
     }
 
     // Check if current user has liked an extra
-    async function hasUserLikedExtra(extraId) {
+    async function hasUserLikedExtra(creatorGithubUsername) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return false;
 
       try {
+        // Use creator's GitHub username with _extra suffix for checking likes
+        const usernameWithSuffix = `${creatorGithubUsername}_extra`;
+
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', `extra_${extraId}`)
+          .eq('username', usernameWithSuffix)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2792,8 +2802,8 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Toggle like for an extra
-    async function toggleExtraLike(extraId) {
+    // Toggle like for an extra using upsert to handle RLS
+    async function toggleExtraLike(creatorGithubUsername) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
         alert('Please login to like extras');
@@ -2801,53 +2811,45 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      const username = `extra_${extraId}`;
-
-      console.log('Toggling like for:', { extraId, userId, username });
+      // Add _extra suffix to the creator's GitHub username for storage
+      const usernameWithSuffix = `${creatorGithubUsername}_extra`;
 
       try {
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', username)
+          .eq('username', usernameWithSuffix)
           .eq('user_id', userId)
           .single();
 
-        console.log('Existing like check:', { existingLike, checkError });
-
         if (existingLike) {
-          // Remove like - delete the row
+          // Remove like
           const { error: deleteError } = await supabase
             .from('vip_page_views')
             .delete()
-            .eq('username', username)
+            .eq('username', usernameWithSuffix)
             .eq('user_id', userId);
 
-          if (deleteError) {
-            console.error('Delete error:', deleteError);
-            throw deleteError;
-          }
-          console.log('Like removed');
-          return false; // unliked
+          if (deleteError) throw deleteError;
+          return false;
         } else {
-          // Add like - insert new row
-          const { error: insertError } = await supabase
+          // Add like using upsert - ONLY increment view_count, no game_points
+          const { error: upsertError } = await supabase
             .from('vip_page_views')
-            .insert([{
-              username: username,
+            .upsert({
+              username: usernameWithSuffix,
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
               last_viewed_at: new Date().toISOString()
-            }]);
+              // Removed game_points: 1 - only track view count for likes
+            }, {
+              onConflict: 'user_id,username'
+            });
 
-          if (insertError) {
-            console.error('Insert error:', insertError);
-            throw insertError;
-          }
-          console.log('Like added');
-          return true; // liked
+          if (upsertError) throw upsertError;
+          return true;
         }
       } catch (error) {
         console.error('Error toggling like:', error);
@@ -2856,7 +2858,7 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Load VIP Extras - UPDATED FOR LAPDANCE DASH
+    // Load VIP Extras with creator GitHub usernames - UPDATED FOR LAPDANCE DASH
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
       console.log('Loading VIP extras for Lapdance Dash...');
@@ -2883,22 +2885,40 @@ crossorigin="anonymous"></script>
 
         console.log('Found', extras.length, 'extras for Lapdance Dash');
 
-        // Get likes for all extras
         const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
+          // Get GitHub username first
+          let githubUsername = extra.creator_name || 'Anonymous';
+          
+          if (extra.created_by && extra.created_by.includes('-') && extra.created_by.length > 20) {
+            try {
+              const { data: userData } = await supabase
+                .from('users')
+                .select('github_username')
+                .eq('id', extra.created_by)
+                .single();
+              
+              if (userData?.github_username) {
+                githubUsername = userData.github_username;
+              }
+            } catch (error) {
+              console.error('Error getting creator username:', error);
+            }
+          }
+
           const [likeCount, userHasLiked] = await Promise.all([
-            getExtraLikes(extra.id),
-            hasUserLikedExtra(extra.id)
+            getExtraLikes(githubUsername), // Pass GitHub username instead of extraId
+            hasUserLikedExtra(githubUsername) // Pass GitHub username instead of extraId
           ]);
           
           return {
             ...extra,
             likeCount,
-            userHasLiked
+            userHasLiked,
+            githubUsername
           };
         }));
 
         container.innerHTML = extrasWithLikes.map(extra => {
-          // Format the date properly
           let dateStr = 'Unknown date';
           if (extra.created_at) {
             try {
@@ -2913,34 +2933,37 @@ crossorigin="anonymous"></script>
             }
           }
 
-          return '<div class="extra-card">' +
-            '<div class="extra-header">' +
-              '<div class="extra-type">' + (extra.type || 'EXTRA').toUpperCase() + '</div>' +
-            '</div>' +
-            '<h4 class="extra-title">' + (extra.title || 'Untitled') + '</h4>' +
-            '<p class="extra-description">' + (extra.description || 'No description') + '</p>' +
-            '<div class="extra-footer">' +
-              '<div class="extra-actions">' +
-                '<span class="extra-creator">' +
-                  'Added by <span class="vip-creator">👑 ' + (extra.creator_name || 'Anonymous') + '</span>' +
-                  '<br>' +
-                  '<small>' + dateStr + '</small>' +
-                '</span>' +
-                '<div class="like-section">' +
-                  '<button class="like-btn ' + (extra.userHasLiked ? 'liked' : '') + '" onclick="handleLikeClick(\'' + extra.id + '\')">' +
-                    (extra.userHasLiked ? '❤️' : '🤍') + ' Like' +
-                  '</button>' +
-                  '<span class="like-count">' + extra.likeCount + '</span>' +
-                '</div>' +
-              '</div>' +
-              '<a href="' + (extra.url || '#') + '" target="_blank" class="extra-link">' +
-                (extra.type === 'download' ? '⬇ Download' : 
-                 extra.type === 'link' ? '🔗 Open Link' : 
-                 extra.type === 'code' ? '📋 Get Code' : 
-                 '🎯 Access') +
-              '</a>' +
-            '</div>' +
-          '</div>';
+          return `
+          <div class="extra-card">
+            <div class="extra-header">
+              <div class="extra-type">${(extra.type || 'EXTRA').toUpperCase()}</div>
+            </div>
+            <h4 class="extra-title">${extra.title || 'Untitled'}</h4>
+            <p class="extra-description">${extra.description || 'No description'}</p>
+            <div class="extra-footer">
+              <div class="extra-actions">
+                <span class="extra-creator">
+                  Added by <span class="vip-creator">👑 ${extra.githubUsername}</span>
+                  <br>
+                  <small>${dateStr}</small>
+                </span>
+                <div class="like-section">
+                  <button class="like-btn ${extra.userHasLiked ? 'liked' : ''}" 
+                          onclick="handleLikeClick('${extra.githubUsername}')">
+                    ${extra.userHasLiked ? '❤️' : '🤍'} Like
+                  </button>
+                  <span class="like-count">${extra.likeCount}</span>
+                </div>
+              </div>
+              <a href="${extra.url || '#'}" target="_blank" class="extra-link">
+                ${extra.type === 'download' ? '⬇ Download' : 
+                  extra.type === 'link' ? '🔗 Open Link' : 
+                  extra.type === 'code' ? '📋 Get Code' : 
+                  '🎯 Access'}
+              </a>
+            </div>
+          </div>
+        `;
         }).join('');
 
       } catch (err) {
@@ -2950,17 +2973,14 @@ crossorigin="anonymous"></script>
     }
 
     // Handle like button clicks
-    window.handleLikeClick = async function(extraId) {
-      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${extraId}')"]`);
+    window.handleLikeClick = async function(creatorGithubUsername) {
+      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${creatorGithubUsername}')"]`);
       const likeCountSpan = likeBtn.parentElement.querySelector('.like-count');
       
-      // Disable button during request
       likeBtn.disabled = true;
-      
-      const isLiked = await toggleExtraLike(extraId);
+      const isLiked = await toggleExtraLike(creatorGithubUsername);
       
       if (isLiked !== null) {
-        // Update UI
         if (isLiked) {
           likeBtn.innerHTML = '❤️ Like';
           likeBtn.classList.add('liked');
@@ -2969,12 +2989,10 @@ crossorigin="anonymous"></script>
           likeBtn.classList.remove('liked');
         }
         
-        // Update count
-        const newCount = await getExtraLikes(extraId);
+        const newCount = await getExtraLikes(creatorGithubUsername);
         likeCountSpan.textContent = newCount;
       }
       
-      // Re-enable button
       likeBtn.disabled = false;
     };
 
@@ -2986,6 +3004,14 @@ crossorigin="anonymous"></script>
       }
 
       try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', currentUser.id)
+          .single();
+        
+        const githubUsername = userData?.github_username || currentUser.user_metadata?.full_name || 'VIP User';
+        
         const { error } = await supabase
           .from('vip_extras')
           .insert([{
@@ -2995,7 +3021,7 @@ crossorigin="anonymous"></script>
             type: extraData.type,
             game_id: 'lapdance-dash', // Add game ID for Lapdance Dash
             created_by: currentUser.id,
-            creator_name: currentUser.user_metadata?.full_name || 'VIP User'
+            creator_name: githubUsername
           }]);
 
         if (error) {
@@ -3175,14 +3201,14 @@ crossorigin="anonymous"></script>
         const userBadge = isCurrentUserVip ? selectedBadge : '';
         const messageTime = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        return '<div class="' + messageClass + '">' +
-          '<div class="message-header">' +
-            '<span class="' + usernameClass + '">' + (m.github_username || 'Guest') + '</span>' +
-            (userBadge ? '<span class="user-badge">' + userBadge + '</span>' : '') +
-            '<span class="message-time">' + messageTime + '</span>' +
-          '</div>' +
-          '<div class="message-content">' + m.content + '</div>' +
-        '</div>';
+        return `<div class="${messageClass}">
+          <div class="message-header">
+            <span class="${usernameClass}">${m.github_username || 'Guest'}</span>
+            ${userBadge ? `<span class="user-badge">${userBadge}</span>` : ''}
+            <span class="message-time">${messageTime}</span>
+          </div>
+          <div class="message-content">${m.content}</div>
+        </div>`;
       }).join('');
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
@@ -3222,174 +3248,10 @@ crossorigin="anonymous"></script>
     showDownloadIfVIP(); // Check VIP access
     loadMessages();
   </script>
-
-<!-- Add this CSS to your existing page's <head> section -->
-<style>
-.bottom-embeds-section {
-    background: linear-gradient(135deg, #2f1a39, #3d2147);
-    border: 2px solid #ff4f9f;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem auto;
-    text-align: center;
-    max-width: 400px;
-}
-.bottom-embeds-section h3 {
-    color: #ff4f9f;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px #ff4f9f;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-.bottom-embeds-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.bottom-embed-container {
-    border: 2px solid #ff4f9f;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    height: 60px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    animation: pulse 2s infinite;
-}
-
-.bottom-embed-container:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
-    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
-}
-.bottom-embed-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow: hidden;
-}
-.bottom-embed-header {
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    color: #1b1b2e;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-@media (max-width: 768px) {
-    .bottom-embeds-container {
-        grid-template-columns: 1fr;
-        max-width: 150px;
-    }
-    .bottom-embeds-section {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .bottom-embed-container {
-        height: 50px;
-    }
-}
-</style>
-
-<!-- Add this HTML section to the bottom of your existing page -->
-<div class="bottom-embeds-section">
-    <h3>Featured Content</h3>
-    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
-        <!-- Embeds will automatically load here -->
-    </div>
-</div>
-
-<script>
-function createBottomEmbed(url, title) {
-    const embedContainer = document.createElement('div');
-    embedContainer.className = 'bottom-embed-container';
-
-    const embedHeader = document.createElement('div');
-    embedHeader.className = 'bottom-embed-header';
-    embedHeader.textContent = `Embedded: ${title}`;
-
-    const iframe = document.createElement('iframe');
-    iframe.className = 'bottom-embed-iframe';
-    iframe.src = url;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allowfullscreen', 'true');
-    
-    // Add error handling
-    iframe.onload = function() {
-        console.log(`Successfully loaded: ${title}`);
-    };
-    
-    iframe.onerror = function() {
-        console.log(`Failed to load: ${title}`);
-        iframe.style.background = '#ff4f9f';
-        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
-    };
-
-    embedContainer.appendChild(embedHeader);
-    embedContainer.appendChild(iframe);
-    
-    return embedContainer;
-}
-
-function autoLoadBottomEmbeds() {
-    const urls = [
-        'https://otieu.com/4/9248260',
-        'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458',
-        'https://otieu.com/4/9661607'
-    ];
-    const embedsContainer = document.getElementById('bottomEmbedsContainer');
-    
-    if (embedsContainer) {
-        // Instead of embedding, create clickable previews
-        urls.forEach((url, index) => {
-            const linkContainer = document.createElement('div');
-            linkContainer.className = 'bottom-embed-container';
-            linkContainer.style.cursor = 'pointer';
-            linkContainer.style.display = 'flex';
-            linkContainer.style.alignItems = 'center';
-            linkContainer.style.justifyContent = 'center';
-            linkContainer.style.textDecoration = 'none';
-            
-            linkContainer.innerHTML = `
-                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
-                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
-                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
-                </div>
-            `;
-            
-            linkContainer.addEventListener('click', () => {
-                window.open(url, '_blank');
-            });
-            
-            embedsContainer.appendChild(linkContainer);
-        });
-    }
-}
-
-// Auto-load embeds when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
-} else {
-    autoLoadBottomEmbeds();
-}
-</script>
   
 </body>
 </html>
+
 
 
 
