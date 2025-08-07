@@ -2109,6 +2109,8 @@ crossorigin="anonymous"></script>
       margin-top: 0;
       margin-bottom: 0.5rem;
       text-align: center;
+      color: #ff69b4;
+      font-size: 1.2rem;
     }
 
     .desc {
@@ -2116,58 +2118,31 @@ crossorigin="anonymous"></script>
       margin: 0.5rem 0 1rem 0;
       min-height: 3rem;
       text-align: center;
+      font-size: 0.9rem;
     }
 
-    .image-container {
-      position: relative;
+    .music-player {
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      background-color: #3b2750;
+      border-radius: 12px;
+      border: 2px solid #ff69b4;
+      box-shadow: 0 0 10px #ff69b4aa;
+      transition: transform 0.3s ease;
     }
 
-    .thumbnail {
+    .card:hover .music-player {
+      transform: scale(1.02);
+    }
+
+    .music-player::-webkit-media-controls-panel {
+      background-color: #3b2750;
+    }
+
+    .music-player iframe {
       width: 100%;
-      max-height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      display: block;
-    }
-
-    .fullscreen-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(255, 79, 159, 0.9);
-      color: #ffffff;
       border: none;
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 3;
-      font-family: 'Rubik Mono One', sans-serif;
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-
-    .image-container:hover .fullscreen-btn {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .fullscreen-btn:hover {
-      background: rgba(255, 130, 186, 1);
-      transform: scale(1.1);
-    }
-
-    .video-player {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background-color: black;
-      max-height: 200px;
-      max-width: 100%;
+      border-radius: 10px;
     }
 
     .play-link {
@@ -2273,8 +2248,8 @@ crossorigin="anonymous"></script>
       box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
     }
 
-    /* Artwork Like System Styles */
-    .artwork-like-section {
+    /* Music Like System Styles */
+    .music-like-section {
       width: 100%;
       display: flex;
       justify-content: space-between;
@@ -2284,7 +2259,7 @@ crossorigin="anonymous"></script>
       border-top: 1px solid rgba(255, 79, 159, 0.3);
     }
 
-    .artwork-like-btn {
+    .music-like-btn {
       background: linear-gradient(135deg, #ff4f9f, #ff1493);
       color: #ffffff;
       border: none;
@@ -2301,19 +2276,19 @@ crossorigin="anonymous"></script>
       box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
     }
 
-    .artwork-like-btn:hover:not(:disabled) {
+    .music-like-btn:hover:not(:disabled) {
       background: linear-gradient(135deg, #ff82ba, #ff69b4);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
     }
 
-    .artwork-like-btn:disabled {
+    .music-like-btn:disabled {
       background: linear-gradient(135deg, #666, #444);
       cursor: not-allowed;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
-    .artwork-like-btn.liked {
+    .music-like-btn.liked {
       background: linear-gradient(135deg, #ff69b4, #ff1493);
       animation: pulse 0.3s ease-in-out;
     }
@@ -2324,7 +2299,7 @@ crossorigin="anonymous"></script>
       100% { transform: scale(1); }
     }
 
-    .artwork-like-count {
+    .music-like-count {
       color: #ff82ba;
       font-size: 0.8rem;
       font-weight: bold;
@@ -2333,7 +2308,7 @@ crossorigin="anonymous"></script>
       gap: 4px;
     }
 
-    .artwork-login-prompt {
+    .music-login-prompt {
       font-size: 0.7rem;
       color: #ddd;
       text-align: center;
@@ -2398,75 +2373,6 @@ crossorigin="anonymous"></script>
       background-color: #2f1a39;
       padding: 1rem;
       border-radius: 10px;
-    }
-
-    /* Fullscreen View */
-    .fullscreen-view {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #1b1b2e;
-      background-image: linear-gradient(135deg, #361c3e, #1a1328);
-      z-index: 1000;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .fullscreen-view.active {
-      display: flex;
-    }
-
-    .fullscreen-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(27, 27, 46, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1001;
-      border-bottom: 2px solid #ff4f9f;
-    }
-
-    .fullscreen-title {
-      color: #ff4f9f;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-size: 1.2rem;
-      margin: 0;
-    }
-
-    .close-fullscreen {
-      background: #ff4f9f;
-      color: #1b1b2e;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      font-family: 'Rubik Mono One', sans-serif;
-      font-weight: bold;
-    }
-
-    .close-fullscreen:hover {
-      background-color: #ff82ba;
-    }
-
-    .fullscreen-image {
-      max-width: 90vw;
-      max-height: 80vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      margin-top: 80px;
     }
 
     .vip-extras-section {
@@ -2879,18 +2785,18 @@ crossorigin="anonymous"></script>
         font-size: 0.8rem;
       }
 
-      .artwork-like-section {
+      .music-like-section {
         flex-direction: column;
         gap: 8px;
         align-items: center;
       }
       
-      .artwork-like-btn {
+      .music-like-btn {
         font-size: 0.7rem;
         padding: 4px 8px;
       }
       
-      .artwork-like-count {
+      .music-like-count {
         font-size: 0.7rem;
       }
       
@@ -2902,7 +2808,7 @@ crossorigin="anonymous"></script>
 </head>
 <body>
 
-  <a href="user-art.html" class="back-link">⬅️ Back to All Users</a>
+  <a href="user-music.html" class="back-link">⬅️ Back to All Musicians</a>
   <h1 id="pageTitle">User Content<span id="vipBadge" class="vip-badge" style="display: none;">👑 VIP</span></h1>
 
   <section class="content-section" id="like-section">
@@ -2912,9 +2818,9 @@ crossorigin="anonymous"></script>
     </div>
   </section>
 
-  <section class="content-section" id="art-section">
-    <h2>Art</h2>
-    <div id="art" class="content-container">Loading art...</div>
+  <section class="content-section" id="music-section">
+    <h2>🎵 Music</h2>
+    <div id="music" class="content-container">Loading music...</div>
   </section>
 
   <section class="vip-extras-section" id="vip-extras-section">
@@ -2933,7 +2839,7 @@ crossorigin="anonymous"></script>
         <div class="form-grid">
           <div class="form-group">
             <label for="extraTitle">Title *</label>
-            <input type="text" id="extraTitle" required placeholder="e.g., Bonus Art Pack">
+            <input type="text" id="extraTitle" required placeholder="e.g., Bonus Music Pack">
           </div>
           <div class="form-group">
             <label for="extraType">Type *</label>
@@ -2946,7 +2852,7 @@ crossorigin="anonymous"></script>
               <option value="mod">Mod/Asset</option>
               <option value="guide">Guide/Tutorial</option>
               <option value="video">Bonus Video</option>
-              <option value="image">Art Pack</option>
+              <option value="music">Music Pack</option>
             </select>
           </div>
         </div>
@@ -3013,15 +2919,6 @@ crossorigin="anonymous"></script>
     </form>
   </section>
 
-  <!-- Fullscreen View -->
-  <div id="fullscreen-view" class="fullscreen-view">
-    <div class="fullscreen-header">
-      <h2 id="fullscreen-title" class="fullscreen-title">Artwork</h2>
-      <button class="close-fullscreen" onclick="closeFullscreen()">✕ Close</button>
-    </div>
-    <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
-  </div>
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -3031,7 +2928,7 @@ crossorigin="anonymous"></script>
   );
 
   const pageTitle = document.getElementById('pageTitle');
-  const artContainer = document.getElementById('art');
+  const musicContainer = document.getElementById('music');
   const chatContainer = document.getElementById('chat-container');
   const messagesDiv = document.getElementById('messages');
   const form = document.getElementById('chat-form');
@@ -3044,8 +2941,8 @@ crossorigin="anonymous"></script>
   let currentUser = null;
   let totalLikes = 0;
   let userHasLiked = false;
-  let artworkLikes = {};
-  let userLikedArtworks = new Set();
+  let musicLikes = {};
+  let userLikedMusic = new Set();
   let isVipUser = false;
   let selectedBadge = '👑';
 
@@ -3298,7 +3195,7 @@ crossorigin="anonymous"></script>
                extra.type === 'link' ? '🔗 Open Link' : 
                extra.type === 'code' ? '📋 Get Code' : 
                extra.type === 'video' ? '🎬 Watch Video' :
-               extra.type === 'image' ? '🖼 View Art Pack' :
+               extra.type === 'music' ? '🎵 Listen' :
                '🎯 Access') +
             '</a>' +
           '</div>' +
@@ -3311,14 +3208,13 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // Add VIP Extra for this user's page - UPDATED TO ALLOW ANY VIP USER
+  // Add VIP Extra for this user's page
   async function addVipExtra(extraData) {
     if (!currentUser || !isVipUser) {
       alert('VIP access required to add extras');
       return false;
     }
 
-    // REMOVED THE PAGE OWNER CHECK - Now any VIP user can add extras to any page
     console.log('Adding VIP extra as VIP user:', currentUser.user_metadata?.full_name || currentUser.id);
 
     try {
@@ -3363,7 +3259,7 @@ crossorigin="anonymous"></script>
     section.classList.toggle('show');
   };
 
-  // Get total likes - includes main page AND all artwork likes
+  // Get total likes - includes main page AND all music likes
   async function getTotalLikes() {
     if (!username) return 0;
     
@@ -3373,16 +3269,16 @@ crossorigin="anonymous"></script>
       .select('*', { count: 'exact', head: true })
       .eq('username', username);
     
-    // Get all artwork likes (any username that starts with username_artwork_)
-    const artworkResult = await supabase
+    // Get all music likes (any username that starts with username_music_)
+    const musicResult = await supabase
       .from('vip_page_views')
       .select('*', { count: 'exact', head: true })
-      .like('username', username + '_artwork_%');
+      .like('username', username + '_music_%');
     
     const mainPageCount = mainPageResult.count || 0;
-    const artworkCount = artworkResult.count || 0;
+    const musicCount = musicResult.count || 0;
     
-    return mainPageCount + artworkCount;
+    return mainPageCount + musicCount;
   }
 
   // Check if current user has liked this user's page
@@ -3397,49 +3293,49 @@ crossorigin="anonymous"></script>
     return !!result.data;
   }
 
-  // Get artwork likes using vip_page_views table
-  async function getArtworkLikes(artworkIds) {
-    if (artworkIds.length === 0) return {};
+  // Get music likes using vip_page_views table
+  async function getMusicLikes(musicIds) {
+    if (musicIds.length === 0) return {};
     
-    const artworkUsernames = artworkIds.map(id => username + '_artwork_' + id);
+    const musicUsernames = musicIds.map(id => username + '_music_' + id);
     
     const result = await supabase
       .from('vip_page_views')
       .select('username, view_count')
-      .in('username', artworkUsernames);
+      .in('username', musicUsernames);
 
     if (result.error) {
-      console.error('Error fetching artwork likes:', result.error);
+      console.error('Error fetching music likes:', result.error);
       return {};
     }
 
     const likes = {};
     result.data.forEach(item => {
-      const artworkId = item.username.split('_artwork_')[1];
-      likes[artworkId] = item.view_count || 0;
+      const musicId = item.username.split('_music_')[1];
+      likes[musicId] = item.view_count || 0;
     });
     
     return likes;
   }
 
-  // Get user's liked artworks using vip_page_views table
-  async function getUserLikedArtworks(userId, artworkIds) {
-    if (!userId || artworkIds.length === 0) return new Set();
+  // Get user's liked music using vip_page_views table
+  async function getUserLikedMusic(userId, musicIds) {
+    if (!userId || musicIds.length === 0) return new Set();
     
-    const artworkUsernames = artworkIds.map(id => username + '_artwork_' + id);
+    const musicUsernames = musicIds.map(id => username + '_music_' + id);
     
     const result = await supabase
       .from('vip_page_views')
       .select('username')
       .eq('user_id', userId)
-      .in('username', artworkUsernames);
+      .in('username', musicUsernames);
 
     if (result.error) {
-      console.error('Error fetching user liked artworks:', result.error);
+      console.error('Error fetching user liked music:', result.error);
       return new Set();
     }
 
-    return new Set(result.data.map(item => item.username.split('_artwork_')[1]));
+    return new Set(result.data.map(item => item.username.split('_music_')[1]));
   }
 
   // Like the user's page (main page like)
@@ -3501,15 +3397,15 @@ crossorigin="anonymous"></script>
     return true;
   }
 
-  // Like/unlike artwork using vip_page_views table
-  async function toggleArtworkLike(artworkId) {
+  // Like/unlike music using vip_page_views table
+  async function toggleMusicLike(musicId) {
     if (!currentUser) {
-      alert('Please log in to like artworks');
+      alert('Please log in to like music');
       return;
     }
 
-    const artworkUsername = username + '_artwork_' + artworkId;
-    const isLiked = userLikedArtworks.has(artworkId);
+    const musicUsername = username + '_music_' + musicId;
+    const isLiked = userLikedMusic.has(musicId);
     const now = new Date().toISOString();
 
     if (isLiked) {
@@ -3518,15 +3414,15 @@ crossorigin="anonymous"></script>
         .from('vip_page_views')
         .delete()
         .eq('user_id', currentUser.id)
-        .eq('username', artworkUsername);
+        .eq('username', musicUsername);
 
       if (result.error) {
-        console.error('Error unliking artwork:', result.error);
+        console.error('Error unliking music:', result.error);
         return;
       }
 
-      userLikedArtworks.delete(artworkId);
-      artworkLikes[artworkId] = Math.max(0, (artworkLikes[artworkId] || 1) - 1);
+      userLikedMusic.delete(musicId);
+      musicLikes[musicId] = Math.max(0, (musicLikes[musicId] || 1) - 1);
       
       // Update total likes count since we removed a like
       totalLikes = await getTotalLikes();
@@ -3537,19 +3433,19 @@ crossorigin="anonymous"></script>
         .from('vip_page_views')
         .insert({
           user_id: currentUser.id,
-          username: artworkUsername,
+          username: musicUsername,
           view_count: 1,
           first_viewed_at: now,
           last_viewed_at: now
         });
 
       if (result.error) {
-        console.error('Error liking artwork:', result.error);
+        console.error('Error liking music:', result.error);
         return;
       }
 
-      userLikedArtworks.add(artworkId);
-      artworkLikes[artworkId] = (artworkLikes[artworkId] || 0) + 1;
+      userLikedMusic.add(musicId);
+      musicLikes[musicId] = (musicLikes[musicId] || 0) + 1;
       
       // Update total likes count since we added a new like
       totalLikes = await getTotalLikes();
@@ -3557,21 +3453,21 @@ crossorigin="anonymous"></script>
     }
 
     // Update UI
-    updateArtworkLikeButton(artworkId);
+    updateMusicLikeButton(musicId);
   }
 
-  // Update artwork like button appearance
-  function updateArtworkLikeButton(artworkId) {
-    const likeBtn = document.querySelector('[data-artwork-id="' + artworkId + '"] .artwork-like-btn');
-    const likeCount = document.querySelector('[data-artwork-id="' + artworkId + '"] .artwork-like-count');
+  // Update music like button appearance
+  function updateMusicLikeButton(musicId) {
+    const likeBtn = document.querySelector('[data-music-id="' + musicId + '"] .music-like-btn');
+    const likeCount = document.querySelector('[data-music-id="' + musicId + '"] .music-like-count');
     
     if (!likeBtn || !likeCount) return;
 
-    const isLiked = userLikedArtworks.has(artworkId);
-    const count = artworkLikes[artworkId] || 0;
+    const isLiked = userLikedMusic.has(musicId);
+    const count = musicLikes[musicId] || 0;
 
     likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
-    likeBtn.className = 'artwork-like-btn' + (isLiked ? ' liked' : '');
+    likeBtn.className = 'music-like-btn' + (isLiked ? ' liked' : '');
     likeCount.innerHTML = '❤️ ' + count;
 
     if (isLiked) {
@@ -3603,31 +3499,111 @@ crossorigin="anonymous"></script>
     likeBtn.style.display = 'inline-block';
   }
 
-  // Fullscreen functionality
-  window.openFullscreen = function(imageSrc, altText, title) {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    const fullscreenImage = document.getElementById('fullscreen-image');
-    const fullscreenTitle = document.getElementById('fullscreen-title');
-    
-    fullscreenImage.src = imageSrc;
-    fullscreenImage.alt = altText;
-    fullscreenTitle.textContent = title || 'Artwork';
-    fullscreenView.classList.add('active');
-    
-    document.body.style.overflow = 'hidden';
-  }
-
-  window.closeFullscreen = function() {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    fullscreenView.classList.remove('active');
-    document.body.style.overflow = 'auto';
-  }
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      closeFullscreen();
+  // Create music player based on URL type
+  function createMusicPlayer(musicUrl) {
+    if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
+      // YouTube embed
+      let videoId = '';
+      if (musicUrl.includes('youtu.be/')) {
+        videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
+      } else if (musicUrl.includes('youtube.com/watch?v=')) {
+        videoId = musicUrl.split('v=')[1].split('&')[0];
+      }
+      
+      if (videoId) {
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
+        iframe.style.width = '100%';
+        iframe.style.height = '140px';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '10px';
+        iframe.setAttribute('allowfullscreen', 'true');
+        
+        iframe.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        };
+        
+        return iframe;
+      }
+    } else if (musicUrl.includes('soundcloud.com')) {
+      // SoundCloud embed
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(musicUrl)}&color=%23ff69b4&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
+      iframe.style.width = '100%';
+      iframe.style.height = '140px';
+      iframe.style.border = 'none';
+      iframe.style.borderRadius = '10px';
+      
+      iframe.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+      
+      return iframe;
+    } else if (musicUrl.includes('spotify.com')) {
+      // Spotify embed
+      let spotifyId = '';
+      let embedType = '';
+      
+      if (musicUrl.includes('track/')) {
+        spotifyId = musicUrl.split('track/')[1].split('?')[0];
+        embedType = 'track';
+      } else if (musicUrl.includes('album/')) {
+        spotifyId = musicUrl.split('album/')[1].split('?')[0];
+        embedType = 'album';
+      } else if (musicUrl.includes('playlist/')) {
+        spotifyId = musicUrl.split('playlist/')[1].split('?')[0];
+        embedType = 'playlist';
+      }
+      
+      if (spotifyId && embedType) {
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
+        iframe.style.width = '100%';
+        iframe.style.height = embedType === 'track' ? '152px' : '140px';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '10px';
+        
+        iframe.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        };
+        
+        return iframe;
+      }
     }
-  });
+    
+    // Fallback to audio player for direct audio files
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.style.width = '100%';
+    audio.style.background = 'transparent';
+    
+    const sourceMP3 = document.createElement('source');
+    sourceMP3.src = musicUrl;
+    sourceMP3.type = 'audio/mpeg';
+    
+    const sourceWAV = document.createElement('source');
+    sourceWAV.src = musicUrl;
+    sourceWAV.type = 'audio/wav';
+    
+    const sourceOGG = document.createElement('source');
+    sourceOGG.src = musicUrl;
+    sourceOGG.type = 'audio/ogg';
+    
+    audio.appendChild(sourceMP3);
+    audio.appendChild(sourceWAV);
+    audio.appendChild(sourceOGG);
+    audio.appendChild(document.createTextNode('Your browser does not support the audio element.'));
+    
+    audio.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    
+    return audio;
+  }
 
   async function incrementVipPageView() {
     if (!username) return;
@@ -3658,20 +3634,20 @@ crossorigin="anonymous"></script>
     }
   }
 
-  async function loadArt() {
+  async function loadMusic() {
     const result = await supabase
-      .from('user_art')
+      .from('user_music')
       .select('*')
       .eq('github_username', username)
       .order('created_at', { ascending: false });
 
     if (result.error) {
-      artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + result.error.message + '</div>';
+      musicContainer.innerHTML = '<div class="no-content">❌ Error loading music: ' + result.error.message + '</div>';
       return;
     }
 
     if (!result.data.length) {
-      artContainer.innerHTML = '<p class="no-content">No art submitted by ' + username + ' yet.</p>';
+      musicContainer.innerHTML = '<p class="no-content">No music submitted by ' + username + ' yet.</p>';
       return;
     }
 
@@ -3711,7 +3687,7 @@ crossorigin="anonymous"></script>
           console.log('✅ VIP chat styling added');
         }
         
-        // Show add extra button for ALL VIP users (no page owner restriction)
+        // Show add extra button for ALL VIP users
         if (addExtraBtn) {
           addExtraBtn.style.display = 'inline-block';
           addExtraBtn.textContent = '➕ Add VIP Extra';
@@ -3743,95 +3719,77 @@ crossorigin="anonymous"></script>
       });
     }
 
-    // Get artwork likes data
-    const artworkIds = result.data.map(art => art.id);
-    artworkLikes = await getArtworkLikes(artworkIds);
+    // Get music likes data
+    const musicIds = result.data.map(music => music.id);
+    musicLikes = await getMusicLikes(musicIds);
     if (currentUser) {
-      userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
+      userLikedMusic = await getUserLikedMusic(currentUser.id, musicIds);
     }
 
-    artContainer.innerHTML = '';
-    result.data.forEach(function(art, index) {
+    musicContainer.innerHTML = '';
+    result.data.forEach(function(music, index) {
       const card = document.createElement('article');
       card.className = 'card';
-      card.setAttribute('data-artwork-id', art.id);
+      card.setAttribute('data-music-id', music.id);
 
       const title = document.createElement('h3');
       title.className = 'title';
-      title.textContent = art.title || 'Untitled Art';
+      title.textContent = music.title || 'Untitled Track';
       card.appendChild(title);
 
-      if (art.description) {
+      if (music.description) {
         const desc = document.createElement('p');
         desc.className = 'desc';
-        desc.textContent = art.description;
+        desc.textContent = music.description;
         card.appendChild(desc);
       }
 
-      if (art.image_url) {
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'image-container';
-
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = 'Artwork: ' + art.title;
-
-        const fullscreenBtn = document.createElement('button');
-        fullscreenBtn.className = 'fullscreen-btn';
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
-          openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
-        });
-
-        imageContainer.appendChild(img);
-        imageContainer.appendChild(fullscreenBtn);
-        card.appendChild(imageContainer);
+      if (music.music_url) {
+        const musicPlayer = createMusicPlayer(music.music_url);
+        musicPlayer.className = 'music-player';
+        card.appendChild(musicPlayer);
       }
 
-      // Add artwork like section
-      const artworkLikeSection = document.createElement('div');
-      artworkLikeSection.className = 'artwork-like-section';
+      // Add music like section
+      const musicLikeSection = document.createElement('div');
+      musicLikeSection.className = 'music-like-section';
 
-      const artworkLikeBtn = document.createElement('button');
-      artworkLikeBtn.className = 'artwork-like-btn';
-      const isLiked = userLikedArtworks.has(art.id);
-      artworkLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
-      if (isLiked) artworkLikeBtn.classList.add('liked');
+      const musicLikeBtn = document.createElement('button');
+      musicLikeBtn.className = 'music-like-btn';
+      const isLiked = userLikedMusic.has(music.id);
+      musicLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+      if (isLiked) musicLikeBtn.classList.add('liked');
       
       if (!currentUser) {
-        artworkLikeBtn.disabled = true;
-        artworkLikeBtn.innerHTML = '🤍 Like';
+        musicLikeBtn.disabled = true;
+        musicLikeBtn.innerHTML = '🤍 Like';
       }
 
-      artworkLikeBtn.addEventListener('click', function(e) {
+      musicLikeBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        toggleArtworkLike(art.id);
+        toggleMusicLike(music.id);
       });
 
-      const artworkLikeCount = document.createElement('div');
-      artworkLikeCount.className = 'artwork-like-count';
-      artworkLikeCount.innerHTML = '❤️ ' + (artworkLikes[art.id] || 0);
+      const musicLikeCount = document.createElement('div');
+      musicLikeCount.className = 'music-like-count';
+      musicLikeCount.innerHTML = '❤️ ' + (musicLikes[music.id] || 0);
 
-      artworkLikeSection.appendChild(artworkLikeBtn);
-      artworkLikeSection.appendChild(artworkLikeCount);
-      card.appendChild(artworkLikeSection);
+      musicLikeSection.appendChild(musicLikeBtn);
+      musicLikeSection.appendChild(musicLikeCount);
+      card.appendChild(musicLikeSection);
 
       // Add login prompt if user not logged in
       if (!currentUser) {
         const loginPrompt = document.createElement('p');
-        loginPrompt.className = 'artwork-login-prompt';
-        loginPrompt.textContent = 'Log in to like artworks';
+        loginPrompt.className = 'music-login-prompt';
+        loginPrompt.textContent = 'Log in to like music';
         card.appendChild(loginPrompt);
       }
 
-      artContainer.appendChild(card);
+      musicContainer.appendChild(card);
     });
 
-    // Load VIP extras after artwork is loaded
+    // Load VIP extras after music is loaded
     await loadVipExtras();
   }
 
@@ -4069,34 +4027,14 @@ crossorigin="anonymous"></script>
     });
   }
 
-  function convertDriveLinkToThumbnail(url) {
-    if (!url) return '';
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return 'https://drive.google.com/thumbnail?id=' + fileId;
-    }
-    return url;
-  }
-
-  function convertDriveLinkToDirectView(url) {
-    if (!url) return '';
-    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$)/);
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
-    if (fileId) {
-      return 'https://drive.google.com/uc?export=view&id=' + fileId;
-    }
-    return url;
-  }
-
   // Main execution block
   if (!username) {
     pageTitle.textContent = 'Error';
     if (chatHeading) chatHeading.textContent = 'Error';
-    if (artContainer) artContainer.innerHTML = '<p class="no-content">❌ No username provided in URL.</p>';
+    if (musicContainer) musicContainer.innerHTML = '<p class="no-content">❌ No username provided in URL.</p>';
     if (messagesDiv) messagesDiv.innerHTML = '<p style="color:red;">No username provided in URL.</p>';
   } else {
-    pageTitle.textContent = username + "'s Content";
+    pageTitle.textContent = username + "'s Music";
     if (chatHeading) chatHeading.textContent = username;
     
     // Set the game ID to the username
@@ -4108,7 +4046,7 @@ crossorigin="anonymous"></script>
     // Initialize everything in proper order
     try {
       await incrementVipPageView();
-      await loadArt(); // This sets up VIP status and loads content
+      await loadMusic(); // This sets up VIP status and loads content
       await loadChatMessages();
       
       // Initialize badges only after VIP status is confirmed
@@ -4117,180 +4055,16 @@ crossorigin="anonymous"></script>
       }
     } catch (error) {
       console.error('Error during page initialization:', error);
-      if (artContainer) {
-        artContainer.innerHTML = '<p class="no-content">❌ Error loading page content. Please refresh.</p>';
+      if (musicContainer) {
+        musicContainer.innerHTML = '<p class="no-content">❌ Error loading page content. Please refresh.</p>';
       }
     }
   }
 </script>
 
-  <!-- Add this CSS to your existing page's <head> section -->
-<style>
-.bottom-embeds-section {
-    background: linear-gradient(135deg, #2f1a39, #3d2147);
-    border: 2px solid #ff4f9f;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem auto;
-    text-align: center;
-    max-width: 400px;
-}
-.bottom-embeds-section h3 {
-    color: #ff4f9f;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 0 10px #ff4f9f;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-.bottom-embeds-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.bottom-embed-container {
-    border: 2px solid #ff4f9f;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    height: 60px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    animation: pulse 2s infinite;
-}
-
-.bottom-embed-container:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(255, 79, 159, 0.6);
-    background: linear-gradient(45deg, #ff82ba, #ffb3d1);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 79, 159, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 79, 159, 0.8); }
-}
-.bottom-embed-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow: hidden;
-}
-.bottom-embed-header {
-    background: linear-gradient(45deg, #ff4f9f, #ff82ba);
-    color: #1b1b2e;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    font-family: 'Rubik Mono One', sans-serif;
-}
-@media (max-width: 768px) {
-    .bottom-embeds-container {
-        grid-template-columns: 1fr;
-        max-width: 150px;
-    }
-    .bottom-embeds-section {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .bottom-embed-container {
-        height: 50px;
-    }
-}
-</style>
-
-<!-- Add this HTML section to the bottom of your existing page -->
-<div class="bottom-embeds-section">
-    <h3>Featured Content</h3>
-    <div class="bottom-embeds-container" id="bottomEmbedsContainer">
-        <!-- Embeds will automatically load here -->
-    </div>
-</div>
-
-<script>
-function createBottomEmbed(url, title) {
-    const embedContainer = document.createElement('div');
-    embedContainer.className = 'bottom-embed-container';
-
-    const embedHeader = document.createElement('div');
-    embedHeader.className = 'bottom-embed-header';
-    embedHeader.textContent = `Embedded: ${title}`;
-
-    const iframe = document.createElement('iframe');
-    iframe.className = 'bottom-embed-iframe';
-    iframe.src = url;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allowfullscreen', 'true');
-    
-    // Add error handling
-    iframe.onload = function() {
-        console.log(`Successfully loaded: ${title}`);
-    };
-    
-    iframe.onerror = function() {
-        console.log(`Failed to load: ${title}`);
-        iframe.style.background = '#ff4f9f';
-        iframe.insertAdjacentHTML('afterbegin', `<div style="color: white; padding: 20px; text-align: center;">Unable to embed ${title}<br>Site may block iframe embedding</div>`);
-    };
-
-    embedContainer.appendChild(embedHeader);
-    embedContainer.appendChild(iframe);
-    
-    return embedContainer;
-}
-
-function autoLoadBottomEmbeds() {
-    const urls = [
-        'https://otieu.com/4/9248260',
-        'https://otieu.com/4/9249624',
-        'https://otieu.com/4/9249458',
-        'https://otieu.com/4/9661607'
-    ];
-    const embedsContainer = document.getElementById('bottomEmbedsContainer');
-    
-    if (embedsContainer) {
-        // Instead of embedding, create clickable previews
-        urls.forEach((url, index) => {
-            const linkContainer = document.createElement('div');
-            linkContainer.className = 'bottom-embed-container';
-            linkContainer.style.cursor = 'pointer';
-            linkContainer.style.display = 'flex';
-            linkContainer.style.alignItems = 'center';
-            linkContainer.style.justifyContent = 'center';
-            linkContainer.style.textDecoration = 'none';
-            
-            linkContainer.innerHTML = `
-                <div style="text-align: center; color: #1b1b2e; padding: 5px; font-weight: bold;">
-                    <div style="font-size: 1rem; margin-bottom: 2px;">💎</div>
-                    <div style="font-size: 0.7rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">CLICK ME ${index + 1}</div>
-                </div>
-            `;
-            
-            linkContainer.addEventListener('click', () => {
-                window.open(url, '_blank');
-            });
-            
-            embedsContainer.appendChild(linkContainer);
-        });
-    }
-}
-
-// Auto-load embeds when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoLoadBottomEmbeds);
-} else {
-    autoLoadBottomEmbeds();
-}
-</script>
-  
 </body>
 </html>
+
 
 
 
