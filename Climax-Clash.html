@@ -2841,7 +2841,7 @@ crossorigin="anonymous"></script>
           if (deleteError) throw deleteError;
           return false;
         } else {
-          // Add like using upsert to handle RLS
+          // Add like using upsert - ONLY increment view_count, no game_points
           const { error: upsertError } = await supabase
             .from('vip_page_views')
             .upsert({
@@ -2849,8 +2849,8 @@ crossorigin="anonymous"></script>
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
-              last_viewed_at: new Date().toISOString(),
-              game_points: 1
+              last_viewed_at: new Date().toISOString()
+              // Removed game_points: 1 - only track view count for likes
             }, {
               onConflict: 'user_id,username'
             });
