@@ -36,12 +36,9 @@ crossorigin="anonymous"></script>
       background-color: #1e1b2e;
       color: #fefefe;
       min-height: 100vh;
-      margin: 0;
       padding: 20px;
-      padding-top: 140px !important; /* Force space for fixed taskbar */
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
-      position: relative;
     }
 
     /* Access Choice Gate */
@@ -319,40 +316,21 @@ crossorigin="anonymous"></script>
       color: #ff69b4;
     }
 
-    /* Fixed Taskbar - NEVER SCROLLS */
+    /* Taskbar */
     #taskbar {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      margin: 0 !important;
+      max-width: 1200px;
+      margin: 20px auto;
       background-color: #2a243b;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border-radius: 12px;
+      box-shadow: 0 0 12px #00000055;
       padding: 15px 20px;
       font-family: 'Rubik Mono One', sans-serif;
       color: #fefefe;
+      position: relative;
       user-select: none;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      z-index: 9999 !important;
-      backdrop-filter: blur(10px);
-      border-bottom: 2px solid rgba(255, 105, 180, 0.3);
-      transform: none !important;
-    }
-
-    .taskbar-top-row {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .taskbar-bottom-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      width: 100%;
       flex-wrap: wrap;
       gap: 20px;
     }
@@ -360,47 +338,41 @@ crossorigin="anonymous"></script>
     .taskbar-logo {
       display: flex;
       align-items: center;
-      flex-shrink: 0;
     }
 
     .taskbar-logo img {
-      height: 60px;
+      height: 90px;
       width: auto;
       cursor: pointer;
       transition: transform 0.2s;
     }
 
     .taskbar-logo img:hover {
-      transform: scale(1.05);
+      transform: scale(1.1);
     }
 
     .taskbar-nav {
       display: flex;
-      gap: 12px;
+      gap: 15px;
       align-items: center;
       flex-wrap: wrap;
-      justify-content: center;
-      min-width: 0;
     }
 
     .taskbar-nav button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 0.5rem 1rem;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background-color 0.2s;
       white-space: nowrap;
-      flex-shrink: 0;
-      min-width: fit-content;
     }
 
     .taskbar-nav button:hover {
       background-color: #ff8edb;
-      transform: translateY(-1px);
     }
 
     .taskbar-nav button.vip-only {
@@ -429,15 +401,14 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
-      flex-shrink: 0;
     }
 
     .taskbar-search input {
-      width: 180px;
+      width: 200px;
       padding: 8px 12px;
       border: none;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 1rem;
       background-color: #3b3750;
       color: #fefefe;
     }
@@ -463,16 +434,15 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
-      flex-shrink: 0;
     }
 
     .messages-button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -654,16 +624,15 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-shrink: 0;
     }
 
     .taskbar-vip button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -679,7 +648,6 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.85rem;
     }
 
     .free-status {
@@ -688,7 +656,6 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.85rem;
     }
 
     .taskbar-auth {
@@ -696,16 +663,15 @@ crossorigin="anonymous"></script>
       align-items: center;
       gap: 10px;
       position: relative;
-      flex-shrink: 0;
     }
 
     .taskbar-auth button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -793,103 +759,34 @@ crossorigin="anonymous"></script>
     }
 
     #user-info img {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       border: 2px solid #ff69b4;
       object-fit: cover;
     }
 
-    /* Mobile responsive */
-    @media (max-width: 1100px) {
-      #taskbar {
-        padding: 10px 15px;
-        gap: 10px;
-      }
-
-      .taskbar-nav {
-        gap: 6px;
-      }
-
-      .taskbar-nav button {
-        padding: 5px 8px;
-        font-size: 0.75rem;
-      }
-
-      .taskbar-search input {
-        width: 120px;
-        font-size: 0.8rem;
-      }
-
-      .taskbar-logo img {
-        height: 45px;
-      }
-    }
-
     @media (max-width: 900px) {
-      body {
-        padding-top: 100px !important;
-      }
-
       #taskbar {
-        padding: 8px 10px !important;
-        gap: 8px !important;
-        position: fixed !important;
-        top: 0 !important;
-      }
-
-      .taskbar-bottom-row {
-        gap: 10px;
+        max-width: 95%;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 20px;
       }
 
       .taskbar-logo img {
-        height: 40px;
+        height: 75px;
       }
 
       .taskbar-nav {
-        gap: 4px;
-      }
-
-      .taskbar-nav button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
       }
 
       .taskbar-search input {
-        width: 100px;
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      .taskbar-search button {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      .messages-button {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      .taskbar-auth button,
-      .taskbar-vip button {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-      }
-
-      #user-info strong {
-        font-size: 0.75rem !important;
-        padding: 4px 8px !important;
-      }
-
-      #user-info img {
-        width: 30px !important;
-        height: 30px !important;
-      }
-
-      .vip-status,
-      .free-status {
-        font-size: 0.75rem;
+        width: 200px;
       }
 
       .access-options {
@@ -916,63 +813,11 @@ crossorigin="anonymous"></script>
 
     @media (max-width: 600px) {
       body {
-        padding: 5px;
-        padding-top: 85px !important;
-      }
-
-      #taskbar {
-        padding: 5px 8px !important;
-        gap: 5px !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
+        padding: 10px;
       }
 
       .taskbar-logo img {
-        height: 30px;
-      }
-
-      .taskbar-nav button {
-        padding: 3px 4px;
-        font-size: 0.65rem;
-      }
-
-      .taskbar-search input {
-        width: 70px;
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      .taskbar-search button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      .messages-button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      .taskbar-auth button,
-      .taskbar-vip button {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-      }
-
-      #user-info strong {
-        font-size: 0.65rem !important;
-        padding: 3px 6px !important;
-      }
-
-      #user-info img {
-        width: 25px !important;
-        height: 25px !important;
-      }
-
-      .vip-status,
-      .free-status {
-        font-size: 0.65rem;
+        height: 65px;
       }
 
       .choice-gate-content {
@@ -1026,7 +871,7 @@ crossorigin="anonymous"></script>
           <li><span class="icon">🏆</span> Priority support & features</li>
         </ul>
         <div class="vip-only-features">
-          <strong>Premium Features:</strong> VIP-only dashboard, exclusive content sharing, member-to-member messaging, premium community access, and earn money while playing games!
+          <strong>Premium Features:</strong> VIP-only dashboard, exclusive content sharing, member-to-member messaging, and premium community access
         </div>
       </div>
 
@@ -1059,7 +904,7 @@ crossorigin="anonymous"></script>
 
       <div class="vip-step" id="payment-step" style="display: none;">
         <h4>Step 2: Subscribe for VIP Access</h4>
-        <p>Subscribe to VIP for just £2/month - unlocks exclusive member features, premium community access, and get paid for playing games!</p>
+        <p>Subscribe to VIP for just £2/month - unlocks exclusive member features and premium community access!</p>
         <div id="vip-paypal-container"></div>
       </div>
     </div>
@@ -1072,55 +917,49 @@ crossorigin="anonymous"></script>
   </div>
 </div>
 
-<!-- Fixed Taskbar -->
+<!-- Taskbar -->
 <div id="taskbar">
-  <!-- Top Row: Navigation Buttons -->
-  <div class="taskbar-top-row">
-    <div class="taskbar-nav" id="taskbar-nav">
-      <!-- Navigation buttons injected by JS -->
+  <div class="taskbar-logo">
+    <img 
+      src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
+      alt="BrownDogGames Logo"
+      onclick="window.location.href='index.html'"
+    >
+  </div>
+
+  <div class="taskbar-nav" id="taskbar-nav">
+    <!-- Navigation buttons injected by JS -->
+  </div>
+  
+  <div class="taskbar-search">
+    <input type="text" id="game-search-input" placeholder="Search games..." />
+    <button id="search-button">Search</button>
+    <div id="suggestions-dropdown"></div>
+  </div>
+
+  <!-- Message Notifications -->
+  <div class="taskbar-messages" id="taskbar-messages" style="display: none;">
+    <button class="messages-button" id="messages-button">
+      💬 Messages
+      <span class="message-badge" id="message-badge" style="display: none;">0</span>
+    </button>
+    <div class="message-preview-dropdown" id="message-preview-dropdown">
+      <div class="message-preview-header">Recent Messages</div>
+      <div id="message-preview-list">
+        <div class="no-messages">No new messages</div>
+      </div>
+      <div class="message-preview-footer">
+        <button onclick="window.location.href='user-profiles.html'">View All Messages</button>
+      </div>
     </div>
   </div>
 
-  <!-- Bottom Row: Logo, Search, Messages, VIP, Auth -->
-  <div class="taskbar-bottom-row">
-    <div class="taskbar-logo">
-      <img 
-        src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/BrownDogGamesLogo.png" 
-        alt="BrownDogGames Logo"
-        onclick="window.location.href='index.html'"
-      >
-    </div>
-    
-    <div class="taskbar-search">
-      <input type="text" id="game-search-input" placeholder="Search games..." />
-      <button id="search-button">Search</button>
-      <div id="suggestions-dropdown"></div>
-    </div>
-
-    <!-- Message Notifications -->
-    <div class="taskbar-messages" id="taskbar-messages" style="display: none;">
-      <button class="messages-button" id="messages-button">
-        💬 Messages
-        <span class="message-badge" id="message-badge" style="display: none;">0</span>
-      </button>
-      <div class="message-preview-dropdown" id="message-preview-dropdown">
-        <div class="message-preview-header">Recent Messages</div>
-        <div id="message-preview-list">
-          <div class="no-messages">No new messages</div>
-        </div>
-        <div class="message-preview-footer">
-          <button onclick="window.location.href='user-profiles.html'">View All Messages</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="taskbar-vip" id="taskbar-vip">
-      <!-- VIP button/status injected by JS -->
-    </div>
-    
-    <div class="taskbar-auth" id="taskbar-auth">
-      <!-- Auth content injected by JS -->
-    </div>
+  <div class="taskbar-vip" id="taskbar-vip">
+    <!-- VIP button/status injected by JS -->
+  </div>
+  
+  <div class="taskbar-auth" id="taskbar-auth">
+    <!-- Auth content injected by JS -->
   </div>
 </div>
 
@@ -1791,17 +1630,17 @@ crossorigin="anonymous"></script>
     userVideoBtn.addEventListener('click', () => window.location.href = 'user-videos.html');
     taskbarNav.appendChild(userVideoBtn);
 
-    // User Art (always available)
-    const userArtBtn = document.createElement('button');
-    userArtBtn.textContent = 'User Art';
-    userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
-    taskbarNav.appendChild(userArtBtn);
-
     // User Music (always available)
     const userMusicBtn = document.createElement('button');
     userMusicBtn.textContent = 'User Music';
     userMusicBtn.addEventListener('click', () => window.location.href = 'user-music.html');
     taskbarNav.appendChild(userMusicBtn);
+
+    // User Art (always available)
+    const userArtBtn = document.createElement('button');
+    userArtBtn.textContent = 'User Art';
+    userArtBtn.addEventListener('click', () => window.location.href = 'user-art.html');
+    taskbarNav.appendChild(userArtBtn);
 
     // User Profiles (always available)
     const userProfilesBtn = document.createElement('button');
@@ -2957,6 +2796,7 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
+
 
 
 
