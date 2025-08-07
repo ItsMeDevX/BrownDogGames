@@ -373,10 +373,63 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       flex-shrink: 0;
+      position: relative;
+    }
+
+    .close-taskbar-btn {
+      position: absolute;
+      top: 5px;
+      right: -35px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .close-taskbar-btn:hover {
+      background: #ff6666;
+      transform: scale(1.1);
+    }
+
+    #taskbar.hidden {
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .show-taskbar-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.8rem;
+      z-index: 10000;
+      display: none;
+      transition: all 0.2s;
+    }
+
+    .show-taskbar-btn:hover {
+      background: #ff8edb;
+      transform: scale(1.05);
     }
 
     .taskbar-logo img {
-      height: 80px;
+      height: 100px;
       width: auto;
       cursor: pointer;
       transition: transform 0.2s;
@@ -834,7 +887,7 @@ crossorigin="anonymous"></script>
       }
 
       .taskbar-logo img {
-        height: 60px;
+        height: 80px;
       }
     }
 
@@ -878,7 +931,7 @@ crossorigin="anonymous"></script>
       }
 
       .taskbar-logo img {
-        height: 50px;
+        height: 70px;
       }
 
       .taskbar-nav {
@@ -965,7 +1018,7 @@ crossorigin="anonymous"></script>
       }
 
       .taskbar-logo img {
-        height: 40px;
+        height: 50px;
       }
 
       .taskbar-nav button {
@@ -1168,6 +1221,24 @@ crossorigin="anonymous"></script>
   let supabaseClient = null;
   let authInitialized = false;
   let messageUpdateInterval = null;
+
+  // Taskbar toggle functionality
+  window.toggleTaskbar = function() {
+    const taskbar = document.getElementById('taskbar');
+    const showBtn = document.getElementById('show-taskbar-btn');
+    
+    if (taskbar.classList.contains('hidden')) {
+      // Show taskbar
+      taskbar.classList.remove('hidden');
+      showBtn.style.display = 'none';
+      document.body.style.paddingTop = '140px';
+    } else {
+      // Hide taskbar
+      taskbar.classList.add('hidden');
+      showBtn.style.display = 'block';
+      document.body.style.paddingTop = '20px';
+    }
+  };
 
   // Access Management
   document.addEventListener('DOMContentLoaded', () => {
@@ -2992,6 +3063,7 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
+
 
 
 
