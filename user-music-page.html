@@ -2193,6 +2193,128 @@ crossorigin="anonymous"></script>
     }
     .play-link:hover { background-color: #ff82ba; }
 
+/* Add this CSS to your music page styles */
+
+/* Music fullscreen placeholder */
+.fullscreen-music-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+  color: #ff82ba;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 2px dashed #ff4f9f;
+  border-radius: 12px;
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.1));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-music-placeholder:hover {
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
+  border-color: #ff82ba;
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+}
+
+.fullscreen-music-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.fullscreen-music-placeholder:hover::before {
+  left: 100%;
+}
+
+.fullscreen-music-placeholder .play-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: musicBounce 2s infinite;
+}
+
+@keyframes musicBounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+
+/* Platform-specific placeholder styling for music */
+.fullscreen-music-placeholder[data-platform="youtube"] {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #ff0000;
+}
+
+.fullscreen-music-placeholder[data-platform="youtube"]:hover {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #ff0000;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+}
+
+.fullscreen-music-placeholder[data-platform="soundcloud"] {
+  background: linear-gradient(45deg, rgba(255, 85, 0, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #ff5500;
+}
+
+.fullscreen-music-placeholder[data-platform="soundcloud"]:hover {
+  background: linear-gradient(45deg, rgba(255, 85, 0, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #ff5500;
+  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
+}
+
+.fullscreen-music-placeholder[data-platform="spotify"] {
+  background: linear-gradient(45deg, rgba(30, 215, 96, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #1ed760;
+}
+
+.fullscreen-music-placeholder[data-platform="spotify"]:hover {
+  background: linear-gradient(45deg, rgba(30, 215, 96, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #1ed760;
+  box-shadow: 0 4px 15px rgba(30, 215, 96, 0.3);
+}
+
+.fullscreen-music-placeholder[data-platform="audio"] {
+  background: linear-gradient(45deg, rgba(138, 43, 226, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #8a2be2;
+}
+
+.fullscreen-music-placeholder[data-platform="audio"]:hover {
+  background: linear-gradient(45deg, rgba(138, 43, 226, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #8a2be2;
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+}
+
+/* Update existing music-container to work with placeholders */
+.music-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Hide the old fullscreen button when using placeholders */
+.music-container .fullscreen-music-btn {
+  display: none;
+}
+
+/* Show fullscreen button only on actual music players (when in fullscreen mode) */
+.music-container .music-player ~ .fullscreen-music-btn {
+  display: block;
+}
+    
     /* Main Like Section Styles */
     .main-content {
       max-width: 600px;
@@ -3707,11 +3829,153 @@ crossorigin="anonymous"></script>
     likeBtn.style.display = 'inline-block';
   }
 
-  // Fixed createMusicPlayer function - syntax error corrected
+// Replace the existing createMusicPlayer function with this updated version
+// that implements the same fullscreen-only loading as the video page
+
 function createMusicPlayer(musicUrl, withFullscreenBtn = false, title = '') {
+  if (withFullscreenBtn) {
+    // Create placeholder that loads music only on fullscreen (like video page)
+    return createMusicPlaceholder(musicUrl, title);
+  } else {
+    // For fullscreen mode, create the actual player
+    return createActualMusicPlayer(musicUrl);
+  }
+}
+
+// Create music placeholder (similar to video page's fullscreen-placeholder)
+function createMusicPlaceholder(musicUrl, title) {
   const container = document.createElement('div');
   container.className = 'music-container';
   
+  const musicType = detectMusicType(musicUrl);
+  
+  // Create placeholder that loads music only on fullscreen
+  const placeholder = document.createElement('div');
+  placeholder.className = 'fullscreen-music-placeholder';
+  placeholder.setAttribute('data-platform', musicType);
+  
+  // Platform-specific icons and text
+  let platformIcon = '🎵';
+  let platformText = 'Click to play in fullscreen';
+  let platformName = musicType.toUpperCase();
+  
+  switch (musicType) {
+    case 'youtube':
+      platformIcon = '🎥';
+      platformText = 'Play YouTube music in fullscreen';
+      platformName = 'YOUTUBE';
+      break;
+    case 'soundcloud':
+      platformIcon = '🎵';
+      platformText = 'Play SoundCloud in fullscreen';
+      platformName = 'SOUNDCLOUD';
+      break;
+    case 'spotify':
+      platformIcon = '🎶';
+      platformText = 'Play Spotify in fullscreen';
+      platformName = 'SPOTIFY';
+      break;
+    case 'audio':
+      platformIcon = '🎧';
+      platformText = 'Play audio file in fullscreen';
+      platformName = 'AUDIO';
+      break;
+  }
+  
+  placeholder.innerHTML = `
+    <span class="play-icon">${platformIcon}</span>
+    <div>${platformText}</div>
+    <small style="opacity: 0.7; font-size: 0.8rem;">${platformName}</small>
+  `;
+  
+  // Add click handler to enter fullscreen and load music
+  placeholder.addEventListener('click', () => {
+    loadMusicInFullscreen(musicUrl, musicType, placeholder, title);
+  });
+  
+  container.appendChild(placeholder);
+  return container;
+}
+
+// Detect music platform/type
+function detectMusicType(url) {
+  if (!url) return 'unknown';
+  
+  const urlLower = url.toLowerCase();
+  
+  if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+  if (urlLower.includes('soundcloud.com')) return 'soundcloud';
+  if (urlLower.includes('spotify.com')) return 'spotify';
+  
+  // Check for audio file extensions
+  const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
+  const ext = extMatch ? extMatch[1].toLowerCase() : '';
+  const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
+  
+  if (audioExts.includes(ext)) return 'audio';
+  
+  return 'unknown';
+}
+
+// Load music in fullscreen mode
+function loadMusicInFullscreen(url, musicType, placeholderElement, title) {
+  // Show loading state
+  const originalContent = placeholderElement.innerHTML;
+  placeholderElement.innerHTML = `
+    <span class="play-icon">⏳</span>
+    <div>Loading ${musicType.toUpperCase()} music...</div>
+    <small style="opacity: 0.7; font-size: 0.8rem;">Entering fullscreen mode</small>
+  `;
+  
+  // Create the actual music player
+  const musicElement = createActualMusicPlayer(url);
+  
+  // Add load event handlers
+  musicElement.onload = function() {
+    console.log(`Successfully loaded ${musicType} music:`, url);
+  };
+  
+  musicElement.onerror = function() {
+    console.error(`Failed to load ${musicType} music:`, url);
+    // Restore placeholder on error
+    placeholderElement.innerHTML = `
+      <span class="play-icon">❌</span>
+      <div style="margin-bottom: 15px;">Failed to load music</div>
+      <button onclick="window.open('${url}', '_blank')" style="
+        background: linear-gradient(45deg, #ff4f9f, #ff1493);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+      " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        🔗 Open Music Direct
+      </button>
+      <div style="margin-top: 10px;">
+        <small style="opacity: 0.7;">Click to try again</small>
+      </div>
+    `;
+    setTimeout(() => {
+      placeholderElement.innerHTML = originalContent;
+    }, 5000);
+    return;
+  };
+  
+  // Use the existing openMusicFullscreen function
+  setTimeout(() => {
+    openMusicFullscreen(url, title);
+    // Restore placeholder since fullscreen handles the player
+    placeholderElement.innerHTML = originalContent;
+  }, 1000);
+}
+
+// Create actual music player (the original logic)
+function createActualMusicPlayer(musicUrl) {
   let player;
   
   if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
@@ -3780,9 +4044,8 @@ function createMusicPlayer(musicUrl, withFullscreenBtn = false, title = '') {
       };
     }
   }
-  // REMOVED EXTRA CLOSING BRACE HERE - THIS WAS THE SYNTAX ERROR
   
-  // Fallback to audio player for direct audio files (NOW REACHABLE)
+  // Fallback to audio player for direct audio files
   if (!player) {
     player = document.createElement('audio');
     player.controls = true;
@@ -3812,27 +4075,8 @@ function createMusicPlayer(musicUrl, withFullscreenBtn = false, title = '') {
     };
   }
   
-  if (withFullscreenBtn) {
-    player.className = 'music-player';
-    container.appendChild(player);
-    
-    // Add fullscreen button
-    const fullscreenBtn = document.createElement('button');
-    fullscreenBtn.className = 'fullscreen-music-btn';
-    fullscreenBtn.textContent = '⛶';
-    fullscreenBtn.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openMusicFullscreen(musicUrl, title);
-    };
-    
-    container.appendChild(fullscreenBtn);
-    return container;
-  } else {
-    return player;
-  }
+  return player;
 }
-
   async function incrementVipPageView() {
     if (!username) return;
 
@@ -4291,6 +4535,7 @@ function createMusicPlayer(musicUrl, withFullscreenBtn = false, title = '') {
 
 </body>
 </html>
+
 
 
 
