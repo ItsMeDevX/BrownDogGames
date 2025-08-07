@@ -3020,8 +3020,9 @@ crossorigin="anonymous"></script>
       }
 
       try {
-        // Get the current user's GitHub username
+        // Get the current user's GitHub username first
         const githubUsername = await getGitHubUsername(currentUser.id);
+        console.log('Adding extra with GitHub username:', githubUsername);
         
         const { error } = await supabase
           .from('vip_extras')
@@ -3032,7 +3033,7 @@ crossorigin="anonymous"></script>
             type: extraData.type,
             game_id: 'climax-clash',
             created_by: currentUser.id,
-            creator_name: githubUsername // Store the GitHub username
+            creator_name: githubUsername // Store the actual GitHub username, not UUID
           }]);
 
         if (error) {
