@@ -162,6 +162,12 @@
             border-color: #e74c3c;
         }
 
+        .closing-message {
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            border-color: #ffd700;
+        }
+
         .user-info {
             background: rgba(42, 35, 58, 0.8);
             padding: 25px;
@@ -289,7 +295,7 @@
                 <div id="game-points">0</div>
             </div>
             
-            <p>🎯 Reach 10 points and this page will close!</p>
+            <p>🎯 Click to earn a game point - page will close after earning!</p>
 
             <button id="earn-point-btn">Earn Game Point</button>
         </div>
@@ -303,8 +309,8 @@
             <p id="error-text">An error occurred</p>
         </div>
 
-        <div id="max-points-msg" class="message success-message">
-            <p>🎊 Maximum points reached! Page will close soon...</p>
+        <div id="closing-msg" class="message closing-message">
+            <p>✨ Point earned! Closing page...</p>
         </div>
     </div>
 
@@ -338,7 +344,7 @@
     successMsg: document.getElementById('success-msg'),
     errorMsg: document.getElementById('error-msg'),
     errorText: document.getElementById('error-text'),
-    maxPointsMsg: document.getElementById('max-points-msg')
+    closingMsg: document.getElementById('closing-msg')
   };
 
   // Utility functions
@@ -366,7 +372,7 @@
   }
 
   function hideAllMessages() {
-    [elements.successMsg, elements.errorMsg, elements.maxPointsMsg].forEach(el => {
+    [elements.successMsg, elements.errorMsg, elements.closingMsg].forEach(el => {
       if (el) el.classList.remove('show');
     });
   }
@@ -462,23 +468,14 @@
     }
   }
 
-  // Update points with optimistic UI updates
-  async function updatePoints(userId, username, newPoints) {
+  // Update points and close page
+  async function updatePointsAndClose(userId, username, newPoints) {
     try {
-      console.log('=== UPDATING POINTS ===');
+      console.log('=== UPDATING POINTS AND CLOSING ===');
       console.log('User ID:', userId);
       console.log('Username:', username);
       console.log('New Points:', newPoints);
       console.log('Current Points before update:', currentPoints);
-
-      // Check what's currently in the database first
-      const { data: beforeData } = await supabase
-        .from('vip_page_views')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('username', username);
-      
-      console.log('Data in DB before update:', beforeData);
 
       // Perform the upsert
       const { data, error } = await supabase
@@ -500,24 +497,40 @@
         return false;
       }
 
-      // Check what's in the database after update
-      const { data: afterData } = await supabase
-        .from('vip_page_views')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('username', username);
-      
-      console.log('Data in DB after update:', afterData);
-
-      // Update UI and cache
+      // Update UI immediately
       currentPoints = newPoints;
       elements.gamePointsDisplay.textContent = currentPoints;
       pointsCache.set(userId, newPoints);
 
-      console.log('=== UPDATE COMPLETE ===');
+      // Show success message briefly
+      showMessage(elements.successMsg, null, 1500);
+
+      // Show closing message and close the page
+      setTimeout(() => {
+        showMessage(elements.closingMsg, null, 2000);
+        
+        // Close the page after a brief delay
+        setTimeout(() => {
+          // Try different methods to close the page
+          if (window.opener) {
+            // If opened by another window, close normally
+            window.close();
+          } else {
+            // If opened directly, try to close or redirect
+            try {
+              window.close();
+            } catch (e) {
+              // If can't close, redirect to main page
+              window.location.href = 'index.html';
+            }
+          }
+        }, 1000);
+      }, 1000);
+
+      console.log('=== POINT EARNED, CLOSING PAGE ===');
       return true;
     } catch (err) {
-      console.error('Exception in updatePoints:', err);
+      console.error('Exception in updatePointsAndClose:', err);
       showMessage(elements.errorMsg, 'Error updating points');
       return false;
     }
@@ -572,17 +585,8 @@
       currentPoints = await getCurrentPoints(currentUser.id);
       elements.gamePointsDisplay.textContent = currentPoints;
 
-      // Check if maxed out
-      if (currentPoints >= 10) {
-        elements.earnPointBtn.disabled = true;
-        elements.earnPointBtn.textContent = 'Max Points Reached!';
-        showMessage(elements.maxPointsMsg, null, 5000);
-        
-        setTimeout(() => {
-          alert('🎊 Congratulations! Maximum points reached!');
-          window.close();
-        }, 3000);
-      }
+      // Button is always enabled - page closes after each point earned
+      elements.earnPointBtn.disabled = false;
 
     } catch (err) {
       console.log('Init error:', err);
@@ -598,42 +602,16 @@
     try {
       isProcessing = true;
       elements.earnPointBtn.disabled = true;
-      elements.earnPointBtn.textContent = 'Adding...';
-
-      if (currentPoints >= 10) {
-        showMessage(elements.errorMsg, 'Maximum points already reached!');
-        return;
-      }
+      elements.earnPointBtn.textContent = 'Adding Point...';
 
       const newPoints = currentPoints + 1;
-      const success = await updatePoints(currentUser.id, currentUsername, newPoints);
+      await updatePointsAndClose(currentUser.id, currentUsername, newPoints);
 
-      if (success) {
-        showMessage(elements.successMsg);
-
-        if (currentPoints >= 10) {
-          elements.earnPointBtn.textContent = 'Max Points Reached!';
-          showMessage(elements.maxPointsMsg, null, 5000);
-          
-          setTimeout(() => {
-            alert('🎊 Congratulations! Maximum points reached!');
-            window.close();
-          }, 2000);
-        } else {
-          elements.earnPointBtn.disabled = false;
-          elements.earnPointBtn.textContent = 'Earn Game Point';
-        }
-      } else {
-        showMessage(elements.errorMsg, 'Failed to update points');
-        elements.earnPointBtn.disabled = false;
-        elements.earnPointBtn.textContent = 'Earn Game Point';
-      }
     } catch (err) {
       console.log('Earn point error:', err);
       showMessage(elements.errorMsg, 'Error earning point');
       elements.earnPointBtn.disabled = false;
       elements.earnPointBtn.textContent = 'Earn Game Point';
-    } finally {
       isProcessing = false;
     }
   }, 300); // 300ms debounce
