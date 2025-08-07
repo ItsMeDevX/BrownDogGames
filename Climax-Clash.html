@@ -2759,13 +2759,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Get likes for a specific extra - use creator's GitHub username
+    // Get likes for a specific extra - use creator's GitHub username with _extra suffix
     async function getExtraLikes(creatorGithubUsername) {
       try {
         const { count, error } = await supabase
           .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('username', creatorGithubUsername); // Use creator's GitHub username
+          .eq('username', `${creatorGithubUsername}_extra`); // Add _extra suffix
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2784,20 +2784,13 @@ crossorigin="anonymous"></script>
       if (!session?.session?.user) return false;
 
       try {
-        // Get current user's GitHub username
-        const { data: userData } = await supabase
-          .from('users')
-          .select('github_username')
-          .eq('id', session.session.user.id)
-          .single();
-        
-        const currentUserGithub = userData?.github_username || 'user';
-        const likeUsername = `${currentUserGithub}_extra`;
+        // Use creator's GitHub username with _extra suffix for checking likes
+        const usernameWithSuffix = `${creatorGithubUsername}_extra`;
 
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', likeUsername)
+          .eq('username', usernameWithSuffix)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2820,13 +2813,15 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
+      // Add _extra suffix to the creator's GitHub username for storage
+      const usernameWithSuffix = `${creatorGithubUsername}_extra`;
 
       try {
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', creatorGithubUsername)
+          .eq('username', usernameWithSuffix)
           .eq('user_id', userId)
           .single();
 
@@ -2835,7 +2830,7 @@ crossorigin="anonymous"></script>
           const { error: deleteError } = await supabase
             .from('vip_page_views')
             .delete()
-            .eq('username', creatorGithubUsername)
+            .eq('username', usernameWithSuffix)
             .eq('user_id', userId);
 
           if (deleteError) throw deleteError;
@@ -2845,7 +2840,7 @@ crossorigin="anonymous"></script>
           const { error: upsertError } = await supabase
             .from('vip_page_views')
             .upsert({
-              username: creatorGithubUsername,
+              username: usernameWithSuffix,
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
