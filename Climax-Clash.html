@@ -2801,7 +2801,7 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Toggle like for an extra
+    // Toggle like for an extra using upsert to handle RLS
     async function toggleExtraLike(creatorGithubUsername) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
@@ -2812,14 +2812,16 @@ crossorigin="anonymous"></script>
       const userId = session.session.user.id;
 
       try {
+        // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', creatorGithubUsername) // Use creator's GitHub username
+          .eq('username', creatorGithubUsername)
           .eq('user_id', userId)
           .single();
 
         if (existingLike) {
+          // Remove like
           const { error: deleteError } = await supabase
             .from('vip_page_views')
             .delete()
@@ -2829,17 +2831,21 @@ crossorigin="anonymous"></script>
           if (deleteError) throw deleteError;
           return false;
         } else {
-          const { error: insertError } = await supabase
+          // Add like using upsert to handle RLS
+          const { error: upsertError } = await supabase
             .from('vip_page_views')
-            .insert([{
-              username: creatorGithubUsername, // Store the creator's GitHub username
+            .upsert({
+              username: creatorGithubUsername,
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
-              last_viewed_at: new Date().toISOString()
-            }]);
+              last_viewed_at: new Date().toISOString(),
+              game_points: 1
+            }, {
+              onConflict: 'user_id,username'
+            });
 
-          if (insertError) throw insertError;
+          if (upsertError) throw upsertError;
           return true;
         }
       } catch (error) {
