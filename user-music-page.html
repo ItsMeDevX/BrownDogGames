@@ -2272,6 +2272,17 @@ crossorigin="anonymous"></script>
   box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
 }
 
+.fullscreen-music-placeholder[data-platform="youtube-playlist"] {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.15), rgba(255, 165, 0, 0.1));
+  border-color: #ff6600;
+}
+
+.fullscreen-music-placeholder[data-platform="youtube-playlist"]:hover {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.25), rgba(255, 165, 0, 0.15));
+  border-color: #ff6600;
+  box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
+}
+
 .fullscreen-music-placeholder[data-platform="soundcloud"] {
   background: linear-gradient(45deg, rgba(255, 85, 0, 0.1), rgba(255, 79, 159, 0.1));
   border-color: #ff5500;
@@ -3813,6 +3824,7 @@ crossorigin="anonymous"></script>
       closeMusicFullscreen();
     }
   });
+
   function updateLikeStatus() {
     const status = document.getElementById('like-status');
     const likeBtn = document.getElementById('main-like-btn');
@@ -3836,9 +3848,7 @@ crossorigin="anonymous"></script>
     likeBtn.style.display = 'inline-block';
   }
 
-// Replace the existing createMusicPlayer function with this updated version
-// that implements the same fullscreen-only loading as the video page
-
+// Enhanced createMusicPlayer function with YouTube playlist support
 function createMusicPlayer(musicUrl, withFullscreenBtn = false, title = '') {
   if (withFullscreenBtn) {
     // Create placeholder that loads music only on fullscreen (like video page)
@@ -3872,6 +3882,11 @@ function createMusicPlaceholder(musicUrl, title) {
       platformText = 'Play YouTube music in fullscreen';
       platformName = 'YOUTUBE';
       break;
+    case 'youtube-playlist':
+      platformIcon = '📋';
+      platformText = 'Play YouTube playlist in fullscreen';
+      platformName = 'YOUTUBE PLAYLIST';
+      break;
     case 'soundcloud':
       platformIcon = '🎵';
       platformText = 'Play SoundCloud in fullscreen';
@@ -3904,11 +3919,16 @@ function createMusicPlaceholder(musicUrl, title) {
   return container;
 }
 
-// Detect music platform/type
+// Enhanced detect music platform/type with YouTube playlist support
 function detectMusicType(url) {
   if (!url) return 'unknown';
   
   const urlLower = url.toLowerCase();
+  
+  // Check for YouTube playlist first
+  if (urlLower.includes('youtube.com/playlist') || urlLower.includes('list=')) {
+    return 'youtube-playlist';
+  }
   
   if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
   if (urlLower.includes('soundcloud.com')) return 'soundcloud';
@@ -3981,12 +4001,38 @@ function loadMusicInFullscreen(url, musicType, placeholderElement, title) {
   }, 1000);
 }
 
-// Create actual music player (the original logic)
+// Enhanced createActualMusicPlayer with YouTube playlist support
 function createActualMusicPlayer(musicUrl) {
   let player;
   
-  if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
-    // YouTube embed
+  // Check for YouTube playlist first
+  if (musicUrl.includes('youtube.com/playlist') || musicUrl.includes('list=')) {
+    // YouTube playlist embed
+    let playlistId = '';
+    
+    // Extract playlist ID from different URL formats
+    if (musicUrl.includes('list=')) {
+      const urlParams = new URLSearchParams(musicUrl.split('?')[1] || '');
+      playlistId = urlParams.get('list');
+    }
+    
+    if (playlistId) {
+      player = document.createElement('iframe');
+      player.src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&controls=1&modestbranding=1&rel=0`;
+      player.style.width = '100%';
+      player.style.height = '315px'; // Slightly taller for playlists
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      player.setAttribute('allowfullscreen', 'true');
+      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+      
+      player.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    }
+  } else if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
+    // Regular YouTube video embed
     let videoId = '';
     if (musicUrl.includes('youtu.be/')) {
       videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
@@ -3996,12 +4042,13 @@ function createActualMusicPlayer(musicUrl) {
     
     if (videoId) {
       player = document.createElement('iframe');
-      player.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
+      player.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0`;
       player.style.width = '100%';
       player.style.height = '140px';
       player.style.border = 'none';
       player.style.borderRadius = '10px';
       player.setAttribute('allowfullscreen', 'true');
+      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
       
       player.onclick = (e) => {
         e.preventDefault();
@@ -4084,6 +4131,7 @@ function createActualMusicPlayer(musicUrl) {
   
   return player;
 }
+
   async function incrementVipPageView() {
     if (!username) return;
 
@@ -4542,6 +4590,7 @@ function createActualMusicPlayer(musicUrl) {
 
 </body>
 </html>
+
 
 
 
