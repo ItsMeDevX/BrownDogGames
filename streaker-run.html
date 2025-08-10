@@ -2818,13 +2818,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Get likes for a specific extra - use unique extra ID
-    async function getExtraLikes(extraId) {
+    // Get likes for a specific extra - use GitHub username + extra ID
+    async function getExtraLikes(githubUsername, extraId) {
       try {
         const { count, error } = await supabase
           .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('username', `extra_${extraId}`); // Use unique extra ID
+          .eq('username', `${githubUsername}_extra_${extraId}`);
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2838,18 +2838,17 @@ crossorigin="anonymous"></script>
     }
 
     // Check if current user has liked an extra
-    async function hasUserLikedExtra(extraId) {
+    async function hasUserLikedExtra(githubUsername, extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return false;
 
       try {
-        // Use unique extra ID for checking likes
-        const usernameWithSuffix = `extra_${extraId}`;
+        const likeIdentifier = `${githubUsername}_extra_${extraId}`;
 
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', usernameWithSuffix)
+          .eq('username', likeIdentifier)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2864,7 +2863,7 @@ crossorigin="anonymous"></script>
     }
 
     // Toggle like for an extra using upsert to handle RLS
-    async function toggleExtraLike(extraId) {
+    async function toggleExtraLike(githubUsername, extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
         alert('Please login to like extras');
@@ -2872,15 +2871,14 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      // Use unique extra ID for storage
-      const usernameWithSuffix = `extra_${extraId}`;
+      const likeIdentifier = `${githubUsername}_extra_${extraId}`;
 
       try {
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', usernameWithSuffix)
+          .eq('username', likeIdentifier)
           .eq('user_id', userId)
           .single();
 
@@ -2889,7 +2887,7 @@ crossorigin="anonymous"></script>
           const { error: deleteError } = await supabase
             .from('vip_page_views')
             .delete()
-            .eq('username', usernameWithSuffix)
+            .eq('username', likeIdentifier)
             .eq('user_id', userId);
 
           if (deleteError) throw deleteError;
@@ -2899,12 +2897,11 @@ crossorigin="anonymous"></script>
           const { error: upsertError } = await supabase
             .from('vip_page_views')
             .upsert({
-              username: usernameWithSuffix,
+              username: likeIdentifier,
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
               last_viewed_at: new Date().toISOString()
-              // Removed game_points: 1 - only track view count for likes
             }, {
               onConflict: 'user_id,username'
             });
@@ -2963,8 +2960,8 @@ crossorigin="anonymous"></script>
           }
 
           const [likeCount, userHasLiked] = await Promise.all([
-            getExtraLikes(extra.id), // Use unique extra ID instead of GitHub username
-            hasUserLikedExtra(extra.id) // Use unique extra ID instead of GitHub username
+            getExtraLikes(githubUsername, extra.id), // Pass both GitHub username and extra ID
+            hasUserLikedExtra(githubUsername, extra.id) // Pass both GitHub username and extra ID
           ]);
           
           return {
@@ -3007,7 +3004,7 @@ crossorigin="anonymous"></script>
                 </span>
                 <div class="like-section">
                   <button class="like-btn ${extra.userHasLiked ? 'liked' : ''}" 
-                          onclick="handleLikeClick('${extra.id}')">
+                          onclick="handleLikeClick('${extra.githubUsername}', '${extra.id}')">
                     ${extra.userHasLiked ? '❤️' : '🤍'} Like
                   </button>
                   <span class="like-count">${extra.likeCount}</span>
@@ -3031,14 +3028,14 @@ crossorigin="anonymous"></script>
     }
 
     // Handle like button clicks
-    window.handleLikeClick = async function(extraId) {
-      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${extraId}')"]`);
+    window.handleLikeClick = async function(githubUsername, extraId) {
+      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${githubUsername}', '${extraId}')"]`);
       const likeCountSpan = likeBtn.parentElement.querySelector('.like-count');
       
       // Disable button during request
       likeBtn.disabled = true;
       
-      const isLiked = await toggleExtraLike(extraId);
+      const isLiked = await toggleExtraLike(githubUsername, extraId);
       
       if (isLiked !== null) {
         // Update UI
@@ -3051,7 +3048,7 @@ crossorigin="anonymous"></script>
         }
         
         // Update count
-        const newCount = await getExtraLikes(extraId);
+        const newCount = await getExtraLikes(githubUsername, extraId);
         likeCountSpan.textContent = newCount;
       }
       
