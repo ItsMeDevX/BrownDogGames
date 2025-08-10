@@ -2057,6 +2057,19 @@ crossorigin="anonymous"></script>
       margin: 2rem 0;
     }
     
+    .debug-info {
+      background-color: #2d1a3a;
+      border: 1px solid #666;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #ccc;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
     .stats-summary {
       background-color: #2d1a3a;
       border: 2px solid #ff69b4;
@@ -2250,6 +2263,11 @@ crossorigin="anonymous"></script>
     🔄 Calculating comprehensive likes across all content...
   </div>
   
+  <div class="debug-info" id="debug-info" style="display: none;">
+    <h4>Debug Information:</h4>
+    <div id="debug-content"></div>
+  </div>
+  
   <div class="stats-summary" id="stats-summary" style="display: none;">
     <h3 style="color: #ff69b4; margin: 0 0 1rem 0;">📊 Platform Statistics</h3>
     <div class="stats-grid">
@@ -2300,6 +2318,17 @@ crossorigin="anonymous"></script>
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
     );
 
+    let debugMessages = [];
+    
+    function debugLog(message) {
+      console.log(message);
+      debugMessages.push(message);
+      const debugContent = document.getElementById('debug-content');
+      if (debugContent) {
+        debugContent.innerHTML = debugMessages.join('<br>');
+      }
+    }
+
     function getRankEmoji(index) {
       if (index === 0) return '🥇';
       if (index === 1) return '🥈';
@@ -2307,10 +2336,60 @@ crossorigin="anonymous"></script>
       return `#${index + 1}`;
     }
 
+    // Enhanced username extraction function
+    function extractUsername(fullUsername) {
+      debugLog(`🔍 Extracting username from: "${fullUsername}"`);
+      
+      // Handle extra format: ItsMeDevX_extra_ae77d5d3-334d-404c-904f-7c62e8107377
+      if (fullUsername.includes('_extra_')) {
+        const username = fullUsername.split('_extra_')[0];
+        debugLog(`✅ Extracted from extra: "${username}"`);
+        return { username, contentType: 'extras' };
+      }
+      
+      // Handle video format: jsZenO_video_6736ba9f-d596-4429-8a00-a220ff2c40ff
+      if (fullUsername.includes('_video_')) {
+        const username = fullUsername.split('_video_')[0];
+        debugLog(`✅ Extracted from video: "${username}"`);
+        return { username, contentType: 'videos' };
+      }
+      
+      // Handle game format: livestrong-cell_game_926810a5-c696-4a3d-9b4d-126126761134
+      if (fullUsername.includes('_game_')) {
+        const username = fullUsername.split('_game_')[0];
+        debugLog(`✅ Extracted from game: "${username}"`);
+        return { username, contentType: 'games' };
+      }
+      
+      // Handle artwork format: kenzolerd145_artwork_c0041829-37ec-46ae-9db9-de24d2637abf
+      if (fullUsername.includes('_artwork_')) {
+        const username = fullUsername.split('_artwork_')[0];
+        debugLog(`✅ Extracted from artwork: "${username}"`);
+        return { username, contentType: 'art' };
+      }
+      
+      // Handle music format: ItsMeDevX_music_1
+      if (fullUsername.includes('_music_')) {
+        const username = fullUsername.split('_music_')[0];
+        debugLog(`✅ Extracted from music: "${username}"`);
+        return { username, contentType: 'music' };
+      }
+      
+      // Handle old extra format: extra_someId (map to creator via VIP extras table)
+      if (fullUsername.startsWith('extra_')) {
+        debugLog(`⚠️ Found old extra format: "${fullUsername}" - needs creator lookup`);
+        return { username: fullUsername, contentType: 'extras', needsCreatorLookup: true };
+      }
+      
+      // Default case - assume it's a page view
+      debugLog(`✅ Treating as page view: "${fullUsername}"`);
+      return { username: fullUsername, contentType: 'page' };
+    }
+
     // Get consolidation mapping from users table + game submissions
     async function getConsolidationMapping() {
       try {
-        console.log('🔍 Getting consolidation mappings...');
+        debugLog('🔍 Getting consolidation mappings...');
         
         // Get users with github_username
         const { data: users, error: usersError } = await supabase
@@ -2318,7 +2397,7 @@ crossorigin="anonymous"></script>
           .select('id, github_username');
         
         if (usersError) {
-          console.error('Error fetching users:', usersError);
+          debugLog(`❌ Error fetching users: ${usersError.message}`);
           return {};
         }
 
@@ -2328,12 +2407,12 @@ crossorigin="anonymous"></script>
           .select('user_id, github_user');
         
         if (submissionsError) {
-          console.error('Error fetching submissions:', submissionsError);
+          debugLog(`❌ Error fetching submissions: ${submissionsError.message}`);
           return {};
         }
 
-        console.log(`👥 Found ${users?.length || 0} users`);
-        console.log(`🎮 Found ${gameSubmissions?.length || 0} game submissions`);
+        debugLog(`👥 Found ${users?.length || 0} users`);
+        debugLog(`🎮 Found ${gameSubmissions?.length || 0} game submissions`);
 
         // Create mapping
         const consolidationMap = {};
@@ -2344,31 +2423,30 @@ crossorigin="anonymous"></script>
               const user = users.find(u => u.id === submission.user_id);
               if (user && user.github_username) {
                 consolidationMap[submission.github_user] = user.github_username;
-                console.log(`🔗 Mapping: "${submission.github_user}" → "${user.github_username}"`);
+                consolidationMap[submission.github_user.toLowerCase()] = user.github_username;
+                debugLog(`🔗 Mapping: "${submission.github_user}" → "${user.github_username}"`);
               }
             }
           });
         }
 
-        // Add manual consolidation rules for users not in database yet
+        // Add manual consolidation rules (only for known duplicate accounts)
         const manualRules = {
           'browndoggames': 'itsmedevx',
-          'ace': 'Ace475',
-          'itsmedevx': 'itsmedevx',      // Normalize case
-          'itsmedevX': 'itsmedevx',      // Handle capital X
+          'itsmedevX': 'itsmedevx',  // Handle capital X variation
         };
 
         Object.entries(manualRules).forEach(([from, to]) => {
           consolidationMap[from] = to;
-          consolidationMap[from.toLowerCase()] = to; // Add lowercase version too
-          console.log(`🔧 Manual mapping: "${from}" → "${to}"`);
+          consolidationMap[from.toLowerCase()] = to;
+          debugLog(`🔧 Manual mapping: "${from}" → "${to}"`);
         });
 
-        console.log(`🗺️ Total mappings: ${Object.keys(consolidationMap).length}`);
+        debugLog(`🗺️ Total mappings: ${Object.keys(consolidationMap).length}`);
         return consolidationMap;
         
       } catch (error) {
-        console.error('Error getting consolidation mapping:', error);
+        debugLog(`❌ Error getting consolidation mapping: ${error.message}`);
         return {};
       }
     }
@@ -2379,40 +2457,40 @@ crossorigin="anonymous"></script>
       
       // Check exact match first
       if (consolidationMap[username]) {
-        console.log(`✅ Consolidating: "${username}" → "${consolidationMap[username]}"`);
+        debugLog(`✅ Consolidating: "${username}" → "${consolidationMap[username]}"`);
         return consolidationMap[username];
       }
       
       // Check lowercase match
       if (consolidationMap[lower]) {
-        console.log(`✅ Consolidating (lowercase): "${username}" → "${consolidationMap[lower]}"`);
+        debugLog(`✅ Consolidating (lowercase): "${username}" → "${consolidationMap[lower]}"`);
         return consolidationMap[lower];
       }
       
       return username;
     }
 
-    // Fixed function to properly map extra likes to creators and consolidate users
+    // Fixed function to properly extract usernames and consolidate users
     async function getAllUsersLikesBreakdown() {
       try {
-        console.log('🔍 Starting comprehensive likes calculation...');
+        debugLog('🔍 Starting comprehensive likes calculation...');
         
         // Get consolidation mapping
         const consolidationMap = await getConsolidationMapping();
         
-        // Step 1: Get all VIP extras to map extra IDs to creators
+        // Step 1: Get all VIP extras to map extra IDs to creators (for old format)
         const { data: vipExtras, error: extrasError } = await supabase
           .from('vip_extras')
           .select('id, creator_name, created_by');
 
         if (extrasError) {
-          console.error('Error fetching extras:', extrasError);
+          debugLog(`❌ Error fetching extras: ${extrasError.message}`);
           throw extrasError;
         }
 
-        console.log(`📊 Found ${vipExtras?.length || 0} VIP extras`);
+        debugLog(`📊 Found ${vipExtras?.length || 0} VIP extras`);
         
-        // Create a map from extra ID to creator info
+        // Create a map from extra ID to creator info (for old extra format)
         const extraCreatorMap = {};
         if (vipExtras) {
           vipExtras.forEach(extra => {
@@ -2423,70 +2501,62 @@ crossorigin="anonymous"></script>
           });
         }
         
-        console.log(`🗺️ Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
-        
-        // Step 2: Get all view records with game points
+        // Step 2: Get all view records
         const { data: allViews, error: viewsError } = await supabase
           .from('vip_page_views')
           .select('username, view_count, game_points');
 
         if (viewsError) {
-          console.error('Error fetching views:', viewsError);
+          debugLog(`❌ Error fetching views: ${viewsError.message}`);
           throw viewsError;
         }
 
-        console.log(`📊 Found ${allViews?.length || 0} total view records`);
+        debugLog(`📊 Found ${allViews?.length || 0} total view records`);
 
         const usersLikesMap = {};
 
         // Step 3: Process each view record
         if (allViews) {
-          allViews.forEach(view => {
-            const username = view.username;
+          allViews.forEach((view, index) => {
+            const fullUsername = view.username;
             const viewCount = view.view_count || 0;
             const gamePoints = view.game_points || 0;
             
-            if (!username) return;
-
-            let baseUsername = username;
-            let contentType = 'page';
-
-            // Check if this is an extra like
-            if (username.startsWith('extra_')) {
-              const extraId = username.replace('extra_', '');
-              console.log(`🔍 Processing extra like: ${extraId} (${viewCount} likes)`);
-              
-              // Look up the creator of this extra
-              const creatorInfo = extraCreatorMap[extraId];
-              if (creatorInfo && creatorInfo.creatorName) {
-                baseUsername = creatorInfo.creatorName;
-                contentType = 'extras';
-                console.log(`✅ Mapped extra ${extraId} to creator: ${baseUsername}`);
-              } else {
-                console.log(`⚠️ No creator found for extra ${extraId}, skipping`);
-                return; // Skip this record if we can't find the creator
-              }
-            } else if (username.includes('_video_')) {
-              baseUsername = username.split('_video_')[0];
-              contentType = 'videos';
-            } else if (username.includes('_game_')) {
-              baseUsername = username.split('_game_')[0];
-              contentType = 'games';
-            } else if (username.includes('_artwork_')) {
-              baseUsername = username.split('_artwork_')[0];
-              contentType = 'art';
-            } else if (username.includes('_music_')) {
-              baseUsername = username.split('_music_')[0];
-              contentType = 'music';
+            if (!fullUsername) {
+              debugLog(`⚠️ Skipping view ${index}: no username`);
+              return;
             }
 
-            // FIXED: Apply consolidation
-            baseUsername = consolidateUsername(baseUsername, consolidationMap);
+            debugLog(`\n--- Processing view ${index + 1}/${allViews.length} ---`);
+            debugLog(`Full username: "${fullUsername}", views: ${viewCount}, game points: ${gamePoints}`);
+
+            // Extract username and content type
+            const { username, contentType, needsCreatorLookup } = extractUsername(fullUsername);
+            
+            let finalUsername = username;
+            let finalContentType = contentType;
+
+            // Handle old extra format that needs creator lookup
+            if (needsCreatorLookup && contentType === 'extras') {
+              const extraId = fullUsername.replace('extra_', '');
+              const creatorInfo = extraCreatorMap[extraId];
+              if (creatorInfo && creatorInfo.creatorName) {
+                finalUsername = creatorInfo.creatorName;
+                debugLog(`✅ Mapped old extra ${extraId} to creator: ${finalUsername}`);
+              } else {
+                debugLog(`⚠️ No creator found for old extra ${extraId}, skipping`);
+                return;
+              }
+            }
+
+            // Apply consolidation
+            finalUsername = consolidateUsername(finalUsername, consolidationMap);
+            debugLog(`Final username after consolidation: "${finalUsername}"`);
 
             // Initialize user if not exists
-            if (!usersLikesMap[baseUsername]) {
-              usersLikesMap[baseUsername] = {
-                username: baseUsername,
+            if (!usersLikesMap[finalUsername]) {
+              usersLikesMap[finalUsername] = {
+                username: finalUsername,
                 page: 0,
                 videos: 0,
                 games: 0,
@@ -2496,12 +2566,16 @@ crossorigin="anonymous"></script>
                 gamePoints: 0,
                 total: 0
               };
+              debugLog(`🆕 Created new user entry for: ${finalUsername}`);
             }
 
             // Add to appropriate category
-            usersLikesMap[baseUsername][contentType] += viewCount;
-            usersLikesMap[baseUsername].gamePoints += gamePoints;
-            console.log(`📈 Added ${viewCount} ${contentType} likes + ${gamePoints} game points to ${baseUsername}`);
+            if (finalContentType === 'page' || finalContentType === 'videos' || finalContentType === 'games' || finalContentType === 'art' || finalContentType === 'music' || finalContentType === 'extras') {
+              usersLikesMap[finalUsername][finalContentType] += viewCount;
+              usersLikesMap[finalUsername].gamePoints += gamePoints;
+              debugLog(`📈 Added ${viewCount} ${finalContentType} likes + ${gamePoints} game points to ${finalUsername}`);
+              debugLog(`Current totals for ${finalUsername}: page:${usersLikesMap[finalUsername].page}, videos:${usersLikesMap[finalUsername].videos}, games:${usersLikesMap[finalUsername].games}, art:${usersLikesMap[finalUsername].art}, music:${usersLikesMap[finalUsername].music}, extras:${usersLikesMap[finalUsername].extras}, gamePoints:${usersLikesMap[finalUsername].gamePoints}`);
+            }
           });
         }
 
@@ -2518,11 +2592,11 @@ crossorigin="anonymous"></script>
           .sort((a, b) => b.total - a.total)
           .slice(0, 10);
 
-        console.log(`🏆 Final results: ${sortedUsers.length} users with likes`);
+        debugLog(`\n🏆 Final results: ${sortedUsers.length} users with likes`);
         
         sortedUsers.forEach((user, idx) => {
           const likesOnly = user.total - user.gamePoints;
-          console.log(`${idx + 1}. ${user.username}: ${user.total} total (${likesOnly} likes + ${user.gamePoints} game points) - page:${user.page}, videos:${user.videos}, games:${user.games}, art:${user.art}, music:${user.music}, extras:${user.extras}`);
+          debugLog(`${idx + 1}. ${user.username}: ${user.total} total (${likesOnly} likes + ${user.gamePoints} game points) - page:${user.page}, videos:${user.videos}, games:${user.games}, art:${user.art}, music:${user.music}, extras:${user.extras}`);
         });
 
         return {
@@ -2532,13 +2606,14 @@ crossorigin="anonymous"></script>
         };
 
       } catch (error) {
-        console.error('❌ Error in getAllUsersLikesBreakdown:', error);
+        debugLog(`❌ Error in getAllUsersLikesBreakdown: ${error.message}`);
         throw error;
       }
     }
 
     async function loadLeaderboard() {
       const loadingEl = document.getElementById('loading');
+      const debugEl = document.getElementById('debug-info');
       const statsEl = document.getElementById('stats-summary');
       const podiumEl = document.getElementById('podium');
       const tableEl = document.getElementById('leaderboard-table');
@@ -2546,6 +2621,9 @@ crossorigin="anonymous"></script>
       const errorEl = document.getElementById('error-message');
 
       try {
+        // Show debug info
+        debugEl.style.display = 'block';
+        
         // Get comprehensive data
         const { users, totalUsers, totalLikes } = await getAllUsersLikesBreakdown();
 
@@ -2556,8 +2634,8 @@ crossorigin="anonymous"></script>
           return;
         }
 
-        // Calculate statistics using new rate
-        const totalEarnings = totalLikes * 0.001;
+        // Calculate statistics: 10 likes = 1p (0.01£), so rate is 0.001£ per like  
+        const totalEarnings = Math.floor(totalLikes / 10) * 0.01; // Only count complete 10-like groups
         const avgLikes = totalUsers > 0 ? Math.round(totalLikes / totalUsers) : 0;
 
         // Update statistics display
@@ -2584,7 +2662,7 @@ crossorigin="anonymous"></script>
 
         // Create leaderboard table
         bodyEl.innerHTML = users.map((user, idx) => {
-          const earnings = user.total * 0.001;
+          const earnings = Math.floor(user.total / 10) * 0.01; // Only count complete 10-like groups
           return `
             <tr>
               <td class="rank-cell">${getRankEmoji(idx)}</td>
@@ -2606,7 +2684,7 @@ crossorigin="anonymous"></script>
         tableEl.style.display = 'table';
 
       } catch (err) {
-        console.error('❌ Error loading leaderboard:', err);
+        debugLog(`❌ Error loading leaderboard: ${err.message}`);
         loadingEl.style.display = 'none';
         errorEl.innerHTML = `😢 Error loading leaderboard: ${err.message}`;
         errorEl.style.display = 'block';
@@ -2618,7 +2696,6 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
-
 
 
 
