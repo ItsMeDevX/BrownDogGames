@@ -2263,10 +2263,7 @@ crossorigin="anonymous"></script>
     🔄 Calculating comprehensive likes across all content...
   </div>
   
-  <div class="debug-info" id="debug-info" style="display: none;">
-    <h4>Debug Information:</h4>
-    <div id="debug-content"></div>
-  </div>
+
   
   <div class="stats-summary" id="stats-summary" style="display: none;">
     <h3 style="color: #ff69b4; margin: 0 0 1rem 0;">📊 Platform Statistics</h3>
@@ -2322,11 +2319,6 @@ crossorigin="anonymous"></script>
     
     function debugLog(message) {
       console.log(message);
-      debugMessages.push(message);
-      const debugContent = document.getElementById('debug-content');
-      if (debugContent) {
-        debugContent.innerHTML = debugMessages.join('<br>');
-      }
     }
 
     function getRankEmoji(index) {
@@ -2613,7 +2605,6 @@ crossorigin="anonymous"></script>
 
     async function loadLeaderboard() {
       const loadingEl = document.getElementById('loading');
-      const debugEl = document.getElementById('debug-info');
       const statsEl = document.getElementById('stats-summary');
       const podiumEl = document.getElementById('podium');
       const tableEl = document.getElementById('leaderboard-table');
@@ -2621,9 +2612,6 @@ crossorigin="anonymous"></script>
       const errorEl = document.getElementById('error-message');
 
       try {
-        // Show debug info
-        debugEl.style.display = 'block';
-        
         // Get comprehensive data
         const { users, totalUsers, totalLikes } = await getAllUsersLikesBreakdown();
 
@@ -2696,6 +2684,7 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
+
 
 
 
