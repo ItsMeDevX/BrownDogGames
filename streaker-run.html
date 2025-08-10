@@ -2671,9 +2671,8 @@ crossorigin="anonymous"></script>
       </section>
       
       <div class="buttons">
-        <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-        <div class="download-message" id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-        <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1biNYjxDtk4y_bJ9Dv78wavDlXDTpg62F" class="button-link vip-button" download style="display: none;">⬇ VIP Download</a>
+        <div class="age-free-info">🔞 Must be 18+ to download | 💰 Paid to play with VIP</div>
+        <a href="https://drive.google.com/file/d/1UJMKSkxbbAYCmXkjMw8_gyv715TFsZrs/view?usp=sharing" target="_blank" class="button-link">⬇ Download Streaker Run</a>
         <a href="index.html" class="button-link">← Back to Home</a>
       </div>
     </div>
@@ -2819,13 +2818,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Get likes for a specific extra - use creator's GitHub username with _extra suffix
-    async function getExtraLikes(creatorGithubUsername) {
+    // Get likes for a specific extra - use unique extra ID
+    async function getExtraLikes(extraId) {
       try {
         const { count, error } = await supabase
           .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('username', `${creatorGithubUsername}_extra`); // Add _extra suffix
+          .eq('username', `extra_${extraId}`); // Use unique extra ID
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2839,13 +2838,13 @@ crossorigin="anonymous"></script>
     }
 
     // Check if current user has liked an extra
-    async function hasUserLikedExtra(creatorGithubUsername) {
+    async function hasUserLikedExtra(extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return false;
 
       try {
-        // Use creator's GitHub username with _extra suffix for checking likes
-        const usernameWithSuffix = `${creatorGithubUsername}_extra`;
+        // Use unique extra ID for checking likes
+        const usernameWithSuffix = `extra_${extraId}`;
 
         const { data, error } = await supabase
           .from('vip_page_views')
@@ -2865,7 +2864,7 @@ crossorigin="anonymous"></script>
     }
 
     // Toggle like for an extra using upsert to handle RLS
-    async function toggleExtraLike(creatorGithubUsername) {
+    async function toggleExtraLike(extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
         alert('Please login to like extras');
@@ -2873,8 +2872,8 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      // Add _extra suffix to the creator's GitHub username for storage
-      const usernameWithSuffix = `${creatorGithubUsername}_extra`;
+      // Use unique extra ID for storage
+      const usernameWithSuffix = `extra_${extraId}`;
 
       try {
         // Check if already liked
@@ -2964,8 +2963,8 @@ crossorigin="anonymous"></script>
           }
 
           const [likeCount, userHasLiked] = await Promise.all([
-            getExtraLikes(githubUsername), // Pass GitHub username instead of extraId
-            hasUserLikedExtra(githubUsername) // Pass GitHub username instead of extraId
+            getExtraLikes(extra.id), // Use unique extra ID instead of GitHub username
+            hasUserLikedExtra(extra.id) // Use unique extra ID instead of GitHub username
           ]);
           
           return {
@@ -3008,7 +3007,7 @@ crossorigin="anonymous"></script>
                 </span>
                 <div class="like-section">
                   <button class="like-btn ${extra.userHasLiked ? 'liked' : ''}" 
-                          onclick="handleLikeClick('${extra.githubUsername}')">
+                          onclick="handleLikeClick('${extra.id}')">
                     ${extra.userHasLiked ? '❤️' : '🤍'} Like
                   </button>
                   <span class="like-count">${extra.likeCount}</span>
@@ -3032,14 +3031,14 @@ crossorigin="anonymous"></script>
     }
 
     // Handle like button clicks
-    window.handleLikeClick = async function(creatorGithubUsername) {
-      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${creatorGithubUsername}')"]`);
+    window.handleLikeClick = async function(extraId) {
+      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${extraId}')"]`);
       const likeCountSpan = likeBtn.parentElement.querySelector('.like-count');
       
       // Disable button during request
       likeBtn.disabled = true;
       
-      const isLiked = await toggleExtraLike(creatorGithubUsername);
+      const isLiked = await toggleExtraLike(extraId);
       
       if (isLiked !== null) {
         // Update UI
@@ -3052,7 +3051,7 @@ crossorigin="anonymous"></script>
         }
         
         // Update count
-        const newCount = await getExtraLikes(creatorGithubUsername);
+        const newCount = await getExtraLikes(extraId);
         likeCountSpan.textContent = newCount;
       }
       
@@ -3158,7 +3157,7 @@ crossorigin="anonymous"></script>
       document.querySelector('[data-badge="👑"]').classList.add('selected');
     }
 
-    // VIP Download functionality
+    // VIP Download functionality for Gay Ghost only (Streaker Run is now unlocked)
     async function handleVIP(linkId, msgId) {
       const { data } = await supabase.auth.getSession();
       const user = data?.session?.user;
@@ -3188,7 +3187,7 @@ crossorigin="anonymous"></script>
       }
 
       // Enable VIP features (only once, not per download link)
-      if (linkId === 'downloadLink') {
+      if (linkId === 'downloadLink2') {
         isVipUser = true;
         vipBadge.style.display = 'inline-block';
         vipBadgesSection.classList.add('show');
@@ -3310,8 +3309,7 @@ crossorigin="anonymous"></script>
 
     // Initialize all functionalities
     loadVipExtras(); // Load extras for everyone to see
-    handleVIP('downloadLink', 'downloadMessage');
-    handleVIP('downloadLink2', 'downloadMessage2');
+    handleVIP('downloadLink2', 'downloadMessage2'); // Only Gay Ghost needs VIP check
     loadMessages();
   </script>
   
