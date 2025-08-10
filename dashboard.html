@@ -3027,7 +3027,57 @@ crossorigin="anonymous"></script>
     return true;
   }
 
-  // NEW: Get consolidation mapping from users table + game submissions (same as VIP)
+  // Enhanced username extraction function (same as leaderboard)
+  function extractUsername(fullUsername) {
+    console.log(`🔍 Dashboard: Extracting username from: "${fullUsername}"`);
+    
+    // Handle extra format: ItsMeDevX_extra_ae77d5d3-334d-404c-904f-7c62e8107377
+    if (fullUsername.includes('_extra_')) {
+      const username = fullUsername.split('_extra_')[0];
+      console.log(`✅ Dashboard: Extracted from extra: "${username}"`);
+      return { username, contentType: 'extras' };
+    }
+    
+    // Handle video format: jsZenO_video_6736ba9f-d596-4429-8a00-a220ff2c40ff
+    if (fullUsername.includes('_video_')) {
+      const username = fullUsername.split('_video_')[0];
+      console.log(`✅ Dashboard: Extracted from video: "${username}"`);
+      return { username, contentType: 'videos' };
+    }
+    
+    // Handle game format: livestrong-cell_game_926810a5-c696-4a3d-9b4d-126126761134
+    if (fullUsername.includes('_game_')) {
+      const username = fullUsername.split('_game_')[0];
+      console.log(`✅ Dashboard: Extracted from game: "${username}"`);
+      return { username, contentType: 'games' };
+    }
+    
+    // Handle artwork format: kenzolerd145_artwork_c0041829-37ec-46ae-9db9-de24d2637abf
+    if (fullUsername.includes('_artwork_')) {
+      const username = fullUsername.split('_artwork_')[0];
+      console.log(`✅ Dashboard: Extracted from artwork: "${username}"`);
+      return { username, contentType: 'art' };
+    }
+    
+    // Handle music format: ItsMeDevX_music_1
+    if (fullUsername.includes('_music_')) {
+      const username = fullUsername.split('_music_')[0];
+      console.log(`✅ Dashboard: Extracted from music: "${username}"`);
+      return { username, contentType: 'music' };
+    }
+    
+    // Handle old extra format: extra_someId (map to creator via VIP extras table)
+    if (fullUsername.startsWith('extra_')) {
+      console.log(`⚠️ Dashboard: Found old extra format: "${fullUsername}" - needs creator lookup`);
+      return { username: fullUsername, contentType: 'extras', needsCreatorLookup: true };
+    }
+    
+    // Default case - assume it's a page view
+    console.log(`✅ Dashboard: Treating as page view: "${fullUsername}"`);
+    return { username: fullUsername, contentType: 'page' };
+  }
+
+  // Get consolidation mapping from users table + game submissions (same as leaderboard)
   async function getConsolidationMapping() {
     try {
       console.log('🔍 Dashboard: Getting consolidation mappings...');
@@ -3064,18 +3114,17 @@ crossorigin="anonymous"></script>
             const user = users.find(u => u.id === submission.user_id);
             if (user && user.github_username) {
               consolidationMap[submission.github_user] = user.github_username;
+              consolidationMap[submission.github_user.toLowerCase()] = user.github_username;
               console.log(`🔗 Dashboard mapping: "${submission.github_user}" → "${user.github_username}"`);
             }
           }
         });
       }
 
-      // Add manual consolidation rules for users not in database yet
+      // Add manual consolidation rules (only for known duplicate accounts)
       const manualRules = {
         'browndoggames': 'itsmedevx',
-        'ace': 'Ace475',
-        'itsmedevx': 'itsmedevx',      // Normalize case
-        'itsmedevX': 'itsmedevx',      // Handle capital X
+        'itsmedevX': 'itsmedevx',  // Handle capital X variation
       };
 
       Object.entries(manualRules).forEach(([from, to]) => {
@@ -3093,7 +3142,7 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // NEW: Apply consolidation to username (same as VIP)
+  // Apply consolidation to username (same as leaderboard)
   function consolidateUsername(username, consolidationMap) {
     const lower = username.toLowerCase();
     
@@ -3112,7 +3161,7 @@ crossorigin="anonymous"></script>
     return username;
   }
 
-  // UPDATED: Enhanced function to get ALL likes across all content types INCLUDING VIP EXTRAS AND GAME POINTS with proper consolidation
+  // FIXED: Enhanced function to get ALL likes across all content types with same logic as leaderboard
   async function getAllLikesBreakdown() {
     if (!currentUser) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
 
@@ -3125,7 +3174,7 @@ crossorigin="anonymous"></script>
       // Get fresh consolidation mapping
       consolidationMap = await getConsolidationMapping();
 
-      // Step 1: Get ALL VIP extras to map extra IDs to creators
+      // Step 1: Get ALL VIP extras to map extra IDs to creators (for old format)
       const { data: vipExtras, error: extrasError } = await supabase
         .from('vip_extras')
         .select('id, creator_name, created_by');
@@ -3134,7 +3183,7 @@ crossorigin="anonymous"></script>
         console.error('Error fetching extras:', extrasError);
       }
 
-      // Create a map from extra ID to creator info
+      // Create a map from extra ID to creator info (for old extra format)
       const extraCreatorMap = {};
       if (vipExtras) {
         vipExtras.forEach(extra => {
@@ -3147,12 +3196,14 @@ crossorigin="anonymous"></script>
 
       console.log(`🗺️ Dashboard: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
 
-      // Step 2: Get all view records INCLUDING GAME POINTS
+      // Step 2: Get all view records
       const { data: allViews, error: viewsError } = await supabase
         .from('vip_page_views')
         .select('username, view_count, game_points');
 
       if (viewsError) throw viewsError;
+
+      console.log(`📊 Dashboard: Found ${allViews?.length || 0} total view records`);
 
       // Step 3: Initialize the current user's data
       const userLikesData = {
@@ -3167,68 +3218,55 @@ crossorigin="anonymous"></script>
         total: 0
       };
 
-      // Step 4: Process all views and filter for current user
+      // Step 4: Process all views using same logic as leaderboard
       if (allViews) {
-        allViews.forEach(view => {
-          const viewUsername = view.username;
+        allViews.forEach((view, index) => {
+          const fullUsername = view.username;
           const viewCount = view.view_count || 0;
           const gamePoints = view.game_points || 0;
           
-          if (!viewUsername) return;
-
-          let shouldInclude = false;
-          let contentType = 'page';
-          let baseUsername = viewUsername;
-
-          // Check if this is an extra like
-          if (viewUsername.startsWith('extra_')) {
-            const extraId = viewUsername.replace('extra_', '');
-            console.log(`🔍 Dashboard: Processing extra like: ${extraId} (${viewCount} likes, ${gamePoints} game points)`);
-            
-            // Look up the creator of this extra
-            const creatorInfo = extraCreatorMap[extraId];
-            if (creatorInfo && creatorInfo.creatorName) {
-              baseUsername = creatorInfo.creatorName;
-              contentType = 'extras';
-              console.log(`✅ Dashboard: Extra ${extraId} created by: ${baseUsername}`);
-            } else {
-              console.log(`⚠️ Dashboard: No creator found for extra ${extraId}`);
-              return; // Skip if we can't find the creator
-            }
-          } else {
-            // Handle regular content
-            if (viewUsername.includes('_video_')) {
-              baseUsername = viewUsername.split('_video_')[0];
-              contentType = 'videos';
-            } else if (viewUsername.includes('_game_')) {
-              baseUsername = viewUsername.split('_game_')[0];
-              contentType = 'games';
-            } else if (viewUsername.includes('_artwork_')) {
-              baseUsername = viewUsername.split('_artwork_')[0];
-              contentType = 'art';
-            } else if (viewUsername.includes('_music_')) {
-              baseUsername = viewUsername.split('_music_')[0];
-              contentType = 'music';
-            }
-            // else it's a page view, baseUsername stays as viewUsername
+          if (!fullUsername) {
+            console.log(`⚠️ Dashboard: Skipping view ${index}: no username`);
+            return;
           }
 
-          // FIXED: Apply consolidation to baseUsername
-          baseUsername = consolidateUsername(baseUsername, consolidationMap);
+          console.log(`\n--- Dashboard: Processing view ${index + 1}/${allViews.length} ---`);
+          console.log(`Full username: "${fullUsername}", views: ${viewCount}, game points: ${gamePoints}`);
+
+          // Extract username and content type using same function as leaderboard
+          const { username: extractedUsername, contentType, needsCreatorLookup } = extractUsername(fullUsername);
+          
+          let finalUsername = extractedUsername;
+          let finalContentType = contentType;
+
+          // Handle old extra format that needs creator lookup
+          if (needsCreatorLookup && contentType === 'extras') {
+            const extraId = fullUsername.replace('extra_', '');
+            const creatorInfo = extraCreatorMap[extraId];
+            if (creatorInfo && creatorInfo.creatorName) {
+              finalUsername = creatorInfo.creatorName;
+              console.log(`✅ Dashboard: Mapped old extra ${extraId} to creator: ${finalUsername}`);
+            } else {
+              console.log(`⚠️ Dashboard: No creator found for old extra ${extraId}, skipping`);
+              return;
+            }
+          }
+
+          // Apply consolidation
+          finalUsername = consolidateUsername(finalUsername, consolidationMap);
+          console.log(`Dashboard: Final username after consolidation: "${finalUsername}"`);
 
           // Check if this content belongs to the current user (after consolidation)
           const consolidatedCurrentUser = consolidateUsername(username, consolidationMap);
           
-          if (baseUsername === consolidatedCurrentUser) {
-            shouldInclude = true;
-          }
-
-          // Add to user's data if it belongs to them
-          if (shouldInclude) {
-            userLikesData[contentType] += viewCount;
-            userLikesData.gamePoints += gamePoints;
-            
-            console.log(`📈 Dashboard: Added ${viewCount} ${contentType} likes + ${gamePoints} game points to ${username} (consolidated: ${consolidatedCurrentUser})`);
+          if (finalUsername === consolidatedCurrentUser) {
+            // Add to appropriate category
+            if (finalContentType === 'page' || finalContentType === 'videos' || finalContentType === 'games' || finalContentType === 'art' || finalContentType === 'music' || finalContentType === 'extras') {
+              userLikesData[finalContentType] += viewCount;
+              userLikesData.gamePoints += gamePoints;
+              console.log(`📈 Dashboard: Added ${viewCount} ${finalContentType} likes + ${gamePoints} game points to ${username} (consolidated: ${consolidatedCurrentUser})`);
+              console.log(`Dashboard: Current totals: page:${userLikesData.page}, videos:${userLikesData.videos}, games:${userLikesData.games}, art:${userLikesData.art}, music:${userLikesData.music}, extras:${userLikesData.extras}, gamePoints:${userLikesData.gamePoints}`);
+            }
           }
         });
       }
@@ -3251,7 +3289,7 @@ crossorigin="anonymous"></script>
     }
   }
   
-  // Enhanced function to calculate available earnings (after completed payouts)
+  // FIXED: Enhanced function to calculate available earnings with corrected money calculation
   async function getAvailableEarnings() {
     if (!currentUser) return { 
       availableLikes: 0, 
@@ -3288,7 +3326,7 @@ crossorigin="anonymous"></script>
         // If we can't fetch payouts, show full earnings (safe fallback)
         return { 
           availableLikes: totalLikes, 
-          availableEarnings: Math.floor(totalLikes / 10) * 0.01, 
+          availableEarnings: Math.floor(totalLikes / 10) * 0.01, // FIXED: 10 likes = 1p
           totalLikes, 
           paidLikes: 0,
           completedPayouts: 0 
@@ -3302,7 +3340,7 @@ crossorigin="anonymous"></script>
 
       // Calculate available (unpaid) likes and earnings
       const availableLikes = Math.max(0, totalLikes - paidLikes);
-      const availableEarnings = availableLikes * 0.001; // £0.001 per point (5000 points = £5.00)
+      const availableEarnings = Math.floor(availableLikes / 10) * 0.01; // FIXED: 10 likes = 1p
 
       console.log(`💰 Payment calculation for ${username}:`, {
         totalLikes,
@@ -3332,7 +3370,7 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // Updated main display function with proper payment reset logic
+  // FIXED: Updated main display function with corrected earnings calculation
   async function updateAllDisplays() {
     if (!currentUser) return;
 
@@ -3394,7 +3432,7 @@ crossorigin="anonymous"></script>
         paymentStatus.textContent = 'Pending';
         paymentStatus.style.color = '#ffc0cb';
       } else if (availableEarnings >= 5.0) {
-        // Ready for payout (5000+ points)
+        // Ready for payout (5000+ points = £5.00)
         mainPayoutBtn.style.display = 'inline-block';
         paymentTabPayoutBtn.style.display = 'inline-block';
         mainPayoutStatus.textContent = '';
@@ -3407,7 +3445,7 @@ crossorigin="anonymous"></script>
         mainPayoutBtn.style.display = 'none';
         paymentTabPayoutBtn.style.display = 'none';
         const amountNeeded = 5.0 - availableEarnings;
-        const pointsNeeded = Math.ceil(amountNeeded / 0.001); // Points needed at £0.001 per point
+        const pointsNeeded = Math.ceil(amountNeeded / 0.01) * 10; // FIXED: pennies needed * 10 points per penny
         
         mainPayoutStatus.textContent = `Need ${pointsNeeded} more points to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
         paymentTabStatus.textContent = `Need ${pointsNeeded} more points to reach £5.00 minimum (need £${amountNeeded.toFixed(2)} more).`;
@@ -3920,7 +3958,7 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // Updated payout request function
+  // FIXED: Updated payout request function with corrected money calculation
   async function requestPayout() {
     const mainBtn = document.getElementById('mainPayoutBtn');
     const paymentBtn = document.getElementById('paymentTabPayoutBtn');
@@ -3938,7 +3976,7 @@ crossorigin="anonymous"></script>
 
       if (availableEarnings < 5) {
         const amountNeeded = 5.0 - availableEarnings;
-        const pointsNeeded = Math.ceil(amountNeeded / 0.001); // Points needed at £0.001 per point
+        const pointsNeeded = Math.ceil(amountNeeded / 0.01) * 10; // FIXED: pennies needed * 10 points per penny
         const message = `Minimum £5 earnings required. You have £${availableEarnings.toFixed(2)} from ${availableLikes} available points. Need ${pointsNeeded} more points (£${amountNeeded.toFixed(2)} more).`;
         document.getElementById('mainPayoutStatus').textContent = message;
         document.getElementById('paymentTabStatus').textContent = message;
@@ -3960,8 +3998,6 @@ crossorigin="anonymous"></script>
       }
 
       // Insert payout request with current total likes count
-      // This is crucial: we store the TOTAL likes at time of request
-      // When admin marks as completed, this number is used to calculate what's been paid
       const { error } = await supabase.from('payout_requests').insert([{
         user_id: currentUser.id,
         amount: availableEarnings,
@@ -4139,6 +4175,7 @@ crossorigin="anonymous"></script>
   
 </body>
 </html>
+
 
 
 
