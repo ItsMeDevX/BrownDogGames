@@ -2178,8 +2178,8 @@ crossorigin="anonymous"></script>
 
     .user-stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.3rem;
       width: 100%;
       margin-bottom: 1rem;
       position: relative;
@@ -2316,8 +2316,8 @@ crossorigin="anonymous"></script>
 
     #featuredStats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem;
       margin-bottom: 1rem;
       position: relative;
       z-index: 2;
@@ -2681,7 +2681,7 @@ crossorigin="anonymous"></script>
       }
     }
 
-    // Get comprehensive stats for a user
+    // Get comprehensive stats for a user (now includes music!)
     async function getUserStats(username) {
       try {
         // Get games count
@@ -2708,16 +2708,30 @@ crossorigin="anonymous"></script>
           .select('*', { count: 'exact', head: true })
           .eq('creator_name', username);
 
+        // Get music count (assuming there's a music table - adjust table name as needed)
+        let musicCount = 0;
+        try {
+          const { count } = await supabase
+            .from('user_music') // Adjust table name as needed
+            .select('*', { count: 'exact', head: true })
+            .eq('github_username', username); // Adjust column name as needed
+          musicCount = count || 0;
+        } catch (musicError) {
+          console.log('Music table not found or error:', musicError.message);
+          // If music table doesn't exist yet, default to 0
+        }
+
         return {
           games: gamesCount || 0,
           videos: videosCount || 0,
           art: artCount || 0,
+          music: musicCount,
           extras: extrasCount || 0,
-          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0) + (extrasCount || 0)
+          total: (gamesCount || 0) + (videosCount || 0) + (artCount || 0) + musicCount + (extrasCount || 0)
         };
       } catch (error) {
         console.error('Error getting user stats:', error);
-        return { games: 0, videos: 0, art: 0, extras: 0, total: 0 };
+        return { games: 0, videos: 0, art: 0, music: 0, extras: 0, total: 0 };
       }
     }
 
@@ -2887,14 +2901,16 @@ crossorigin="anonymous"></script>
         coverImg.className = 'cover-img';
         a.appendChild(coverImg);
 
-        // Stats (games, videos, art + extras in a 3-column layout)
+        // Stats (games, videos, art, music, extras)
         const statsDiv = document.createElement('div');
         statsDiv.className = 'user-stats';
         
         const stats = [
           { value: user.stats.games, label: 'Games' },
           { value: user.stats.videos, label: 'Videos' },
-          { value: user.stats.art + user.stats.extras, label: 'Art+Extras' }
+          { value: user.stats.art, label: 'Art' },
+          { value: user.stats.music, label: 'Music' },
+          { value: user.stats.extras, label: 'Extras' }
         ];
         
         stats.forEach(stat => {
@@ -2953,7 +2969,7 @@ crossorigin="anonymous"></script>
       featuredCover.src = coverSrc;
       featuredCover.alt = `${featuredUser.username}'s cover`;
 
-      // Stats (games, videos, art+extras in a 3-column layout)
+      // Stats (games, videos, art, music, extras)
       featuredStats.innerHTML = `
         <div class="stat-item">
           <div class="stat-value">${featuredUser.stats.games}</div>
@@ -2964,8 +2980,16 @@ crossorigin="anonymous"></script>
           <div class="stat-label">Videos</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">${featuredUser.stats.art + featuredUser.stats.extras}</div>
-          <div class="stat-label">Art + Extras</div>
+          <div class="stat-value">${featuredUser.stats.art}</div>
+          <div class="stat-label">Art</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.music}</div>
+          <div class="stat-label">Music</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${featuredUser.stats.extras}</div>
+          <div class="stat-label">Extras</div>
         </div>
       `;
 
