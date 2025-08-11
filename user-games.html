@@ -2078,7 +2078,7 @@ crossorigin="anonymous"></script>
 
     #userList {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1.5rem;
       margin-top: 2rem;
     }
@@ -2178,7 +2178,7 @@ crossorigin="anonymous"></script>
 
     .user-stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 0.5rem;
       width: 100%;
       margin-bottom: 1rem;
@@ -2316,7 +2316,7 @@ crossorigin="anonymous"></script>
 
     #featuredStats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
       margin-bottom: 1rem;
       position: relative;
@@ -2358,7 +2358,7 @@ crossorigin="anonymous"></script>
 
     @media (max-width: 768px) {
       #userList {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       }
       
       .user-stats {
@@ -2394,11 +2394,11 @@ crossorigin="anonymous"></script>
   <div>
     <button id="sortAlpha" class="back-link">🅰️ Alphabetical</button>
     <button id="sortNewest" class="back-link">🆕 Newest</button>
-    <button id="sortMostGames" class="back-link">🎮 Most Games</button>
+    <button id="sortMostContent" class="back-link">🎮 Most Content</button>
     <button id="sortMostLiked" class="back-link">❤️ Most Liked</button>
   </div>
 
-  <div id="userList" class="loading">Loading game creators and calculating comprehensive likes including VIP extras...</div>
+  <div id="userList" class="loading">Loading game creators and calculating comprehensive likes including music and game points...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -2419,32 +2419,151 @@ crossorigin="anonymous"></script>
     const featuredStats = document.getElementById('featuredStats');
     const featuredLikes = document.getElementById('featuredLikes');
 
-    // Username consolidation function (same as leaderboard, dashboard, and art page)
-    function normalizeUsername(username) {
+    // Enhanced username extraction function (same as leaderboard)
+    function extractUsername(fullUsername) {
+      console.log(`🔍 Games page: Extracting username from: "${fullUsername}"`);
+      
+      // Handle extra format: ItsMeDevX_extra_ae77d5d3-334d-404c-904f-7c62e8107377
+      if (fullUsername.includes('_extra_')) {
+        const username = fullUsername.split('_extra_')[0];
+        console.log(`✅ Games page: Extracted from extra: "${username}"`);
+        return { username, contentType: 'extras' };
+      }
+      
+      // Handle video format: jsZenO_video_6736ba9f-d596-4429-8a00-a220ff2c40ff
+      if (fullUsername.includes('_video_')) {
+        const username = fullUsername.split('_video_')[0];
+        console.log(`✅ Games page: Extracted from video: "${username}"`);
+        return { username, contentType: 'videos' };
+      }
+      
+      // Handle game format: livestrong-cell_game_926810a5-c696-4a3d-9b4d-126126761134
+      if (fullUsername.includes('_game_')) {
+        const username = fullUsername.split('_game_')[0];
+        console.log(`✅ Games page: Extracted from game: "${username}"`);
+        return { username, contentType: 'games' };
+      }
+      
+      // Handle artwork format: kenzolerd145_artwork_c0041829-37ec-46ae-9db9-de24d2637abf
+      if (fullUsername.includes('_artwork_')) {
+        const username = fullUsername.split('_artwork_')[0];
+        console.log(`✅ Games page: Extracted from artwork: "${username}"`);
+        return { username, contentType: 'art' };
+      }
+      
+      // Handle music format: ItsMeDevX_music_1
+      if (fullUsername.includes('_music_')) {
+        const username = fullUsername.split('_music_')[0];
+        console.log(`✅ Games page: Extracted from music: "${username}"`);
+        return { username, contentType: 'music' };
+      }
+      
+      // Handle old extra format: extra_someId (map to creator via VIP extras table)
+      if (fullUsername.startsWith('extra_')) {
+        console.log(`⚠️ Games page: Found old extra format: "${fullUsername}" - needs creator lookup`);
+        return { username: fullUsername, contentType: 'extras', needsCreatorLookup: true };
+      }
+      
+      // Default case - assume it's a page view
+      console.log(`✅ Games page: Treating as page view: "${fullUsername}"`);
+      return { username: fullUsername, contentType: 'page' };
+    }
+
+    // Get consolidation mapping from users table + game submissions (same as leaderboard)
+    async function getConsolidationMapping() {
+      try {
+        console.log('🔍 Games page: Getting consolidation mappings...');
+        
+        // Get users with github_username
+        const { data: users, error: usersError } = await supabase
+          .from('users')
+          .select('id, github_username');
+        
+        if (usersError) {
+          console.log(`❌ Games page: Error fetching users: ${usersError.message}`);
+          return {};
+        }
+
+        // Get game submissions to link content names to user IDs
+        const { data: gameSubmissions, error: submissionsError } = await supabase
+          .from('game_submissions')
+          .select('user_id, github_user');
+        
+        if (submissionsError) {
+          console.log(`❌ Games page: Error fetching submissions: ${submissionsError.message}`);
+          return {};
+        }
+
+        console.log(`👥 Games page: Found ${users?.length || 0} users`);
+        console.log(`🎮 Games page: Found ${gameSubmissions?.length || 0} game submissions`);
+
+        // Create mapping
+        const consolidationMap = {};
+        
+        if (users && gameSubmissions) {
+          gameSubmissions.forEach(submission => {
+            if (submission.user_id && submission.github_user) {
+              const user = users.find(u => u.id === submission.user_id);
+              if (user && user.github_username) {
+                consolidationMap[submission.github_user] = user.github_username;
+                consolidationMap[submission.github_user.toLowerCase()] = user.github_username;
+                console.log(`🔗 Games page: Mapping: "${submission.github_user}" → "${user.github_username}"`);
+              }
+            }
+          });
+        }
+
+        // Add manual consolidation rules (only for known duplicate accounts)
+        const manualRules = {
+          'browndoggames': 'itsmedevx',
+          'itsmedevX': 'itsmedevx',  // Handle capital X variation
+        };
+
+        Object.entries(manualRules).forEach(([from, to]) => {
+          consolidationMap[from] = to;
+          consolidationMap[from.toLowerCase()] = to;
+          console.log(`🔧 Games page: Manual mapping: "${from}" → "${to}"`);
+        });
+
+        console.log(`🗺️ Games page: Total mappings: ${Object.keys(consolidationMap).length}`);
+        return consolidationMap;
+        
+      } catch (error) {
+        console.log(`❌ Games page: Error getting consolidation mapping: ${error.message}`);
+        return {};
+      }
+    }
+
+    // Apply consolidation to username (same as leaderboard)
+    function consolidateUsername(username, consolidationMap) {
       const lower = username.toLowerCase();
       
-      const manualRules = {
-        'ace': 'Ace475', // Same consolidation as other pages
-        // Add more rules as needed
-      };
+      // Check exact match first
+      if (consolidationMap[username]) {
+        console.log(`✅ Games page: Consolidating: "${username}" → "${consolidationMap[username]}"`);
+        return consolidationMap[username];
+      }
       
-      if (manualRules[lower]) {
-        console.log(`🔄 Games page consolidation: "${username}" → "${manualRules[lower]}"`);
-        return manualRules[lower];
+      // Check lowercase match
+      if (consolidationMap[lower]) {
+        console.log(`✅ Games page: Consolidating (lowercase): "${username}" → "${consolidationMap[lower]}"`);
+        return consolidationMap[lower];
       }
       
       return username;
     }
 
-    // Enhanced function to get ALL likes for a specific user INCLUDING VIP EXTRAS
-    // Uses same logic as leaderboard, dashboard, and art page
+    // Enhanced function to get ALL likes for a specific user INCLUDING MUSIC AND GAME POINTS
     async function getUserLikesBreakdown(username) {
-      if (!username) return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+      if (!username) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
 
       try {
-        console.log(`🔍 Games page: Getting likes breakdown for ${username}`);
+        console.log(`🔍 Games page: Getting comprehensive likes breakdown for ${username}`);
 
-        // Step 1: Get ALL VIP extras to map extra IDs to creators
+        // Get consolidation mapping
+        const consolidationMap = await getConsolidationMapping();
+
+        // Step 1: Get ALL VIP extras to map extra IDs to creators (for old format)
         const { data: vipExtras, error: extrasError } = await supabase
           .from('vip_extras')
           .select('id, creator_name, created_by');
@@ -2454,7 +2573,7 @@ crossorigin="anonymous"></script>
           // Continue without extras if error
         }
 
-        // Create a map from extra ID to creator info
+        // Create a map from extra ID to creator info (for old extra format)
         const extraCreatorMap = {};
         if (vipExtras) {
           vipExtras.forEach(extra => {
@@ -2470,78 +2589,74 @@ crossorigin="anonymous"></script>
         // Step 2: Get all view records
         const { data: allViews, error: viewsError } = await supabase
           .from('vip_page_views')
-          .select('username, view_count');
+          .select('username, view_count, game_points');
 
         if (viewsError) throw viewsError;
 
-        // Step 3: Process using same logic as other pages
+        // Step 3: Process using same logic as leaderboard
         const usersLikesMap = {};
 
         if (allViews) {
-          allViews.forEach(view => {
-            const viewUsername = view.username;
+          allViews.forEach((view, index) => {
+            const fullUsername = view.username;
             const viewCount = view.view_count || 0;
+            const gamePoints = view.game_points || 0;
             
-            if (!viewUsername) return;
+            if (!fullUsername) return;
 
-            let baseUsername = viewUsername;
-            let contentType = 'page';
+            // Extract username and content type
+            const { username, contentType, needsCreatorLookup } = extractUsername(fullUsername);
+            
+            let finalUsername = username;
+            let finalContentType = contentType;
 
-            // Check if this is an extra like
-            if (viewUsername.startsWith('extra_')) {
-              const extraId = viewUsername.replace('extra_', '');
-              console.log(`🔍 Games page: Processing extra like: ${extraId} (${viewCount} likes)`);
-              
-              // Look up the creator of this extra
+            // Handle old extra format that needs creator lookup
+            if (needsCreatorLookup && contentType === 'extras') {
+              const extraId = fullUsername.replace('extra_', '');
               const creatorInfo = extraCreatorMap[extraId];
               if (creatorInfo && creatorInfo.creatorName) {
-                baseUsername = creatorInfo.creatorName;
-                contentType = 'extras';
-                console.log(`✅ Games page: Mapped extra ${extraId} to creator: ${baseUsername}`);
+                finalUsername = creatorInfo.creatorName;
+                console.log(`✅ Games page: Mapped old extra ${extraId} to creator: ${finalUsername}`);
               } else {
-                console.log(`⚠️ Games page: No creator found for extra ${extraId}, skipping`);
-                return; // Skip this record if we can't find the creator
+                console.log(`⚠️ Games page: No creator found for old extra ${extraId}, skipping`);
+                return;
               }
-            } else if (viewUsername.includes('_video_')) {
-              baseUsername = viewUsername.split('_video_')[0];
-              contentType = 'videos';
-            } else if (viewUsername.includes('_game_')) {
-              baseUsername = viewUsername.split('_game_')[0];
-              contentType = 'games';
-            } else if (viewUsername.includes('_artwork_')) {
-              baseUsername = viewUsername.split('_artwork_')[0];
-              contentType = 'art';
             }
 
-            // Normalize the username (same consolidation as other pages)
-            baseUsername = normalizeUsername(baseUsername);
+            // Apply consolidation
+            finalUsername = consolidateUsername(finalUsername, consolidationMap);
 
             // Initialize user if not exists
-            if (!usersLikesMap[baseUsername]) {
-              usersLikesMap[baseUsername] = {
-                username: baseUsername,
+            if (!usersLikesMap[finalUsername]) {
+              usersLikesMap[finalUsername] = {
+                username: finalUsername,
                 page: 0,
                 videos: 0,
                 games: 0,
                 art: 0,
+                music: 0,
                 extras: 0,
+                gamePoints: 0,
                 total: 0
               };
             }
 
             // Add to appropriate category
-            usersLikesMap[baseUsername][contentType] += viewCount;
-            console.log(`📈 Games page: Added ${viewCount} ${contentType} likes to ${baseUsername}`);
+            if (finalContentType === 'page' || finalContentType === 'videos' || finalContentType === 'games' || finalContentType === 'art' || finalContentType === 'music' || finalContentType === 'extras') {
+              usersLikesMap[finalUsername][finalContentType] += viewCount;
+              usersLikesMap[finalUsername].gamePoints += gamePoints;
+              console.log(`📈 Games page: Added ${viewCount} ${finalContentType} likes + ${gamePoints} game points to ${finalUsername}`);
+            }
           });
         }
 
         // Step 4: Find the requested user's data (after consolidation)
-        const normalizedRequestedUsername = normalizeUsername(username);
+        const normalizedRequestedUsername = consolidateUsername(username, consolidationMap);
         const userLikesData = usersLikesMap[normalizedRequestedUsername];
 
         if (userLikesData) {
-          // Calculate total
-          userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.extras;
+          // Calculate total (including game points)
+          userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.music + userLikesData.extras + userLikesData.gamePoints;
           
           console.log(`📊 Games page: Final likes for ${normalizedRequestedUsername}:`, userLikesData);
           
@@ -2550,17 +2665,19 @@ crossorigin="anonymous"></script>
             videos: userLikesData.videos,
             games: userLikesData.games,
             art: userLikesData.art,
+            music: userLikesData.music,
             extras: userLikesData.extras,
+            gamePoints: userLikesData.gamePoints,
             total: userLikesData.total
           };
         } else {
           console.log(`📊 Games page: No likes found for ${normalizedRequestedUsername}`);
-          return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+          return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
         }
 
       } catch (error) {
         console.error('Games page: Error getting likes breakdown for', username, ':', error);
-        return { page: 0, videos: 0, games: 0, art: 0, extras: 0, total: 0 };
+        return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
       }
     }
 
@@ -2585,7 +2702,7 @@ crossorigin="anonymous"></script>
           .select('*', { count: 'exact', head: true })
           .eq('github_username', username);
 
-        // Get VIP extras count (new!)
+        // Get VIP extras count
         const { count: extrasCount } = await supabase
           .from('vip_extras')
           .select('*', { count: 'exact', head: true })
@@ -2648,7 +2765,7 @@ crossorigin="anonymous"></script>
 
     // Main function to load users with comprehensive data
     async function loadUsers(sortMode = 'alphabetical') {
-      userListEl.innerHTML = '<div class="loading">Loading game creators and calculating comprehensive likes including VIP extras...</div>';
+      userListEl.innerHTML = '<div class="loading">Loading game creators and calculating comprehensive likes including music and game points...</div>';
 
       try {
         // Fetch the user data from Supabase
@@ -2699,7 +2816,7 @@ crossorigin="anonymous"></script>
         );
 
         allUsers = usersWithData;
-        console.log('Loaded users with comprehensive data including VIP extras:', allUsers.length);
+        console.log('Loaded users with comprehensive data including music and game points:', allUsers.length);
 
         // Sort and display
         sortAndDisplayUsers(sortMode);
@@ -2722,8 +2839,8 @@ crossorigin="anonymous"></script>
         case 'newest':
           sortedUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           break;
-        case 'mostGames':
-          sortedUsers.sort((a, b) => b.stats.games - a.stats.games);
+        case 'mostContent':
+          sortedUsers.sort((a, b) => b.stats.total - a.stats.total);
           break;
         case 'mostLiked':
           sortedUsers.sort((a, b) => b.likesBreakdown.total - a.likesBreakdown.total);
@@ -2770,15 +2887,14 @@ crossorigin="anonymous"></script>
         coverImg.className = 'cover-img';
         a.appendChild(coverImg);
 
-        // Stats (now includes extras!)
+        // Stats (games, videos, art + extras in a 3-column layout)
         const statsDiv = document.createElement('div');
         statsDiv.className = 'user-stats';
         
         const stats = [
           { value: user.stats.games, label: 'Games' },
           { value: user.stats.videos, label: 'Videos' },
-          { value: user.stats.art, label: 'Art' },
-          { value: user.stats.extras, label: 'Extras' }
+          { value: user.stats.art + user.stats.extras, label: 'Art+Extras' }
         ];
         
         stats.forEach(stat => {
@@ -2793,12 +2909,12 @@ crossorigin="anonymous"></script>
         
         a.appendChild(statsDiv);
 
-        // Likes Breakdown (now includes extras!)
+        // Likes Breakdown (now includes music and game points!)
         const likesDiv = document.createElement('div');
         likesDiv.className = 'likes-breakdown';
         likesDiv.innerHTML = `
           <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
-          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art} • ⭐ ${user.likesBreakdown.extras}</div>
+          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art} • 🎵 ${user.likesBreakdown.music} • ⭐ ${user.likesBreakdown.extras} • 🎯 ${user.likesBreakdown.gamePoints}</div>
         `;
         a.appendChild(likesDiv);
 
@@ -2811,7 +2927,7 @@ crossorigin="anonymous"></script>
     async function displayFeaturedUser() {
       if (allUsers.length === 0) return;
 
-      // Featured user is the one with the most total likes (including VIP extras)
+      // Featured user is the one with the most total likes (including music and game points)
       const featuredUser = allUsers.reduce((mostLiked, current) => {
         return current.likesBreakdown.total > mostLiked.likesBreakdown.total ? current : mostLiked;
       }, allUsers[0]);
@@ -2837,7 +2953,7 @@ crossorigin="anonymous"></script>
       featuredCover.src = coverSrc;
       featuredCover.alt = `${featuredUser.username}'s cover`;
 
-      // Stats (now includes extras!)
+      // Stats (games, videos, art+extras in a 3-column layout)
       featuredStats.innerHTML = `
         <div class="stat-item">
           <div class="stat-value">${featuredUser.stats.games}</div>
@@ -2848,19 +2964,15 @@ crossorigin="anonymous"></script>
           <div class="stat-label">Videos</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">${featuredUser.stats.art}</div>
-          <div class="stat-label">Art</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">${featuredUser.stats.extras}</div>
-          <div class="stat-label">VIP Extras</div>
+          <div class="stat-value">${featuredUser.stats.art + featuredUser.stats.extras}</div>
+          <div class="stat-label">Art + Extras</div>
         </div>
       `;
 
-      // Likes (now includes extras!)
+      // Likes (now includes music and game points!)
       featuredLikes.innerHTML = `
         <div class="total-likes">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
-        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • ⭐ ${featuredUser.likesBreakdown.extras} Extras</div>
+        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • 🎵 ${featuredUser.likesBreakdown.music} Music • ⭐ ${featuredUser.likesBreakdown.extras} Extras • 🎯 ${featuredUser.likesBreakdown.gamePoints} Game Points</div>
       `;
 
       // Click handler
@@ -2882,10 +2994,10 @@ crossorigin="anonymous"></script>
       updateButtonStates('sortNewest');
     });
 
-    document.getElementById('sortMostGames').addEventListener('click', () => {
-      currentSort = 'mostGames';
+    document.getElementById('sortMostContent').addEventListener('click', () => {
+      currentSort = 'mostContent';
       sortAndDisplayUsers(currentSort);
-      updateButtonStates('sortMostGames');
+      updateButtonStates('sortMostContent');
     });
 
     document.getElementById('sortMostLiked').addEventListener('click', () => {
