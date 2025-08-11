@@ -2860,17 +2860,26 @@ crossorigin="anonymous"></script>
         
         if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
           // YouTube embed
-          let videoId = '';
-          if (musicUrl.includes('youtu.be/')) {
-            videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
+          let embedSrc = '';
+          
+          if (musicUrl.includes('playlist?list=')) {
+            // YouTube playlist
+            const playlistId = musicUrl.split('list=')[1].split('&')[0];
+            embedSrc = `https://www.youtube.com/embed/videoseries?list=${playlistId}&controls=1&modestbranding=1`;
+          } else if (musicUrl.includes('youtu.be/')) {
+            // Short YouTube URL
+            const videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
+            embedSrc = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
           } else if (musicUrl.includes('youtube.com/watch?v=')) {
-            videoId = musicUrl.split('v=')[1].split('&')[0];
+            // Regular YouTube video URL
+            const videoId = musicUrl.split('v=')[1].split('&')[0];
+            embedSrc = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
           }
           
-          if (videoId) {
+          if (embedSrc) {
             musicPlayer = document.createElement('iframe');
             musicPlayer.className = 'music-player';
-            musicPlayer.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
+            musicPlayer.src = embedSrc;
             musicPlayer.style.width = '100%';
             musicPlayer.style.height = '140px';
             musicPlayer.style.border = 'none';
@@ -3044,16 +3053,25 @@ crossorigin="anonymous"></script>
         
         if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
           // YouTube embed
-          let videoId = '';
-          if (musicUrl.includes('youtu.be/')) {
-            videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
+          let embedSrc = '';
+          
+          if (musicUrl.includes('playlist?list=')) {
+            // YouTube playlist
+            const playlistId = musicUrl.split('list=')[1].split('&')[0];
+            embedSrc = `https://www.youtube.com/embed/videoseries?list=${playlistId}&controls=1&modestbranding=1`;
+          } else if (musicUrl.includes('youtu.be/')) {
+            // Short YouTube URL
+            const videoId = musicUrl.split('youtu.be/')[1].split('?')[0];
+            embedSrc = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
           } else if (musicUrl.includes('youtube.com/watch?v=')) {
-            videoId = musicUrl.split('v=')[1].split('&')[0];
+            // Regular YouTube video URL
+            const videoId = musicUrl.split('v=')[1].split('&')[0];
+            embedSrc = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
           }
           
-          if (videoId) {
+          if (embedSrc) {
             const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1`;
+            iframe.src = embedSrc;
             iframe.style.width = '100%';
             iframe.style.height = '200px';
             iframe.style.border = 'none';
