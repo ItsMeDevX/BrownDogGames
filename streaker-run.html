@@ -2696,9 +2696,8 @@ crossorigin="anonymous"></script>
       </section>
       
       <div class="buttons">
-        <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-        <div class="download-message" id="downloadMessage2">⏳ Checking VIP access... Please wait 30 seconds</div>
-        <a id="downloadLink2" href="https://drive.google.com/uc?export=download&id=1-s7vC7AQN2QXKhoYebWU10rqxW0ncxPN" class="button-link vip-button" download style="display: none;">⬇ VIP Download</a>
+        <div class="age-free-info">🔞 Must be 18+ to download | 💰 Paid to play with VIP</div>
+        <a href="https://drive.google.com/file/d/19dXC5Zs-DR3Qyke8iMTjFIWz3CujnxKm/view?usp=sharing" target="_blank" class="button-link">⬇ Download Gay Ghost</a>
         <a href="index.html" class="button-link">← Back to Home</a>
       </div>
     </div>
@@ -3154,21 +3153,18 @@ crossorigin="anonymous"></script>
       document.querySelector('[data-badge="👑"]').classList.add('selected');
     }
 
-    // VIP Download functionality for Gay Ghost only (Streaker Run is now unlocked)
-    async function handleVIP(linkId, msgId) {
+    // VIP features are now enabled based on login status for community features
+    async function checkVIPStatus() {
       const { data } = await supabase.auth.getSession();
       const user = data?.session?.user;
       currentUser = user;
       
-      const link = document.getElementById(linkId);
-      const msg = document.getElementById(msgId);
       const vipBadge = document.getElementById('vipBadge');
       const vipBadgesSection = document.getElementById('vipBadgesSection');
       const addExtraBtn = document.getElementById('addExtraBtn');
       const msgInput = document.getElementById('msg-input');
 
-      if (!user || !link || !msg) {
-        if(msg) msg.textContent = '🚫 Please log in to check VIP access.';
+      if (!user) {
         return;
       }
 
@@ -3178,30 +3174,14 @@ crossorigin="anonymous"></script>
         .eq('id', user.id)
         .single();
 
-      if (error || !userData?.is_vip) {
-        msg.textContent = '🚫 VIP Only — Please subscribe to access the download.';
-        return;
+      if (!error && userData?.is_vip) {
+        // Enable VIP community features
+        isVipUser = true;
+        vipBadge.style.display = 'inline-block';
+        vipBadgesSection.classList.add('show');
+        addExtraBtn.style.display = 'inline-block';
+        msgInput.classList.add('vip');
       }
-
-      // Enable VIP features when user is confirmed VIP
-      isVipUser = true;
-      vipBadge.style.display = 'inline-block';
-      vipBadgesSection.classList.add('show');
-      addExtraBtn.style.display = 'inline-block';
-      msgInput.classList.add('vip');
-
-      let seconds = 30;
-      const countdown = setInterval(() => {
-        msg.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(countdown);
-        link.style.display = 'inline-block';
-        msg.innerHTML = '✅ <strong>VIP Access Confirmed!</strong> You can now add extras and enjoy VIP chat!';
-        msg.style.background = 'linear-gradient(45deg, #2f1a39, #1a4d2e)';
-        msg.style.borderColor = '#4ade80';
-      }, 30000);
     }
 
     // Real-time updates for VIP extras
@@ -3304,7 +3284,7 @@ crossorigin="anonymous"></script>
 
     // Initialize all functionalities
     loadVipExtras(); // Load extras for everyone to see
-    handleVIP('downloadLink2', 'downloadMessage2'); // Only Gay Ghost needs VIP check
+    checkVIPStatus(); // Check VIP status for community features
     loadMessages();
   </script>
   
