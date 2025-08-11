@@ -3163,7 +3163,7 @@ crossorigin="anonymous"></script>
     return container;
   }
 
-  // Enhanced X/Twitter embed support
+  // Enhanced X/Twitter embed support using proper blockquote method
   async function createXTwitterEmbed(url) {
     const container = document.createElement('div');
     container.className = 'x-embed-container';
@@ -3172,64 +3172,39 @@ crossorigin="anonymous"></script>
     container.innerHTML = '<div class="x-loading">🐦 Loading X post...</div>';
     
     try {
-      // Extract tweet ID
-      const tweetMatch = url.match(/(?:twitter\.com|x\.com)\/[^\/]+\/status\/(\d+)/);
+      // Extract tweet ID and username
+      const tweetMatch = url.match(/(?:twitter\.com|x\.com)\/([^\/]+)\/status\/(\d+)/);
       if (!tweetMatch) {
         throw new Error('Invalid X/Twitter URL');
       }
       
-      const tweetId = tweetMatch[1];
+      const username = tweetMatch[1];
+      const tweetId = tweetMatch[2];
       
-      // Method 1: Try using X's widget.js (most reliable for public tweets)
-      try {
-        // Create script element for Twitter widgets
-        if (!window.twttr) {
-          const script = document.createElement('script');
-          script.src = 'https://platform.twitter.com/widgets.js';
-          script.async = true;
-          document.head.appendChild(script);
-          
-          // Wait for script to load
-          await new Promise((resolve, reject) => {
-            script.onload = resolve;
-            script.onerror = reject;
-            
-            // Timeout after 5 seconds
-            setTimeout(reject, 5000);
-          });
-        }
-        
-        // Clear loading and create tweet container
-        container.innerHTML = '';
-        const tweetContainer = document.createElement('div');
-        tweetContainer.id = `tweet-${tweetId}`;
-        container.appendChild(tweetContainer);
-        
-        // Create embedded tweet
-        if (window.twttr && window.twttr.widgets) {
-          await window.twttr.widgets.createTweet(tweetId, tweetContainer, {
-            theme: 'dark',
-            width: '100%',
-            dnt: true
-          });
-          
-          console.log('✅ X embed created successfully');
-          return container;
-        }
-      } catch (e) {
-        console.log('X widgets.js method failed:', e.message);
-      }
+      console.log(`🔍 Extracting tweet: @${username} - ID: ${tweetId}`);
       
-      // Method 2: Try oEmbed approach
+      // Load Twitter widgets script if not already loaded
+      await loadTwitterWidgets();
+      
+      // Method 1: Try oEmbed to get proper blockquote HTML
       try {
-        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}&theme=dark&dnt=true`;
+        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}&theme=dark&dnt=true&maxwidth=560`;
         const response = await fetch(oembedUrl);
         
         if (response.ok) {
           const data = await response.json();
           if (data.html) {
+            console.log('✅ Got oEmbed HTML for X post');
+            
+            // Clear loading and insert the HTML
             container.innerHTML = data.html;
-            console.log('✅ X embed via oEmbed');
+            
+            // Process the embedded content with Twitter widgets
+            if (window.twttr && window.twttr.widgets) {
+              await window.twttr.widgets.load(container);
+              console.log('✅ Twitter widgets processed successfully');
+            }
+            
             return container;
           }
         }
@@ -3237,37 +3212,150 @@ crossorigin="anonymous"></script>
         console.log('X oEmbed method failed:', e.message);
       }
       
-      // Method 3: Fallback to iframe with direct URL
-      container.innerHTML = `
-        <iframe 
-          src="https://twitframe.com/show?url=${encodeURIComponent(url)}"
-          width="100%"
-          height="100%"
-          frameborder="0"
-          style="border-radius: 12px; background: #15202b;"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-        </iframe>
-      `;
-      console.log('✅ X embed via twitframe fallback');
-      return container;
+      // Method 2: Create blockquote manually and let widgets.js process it
+      try {
+        console.log('🔄 Creating manual blockquote for X post');
+        
+        // Create the blockquote structure similar to your example
+        const blockquoteHtml = `
+          <blockquote class="twitter-tweet" data-media-max-width="560" data-theme="dark" data-dnt="true">
+            <p lang="en" dir="ltr">Loading tweet content...</p>
+            <a href="${url}">View original tweet</a>
+          </blockquote>
+        `;
+        
+        container.innerHTML = blockquoteHtml;
+        
+        // Process with Twitter widgets
+        if (window.twttr && window.twttr.widgets) {
+          await window.twttr.widgets.load(container);
+          console.log('✅ Manual blockquote processed by Twitter widgets');
+          return container;
+        }
+      } catch (e) {
+        console.log('Manual blockquote method failed:', e.message);
+      }
+      
+      // Method 3: Use createTweet API directly
+      try {
+        console.log('🔄 Using createTweet API');
+        
+        container.innerHTML = '';
+        const tweetContainer = document.createElement('div');
+        container.appendChild(tweetContainer);
+        
+        if (window.twttr && window.twttr.widgets) {
+          const tweet = await window.twttr.widgets.createTweet(tweetId, tweetContainer, {
+            theme: 'dark',
+            width: '100%',
+            maxwidth: 560,
+            dnt: true,
+            conversation: 'none'
+          });
+          
+          if (tweet) {
+            console.log('✅ createTweet API successful');
+            return container;
+          }
+        }
+      } catch (e) {
+        console.log('createTweet API failed:', e.message);
+      }
+      
+      // Method 4: Fallback to iframe with twitframe
+      try {
+        console.log('🔄 Fallback to twitframe');
+        container.innerHTML = `
+          <iframe 
+            src="https://twitframe.com/show?url=${encodeURIComponent(url)}"
+            width="100%"
+            height="100%"
+            frameborder="0"
+            style="border-radius: 12px; background: #15202b; min-height: 400px;"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+          </iframe>
+        `;
+        console.log('✅ X embed via twitframe fallback');
+        return container;
+      } catch (e) {
+        console.log('Twitframe method failed:', e.message);
+      }
+      
+      throw new Error('All embedding methods failed');
       
     } catch (error) {
       console.log('All X embed methods failed:', error.message);
       
       // Final fallback: styled link
       container.innerHTML = `
-        <div style="padding: 40px; text-align: center; color: #1da1f2;">
-          <h3 style="margin-bottom: 20px;">🐦 X (Twitter) Post</h3>
-          <p style="margin-bottom: 20px;">Unable to embed this post directly.</p>
+        <div style="padding: 40px; text-align: center; color: #1da1f2; background: #15202b; border-radius: 12px;">
+          <h3 style="margin-bottom: 20px; color: #ffffff;">🐦 X (Twitter) Post</h3>
+          <p style="margin-bottom: 20px; color: #8b98a5;">Unable to embed this post directly.</p>
           <a href="${url}" target="_blank" rel="noopener noreferrer" 
              style="display: inline-block; background: #1da1f2; color: white; padding: 12px 24px; 
-                    border-radius: 24px; text-decoration: none; font-weight: bold;">
+                    border-radius: 24px; text-decoration: none; font-weight: bold; transition: background 0.3s;">
             ► Open on X
           </a>
         </div>
       `;
       return container;
     }
+  }
+
+  // Load Twitter widgets script
+  async function loadTwitterWidgets() {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      if (window.twttr && window.twttr.widgets) {
+        resolve();
+        return;
+      }
+      
+      // Check if script is already in the page
+      const existingScript = document.querySelector('script[src*="platform.twitter.com"]');
+      if (existingScript) {
+        // Script exists, wait for it to load
+        const checkLoaded = () => {
+          if (window.twttr && window.twttr.widgets) {
+            resolve();
+          } else {
+            setTimeout(checkLoaded, 100);
+          }
+        };
+        checkLoaded();
+        return;
+      }
+      
+      // Create and load the script
+      const script = document.createElement('script');
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.async = true;
+      script.charset = 'utf-8';
+      
+      script.onload = () => {
+        console.log('✅ Twitter widgets script loaded');
+        // Wait a bit for widgets to initialize
+        setTimeout(() => {
+          if (window.twttr && window.twttr.widgets) {
+            resolve();
+          } else {
+            reject(new Error('Twitter widgets failed to initialize'));
+          }
+        }, 500);
+      };
+      
+      script.onerror = () => {
+        console.log('❌ Twitter widgets script failed to load');
+        reject(new Error('Failed to load Twitter widgets script'));
+      };
+      
+      document.head.appendChild(script);
+      
+      // Timeout after 10 seconds
+      setTimeout(() => {
+        reject(new Error('Twitter widgets script load timeout'));
+      }, 10000);
+    });
   }
 
   function openVideoModal(url) {
