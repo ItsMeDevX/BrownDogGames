@@ -486,6 +486,8 @@
           game_points: newPoints,
           view_count: 0,  // Set to 0 for game points (policy requirement)
           last_viewed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,username'  // Specify the conflict target
         })
         .select();
 
