@@ -2032,8 +2032,11 @@ crossorigin="anonymous"></script>
       line-height: 1.5;
     }
     
+    /* Mobile-first responsive padding */
     @media (min-width: 768px) {
-      body { padding: 20px; }
+      body {
+        padding: 20px;
+      }
     }
     
     .feed-container {
@@ -2059,6 +2062,12 @@ crossorigin="anonymous"></script>
       margin-bottom: 20px;
     }
     
+    @media (min-width: 768px) {
+      .feed-header {
+        margin-bottom: 30px;
+      }
+    }
+    
     .feed-header h2 {
       color: #ff4f9f;
       font-size: 1.4em;
@@ -2066,7 +2075,10 @@ crossorigin="anonymous"></script>
     }
     
     @media (min-width: 768px) {
-      .feed-header h2 { font-size: 1.8em; }
+      .feed-header h2 {
+        font-size: 1.8em;
+        margin-bottom: 10px;
+      }
     }
     
     .feed-header p {
@@ -2076,6 +2088,14 @@ crossorigin="anonymous"></script>
       padding: 0 10px;
     }
     
+    @media (min-width: 768px) {
+      .feed-header p {
+        font-size: 0.9em;
+        padding: 0;
+      }
+    }
+    
+    /* Mobile-optimized table */
     .feed-table {
       width: 100%;
       border-collapse: collapse;
@@ -2085,9 +2105,15 @@ crossorigin="anonymous"></script>
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
     
-    .feed-table thead { display: none; }
+    /* Hide table headers on mobile, show on desktop */
+    .feed-table thead {
+      display: none;
+    }
+    
     @media (min-width: 768px) {
-      .feed-table thead { display: table-header-group; }
+      .feed-table thead {
+        display: table-header-group;
+      }
     }
     
     .feed-table th {
@@ -2099,6 +2125,7 @@ crossorigin="anonymous"></script>
       font-weight: 700;
     }
     
+    /* Mobile card-style layout */
     .feed-table tbody tr {
       display: block;
       margin-bottom: 15px;
@@ -2114,6 +2141,7 @@ crossorigin="anonymous"></script>
       border: none;
     }
     
+    /* Desktop table layout */
     @media (min-width: 768px) {
       .feed-table tbody tr {
         display: table-row;
@@ -2144,6 +2172,13 @@ crossorigin="anonymous"></script>
       margin-right: 10px;
     }
     
+    @media (min-width: 768px) {
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+      }
+    }
+    
     .user-info {
       display: flex;
       align-items: center;
@@ -2151,13 +2186,21 @@ crossorigin="anonymous"></script>
     }
     
     @media (min-width: 768px) {
-      .user-info { margin-bottom: 0; }
+      .user-info {
+        margin-bottom: 0;
+      }
     }
     
     .username {
       color: #ff4f9f;
       font-weight: 700;
       font-size: 0.8em;
+    }
+    
+    @media (min-width: 768px) {
+      .username {
+        font-size: 0.9em;
+      }
     }
     
     .post-type {
@@ -2171,9 +2214,27 @@ crossorigin="anonymous"></script>
       margin: 5px 0;
     }
     
-    .post-type.game { background-color: #ff4f9f; color: #1b1b2e; }
-    .post-type.video { background-color: #e33f8a; }
-    .post-type.art { background-color: #6c3d91; }
+    @media (min-width: 768px) {
+      .post-type {
+        font-size: 0.7em;
+        margin: 0;
+      }
+    }
+    
+    .post-type.game {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+    }
+    
+    .post-type.video {
+      background-color: #e33f8a;
+      color: #fff;
+    }
+    
+    .post-type.art {
+      background-color: #6c3d91;
+      color: #fff;
+    }
     
     .post-title {
       color: #fefefe;
@@ -2182,12 +2243,27 @@ crossorigin="anonymous"></script>
       line-height: 1.3;
     }
     
+    @media (min-width: 768px) {
+      .post-title {
+        font-size: 0.9em;
+        margin: 0;
+      }
+    }
+    
     .post-stats {
       display: flex;
       gap: 10px;
       font-size: 0.7em;
       color: #e1c5f5;
       margin: 8px 0;
+    }
+    
+    @media (min-width: 768px) {
+      .post-stats {
+        gap: 15px;
+        font-size: 0.8em;
+        margin: 0;
+      }
     }
     
     .stat-item {
@@ -2202,59 +2278,14 @@ crossorigin="anonymous"></script>
       margin-top: 5px;
     }
     
-    .post-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-      flex-wrap: wrap;
+    @media (min-width: 768px) {
+      .timestamp {
+        font-size: 0.8em;
+        margin-top: 0;
+      }
     }
     
-    .view-post-btn {
-      background: linear-gradient(45deg, #ff4f9f, #e33f8a);
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.7em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    
-    .view-post-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(255, 79, 159, 0.4);
-    }
-    
-    .like-btn {
-      background: rgba(255, 79, 159, 0.2);
-      color: #ff4f9f;
-      border: 1px solid #ff4f9f;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.7em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    
-    .like-btn:hover {
-      background: rgba(255, 79, 159, 0.3);
-      transform: scale(1.05);
-    }
-    
-    .like-btn.liked {
-      background: #ff4f9f;
-      color: #1b1b2e;
-    }
-    
+    /* Mobile-optimized button group */
     .btn-group {
       display: flex;
       flex-direction: column;
@@ -2269,6 +2300,8 @@ crossorigin="anonymous"></script>
       .btn-group {
         flex-direction: row;
         justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
         max-width: 800px;
         margin: 0 auto 60px;
         padding: 0;
@@ -2283,6 +2316,7 @@ crossorigin="anonymous"></script>
       text-decoration: none;
       cursor: pointer;
       transition: all 0.3s ease;
+      user-select: none;
       border: none;
       color: #ffffff;
       background-color: #ff4f9f;
@@ -2291,13 +2325,58 @@ crossorigin="anonymous"></script>
       justify-content: center;
       gap: 6px;
       min-height: 50px;
+      text-align: center;
+      box-sizing: border-box;
+      white-space: nowrap;
       flex: 1;
+      min-width: 0;
     }
     
-    .btn-play { box-shadow: 0 4px 10px rgba(255,79,159,0.5); }
-    .btn-video { background-color: #6c3d91; }
-    .vip-leaderboard-button { background-color: #ffd700; }
+    @media (min-width: 768px) {
+      .btn-play, .btn-video, .vip-leaderboard-button {
+        padding: 12px 8px;
+        font-size: 0.85em;
+        gap: 4px;
+        height: 50px;
+      }
+    }
     
+    .btn-play {
+      box-shadow: 0 4px 10px rgba(255,79,159,0.5);
+    }
+    
+    .btn-play:hover, .btn-video:hover, .vip-leaderboard-button:hover {
+      transform: translateY(-2px);
+    }
+    
+    .btn-play:hover {
+      background-color: #e33f8a;
+      box-shadow: 0 6px 14px rgba(227,63,138,0.7);
+    }
+    
+    .btn-video {
+      background-color: #6c3d91;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(108,61,145,0.6);
+    }
+    
+    .btn-video:hover {
+      background-color: #572e75;
+      box-shadow: 0 6px 14px rgba(87,46,117,0.8);
+    }
+    
+    .vip-leaderboard-button {
+      background-color: #ffd700;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(255,215,0,0.5);
+    }
+    
+    .vip-leaderboard-button:hover {
+      background-color: #ffcd00;
+      box-shadow: 0 6px 14px rgba(255,205,0,0.7);
+    }
+    
+    /* Mobile-optimized featured section */
     .featured-section {
       max-width: 100%;
       margin: 0 auto;
@@ -2334,6 +2413,13 @@ crossorigin="anonymous"></script>
       transition: transform 0.3s ease;
     }
     
+    @media (min-width: 768px) {
+      .featured-card {
+        max-width: 280px;
+        width: auto;
+      }
+    }
+    
     .featured-card:hover {
       transform: translateY(-6px);
       box-shadow: 0 10px 20px #ff4f9f99;
@@ -2352,6 +2438,12 @@ crossorigin="anonymous"></script>
       font-size: 1.2em;
     }
     
+    @media (min-width: 768px) {
+      .featured-card h3 {
+        font-size: 1.4em;
+      }
+    }
+    
     .featured-card p {
       font-size: 0.9em;
       margin-bottom: 20px;
@@ -2360,23 +2452,61 @@ crossorigin="anonymous"></script>
       min-height: 60px;
     }
     
-    .loading-spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #3b3750;
-      border-radius: 50%;
-      border-top-color: #ff4f9f;
-      animation: spin 1s ease-in-out infinite;
+    @media (min-width: 768px) {
+      .featured-card p {
+        font-size: 1em;
+      }
     }
     
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .featured-card .btn-play {
+      padding: 12px 20px;
+      font-size: 0.9em;
+      box-shadow: 0 4px 12px rgba(255,79,159,0.7);
+      min-height: 45px;
+    }
+    
+    @media (min-width: 768px) {
+      .featured-card .btn-play {
+        padding: 10px 20px;
+        font-size: 1em;
+      }
+    }
+    
+    /* Mobile-specific feed labels */
+    .mobile-label {
+      display: inline-block;
+      color: #ff4f9f;
+      font-size: 0.7em;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+    
+    @media (min-width: 768px) {
+      .mobile-label {
+        display: none;
+      }
+    }
+    
+    /* Touch-friendly improvements */
+    @media (hover: none) {
+      .btn-play:hover, .btn-video:hover, .vip-leaderboard-button:hover,
+      .featured-card:hover {
+        transform: none;
+      }
+      
+      .featured-card:active {
+        transform: scale(0.98);
+      }
+      
+      .btn-play:active, .btn-video:active, .vip-leaderboard-button:active {
+        transform: scale(0.95);
+      }
     }
   </style>
 </head>
 <body>
 
+<!-- Feed Section -->
 <div class="feed-container">
   <div class="feed-header">
     <h2>🔥 Latest Activity</h2>
@@ -2390,13 +2520,12 @@ crossorigin="anonymous"></script>
         <th>Content</th>
         <th>Type</th>
         <th>Stats</th>
-        <th>Actions</th>
         <th>Posted</th>
       </tr>
     </thead>
     <tbody id="feed-table-body">
       <tr>
-        <td colspan="6" style="text-align: center; padding: 2rem; opacity: 0.7;">
+        <td colspan="5" style="text-align: center; padding: 2rem; opacity: 0.7;">
           Loading latest activity...
         </td>
       </tr>
@@ -2405,33 +2534,39 @@ crossorigin="anonymous"></script>
 </div>
 
 <div class="btn-group">
-  <a href="VIP-games.html" class="btn-play">🎮 Explore VIP Games</a>
-  <a href="VIP-dashboard.html" class="btn-video">👑 VIP dashboard</a>
+  <a href="VIP-games.html" class="btn-play" aria-label="Explore all games">🎮 Explore VIP Games</a>
+  <a href="VIP-dashboard.html" class="btn-video" aria-label="Watch all videos">👑 VIP dashboard</a>
   <a href="vip-leaderboard.html" class="vip-leaderboard-button">🏆 View VIP Leaderboard</a>
 </div>
 
-<div class="featured-section">
-  <div class="featured-card">
-    <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LapdanceDashScreenshot.png" alt="Lapdance Dash Screenshot" />
-    <h3>💃 Lapdance Dash</h3>
-    <p>Dash through the strip club to the beat and rake in tips in this raunchy rhythm game!</p>
-    <a href="Lapdance-Dash.html" class="btn-play">▶️ Play Game</a>
+  <!-- Featured Games Section -->
+  <div class="featured-section">
+    <!-- Game 1 -->
+    <div class="featured-card">
+      <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/LapdanceDashScreenshot.png" alt="Lapdance Dash Screenshot" />
+      <h3>💃 Lapdance Dash</h3>
+      <p>Dash through the strip club to the beat and rake in tips in this raunchy rhythm game!</p>
+      <a href="Lapdance-Dash.html" target="_blank" rel="noopener noreferrer" class="btn-play" aria-label="Play Lapdance Dash">▶️ Play Game</a>
+    </div>
+
+    <!-- Game 2 -->
+    <div class="featured-card">
+      <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/NakedCraftScreenshot.png" alt="Naked Craft Screenshot" />
+      <h3>🪓 Naked Craft</h3>
+      <p>Strip away survival conventions in this wild and nude block-building adventure!</p>
+      <a href="naked-craft.html" target="_blank" rel="noopener noreferrer" class="btn-play" aria-label="Play Naked Craft">▶️ Play Game</a>
+    </div>
+
+    <!-- Game 3 -->
+    <div class="featured-card">
+      <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/ButtBlasterArenaScreenshot.png" alt="Butt Blaster Arena Screenshot" />
+      <h3>🍑 Butt Blaster Arena</h3>
+      <p>Explosive chaos and cheeky physics in a multiplayer shooter like no other!</p>
+      <a href="butt-blaster-arena.html" target="_blank" rel="noopener noreferrer" class="btn-play" aria-label="Play Butt Blaster Arena">▶️ Play Game</a>
+    </div>
   </div>
 
-  <div class="featured-card">
-    <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/NakedCraftScreenshot.png" alt="Naked Craft Screenshot" />
-    <h3>🪓 Naked Craft</h3>
-    <p>Strip away survival conventions in this wild and nude block-building adventure!</p>
-    <a href="naked-craft.html" class="btn-play">▶️ Play Game</a>
-  </div>
-
-  <div class="featured-card">
-    <img src="https://raw.githubusercontent.com/ItsMeDevX/BrownDogGames/main/ButtBlasterArenaScreenshot.png" alt="Butt Blaster Arena Screenshot" />
-    <h3>🍑 Butt Blaster Arena</h3>
-    <p>Explosive chaos and cheeky physics in a multiplayer shooter like no other!</p>
-    <a href="butt-blaster-arena.html" class="btn-play">▶️ Play Game</a>
-  </div>
-</div>
+</body>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -2441,17 +2576,7 @@ crossorigin="anonymous"></script>
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
 
-  let currentUser = null;
-
-  async function initializeUser() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) currentUser = session.user;
-    } catch (error) {
-      console.error('Error getting session:', error);
-    }
-  }
-
+  // Utility function to format relative time
   function getRelativeTime(dateString) {
     const now = new Date();
     const date = new Date(dateString);
@@ -2460,15 +2585,24 @@ crossorigin="anonymous"></script>
     const diffInHours = Math.floor(diffInMinutes / 60);
     const diffInDays = Math.floor(diffInHours / 24);
 
-    if (diffInMinutes < 60) return diffInMinutes <= 1 ? 'just now' : `${diffInMinutes}m ago`;
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInDays < 7) return `${diffInDays}d ago`;
-    return date.toLocaleDateString();
+    if (diffInMinutes < 60) {
+      return diffInMinutes <= 1 ? 'just now' : `${diffInMinutes}m ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
   }
 
+  // Function to get avatar placeholder based on username
   function getAvatarUrl(githubUser, avatarUrl) {
-    if (avatarUrl && avatarUrl !== '') return avatarUrl;
+    if (avatarUrl && avatarUrl !== '') {
+      return avatarUrl;
+    }
     
+    // Create colored placeholder based on username
     const colors = ['ff4f9f', '6c3d91', 'e33f8a', 'ffd700', '8dffa1'];
     const colorIndex = githubUser.length % colors.length;
     const color = colors[colorIndex];
@@ -2477,174 +2611,125 @@ crossorigin="anonymous"></script>
     return `https://via.placeholder.com/40/${color}/ffffff?text=${initials}`;
   }
 
-  async function getActualLikes(username, contentType) {
-    try {
-      if (!username || username === 'Anonymous') return { likes: 0, gamePoints: 0 };
-
-      let queryUsername = username;
-      switch (contentType) {
-        case 'game': queryUsername = `${username}_game_%`; break;
-        case 'video': queryUsername = `${username}_video_%`; break;
-        case 'art': queryUsername = `${username}_artwork_%`; break;
-        default: queryUsername = username;
-      }
-
-      const { data: views, error } = await supabase
-        .from('vip_page_views')
-        .select('view_count, game_points')
-        .like('username', queryUsername);
-
-      if (error) return { likes: 0, gamePoints: 0 };
-
-      const totalLikes = views?.reduce((sum, view) => sum + (view.view_count || 0), 0) || 0;
-      const totalGamePoints = views?.reduce((sum, view) => sum + (view.game_points || 0), 0) || 0;
-      
-      return { likes: totalLikes, gamePoints: totalGamePoints };
-    } catch (error) {
-      return { likes: 0, gamePoints: 0 };
-    }
+  // Function to generate random stats for demonstration
+  function generateRandomStats() {
+    const likes = Math.floor(Math.random() * 3000) + 100;
+    const views = likes + Math.floor(Math.random() * 5000) + 500;
+    return { likes, views };
   }
 
-  async function likePost(username, contentType, itemId) {
-    if (!currentUser) {
-      alert('Please log in to like posts!');
-      return false;
-    }
-
-    try {
-      let trackingUsername = username;
-      switch (contentType) {
-        case 'game': trackingUsername = `${username}_game_${itemId}`; break;
-        case 'video': trackingUsername = `${username}_video_${itemId}`; break;
-        case 'art': trackingUsername = `${username}_artwork_${itemId}`; break;
-      }
-
-      const { data: existingView, error: fetchError } = await supabase
-        .from('vip_page_views')
-        .select('*')
-        .eq('username', trackingUsername)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') return false;
-
-      if (existingView) {
-        const { error: updateError } = await supabase
-          .from('vip_page_views')
-          .update({ 
-            view_count: (existingView.view_count || 0) + 1,
-            last_viewed_at: new Date().toISOString()
-          })
-          .eq('username', trackingUsername);
-        return !updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('vip_page_views')
-          .insert({
-            username: trackingUsername,
-            view_count: 1,
-            game_points: 0,
-            last_viewed_at: new Date().toISOString()
-          });
-        return !insertError;
-      }
-    } catch (error) {
-      return false;
-    }
-  }
-
-  function getContentUrl(item) {
-    switch (item.type) {
-      case 'game': return item.url || `user.html?user=${item.creator}`;
-      case 'video': return `user.html?user=${item.creator}#videos`;
-      case 'art': return `user.html?user=${item.creator}#art`;
-      default: return `user.html?user=${item.creator}`;
-    }
-  }
-
+  // Check if we're on mobile
   function isMobile() {
     return window.innerWidth < 768;
   }
 
+  // Load latest feed data from all tables
   async function loadLatestFeed() {
     const feedTableBody = document.getElementById('feed-table-body');
     
     try {
-      const [gamesRes, videosRes, artRes] = await Promise.all([
-        supabase.from('game_submissions').select('*').order('created_at', { ascending: false }).limit(10),
-        supabase.from('game_videos').select('*').order('created_at', { ascending: false }).limit(10),
-        supabase.from('user_art').select('*').order('created_at', { ascending: false }).limit(10)
-      ]);
+      // Fetch latest games
+      const { data: games, error: gamesError } = await supabase
+        .from('game_submissions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
 
+      if (gamesError) throw gamesError;
+
+      // Fetch latest videos
+      const { data: videos, error: videosError } = await supabase
+        .from('game_videos')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (videosError) throw videosError;
+
+      // Fetch latest art
+      const { data: art, error: artError } = await supabase
+        .from('user_art')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (artError) throw artError;
+
+      // Combine all data and sort by creation time
       const allContent = [];
 
-      if (gamesRes.data) {
-        for (const game of gamesRes.data) {
-          const likes = await getActualLikes(game.github_user || 'Anonymous', 'game');
-          allContent.push({
-            type: 'game',
-            id: game.id,
-            title: game.title || 'Untitled Game',
-            creator: game.github_user || 'Anonymous',
-            avatar_url: game.avatar_url,
-            created_at: game.created_at,
-            url: game.embed_url,
-            likes: likes.likes,
-            gamePoints: likes.gamePoints
-          });
-        }
-      }
+      // Add games
+      games.forEach(game => {
+        allContent.push({
+          type: 'game',
+          id: game.id,
+          title: game.title,
+          description: game.description,
+          creator: game.github_user || 'Anonymous',
+          avatar_url: game.avatar_url,
+          created_at: game.created_at,
+          url: game.embed_url
+        });
+      });
 
-      if (videosRes.data) {
-        for (const video of videosRes.data) {
-          const likes = await getActualLikes(video.github_username || 'Anonymous', 'video');
-          allContent.push({
-            type: 'video',
-            id: video.id,
-            title: video.title || 'Untitled Video',
-            creator: video.github_username || 'Anonymous',
-            avatar_url: video.avatar_url,
-            created_at: video.created_at,
-            url: video.video_url,
-            likes: likes.likes,
-            gamePoints: likes.gamePoints
-          });
-        }
-      }
+      // Add videos
+      videos.forEach(video => {
+        allContent.push({
+          type: 'video',
+          id: video.id,
+          title: video.title || 'Untitled Video',
+          description: video.content,
+          creator: video.github_username || 'Anonymous',
+          avatar_url: video.avatar_url,
+          created_at: video.created_at,
+          url: video.video_url
+        });
+      });
 
-      if (artRes.data) {
-        for (const artwork of artRes.data) {
-          const likes = await getActualLikes(artwork.github_username || 'Anonymous', 'art');
-          allContent.push({
-            type: 'art',
-            id: artwork.id,
-            title: artwork.title || 'Untitled Art',
-            creator: artwork.github_username || 'Anonymous',
-            avatar_url: artwork.avatar_url,
-            created_at: artwork.created_at,
-            url: artwork.image_url,
-            likes: likes.likes,
-            gamePoints: likes.gamePoints
-          });
-        }
-      }
+      // Add art
+      art.forEach(artwork => {
+        allContent.push({
+          type: 'art',
+          id: artwork.id,
+          title: artwork.title,
+          description: artwork.description,
+          creator: artwork.github_username || 'Anonymous',
+          avatar_url: artwork.avatar_url,
+          created_at: artwork.created_at,
+          url: artwork.image_url
+        });
+      });
 
+      // Sort by creation time (newest first)
       allContent.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      // Take only the latest 15 items
       const latestContent = allContent.slice(0, 15);
 
+      // Generate HTML for feed table
       if (latestContent.length === 0) {
-        feedTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem;">No content found.</td></tr>`;
+        feedTableBody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2rem; opacity: 0.7;">
+              No content found. Be the first to submit something!
+            </td>
+          </tr>
+        `;
         return;
       }
 
-      const typeEmojis = { game: '🎮', video: '📺', art: '🎨' };
-
       const feedHTML = latestContent.map(item => {
-        const contentUrl = getContentUrl(item);
-        const totalInteractions = item.likes + item.gamePoints;
+        const stats = generateRandomStats();
+        const typeEmojis = {
+          game: '🎮',
+          video: '📺', 
+          art: '🎨'
+        };
 
         if (isMobile()) {
+          // Mobile card layout
           return `
-            <tr data-item-id="${item.id}" data-item-type="${item.type}" data-creator="${item.creator}">
+            <tr>
               <td>
                 <div class="user-info">
                   <img src="${getAvatarUrl(item.creator, item.avatar_url)}" alt="${item.creator} Avatar" class="user-avatar" />
@@ -2653,47 +2738,38 @@ crossorigin="anonymous"></script>
                 <div class="post-title">${typeEmojis[item.type]} ${item.title}</div>
                 <span class="post-type ${item.type}">${item.type.toUpperCase()}</span>
                 <div class="post-stats">
-                  <span class="stat-item">❤️ ${totalInteractions > 1000 ? (totalInteractions/1000).toFixed(1) + 'k' : totalInteractions}</span>
-                  ${item.gamePoints > 0 ? `<span class="stat-item">🎯 ${item.gamePoints}</span>` : ''}
-                </div>
-                <div class="post-actions">
-                  <a href="${contentUrl}" class="view-post-btn">👀 View</a>
-                  <button class="like-btn" onclick="handleLike('${item.creator}', '${item.type}', '${item.id}', this)">
-                    <span class="loading-spinner" style="display: none;"></span>
-                    ❤️ Like
-                  </button>
+                  <span class="stat-item">❤️ ${stats.likes > 1000 ? (stats.likes/1000).toFixed(1) + 'k' : stats.likes}</span>
+                  <span class="stat-item">👁️ ${stats.views > 1000 ? (stats.views/1000).toFixed(1) + 'k' : stats.views}</span>
                 </div>
                 <span class="timestamp">${getRelativeTime(item.created_at)}</span>
               </td>
             </tr>
           `;
         } else {
+          // Desktop table layout
           return `
-            <tr data-item-id="${item.id}" data-item-type="${item.type}" data-creator="${item.creator}">
+            <tr>
               <td>
                 <div class="user-info">
                   <img src="${getAvatarUrl(item.creator, item.avatar_url)}" alt="${item.creator} Avatar" class="user-avatar" />
                   <span class="username">${item.creator}</span>
                 </div>
               </td>
-              <td><div class="post-title">${typeEmojis[item.type]} ${item.title}</div></td>
-              <td><span class="post-type ${item.type}">${item.type.toUpperCase()}</span></td>
+              <td>
+                <div class="post-title">${typeEmojis[item.type]} ${item.title}</div>
+              </td>
+              <td>
+                <span class="post-type ${item.type}">${item.type.toUpperCase()}</span>
+              </td>
               <td>
                 <div class="post-stats">
-                  <span class="stat-item">❤️ ${totalInteractions > 1000 ? (totalInteractions/1000).toFixed(1) + 'k' : totalInteractions}</span>
-                  ${item.gamePoints > 0 ? `<span class="stat-item">🎯 ${item.gamePoints}</span>` : ''}
+                  <span class="stat-item">❤️ ${stats.likes > 1000 ? (stats.likes/1000).toFixed(1) + 'k' : stats.likes}</span>
+                  <span class="stat-item">👁️ ${stats.views > 1000 ? (stats.views/1000).toFixed(1) + 'k' : stats.views}</span>
                 </div>
               </td>
               <td>
-                <div class="post-actions">
-                  <a href="${contentUrl}" class="view-post-btn">👀 View</a>
-                  <button class="like-btn" onclick="handleLike('${item.creator}', '${item.type}', '${item.id}', this)">
-                    <span class="loading-spinner" style="display: none;"></span>
-                    ❤️ Like
-                  </button>
-                </div>
+                <span class="timestamp">${getRelativeTime(item.created_at)}</span>
               </td>
-              <td><span class="timestamp">${getRelativeTime(item.created_at)}</span></td>
             </tr>
           `;
         }
@@ -2702,58 +2778,26 @@ crossorigin="anonymous"></script>
       feedTableBody.innerHTML = feedHTML;
 
     } catch (error) {
-      feedTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #ff8d8d;">Error loading feed: ${error.message}</td></tr>`;
+      console.error('Error loading feed:', error);
+      feedTableBody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 2rem; color: #ff8d8d;">
+            Error loading feed. Please try refreshing the page.
+          </td>
+        </tr>
+      `;
     }
   }
 
-  window.handleLike = async function(creator, contentType, itemId, buttonElement) {
-    const spinner = buttonElement.querySelector('.loading-spinner');
-    const originalText = buttonElement.innerHTML;
-    
-    spinner.style.display = 'inline-block';
-    buttonElement.disabled = true;
-    
-    const success = await likePost(creator, contentType, itemId);
-    
-    if (success) {
-      buttonElement.classList.add('liked');
-      buttonElement.innerHTML = '💖 Liked!';
-      
-      const row = buttonElement.closest('tr');
-      const statsElement = row.querySelector('.stat-item');
-      if (statsElement) {
-        const currentCount = parseInt(statsElement.textContent.replace(/[^\d]/g, '')) || 0;
-        const newCount = currentCount + 1;
-        statsElement.innerHTML = `❤️ ${newCount > 1000 ? (newCount/1000).toFixed(1) + 'k' : newCount}`;
-      }
-      
-      setTimeout(() => {
-        buttonElement.classList.remove('liked');
-        buttonElement.innerHTML = originalText;
-        buttonElement.disabled = false;
-        spinner.style.display = 'none';
-      }, 2000);
-    } else {
-      buttonElement.innerHTML = originalText;
-      buttonElement.disabled = false;
-      spinner.style.display = 'none';
-    }
-  };
-
-  document.addEventListener('DOMContentLoaded', async () => {
-    await initializeUser();
-    await loadLatestFeed();
-  });
-
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-      currentUser = session?.user || null;
-    }
-  });
+  // Load feed when page loads and on resize
+  document.addEventListener('DOMContentLoaded', loadLatestFeed);
+  window.addEventListener('resize', loadLatestFeed);
 </script>
 
 </body>
 </html>
+
+
 
 
 
