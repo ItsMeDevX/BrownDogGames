@@ -2491,6 +2491,29 @@ crossorigin="anonymous"></script>
       text-decoration: underline;
     }
 
+    .x-embed-container {
+      width: 100%;
+      height: 450px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #15202b;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .x-loading {
+      color: #1da1f2;
+      font-size: 1.2rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
     @media (max-width: 768px) {
       #userList {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -2505,6 +2528,10 @@ crossorigin="anonymous"></script>
       }
       
       #videoPlayerIframe {
+        height: 300px;
+      }
+      
+      .x-embed-container {
         height: 300px;
       }
       
@@ -2912,6 +2939,95 @@ crossorigin="anonymous"></script>
     return { platform: 'unknown', badge: 'VID' };
   }
 
+  // Enhanced X/Twitter thumbnail extraction
+  async function getXTwitterThumbnail(url) {
+    try {
+      // Extract tweet ID from URL
+      const tweetMatch = url.match(/(?:twitter\.com|x\.com)\/[^\/]+\/status\/(\d+)/);
+      if (!tweetMatch) return null;
+      
+      const tweetId = tweetMatch[1];
+      
+      // Try multiple approaches for thumbnail extraction
+      
+      // Method 1: Try oEmbed API (may work for some cases)
+      try {
+        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`;
+        const oembedResponse = await fetch(oembedUrl);
+        if (oembedResponse.ok) {
+          const oembedData = await oembedResponse.json();
+          // Parse HTML for images
+          if (oembedData.html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(oembedData.html, 'text/html');
+            const img = doc.querySelector('img');
+            if (img && img.src) {
+              console.log('✅ X thumbnail via oEmbed:', img.src);
+              return img.src;
+            }
+          }
+        }
+      } catch (e) {
+        console.log('X oEmbed failed:', e.message);
+      }
+
+      // Method 2: Try using a CORS proxy to get page meta tags
+      try {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        const proxyResponse = await fetch(proxyUrl);
+        if (proxyResponse.ok) {
+          const proxyData = await proxyResponse.json();
+          const html = proxyData.contents;
+          
+          // Parse HTML for meta tags
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          // Try different meta tag selectors
+          const metaSelectors = [
+            'meta[property="og:image"]',
+            'meta[name="twitter:image"]',
+            'meta[property="twitter:image"]',
+            'meta[name="twitter:image:src"]'
+          ];
+          
+          for (const selector of metaSelectors) {
+            const meta = doc.querySelector(selector);
+            if (meta && meta.content) {
+              console.log(`✅ X thumbnail via ${selector}:`, meta.content);
+              return meta.content;
+            }
+          }
+        }
+      } catch (e) {
+        console.log('X proxy method failed:', e.message);
+      }
+
+      // Method 3: Try constructing syndication URL (less reliable)
+      try {
+        const syndicationUrl = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en`;
+        const syndicationResponse = await fetch(syndicationUrl);
+        if (syndicationResponse.ok) {
+          const syndicationData = await syndicationResponse.json();
+          if (syndicationData.mediaDetails && syndicationData.mediaDetails.length > 0) {
+            const media = syndicationData.mediaDetails[0];
+            if (media.media_url_https) {
+              console.log('✅ X thumbnail via syndication:', media.media_url_https);
+              return media.media_url_https;
+            }
+          }
+        }
+      } catch (e) {
+        console.log('X syndication method failed:', e.message);
+      }
+
+      return null;
+    } catch (error) {
+      console.log('X thumbnail extraction failed:', error.message);
+      return null;
+    }
+  }
+
   async function getThumbnailFromUrl(url) {
     if (!url) return null;
 
@@ -2925,6 +3041,16 @@ crossorigin="anonymous"></script>
     const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
     if (driveMatch) {
       return `https://drive.google.com/thumbnail?id=${driveMatch[1]}`;
+    }
+
+    // Enhanced X/Twitter thumbnail extraction
+    if (url.includes('twitter.com') || url.includes('x.com')) {
+      const xThumbnail = await getXTwitterThumbnail(url);
+      if (xThumbnail) {
+        return xThumbnail;
+      }
+      // Fallback to branded placeholder
+      return 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X';
     }
 
     // TikTok thumbnail extraction
@@ -2948,9 +3074,6 @@ crossorigin="anonymous"></script>
           } catch (e) {
             console.log('TikTok oEmbed failed, trying alternative...');
           }
-          
-          // Alternative: Try to construct thumbnail URL (may not always work)
-          return `https://p16-sign-sg.tiktokcdn.com/obj/tos-maliva-p-0068/oUfHBfn6lCAIr6eEFGE9AvjQqIBPAu2CIfhfD?x-expires=1640995200&x-signature=dummy`;
         }
       } catch (error) {
         console.log('TikTok thumbnail extraction failed:', error);
@@ -2958,43 +3081,6 @@ crossorigin="anonymous"></script>
       
       // Fallback to branded placeholder
       return 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok';
-    }
-
-    // X/Twitter thumbnail extraction
-    if (url.includes('twitter.com') || url.includes('x.com')) {
-      try {
-        // Extract tweet ID from URL
-        const twitterMatch = url.match(/(?:twitter\.com|x\.com)\/[^\/]+\/status\/(\d+)/);
-        if (twitterMatch) {
-          // Use a proxy service to get Twitter/X metadata
-          // Note: Twitter's API requires authentication, so we'll use a meta tag scraping approach
-          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-          
-          try {
-            const response = await fetch(proxyUrl);
-            if (response.ok) {
-              const data = await response.json();
-              const html = data.contents;
-              
-              // Parse HTML for og:image meta tag
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(html, 'text/html');
-              const ogImage = doc.querySelector('meta[property="og:image"]');
-              
-              if (ogImage && ogImage.content) {
-                return ogImage.content;
-              }
-            }
-          } catch (e) {
-            console.log('X/Twitter thumbnail extraction failed:', e);
-          }
-        }
-      } catch (error) {
-        console.log('X/Twitter thumbnail extraction failed:', error);
-      }
-      
-      // Fallback to branded placeholder
-      return 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X';
     }
 
     return 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
@@ -3077,9 +3163,117 @@ crossorigin="anonymous"></script>
     return container;
   }
 
+  // Enhanced X/Twitter embed support
+  async function createXTwitterEmbed(url) {
+    const container = document.createElement('div');
+    container.className = 'x-embed-container';
+    
+    // Show loading state
+    container.innerHTML = '<div class="x-loading">🐦 Loading X post...</div>';
+    
+    try {
+      // Extract tweet ID
+      const tweetMatch = url.match(/(?:twitter\.com|x\.com)\/[^\/]+\/status\/(\d+)/);
+      if (!tweetMatch) {
+        throw new Error('Invalid X/Twitter URL');
+      }
+      
+      const tweetId = tweetMatch[1];
+      
+      // Method 1: Try using X's widget.js (most reliable for public tweets)
+      try {
+        // Create script element for Twitter widgets
+        if (!window.twttr) {
+          const script = document.createElement('script');
+          script.src = 'https://platform.twitter.com/widgets.js';
+          script.async = true;
+          document.head.appendChild(script);
+          
+          // Wait for script to load
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+            
+            // Timeout after 5 seconds
+            setTimeout(reject, 5000);
+          });
+        }
+        
+        // Clear loading and create tweet container
+        container.innerHTML = '';
+        const tweetContainer = document.createElement('div');
+        tweetContainer.id = `tweet-${tweetId}`;
+        container.appendChild(tweetContainer);
+        
+        // Create embedded tweet
+        if (window.twttr && window.twttr.widgets) {
+          await window.twttr.widgets.createTweet(tweetId, tweetContainer, {
+            theme: 'dark',
+            width: '100%',
+            dnt: true
+          });
+          
+          console.log('✅ X embed created successfully');
+          return container;
+        }
+      } catch (e) {
+        console.log('X widgets.js method failed:', e.message);
+      }
+      
+      // Method 2: Try oEmbed approach
+      try {
+        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}&theme=dark&dnt=true`;
+        const response = await fetch(oembedUrl);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.html) {
+            container.innerHTML = data.html;
+            console.log('✅ X embed via oEmbed');
+            return container;
+          }
+        }
+      } catch (e) {
+        console.log('X oEmbed method failed:', e.message);
+      }
+      
+      // Method 3: Fallback to iframe with direct URL
+      container.innerHTML = `
+        <iframe 
+          src="https://twitframe.com/show?url=${encodeURIComponent(url)}"
+          width="100%"
+          height="100%"
+          frameborder="0"
+          style="border-radius: 12px; background: #15202b;"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+        </iframe>
+      `;
+      console.log('✅ X embed via twitframe fallback');
+      return container;
+      
+    } catch (error) {
+      console.log('All X embed methods failed:', error.message);
+      
+      // Final fallback: styled link
+      container.innerHTML = `
+        <div style="padding: 40px; text-align: center; color: #1da1f2;">
+          <h3 style="margin-bottom: 20px;">🐦 X (Twitter) Post</h3>
+          <p style="margin-bottom: 20px;">Unable to embed this post directly.</p>
+          <a href="${url}" target="_blank" rel="noopener noreferrer" 
+             style="display: inline-block; background: #1da1f2; color: white; padding: 12px 24px; 
+                    border-radius: 24px; text-decoration: none; font-weight: bold;">
+            ► Open on X
+          </a>
+        </div>
+      `;
+      return container;
+    }
+  }
+
   function openVideoModal(url) {
     let embedUrl = url;
     let showExternalNotice = false;
+    let useCustomEmbed = false;
 
     // YouTube - convert to embed URL with autoplay
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
@@ -3092,6 +3286,12 @@ crossorigin="anonymous"></script>
       if (driveMatch) {
         embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
       }
+    }
+    // Enhanced X/Twitter support
+    else if (url.includes('twitter.com') || url.includes('x.com')) {
+      useCustomEmbed = true;
+      showExternalNotice = true;
+      externalLink.href = url;
     }
     // TikTok - show external notice since TikTok doesn't allow embedding in many cases
     else if (url.includes('tiktok.com')) {
@@ -3112,24 +3312,47 @@ crossorigin="anonymous"></script>
         `);
       }
     }
-    // X/Twitter - show external notice since Twitter videos have restrictions
-    else if (url.includes('twitter.com') || url.includes('x.com')) {
-      showExternalNotice = true;
-      externalLink.href = url;
-      // Show placeholder since Twitter embed is complex
-      embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-          <h2>🐦 X (Twitter) Video</h2>
-          <p>This video is hosted on X (formerly Twitter).</p>
-          <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
-        </body></html>
-      `);
-    }
 
     // Show/hide external link notice
     externalLinkNotice.style.display = showExternalNotice ? 'block' : 'none';
     
-    videoPlayerIframe.src = embedUrl;
+    if (useCustomEmbed && (url.includes('twitter.com') || url.includes('x.com'))) {
+      // Hide iframe and create custom X embed
+      videoPlayerIframe.style.display = 'none';
+      
+      // Remove any existing custom embed
+      const existingEmbed = document.getElementById('customEmbed');
+      if (existingEmbed) {
+        existingEmbed.remove();
+      }
+      
+      // Create and insert X embed
+      createXTwitterEmbed(url).then(embedContainer => {
+        embedContainer.id = 'customEmbed';
+        embedContainer.style.width = '100%';
+        embedContainer.style.height = window.innerWidth <= 768 ? '300px' : '450px';
+        embedContainer.style.borderRadius = '12px';
+        
+        // Insert after the iframe
+        videoPlayerIframe.parentNode.insertBefore(embedContainer, videoPlayerIframe.nextSibling);
+      }).catch(error => {
+        console.error('Failed to create X embed:', error);
+        // Fallback to iframe with error message
+        videoPlayerIframe.style.display = 'block';
+        videoPlayerIframe.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+          <html><body style="margin:0;padding:40px;background:#15202b;color:#fff;font-family:Arial;text-align:center;">
+            <h2>🐦 X (Twitter) Post</h2>
+            <p>Unable to load this post.</p>
+            <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
+          </body></html>
+        `);
+      });
+    } else {
+      // Show iframe and set source
+      videoPlayerIframe.style.display = 'block';
+      videoPlayerIframe.src = embedUrl;
+    }
+    
     videoModal.style.display = 'flex';
     videoModal.focus();
   }
@@ -3137,7 +3360,14 @@ crossorigin="anonymous"></script>
   function closeVideoModal() {
     videoModal.style.display = 'none';
     videoPlayerIframe.src = '';
+    videoPlayerIframe.style.display = 'block';
     externalLinkNotice.style.display = 'none';
+    
+    // Remove any custom embeds
+    const existingEmbed = document.getElementById('customEmbed');
+    if (existingEmbed) {
+      existingEmbed.remove();
+    }
   }
 
   closeModalBtn.onclick = closeVideoModal;
