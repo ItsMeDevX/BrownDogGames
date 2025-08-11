@@ -477,14 +477,14 @@
       console.log('New Points:', newPoints);
       console.log('Current Points before update:', currentPoints);
 
-      // Perform the upsert
+      // Perform the upsert - FIXED: Set view_count to 0 for game points
       const { data, error } = await supabase
         .from('vip_page_views')
         .upsert({
           user_id: userId,
           username: username,
           game_points: newPoints,
-          view_count: 1,
+          view_count: 0,  // Set to 0 for game points (policy requirement)
           last_viewed_at: new Date().toISOString()
         })
         .select();
