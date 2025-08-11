@@ -2491,29 +2491,6 @@ crossorigin="anonymous"></script>
       text-decoration: underline;
     }
 
-    .x-embed-container {
-      width: 100%;
-      height: 450px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #15202b;
-      border-radius: 12px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .x-loading {
-      color: #1da1f2;
-      font-size: 1.2rem;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
-    }
-
     @media (max-width: 768px) {
       #userList {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -2528,10 +2505,6 @@ crossorigin="anonymous"></script>
       }
       
       #videoPlayerIframe {
-        height: 300px;
-      }
-      
-      .x-embed-container {
         height: 300px;
       }
       
@@ -2939,69 +2912,89 @@ crossorigin="anonymous"></script>
     return { platform: 'unknown', badge: 'VID' };
   }
 
-  // Simplified and faster X/Twitter thumbnail extraction
-  async function getXTwitterThumbnail(url) {
-    try {
-      // Quick timeout for thumbnail loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Thumbnail timeout')), 3000)
-      );
-
-      // Try oEmbed with quick timeout
-      const thumbnailPromise = (async () => {
-        try {
-          const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`;
-          const response = await fetch(oembedUrl);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.html) {
-              // Quick parse for image
-              const imgMatch = data.html.match(/<img[^>]+src="([^"]+)"/);
-              if (imgMatch) {
-                console.log('✅ X thumbnail found quickly');
-                return imgMatch[1];
-              }
-            }
-          }
-        } catch (e) {
-          console.log('Quick thumbnail failed:', e.message);
-        }
-        return null;
-      })();
-
-      // Race between thumbnail loading and timeout
-      const result = await Promise.race([thumbnailPromise, timeoutPromise]);
-      return result;
-
-    } catch (error) {
-      console.log('X thumbnail timed out, using fallback');
-      return null;
-    }
-  }
-
   async function getThumbnailFromUrl(url) {
     if (!url) return null;
 
-    // YouTube thumbnail - immediate return
+    // YouTube thumbnail
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
     if (ytMatch) {
       return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
     }
 
-    // Google Drive thumbnail - immediate return
+    // Google Drive thumbnail
     const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
     if (driveMatch) {
       return `https://drive.google.com/thumbnail?id=${driveMatch[1]}`;
     }
 
-    // X/Twitter - immediate fallback, no async calls
-    if (url.includes('twitter.com') || url.includes('x.com')) {
-      return 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X';
+    // TikTok thumbnail extraction
+    if (url.includes('tiktok.com')) {
+      try {
+        // Extract video ID from TikTok URL
+        const tiktokMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
+        if (tiktokMatch) {
+          const videoId = tiktokMatch[1];
+          // Use TikTok's oEmbed API to get thumbnail
+          const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+          
+          try {
+            const response = await fetch(oembedUrl);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.thumbnail_url) {
+                return data.thumbnail_url;
+              }
+            }
+          } catch (e) {
+            console.log('TikTok oEmbed failed, trying alternative...');
+          }
+          
+          // Alternative: Try to construct thumbnail URL (may not always work)
+          return `https://p16-sign-sg.tiktokcdn.com/obj/tos-maliva-p-0068/oUfHBfn6lCAIr6eEFGE9AvjQqIBPAu2CIfhfD?x-expires=1640995200&x-signature=dummy`;
+        }
+      } catch (error) {
+        console.log('TikTok thumbnail extraction failed:', error);
+      }
+      
+      // Fallback to branded placeholder
+      return 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok';
     }
 
-    // TikTok - immediate fallback
-    if (url.includes('tiktok.com')) {
-      return 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok';
+    // X/Twitter thumbnail extraction
+    if (url.includes('twitter.com') || url.includes('x.com')) {
+      try {
+        // Extract tweet ID from URL
+        const twitterMatch = url.match(/(?:twitter\.com|x\.com)\/[^\/]+\/status\/(\d+)/);
+        if (twitterMatch) {
+          // Use a proxy service to get Twitter/X metadata
+          // Note: Twitter's API requires authentication, so we'll use a meta tag scraping approach
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+          
+          try {
+            const response = await fetch(proxyUrl);
+            if (response.ok) {
+              const data = await response.json();
+              const html = data.contents;
+              
+              // Parse HTML for og:image meta tag
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, 'text/html');
+              const ogImage = doc.querySelector('meta[property="og:image"]');
+              
+              if (ogImage && ogImage.content) {
+                return ogImage.content;
+              }
+            }
+          } catch (e) {
+            console.log('X/Twitter thumbnail extraction failed:', e);
+          }
+        }
+      } catch (error) {
+        console.log('X/Twitter thumbnail extraction failed:', error);
+      }
+      
+      // Fallback to branded placeholder
+      return 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X';
     }
 
     return 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
@@ -3035,30 +3028,33 @@ crossorigin="anonymous"></script>
     const img = document.createElement('img');
     img.alt = `${video.title} video thumbnail`;
     
-    // Get thumbnail synchronously - no more flashing!
-    const thumbnailUrl = getThumbnailFromUrl(video.video_url);
+    // Set loading placeholder first
+    img.src = 'https://via.placeholder.com/200x120/333333/ffffff?text=Loading...';
     
-    // Set thumbnail immediately - no async loading
-    if (thumbnailUrl) {
-      img.src = thumbnailUrl;
-    } else {
+    // Load actual thumbnail asynchronously
+    getThumbnailFromUrl(video.video_url).then(thumbnailUrl => {
+      if (thumbnailUrl) {
+        img.src = thumbnailUrl;
+        // Add error handler for failed thumbnail loads
+        img.onerror = () => {
+          const fallbackUrl = platformInfo.platform === 'tiktok' 
+            ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
+            : platformInfo.platform === 'twitter'
+            ? 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X'
+            : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
+          img.src = fallbackUrl;
+        };
+      }
+    }).catch(error => {
+      console.log('Thumbnail loading failed:', error);
+      // Use platform-specific fallback
       const fallbackUrl = platformInfo.platform === 'tiktok' 
         ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
         : platformInfo.platform === 'twitter'
         ? 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X'
         : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
       img.src = fallbackUrl;
-    }
-    
-    // Add error handler for failed loads
-    img.onerror = () => {
-      const fallbackUrl = platformInfo.platform === 'tiktok' 
-        ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
-        : platformInfo.platform === 'twitter'
-        ? 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X'
-        : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
-      img.src = fallbackUrl;
-    };
+    });
     
     container.appendChild(img);
 
@@ -3081,304 +3077,9 @@ crossorigin="anonymous"></script>
     return container;
   }
 
-  // Enhanced X/Twitter embed support using exact blockquote format for media-rich tweets
-  async function createXTwitterEmbed(url) {
-    const container = document.createElement('div');
-    container.className = 'x-embed-container';
-    
-    // Show loading state
-    container.innerHTML = '<div class="x-loading">🐦 Loading X post...</div>';
-    
-    try {
-      // Extract tweet ID and username from URL
-      const tweetMatch = url.match(/(?:twitter\.com|x\.com)\/([^\/]+)\/status\/(\d+)/);
-      if (!tweetMatch) {
-        throw new Error('Invalid X/Twitter URL');
-      }
-      
-      const username = tweetMatch[1];
-      const tweetId = tweetMatch[2];
-      
-      console.log(`🔍 Creating embed for: @${username} - Tweet ID: ${tweetId}`);
-      
-      // Load Twitter widgets script
-      await loadTwitterWidgets();
-      
-      // Method 1: Try oEmbed to get the proper blockquote HTML (best for media tweets)
-      try {
-        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}&maxwidth=560&hide_thread=false&hide_media=false&omit_script=false`;
-        const response = await fetch(oembedUrl);
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.html) {
-            console.log('✅ Got oEmbed HTML for X post with media');
-            
-            // Clean the HTML and ensure proper structure
-            let cleanHtml = data.html;
-            
-            // Ensure data-media-max-width is set
-            if (!cleanHtml.includes('data-media-max-width')) {
-              cleanHtml = cleanHtml.replace(
-                'class="twitter-tweet"',
-                'class="twitter-tweet" data-media-max-width="560"'
-              );
-            }
-            
-            // Clear loading and insert the HTML
-            container.innerHTML = cleanHtml;
-            
-            // Process the embedded content with Twitter widgets
-            if (window.twttr && window.twttr.widgets) {
-              await window.twttr.widgets.load(container);
-              console.log('✅ Twitter widgets processed oEmbed content with media');
-            }
-            
-            return container;
-          }
-        }
-      } catch (e) {
-        console.log('X oEmbed method failed:', e.message);
-      }
-      
-      // Method 2: Create blockquote manually with proper media support
-      try {
-        console.log('🔄 Creating manual blockquote for media-rich X post');
-        
-        // Extract any potential media ID from the URL for pic.twitter.com links
-        const mediaMatch = url.match(/pic\.twitter\.com\/([a-zA-Z0-9]+)/);
-        const hasMedia = mediaMatch ? true : false;
-        
-        // Create blockquote with the exact structure from your examples
-        const blockquoteHtml = `
-          <blockquote class="twitter-tweet" data-media-max-width="560">
-            <p lang="en" dir="ltr">
-              Loading tweet content...
-              ${hasMedia ? '<a href="' + url + '">pic.twitter.com/' + (mediaMatch ? mediaMatch[1] : 'media') + '</a>' : ''}
-            </p>
-            &mdash; ${username.replace(/([A-Z])/g, ' $1').trim()} (@${username}) 
-            <a href="${url}?ref_src=twsrc%5Etfw">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</a>
-          </blockquote>
-        `;
-        
-        container.innerHTML = blockquoteHtml;
-        
-        // Process with Twitter widgets - this will replace placeholder content with real tweet
-        if (window.twttr && window.twttr.widgets) {
-          await window.twttr.widgets.load(container);
-          console.log('✅ Manual blockquote with media processed by Twitter widgets');
-          return container;
-        }
-      } catch (e) {
-        console.log('Manual blockquote method failed:', e.message);
-      }
-      
-      // Method 3: Use createTweet API with media support
-      try {
-        console.log('🔄 Using createTweet API with media support');
-        
-        container.innerHTML = '';
-        const tweetContainer = document.createElement('div');
-        container.appendChild(tweetContainer);
-        
-        if (window.twttr && window.twttr.widgets) {
-          const tweetElement = await window.twttr.widgets.createTweet(tweetId, tweetContainer, {
-            theme: 'dark',
-            width: '100%',
-            maxwidth: 560,
-            dnt: true,
-            conversation: 'none',
-            cards: 'visible',
-            align: 'center'
-          });
-          
-          if (tweetElement) {
-            console.log('✅ createTweet API with media successful');
-            return container;
-          }
-        }
-      } catch (e) {
-        console.log('createTweet API failed:', e.message);
-      }
-      
-      // Method 4: Minimal blockquote that Twitter will fully populate
-      try {
-        console.log('🔄 Creating minimal blockquote for Twitter to populate');
-        
-        const minimalBlockquote = `
-          <blockquote class="twitter-tweet" data-media-max-width="560">
-            <a href="${url}"></a>
-          </blockquote>
-        `;
-        
-        container.innerHTML = minimalBlockquote;
-        
-        // Let Twitter widgets handle everything including media
-        if (window.twttr && window.twttr.widgets) {
-          await window.twttr.widgets.load(container);
-          console.log('✅ Minimal blockquote populated with media');
-          return container;
-        }
-      } catch (e) {
-        console.log('Minimal blockquote method failed:', e.message);
-      }
-      
-      // Method 5: Force load with direct script insertion
-      try {
-        console.log('🔄 Force loading with script insertion');
-        
-        // Create the blockquote and script together
-        const fullEmbed = `
-          <blockquote class="twitter-tweet" data-media-max-width="560">
-            <p lang="en" dir="ltr">
-              <a href="${url}">View this post on X</a>
-            </p>
-            &mdash; X Post 
-            <a href="${url}?ref_src=twsrc%5Etfw">${new Date().toLocaleDateString()}</a>
-          </blockquote>
-        `;
-        
-        container.innerHTML = fullEmbed;
-        
-        // Force widget processing
-        if (window.twttr && window.twttr.widgets) {
-          // Try multiple processing attempts
-          await window.twttr.widgets.load(container);
-          
-          // Give it extra time for media loading
-          setTimeout(async () => {
-            if (window.twttr && window.twttr.widgets) {
-              await window.twttr.widgets.load(container);
-            }
-          }, 1000);
-          
-          console.log('✅ Force loading with script insertion completed');
-          return container;
-        }
-      } catch (e) {
-        console.log('Force loading method failed:', e.message);
-      }
-      
-      throw new Error('All Twitter embedding methods failed');
-      
-    } catch (error) {
-      console.log('All X embed methods failed:', error.message);
-      
-      // Enhanced fallback that looks like a real tweet card
-      const fallbackHtml = `
-        <div style="max-width: 560px; margin: 0 auto; background: #15202b; border: 1px solid #2f3336; border-radius: 16px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-          <div style="padding: 12px 16px; border-bottom: 1px solid #2f3336;">
-            <div style="display: flex; align-items: center;">
-              <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #1da1f2, #1991db); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                <span style="color: white; font-size: 18px;">🐦</span>
-              </div>
-              <div>
-                <div style="color: #ffffff; font-weight: bold; font-size: 15px;">X (Twitter) Post</div>
-                <div style="color: #8b98a5; font-size: 13px;">@${url.match(/\/([^\/]+)\/status/)?.[1] || 'user'}</div>
-              </div>
-            </div>
-          </div>
-          <div style="padding: 16px;">
-            <div style="color: #ffffff; font-size: 15px; line-height: 1.4; margin-bottom: 12px;">
-              This post contains media content and interactive elements that need to be viewed directly on X.
-            </div>
-            <div style="background: #192734; border-radius: 8px; padding: 12px; border-left: 3px solid #1da1f2; margin-bottom: 16px;">
-              <div style="color: #8b98a5; font-size: 13px; margin-bottom: 4px;">🎮 May contain:</div>
-              <div style="color: #ffffff; font-size: 14px;">• Images or videos • Interactive polls • Rich media content</div>
-            </div>
-            <a href="${url}" target="_blank" rel="noopener noreferrer" 
-               style="display: inline-flex; align-items: center; background: #1da1f2; color: white; padding: 8px 16px; 
-                      border-radius: 20px; text-decoration: none; font-weight: 500; font-size: 14px;
-                      transition: all 0.2s ease;">
-              <span style="margin-right: 6px;">▶</span>
-              View on X
-            </a>
-          </div>
-        </div>
-      `;
-      
-      container.innerHTML = fallbackHtml;
-      return container;
-    }
-  }
-
-  // Enhanced Twitter widgets loading with better error handling
-  async function loadTwitterWidgets() {
-    return new Promise((resolve, reject) => {
-      // Check if already loaded and working
-      if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
-        console.log('✅ Twitter widgets already loaded');
-        resolve();
-        return;
-      }
-      
-      // Check if script is already in the page
-      const existingScript = document.querySelector('script[src*="platform.twitter.com"]');
-      if (existingScript) {
-        console.log('🔄 Twitter script exists, waiting for initialization...');
-        // Script exists, wait for it to load
-        let attempts = 0;
-        const checkLoaded = () => {
-          attempts++;
-          if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
-            console.log('✅ Twitter widgets initialized after waiting');
-            resolve();
-          } else if (attempts < 50) { // 5 seconds total
-            setTimeout(checkLoaded, 100);
-          } else {
-            console.log('❌ Twitter widgets failed to initialize');
-            reject(new Error('Twitter widgets initialization timeout'));
-          }
-        };
-        checkLoaded();
-        return;
-      }
-      
-      // Create and load the script
-      console.log('📥 Loading Twitter widgets script...');
-      const script = document.createElement('script');
-      script.src = 'https://platform.twitter.com/widgets.js';
-      script.async = true;
-      script.charset = 'utf-8';
-      
-      script.onload = () => {
-        console.log('✅ Twitter widgets script loaded');
-        // Wait for widgets to initialize
-        let attempts = 0;
-        const checkInit = () => {
-          attempts++;
-          if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
-            console.log('✅ Twitter widgets fully initialized');
-            resolve();
-          } else if (attempts < 30) { // 3 seconds
-            setTimeout(checkInit, 100);
-          } else {
-            console.log('❌ Twitter widgets failed to initialize after load');
-            reject(new Error('Twitter widgets failed to initialize'));
-          }
-        };
-        setTimeout(checkInit, 100);
-      };
-      
-      script.onerror = (error) => {
-        console.log('❌ Twitter widgets script failed to load:', error);
-        reject(new Error('Failed to load Twitter widgets script'));
-      };
-      
-      document.head.appendChild(script);
-      
-      // Timeout after 15 seconds
-      setTimeout(() => {
-        console.log('❌ Twitter widgets script load timeout');
-        reject(new Error('Twitter widgets script load timeout'));
-      }, 15000);
-    });
-  }
-
   function openVideoModal(url) {
     let embedUrl = url;
     let showExternalNotice = false;
-    let useCustomEmbed = false;
 
     // YouTube - convert to embed URL with autoplay
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
@@ -3391,12 +3092,6 @@ crossorigin="anonymous"></script>
       if (driveMatch) {
         embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
       }
-    }
-    // Enhanced X/Twitter support
-    else if (url.includes('twitter.com') || url.includes('x.com')) {
-      useCustomEmbed = true;
-      showExternalNotice = true;
-      externalLink.href = url;
     }
     // TikTok - show external notice since TikTok doesn't allow embedding in many cases
     else if (url.includes('tiktok.com')) {
@@ -3417,47 +3112,24 @@ crossorigin="anonymous"></script>
         `);
       }
     }
+    // X/Twitter - show external notice since Twitter videos have restrictions
+    else if (url.includes('twitter.com') || url.includes('x.com')) {
+      showExternalNotice = true;
+      externalLink.href = url;
+      // Show placeholder since Twitter embed is complex
+      embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+          <h2>🐦 X (Twitter) Video</h2>
+          <p>This video is hosted on X (formerly Twitter).</p>
+          <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
+        </body></html>
+      `);
+    }
 
     // Show/hide external link notice
     externalLinkNotice.style.display = showExternalNotice ? 'block' : 'none';
     
-    if (useCustomEmbed && (url.includes('twitter.com') || url.includes('x.com'))) {
-      // Hide iframe and create custom X embed
-      videoPlayerIframe.style.display = 'none';
-      
-      // Remove any existing custom embed
-      const existingEmbed = document.getElementById('customEmbed');
-      if (existingEmbed) {
-        existingEmbed.remove();
-      }
-      
-      // Create and insert X embed
-      createXTwitterEmbed(url).then(embedContainer => {
-        embedContainer.id = 'customEmbed';
-        embedContainer.style.width = '100%';
-        embedContainer.style.height = window.innerWidth <= 768 ? '300px' : '450px';
-        embedContainer.style.borderRadius = '12px';
-        
-        // Insert after the iframe
-        videoPlayerIframe.parentNode.insertBefore(embedContainer, videoPlayerIframe.nextSibling);
-      }).catch(error => {
-        console.error('Failed to create X embed:', error);
-        // Fallback to iframe with error message
-        videoPlayerIframe.style.display = 'block';
-        videoPlayerIframe.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-          <html><body style="margin:0;padding:40px;background:#15202b;color:#fff;font-family:Arial;text-align:center;">
-            <h2>🐦 X (Twitter) Post</h2>
-            <p>Unable to load this post.</p>
-            <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
-          </body></html>
-        `);
-      });
-    } else {
-      // Show iframe and set source
-      videoPlayerIframe.style.display = 'block';
-      videoPlayerIframe.src = embedUrl;
-    }
-    
+    videoPlayerIframe.src = embedUrl;
     videoModal.style.display = 'flex';
     videoModal.focus();
   }
@@ -3465,14 +3137,7 @@ crossorigin="anonymous"></script>
   function closeVideoModal() {
     videoModal.style.display = 'none';
     videoPlayerIframe.src = '';
-    videoPlayerIframe.style.display = 'block';
     externalLinkNotice.style.display = 'none';
-    
-    // Remove any custom embeds
-    const existingEmbed = document.getElementById('customEmbed');
-    if (existingEmbed) {
-      existingEmbed.remove();
-    }
   }
 
   closeModalBtn.onclick = closeVideoModal;
@@ -3664,14 +3329,28 @@ crossorigin="anonymous"></script>
 
     // Thumbnail and Title
     if (featuredUser.newestVideo) {
+      // Set loading placeholder first
+      featuredThumbnail.src = 'https://via.placeholder.com/350x180/333333/ffffff?text=Loading...';
+      featuredThumbnail.alt = `${featuredUser.newestVideo.title} video thumbnail`;
       featuredTitle.textContent = featuredUser.newestVideo.title;
       
-      // Get thumbnail synchronously - no more async calls
-      const thumbnailUrl = getThumbnailFromUrl(featuredUser.newestVideo.video_url);
-      
-      if (thumbnailUrl) {
-        featuredThumbnail.src = thumbnailUrl;
-      } else {
+      // Load actual thumbnail asynchronously
+      getThumbnailFromUrl(featuredUser.newestVideo.video_url).then(thumbnailUrl => {
+        if (thumbnailUrl) {
+          featuredThumbnail.src = thumbnailUrl;
+          // Add error handler for failed thumbnail loads
+          featuredThumbnail.onerror = () => {
+            const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
+            const fallbackUrl = platformInfo.platform === 'tiktok' 
+              ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
+              : platformInfo.platform === 'twitter'
+              ? 'https://via.placeholder.com/350x180/1da1f2/ffffff?text=🐦+X+Video'
+              : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
+            featuredThumbnail.src = fallbackUrl;
+          };
+        }
+      }).catch(error => {
+        console.log('Featured thumbnail loading failed:', error);
         const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
         const fallbackUrl = platformInfo.platform === 'tiktok' 
           ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
@@ -3679,20 +3358,7 @@ crossorigin="anonymous"></script>
           ? 'https://via.placeholder.com/350x180/1da1f2/ffffff?text=🐦+X+Video'
           : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
         featuredThumbnail.src = fallbackUrl;
-      }
-      
-      featuredThumbnail.alt = `${featuredUser.newestVideo.title} video thumbnail`;
-      
-      // Add error handler
-      featuredThumbnail.onerror = () => {
-        const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
-        const fallbackUrl = platformInfo.platform === 'tiktok' 
-          ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
-          : platformInfo.platform === 'twitter'
-          ? 'https://via.placeholder.com/350x180/1da1f2/ffffff?text=🐦+X+Video'
-          : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
-        featuredThumbnail.src = fallbackUrl;
-      };
+      });
       
       // Click handler for video
       featuredSection.onclick = () => openVideoModal(featuredUser.newestVideo.video_url);
