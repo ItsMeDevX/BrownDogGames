@@ -3163,7 +3163,7 @@ crossorigin="anonymous"></script>
     return container;
   }
 
-  // Enhanced X/Twitter embed support using exact blockquote format
+  // Enhanced X/Twitter embed support using exact blockquote format for media-rich tweets
   async function createXTwitterEmbed(url) {
     const container = document.createElement('div');
     container.className = 'x-embed-container';
@@ -3186,23 +3186,34 @@ crossorigin="anonymous"></script>
       // Load Twitter widgets script
       await loadTwitterWidgets();
       
-      // Method 1: Try oEmbed to get the proper blockquote HTML
+      // Method 1: Try oEmbed to get the proper blockquote HTML (best for media tweets)
       try {
-        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}&theme=dark&dnt=true&maxwidth=560&hide_thread=true`;
+        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}&maxwidth=560&hide_thread=false&hide_media=false&omit_script=false`;
         const response = await fetch(oembedUrl);
         
         if (response.ok) {
           const data = await response.json();
           if (data.html) {
-            console.log('✅ Got oEmbed HTML for X post');
+            console.log('✅ Got oEmbed HTML for X post with media');
+            
+            // Clean the HTML and ensure proper structure
+            let cleanHtml = data.html;
+            
+            // Ensure data-media-max-width is set
+            if (!cleanHtml.includes('data-media-max-width')) {
+              cleanHtml = cleanHtml.replace(
+                'class="twitter-tweet"',
+                'class="twitter-tweet" data-media-max-width="560"'
+              );
+            }
             
             // Clear loading and insert the HTML
-            container.innerHTML = data.html;
+            container.innerHTML = cleanHtml;
             
             // Process the embedded content with Twitter widgets
             if (window.twttr && window.twttr.widgets) {
               await window.twttr.widgets.load(container);
-              console.log('✅ Twitter widgets processed oEmbed content');
+              console.log('✅ Twitter widgets processed oEmbed content with media');
             }
             
             return container;
@@ -3212,60 +3223,41 @@ crossorigin="anonymous"></script>
         console.log('X oEmbed method failed:', e.message);
       }
       
-      // Method 2: Create blockquote manually using the exact format from your example
+      // Method 2: Create blockquote manually with proper media support
       try {
-        console.log('🔄 Creating manual blockquote for X post');
+        console.log('🔄 Creating manual blockquote for media-rich X post');
         
-        // Create the exact blockquote structure like your example
+        // Extract any potential media ID from the URL for pic.twitter.com links
+        const mediaMatch = url.match(/pic\.twitter\.com\/([a-zA-Z0-9]+)/);
+        const hasMedia = mediaMatch ? true : false;
+        
+        // Create blockquote with the exact structure from your examples
         const blockquoteHtml = `
           <blockquote class="twitter-tweet" data-media-max-width="560">
             <p lang="en" dir="ltr">
-              Loading tweet content... 
-              <a href="${url}">View on X</a>
+              Loading tweet content...
+              ${hasMedia ? '<a href="' + url + '">pic.twitter.com/' + (mediaMatch ? mediaMatch[1] : 'media') + '</a>' : ''}
             </p>
-            &mdash; Loading... (@loading) 
-            <a href="${url}?ref_src=twsrc%5Etfw">Loading...</a>
+            &mdash; ${username.replace(/([A-Z])/g, ' $1').trim()} (@${username}) 
+            <a href="${url}?ref_src=twsrc%5Etfw">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</a>
           </blockquote>
         `;
         
         container.innerHTML = blockquoteHtml;
         
-        // Process with Twitter widgets - this will replace the placeholder content with real tweet
+        // Process with Twitter widgets - this will replace placeholder content with real tweet
         if (window.twttr && window.twttr.widgets) {
           await window.twttr.widgets.load(container);
-          console.log('✅ Manual blockquote processed by Twitter widgets');
+          console.log('✅ Manual blockquote with media processed by Twitter widgets');
           return container;
         }
       } catch (e) {
         console.log('Manual blockquote method failed:', e.message);
       }
       
-      // Method 3: Create minimal blockquote and let Twitter handle everything
+      // Method 3: Use createTweet API with media support
       try {
-        console.log('🔄 Creating minimal blockquote');
-        
-        // Minimal blockquote that Twitter widgets will populate
-        const minimalBlockquote = `
-          <blockquote class="twitter-tweet" data-media-max-width="560" data-theme="dark" data-dnt="true">
-            <a href="${url}"></a>
-          </blockquote>
-        `;
-        
-        container.innerHTML = minimalBlockquote;
-        
-        // Let Twitter widgets handle the rest
-        if (window.twttr && window.twttr.widgets) {
-          await window.twttr.widgets.load(container);
-          console.log('✅ Minimal blockquote processed successfully');
-          return container;
-        }
-      } catch (e) {
-        console.log('Minimal blockquote method failed:', e.message);
-      }
-      
-      // Method 4: Use createTweet API directly
-      try {
-        console.log('🔄 Using createTweet API');
+        console.log('🔄 Using createTweet API with media support');
         
         container.innerHTML = '';
         const tweetContainer = document.createElement('div');
@@ -3278,11 +3270,12 @@ crossorigin="anonymous"></script>
             maxwidth: 560,
             dnt: true,
             conversation: 'none',
-            cards: 'visible'
+            cards: 'visible',
+            align: 'center'
           });
           
           if (tweetElement) {
-            console.log('✅ createTweet API successful');
+            console.log('✅ createTweet API with media successful');
             return container;
           }
         }
@@ -3290,12 +3283,34 @@ crossorigin="anonymous"></script>
         console.log('createTweet API failed:', e.message);
       }
       
-      // Method 5: Direct blockquote insertion with manual structure
+      // Method 4: Minimal blockquote that Twitter will fully populate
       try {
-        console.log('🔄 Direct blockquote with tweet URL structure');
+        console.log('🔄 Creating minimal blockquote for Twitter to populate');
         
-        // Create blockquote exactly like the pattern in your example
-        container.innerHTML = `
+        const minimalBlockquote = `
+          <blockquote class="twitter-tweet" data-media-max-width="560">
+            <a href="${url}"></a>
+          </blockquote>
+        `;
+        
+        container.innerHTML = minimalBlockquote;
+        
+        // Let Twitter widgets handle everything including media
+        if (window.twttr && window.twttr.widgets) {
+          await window.twttr.widgets.load(container);
+          console.log('✅ Minimal blockquote populated with media');
+          return container;
+        }
+      } catch (e) {
+        console.log('Minimal blockquote method failed:', e.message);
+      }
+      
+      // Method 5: Force load with direct script insertion
+      try {
+        console.log('🔄 Force loading with script insertion');
+        
+        // Create the blockquote and script together
+        const fullEmbed = `
           <blockquote class="twitter-tweet" data-media-max-width="560">
             <p lang="en" dir="ltr">
               <a href="${url}">View this post on X</a>
@@ -3305,14 +3320,25 @@ crossorigin="anonymous"></script>
           </blockquote>
         `;
         
-        // Add the widgets script if not present and process
+        container.innerHTML = fullEmbed;
+        
+        // Force widget processing
         if (window.twttr && window.twttr.widgets) {
+          // Try multiple processing attempts
           await window.twttr.widgets.load(container);
-          console.log('✅ Direct blockquote processed');
+          
+          // Give it extra time for media loading
+          setTimeout(async () => {
+            if (window.twttr && window.twttr.widgets) {
+              await window.twttr.widgets.load(container);
+            }
+          }, 1000);
+          
+          console.log('✅ Force loading with script insertion completed');
           return container;
         }
       } catch (e) {
-        console.log('Direct blockquote method failed:', e.message);
+        console.log('Force loading method failed:', e.message);
       }
       
       throw new Error('All Twitter embedding methods failed');
@@ -3320,29 +3346,40 @@ crossorigin="anonymous"></script>
     } catch (error) {
       console.log('All X embed methods failed:', error.message);
       
-      // Final fallback: styled link with Twitter-like appearance
-      container.innerHTML = `
-        <div style="max-width: 560px; margin: 0 auto; padding: 20px; background: #15202b; border: 1px solid #2f3336; border-radius: 16px; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-          <div style="display: flex; align-items: center; margin-bottom: 12px;">
-            <div style="width: 40px; height: 40px; background: #1da1f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-              🐦
-            </div>
-            <div>
-              <div style="font-weight: bold; color: #ffffff;">X (Twitter) Post</div>
-              <div style="color: #8b98a5; font-size: 14px;">Unable to embed directly</div>
+      // Enhanced fallback that looks like a real tweet card
+      const fallbackHtml = `
+        <div style="max-width: 560px; margin: 0 auto; background: #15202b; border: 1px solid #2f3336; border-radius: 16px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+          <div style="padding: 12px 16px; border-bottom: 1px solid #2f3336;">
+            <div style="display: flex; align-items: center;">
+              <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #1da1f2, #1991db); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                <span style="color: white; font-size: 18px;">🐦</span>
+              </div>
+              <div>
+                <div style="color: #ffffff; font-weight: bold; font-size: 15px;">X (Twitter) Post</div>
+                <div style="color: #8b98a5; font-size: 13px;">@${url.match(/\/([^\/]+)\/status/)?.[1] || 'user'}</div>
+              </div>
             </div>
           </div>
-          <div style="margin: 16px 0; padding: 12px; background: #192734; border-radius: 8px; border-left: 4px solid #1da1f2;">
-            <p style="margin: 0; color: #8b98a5; font-size: 14px;">This post contains content that needs to be viewed on X.</p>
+          <div style="padding: 16px;">
+            <div style="color: #ffffff; font-size: 15px; line-height: 1.4; margin-bottom: 12px;">
+              This post contains media content and interactive elements that need to be viewed directly on X.
+            </div>
+            <div style="background: #192734; border-radius: 8px; padding: 12px; border-left: 3px solid #1da1f2; margin-bottom: 16px;">
+              <div style="color: #8b98a5; font-size: 13px; margin-bottom: 4px;">🎮 May contain:</div>
+              <div style="color: #ffffff; font-size: 14px;">• Images or videos • Interactive polls • Rich media content</div>
+            </div>
+            <a href="${url}" target="_blank" rel="noopener noreferrer" 
+               style="display: inline-flex; align-items: center; background: #1da1f2; color: white; padding: 8px 16px; 
+                      border-radius: 20px; text-decoration: none; font-weight: 500; font-size: 14px;
+                      transition: all 0.2s ease;">
+              <span style="margin-right: 6px;">▶</span>
+              View on X
+            </a>
           </div>
-          <a href="${url}" target="_blank" rel="noopener noreferrer" 
-             style="display: inline-block; background: #1da1f2; color: white; padding: 8px 16px; 
-                    border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px;
-                    transition: background 0.3s;">
-            View on X
-          </a>
         </div>
       `;
+      
+      container.innerHTML = fallbackHtml;
       return container;
     }
   }
