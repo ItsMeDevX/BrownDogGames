@@ -2939,91 +2939,42 @@ crossorigin="anonymous"></script>
     return { platform: 'unknown', badge: 'VID' };
   }
 
-  // Enhanced X/Twitter thumbnail extraction
+  // Simplified and faster X/Twitter thumbnail extraction
   async function getXTwitterThumbnail(url) {
     try {
-      // Extract tweet ID from URL
-      const tweetMatch = url.match(/(?:twitter\.com|x\.com)\/[^\/]+\/status\/(\d+)/);
-      if (!tweetMatch) return null;
-      
-      const tweetId = tweetMatch[1];
-      
-      // Try multiple approaches for thumbnail extraction
-      
-      // Method 1: Try oEmbed API (may work for some cases)
-      try {
-        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`;
-        const oembedResponse = await fetch(oembedUrl);
-        if (oembedResponse.ok) {
-          const oembedData = await oembedResponse.json();
-          // Parse HTML for images
-          if (oembedData.html) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(oembedData.html, 'text/html');
-            const img = doc.querySelector('img');
-            if (img && img.src) {
-              console.log('✅ X thumbnail via oEmbed:', img.src);
-              return img.src;
+      // Quick timeout for thumbnail loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Thumbnail timeout')), 3000)
+      );
+
+      // Try oEmbed with quick timeout
+      const thumbnailPromise = (async () => {
+        try {
+          const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`;
+          const response = await fetch(oembedUrl);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.html) {
+              // Quick parse for image
+              const imgMatch = data.html.match(/<img[^>]+src="([^"]+)"/);
+              if (imgMatch) {
+                console.log('✅ X thumbnail found quickly');
+                return imgMatch[1];
+              }
             }
           }
+        } catch (e) {
+          console.log('Quick thumbnail failed:', e.message);
         }
-      } catch (e) {
-        console.log('X oEmbed failed:', e.message);
-      }
+        return null;
+      })();
 
-      // Method 2: Try using a CORS proxy to get page meta tags
-      try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-        const proxyResponse = await fetch(proxyUrl);
-        if (proxyResponse.ok) {
-          const proxyData = await proxyResponse.json();
-          const html = proxyData.contents;
-          
-          // Parse HTML for meta tags
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          
-          // Try different meta tag selectors
-          const metaSelectors = [
-            'meta[property="og:image"]',
-            'meta[name="twitter:image"]',
-            'meta[property="twitter:image"]',
-            'meta[name="twitter:image:src"]'
-          ];
-          
-          for (const selector of metaSelectors) {
-            const meta = doc.querySelector(selector);
-            if (meta && meta.content) {
-              console.log(`✅ X thumbnail via ${selector}:`, meta.content);
-              return meta.content;
-            }
-          }
-        }
-      } catch (e) {
-        console.log('X proxy method failed:', e.message);
-      }
+      // Race between thumbnail loading and timeout
+      const result = await Promise.race([thumbnailPromise, timeoutPromise]);
+      return result;
 
-      // Method 3: Try constructing syndication URL (less reliable)
-      try {
-        const syndicationUrl = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en`;
-        const syndicationResponse = await fetch(syndicationUrl);
-        if (syndicationResponse.ok) {
-          const syndicationData = await syndicationResponse.json();
-          if (syndicationData.mediaDetails && syndicationData.mediaDetails.length > 0) {
-            const media = syndicationData.mediaDetails[0];
-            if (media.media_url_https) {
-              console.log('✅ X thumbnail via syndication:', media.media_url_https);
-              return media.media_url_https;
-            }
-          }
-        }
-      } catch (e) {
-        console.log('X syndication method failed:', e.message);
-      }
-
-      return null;
     } catch (error) {
-      console.log('X thumbnail extraction failed:', error.message);
+      console.log('X thumbnail timed out, using fallback');
       return null;
     }
   }
