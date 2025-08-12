@@ -2222,7 +2222,6 @@ crossorigin="anonymous"></script>
 
     .platform-badge.youtube { background: rgba(255, 0, 0, 0.8); }
     .platform-badge.tiktok { background: rgba(255, 0, 80, 0.8); }
-    .platform-badge.x { background: rgba(29, 161, 242, 0.8); }
     .platform-badge.twitter { background: rgba(29, 161, 242, 0.8); }
     .platform-badge.drive { background: rgba(52, 168, 83, 0.8); }
 
@@ -2902,7 +2901,7 @@ crossorigin="anonymous"></script>
     
     // X/Twitter
     if (url.includes('twitter.com') || url.includes('x.com')) {
-     return { platform: 'x', badge: 'X' };
+      return { platform: 'twitter', badge: 'X' };
     }
     
     // Google Drive
@@ -3040,7 +3039,7 @@ crossorigin="anonymous"></script>
         img.onerror = () => {
           const fallbackUrl = platformInfo.platform === 'tiktok' 
             ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
-            : platformInfo.platform === 'x'
+            : platformInfo.platform === 'twitter'
             ? 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X'
             : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
           img.src = fallbackUrl;
@@ -3051,7 +3050,7 @@ crossorigin="anonymous"></script>
       // Use platform-specific fallback
       const fallbackUrl = platformInfo.platform === 'tiktok' 
         ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
-        : platformInfo.platform === 'x'
+        : platformInfo.platform === 'twitter'
         ? 'https://via.placeholder.com/200x120/1da1f2/ffffff?text=🐦+X'
         : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
       img.src = fallbackUrl;
@@ -3114,13 +3113,13 @@ crossorigin="anonymous"></script>
       }
     }
     // X/Twitter - show external notice since Twitter videos have restrictions
-    else if (url.includes('x.com') || url.includes('x.com')) {
+    else if (url.includes('twitter.com') || url.includes('x.com')) {
       showExternalNotice = true;
       externalLink.href = url;
       // Show placeholder since Twitter embed is complex
       embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
         <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-          <h2>🐦 X (x) Video</h2>
+          <h2>🐦 X (Twitter) Video</h2>
           <p>This video is hosted on X (formerly Twitter).</p>
           <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
         </body></html>
@@ -3344,7 +3343,7 @@ crossorigin="anonymous"></script>
             const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
             const fallbackUrl = platformInfo.platform === 'tiktok' 
               ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
-             : platformInfo.platform === 'x'
+              : platformInfo.platform === 'twitter'
               ? 'https://via.placeholder.com/350x180/1da1f2/ffffff?text=🐦+X+Video'
               : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
             featuredThumbnail.src = fallbackUrl;
@@ -3355,7 +3354,7 @@ crossorigin="anonymous"></script>
         const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
         const fallbackUrl = platformInfo.platform === 'tiktok' 
           ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
-         : platformInfo.platform === 'x'
+          : platformInfo.platform === 'twitter'
           ? 'https://via.placeholder.com/350x180/1da1f2/ffffff?text=🐦+X+Video'
           : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
         featuredThumbnail.src = fallbackUrl;
@@ -3436,6 +3435,8 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
+
+
 
 
 
