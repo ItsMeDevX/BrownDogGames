@@ -2698,18 +2698,18 @@ crossorigin="anonymous"></script>
             bottom: 20px;
             right: 20px;
             background: #2a243b;
-            border: 3px solid #ff69b4;
+            border: 2px solid #ff69b4;
             color: #fefefe;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 0 25px rgba(255, 105, 180, 0.4);
-            max-width: 400px;
-            min-width: 350px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
+            max-width: 280px;
+            min-width: 250px;
             z-index: 99999;
             font-family: 'Rubik Mono One', sans-serif;
             pointer-events: auto;
-            transform: translateX(450px);
-            animation: slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s forwards;
+            transform: translateX(350px);
+            animation: slideInRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
         }
 
         @keyframes slideInRight {
@@ -2720,7 +2720,7 @@ crossorigin="anonymous"></script>
 
         @keyframes slideOutRight {
             to {
-                transform: translateX(450px);
+                transform: translateX(350px);
             }
         }
 
@@ -2728,13 +2728,13 @@ crossorigin="anonymous"></script>
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             position: relative;
         }
 
         .toast h4 {
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #ff69b4;
             text-shadow: 0 2px 4px rgba(255, 105, 180, 0.3);
@@ -2742,30 +2742,33 @@ crossorigin="anonymous"></script>
         }
 
         .toast p {
-            margin: 0 0 20px 0;
-            font-size: 13px;
-            line-height: 1.5;
+            margin: 0 0 12px 0;
+            font-size: 11px;
+            line-height: 1.4;
             color: #ffc0cb;
             pointer-events: none;
         }
 
+        .toast p a {
+            color: #ff69b4;
+            text-decoration: underline;
+        }
+
         .toast-buttons {
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .toast-btn {
-            padding: 10px 18px;
+            padding: 6px 12px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
             transition: all 0.3s ease;
             font-family: 'Rubik Mono One', sans-serif;
             flex: 1;
-            min-width: 120px;
             pointer-events: auto;
             position: relative;
             z-index: 100000;
@@ -2778,8 +2781,8 @@ crossorigin="anonymous"></script>
 
         .primary-btn:hover {
             background: #ff8edb;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(255, 105, 180, 0.3);
         }
 
         .primary-btn:active {
@@ -2790,12 +2793,12 @@ crossorigin="anonymous"></script>
         .secondary-btn {
             background: #666;
             color: #fefefe;
-            border: 2px solid #3b3750;
+            border: 1px solid #3b3750;
         }
 
         .secondary-btn:hover {
             background: #888;
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         .secondary-btn:active {
@@ -2807,11 +2810,11 @@ crossorigin="anonymous"></script>
             background: none;
             border: none;
             color: #ff69b4;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
-            padding: 5px;
-            width: 30px;
-            height: 30px;
+            padding: 2px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2832,18 +2835,18 @@ crossorigin="anonymous"></script>
         }
 
         .slide-out {
-            animation: slideOutRight 0.5s ease-in forwards;
+            animation: slideOutRight 0.4s ease-in forwards;
         }
 
         .toast-progress {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 3px;
+            height: 2px;
             background: #ff69b4;
             width: 100%;
-            animation: shrinkProgress 15s linear forwards;
-            border-radius: 0 0 9px 9px;
+            animation: shrinkProgress 10s linear forwards;
+            border-radius: 0 0 6px 6px;
             pointer-events: none;
         }
 
@@ -2853,8 +2856,7 @@ crossorigin="anonymous"></script>
         }
 
         .toast:hover {
-            /* Visual effect only, no interfering animation */
-            box-shadow: 0 0 35px rgba(255, 105, 180, 0.7);
+            box-shadow: 0 0 25px rgba(255, 105, 180, 0.6);
         }
 
         @media (max-width: 600px) {
@@ -2881,15 +2883,7 @@ crossorigin="anonymous"></script>
             }
 
             .toast.slide-out {
-                animation: slideOutMobile 0.5s ease-in forwards;
-            }
-
-            .toast-buttons {
-                flex-direction: column;
-            }
-
-            .toast-btn {
-                min-width: auto;
+                animation: slideOutMobile 0.4s ease-in forwards;
             }
         }
     </style>
@@ -2898,24 +2892,23 @@ crossorigin="anonymous"></script>
     <div id="toast" class="toast">
         <div class="toast-progress"></div>
         <div class="toast-header">
-            <h4>🚀 Launch Alert!</h4>
+            <h4>🚀 Launch!</h4>
             <button class="close-toast" onclick="closeToast()" title="Close">&times;</button>
         </div>
-        <p>Join us for the big launch and be the first to experience exciting new features! Don't miss out on this exclusive opportunity. 
-        <a href="https://otieu.com/4/9661607" target="_blank" style="color: #ff69b4; text-decoration: underline;">Click here</a> to learn more.</p>
+        <p>New features available! 
+        <a href="https://otieu.com/4/9661607" target="_blank">Learn more</a></p>
         <div class="toast-buttons">
             <button class="toast-btn primary-btn" onclick="handleLaunchClick()">
-                Join Launch
+                Join Now
             </button>
             <button class="toast-btn secondary-btn" onclick="closeToast()">
-                Maybe Later
+                Later
             </button>
         </div>
     </div>
 
     <script>
         function closeToast() {
-            console.log('Close button clicked'); // Debug log
             const toast = document.getElementById('toast');
             if (toast && !toast.classList.contains('slide-out')) {
                 toast.classList.add('slide-out');
@@ -2923,27 +2916,16 @@ crossorigin="anonymous"></script>
                     if (toast.parentNode) {
                         toast.remove();
                     }
-                }, 500);
+                }, 400);
             }
         }
 
         function handleLaunchClick() {
-            console.log('Launch button clicked'); // Debug log
-            window.open('https://otieu.com/4/9661607', '_blank'); // Open the link in a new tab
+            window.open('https://otieu.com/4/9661607', '_blank');
         }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const toast = document.getElementById('toast');
-            if (toast) {
-                setupToastEvents(toast);
-            }
-        });
-
-        function setupToastEvents(toast) {
-            // Auto close after 15 seconds and no hover behavior
-            setTimeout(closeToast, 15000);
-        }
+        // Auto close after 10 seconds
+        setTimeout(closeToast, 10000);
 
         // Close with Escape key
         document.addEventListener('keydown', function(e) {
@@ -2952,7 +2934,7 @@ crossorigin="anonymous"></script>
             }
         });
 
-        // Add click event listeners as backup
+        // Click event listeners as backup
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('close-toast')) {
                 e.preventDefault();
