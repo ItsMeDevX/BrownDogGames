@@ -2156,6 +2156,7 @@ crossorigin="anonymous"></script>
       gap: 20px;
       margin: 0 auto 60px;
       max-width: 800px;
+      flex-wrap: wrap;
     }
     
     .btn-play, .btn-video, .vip-leaderboard-button {
@@ -2282,6 +2283,19 @@ crossorigin="anonymous"></script>
       text-align: center;
       padding: 2rem;
     }
+
+    @media (max-width: 768px) {
+      .btn-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .btn-play, .btn-video, .vip-leaderboard-button {
+        width: 90%;
+        max-width: 300px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2350,7 +2364,86 @@ crossorigin="anonymous"></script>
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
 
-  // Utility function to format relative time
+  // Get real likes from the same logic as leaderboard
+  async function getRealLikes() {
+    const consolidationMap = {
+      'browndoggames': 'itsmedevx',
+      'itsmedevX': 'itsmedevx',
+    };
+
+    // Get VIP extras mapping for old format
+    const { data: vipExtras } = await supabase.from('vip_extras').select('id, creator_name');
+    const extraCreatorMap = {};
+    if (vipExtras) {
+      vipExtras.forEach(extra => {
+        if (extra.id && extra.creator_name) {
+          extraCreatorMap[extra.id] = extra.creator_name;
+        }
+      });
+    }
+
+    // Get all view records
+    const { data: allViews } = await supabase.from('vip_page_views').select('username, view_count, game_points');
+    const usersLikesMap = {};
+
+    if (allViews) {
+      allViews.forEach(view => {
+        const fullUsername = view.username;
+        const viewCount = view.view_count || 0;
+        const gamePoints = view.game_points || 0;
+        
+        if (!fullUsername) return;
+
+        let finalUsername = fullUsername;
+        let contentType = 'page';
+
+        // Extract username and content type
+        if (fullUsername.includes('_extra_')) {
+          finalUsername = fullUsername.split('_extra_')[0];
+          contentType = 'extras';
+        } else if (fullUsername.includes('_video_')) {
+          finalUsername = fullUsername.split('_video_')[0];
+          contentType = 'videos';
+        } else if (fullUsername.includes('_game_')) {
+          finalUsername = fullUsername.split('_game_')[0];
+          contentType = 'games';
+        } else if (fullUsername.includes('_artwork_')) {
+          finalUsername = fullUsername.split('_artwork_')[0];
+          contentType = 'art';
+        } else if (fullUsername.includes('_music_')) {
+          finalUsername = fullUsername.split('_music_')[0];
+          contentType = 'music';
+        } else if (fullUsername.startsWith('extra_')) {
+          const extraId = fullUsername.replace('extra_', '');
+          const creatorName = extraCreatorMap[extraId];
+          if (creatorName) {
+            finalUsername = creatorName;
+            contentType = 'extras';
+          } else {
+            return;
+          }
+        }
+
+        // Apply consolidation
+        finalUsername = consolidationMap[finalUsername] || consolidationMap[finalUsername.toLowerCase()] || finalUsername;
+
+        // Initialize user if not exists
+        if (!usersLikesMap[finalUsername]) {
+          usersLikesMap[finalUsername] = {
+            page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0
+          };
+        }
+
+        // Add to appropriate category
+        usersLikesMap[finalUsername][contentType] += viewCount;
+        usersLikesMap[finalUsername].gamePoints += gamePoints;
+      });
+    }
+
+    return usersLikesMap;
+  }
+
+  // Utility functions
   function getRelativeTime(dateString) {
     const now = new Date();
     const date = new Date(dateString);
@@ -2370,333 +2463,142 @@ crossorigin="anonymous"></script>
     }
   }
 
-  // Function to get avatar placeholder based on username
   function getAvatarUrl(githubUser, avatarUrl) {
-    if (avatarUrl && avatarUrl !== '') {
+    if (avatarUrl && avatarUrl !== '' && avatarUrl !== null) {
       return avatarUrl;
     }
     
-    // Create colored placeholder based on username
     const colors = ['ff4f9f', '6c3d91', 'e33f8a', 'ffd700', '8dffa1'];
-    const colorIndex = githubUser.length % colors.length;
+    const colorIndex = (githubUser || 'Anonymous').length % colors.length;
     const color = colors[colorIndex];
-    const initials = githubUser.substring(0, 2).toUpperCase();
+    const initials = (githubUser || 'An').substring(0, 2).toUpperCase();
     
     return `https://via.placeholder.com/40/${color}/ffffff?text=${initials}`;
   }
 
-  // Function to determine appropriate user page URL based on content type
   function getUserPageUrl(username, contentType) {
+    const encodedUsername = encodeURIComponent(username);
     switch (contentType) {
       case 'games':
-        return `user-games-page.html?user=${encodeURIComponent(username)}`;
+        return `user-games-page.html?user=${encodedUsername}`;
       case 'videos':
-        return `user-videos-page.html?user=${encodeURIComponent(username)}`;
+        return `user-videos-page.html?user=${encodedUsername}`;
       case 'art':
-        return `user-art-page.html?user=${encodeURIComponent(username)}`;
+        return `user-art-page.html?user=${encodedUsername}`;
       case 'music':
-        return `user-music-page.html?user=${encodeURIComponent(username)}`;
+        return `user-music-page.html?user=${encodedUsername}`;
       case 'extras':
-        return `vip-extras.html?creator=${encodeURIComponent(username)}`;
+        return `vip-extras.html?creator=${encodedUsername}`;
       default:
-        return `user-games-page.html?user=${encodeURIComponent(username)}`;
+        return `user-games-page.html?user=${encodedUsername}`;
     }
   }
 
-  // Enhanced username extraction function (EXACT copy from your other pages)
-  function extractUsername(fullUsername) {
-    console.log(`🔍 Index page: Extracting username from: "${fullUsername}"`);
-    
-    if (fullUsername.includes('_extra_')) {
-      const username = fullUsername.split('_extra_')[0];
-      console.log(`✅ Index page: Extracted from extra: "${username}"`);
-      return { username, contentType: 'extras' };
-    }
-    
-    if (fullUsername.includes('_video_')) {
-      const username = fullUsername.split('_video_')[0];
-      console.log(`✅ Index page: Extracted from video: "${username}"`);
-      return { username, contentType: 'videos' };
-    }
-    
-    if (fullUsername.includes('_game_')) {
-      const username = fullUsername.split('_game_')[0];
-      console.log(`✅ Index page: Extracted from game: "${username}"`);
-      return { username, contentType: 'games' };
-    }
-    
-    if (fullUsername.includes('_artwork_')) {
-      const username = fullUsername.split('_artwork_')[0];
-      console.log(`✅ Index page: Extracted from artwork: "${username}"`);
-      return { username, contentType: 'art' };
-    }
-    
-    if (fullUsername.includes('_music_')) {
-      const username = fullUsername.split('_music_')[0];
-      console.log(`✅ Index page: Extracted from music: "${username}"`);
-      return { username, contentType: 'music' };
-    }
-    
-    if (fullUsername.startsWith('extra_')) {
-      console.log(`⚠️ Index page: Found old extra format: "${fullUsername}" - needs creator lookup`);
-      return { username: fullUsername, contentType: 'extras', needsCreatorLookup: true };
-    }
-    
-    console.log(`✅ Index page: Treating as page view: "${fullUsername}"`);
-    return { username: fullUsername, contentType: 'page' };
-  }
-
-  // Get consolidation mapping (EXACT copy from your other pages)
-  function getConsolidationMapping() {
-    const consolidationMap = {
-      'browndoggames': 'itsmedevx',
-      'itsmedevX': 'itsmedevx',
-    };
-
-    Object.keys(consolidationMap).forEach(key => {
-      consolidationMap[key.toLowerCase()] = consolidationMap[key];
-    });
-
-    return consolidationMap;
-  }
-
-  // Apply consolidation to username (EXACT copy from your other pages)
-  function consolidateUsername(username, consolidationMap) {
-    const lower = username.toLowerCase();
-    
-    if (consolidationMap[username]) {
-      console.log(`✅ Index page: Consolidating: "${username}" → "${consolidationMap[username]}"`);
-      return consolidationMap[username];
-    }
-    
-    if (consolidationMap[lower]) {
-      console.log(`✅ Index page: Consolidating (lowercase): "${username}" → "${consolidationMap[lower]}"`);
-      return consolidationMap[lower];
-    }
-    
-    return username;
-  }
-
-  // Get REAL likes for all users (EXACT copy from your other pages)
-  async function getAllUsersRealLikes() {
-    try {
-      console.log('🔍 Getting real likes for all users in feed...');
-
-      const consolidationMap = getConsolidationMapping();
-      const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-
-      // Get VIP extras mapping
-      let extraCreatorMap = {};
-      try {
-        const extrasResponse = await fetch(`${supabaseUrl}/rest/v1/vip_extras?select=id,creator_name`, {
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-          }
-        });
-        
-        if (extrasResponse.ok) {
-          const vipExtras = await extrasResponse.json();
-          vipExtras.forEach(extra => {
-            extraCreatorMap[extra.id] = extra.creator_name || 'Unknown Creator';
-          });
-          console.log(`📦 Loaded ${Object.keys(extraCreatorMap).length} VIP extras mappings`);
-        }
-      } catch (error) {
-        console.log('VIP extras fetch failed:', error.message);
-      }
-
-      // Get view records
-      let usersLikesMap = {};
-      try {
-        const viewsResponse = await fetch(`${supabaseUrl}/rest/v1/vip_page_views?select=username,view_count,game_points`, {
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-          }
-        });
-        
-        if (viewsResponse.ok) {
-          const allViews = await viewsResponse.json();
-          
-          allViews.forEach(view => {
-            try {
-              const fullUsername = view.username;
-              const viewCount = parseInt(view.view_count) || 0;
-              const gamePoints = parseInt(view.game_points) || 0;
-              
-              if (!fullUsername || typeof fullUsername !== 'string') return;
-
-              const { username, contentType, needsCreatorLookup } = extractUsername(fullUsername);
-              
-              let finalUsername = username;
-              let finalContentType = contentType;
-
-              if (needsCreatorLookup && contentType === 'extras') {
-                const extraId = fullUsername.replace('extra_', '');
-                const creatorName = extraCreatorMap[extraId];
-                if (creatorName) {
-                  finalUsername = creatorName;
-                } else {
-                  return;
-                }
-              }
-
-              finalUsername = consolidateUsername(finalUsername, consolidationMap);
-
-              const key = `${finalUsername}_${finalContentType}`;
-
-              if (!usersLikesMap[key]) {
-                usersLikesMap[key] = {
-                  username: finalUsername,
-                  contentType: finalContentType,
-                  likes: 0,
-                  gamePoints: 0
-                };
-              }
-
-              usersLikesMap[key].likes += viewCount;
-              usersLikesMap[key].gamePoints += gamePoints;
-            } catch (itemError) {
-              console.log('Error processing view item:', itemError.message);
-            }
-          });
-
-          console.log(`📊 Processed ${Object.keys(usersLikesMap).length} user-content combinations`);
-        }
-      } catch (error) {
-        console.log('Page views fetch failed:', error.message);
-      }
-
-      return usersLikesMap;
-    } catch (error) {
-      console.error('Error in getAllUsersRealLikes:', error.message);
-      return {};
-    }
-  }
-
-  // Load latest feed data using direct fetch with REAL likes
+  // Load feed with real likes
   async function loadLatestFeed() {
     const feedTableBody = document.getElementById('feed-table-body');
     
     try {
-      console.log('🔄 Loading latest activity feed...');
-
-      // Get REAL likes data first
-      const realLikesMap = await getAllUsersRealLikes();
-
-      const supabaseUrl = 'https://fwslmbzfukriibnkpzou.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA';
-
-      const headers = {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json'
-      };
-
+      // Get real likes data
+      const usersLikesMap = await getRealLikes();
       const allContent = [];
 
-      // Fetch games
-      try {
-        const gamesResponse = await fetch(`${supabaseUrl}/rest/v1/game_submissions?select=*&order=created_at.desc&limit=5`, {
-          headers: headers
-        });
-        
-        if (gamesResponse.ok) {
-          const games = await gamesResponse.json();
-          games.forEach(game => {
-            const key = `${game.github_user}_games`;
-            const realLikes = realLikesMap[key] || { likes: 0, gamePoints: 0 };
-            
-            allContent.push({
-              type: 'games',
-              id: game.id,
-              title: game.title || 'Untitled Game',
-              description: game.description || '',
-              creator: game.github_user || 'Anonymous',
-              avatar_url: game.avatar_url,
-              created_at: game.created_at,
-              url: game.embed_url,
-              realLikes: realLikes.likes,
-              gamePoints: realLikes.gamePoints
-            });
-          });
-          console.log(`✅ Loaded ${games.length} games`);
+      // Helper to find user's real likes
+      function getRealLikesForUser(username, contentType) {
+        // Try exact match first
+        if (usersLikesMap[username]) {
+          return {
+            likes: usersLikesMap[username][contentType] || 0,
+            gamePoints: usersLikesMap[username].gamePoints || 0
+          };
         }
-      } catch (error) {
-        console.log('Games fetch failed:', error.message);
+        
+        // Try case-insensitive match
+        const foundUser = Object.keys(usersLikesMap).find(
+          u => u.toLowerCase() === username.toLowerCase()
+        );
+        
+        if (foundUser) {
+          return {
+            likes: usersLikesMap[foundUser][contentType] || 0,
+            gamePoints: usersLikesMap[foundUser].gamePoints || 0
+          };
+        }
+        
+        return { likes: 0, gamePoints: 0 };
       }
 
-      // Fetch videos
-      try {
-        const videosResponse = await fetch(`${supabaseUrl}/rest/v1/game_videos?select=*&order=created_at.desc&limit=5`, {
-          headers: headers
-        });
-        
-        if (videosResponse.ok) {
-          const videos = await videosResponse.json();
-          videos.forEach(video => {
-            const key = `${video.github_username}_videos`;
-            const realLikes = realLikesMap[key] || { likes: 0, gamePoints: 0 };
-            
-            allContent.push({
-              type: 'videos',
-              id: video.id,
-              title: video.title || 'Untitled Video',
-              description: video.content || '',
-              creator: video.github_username || 'Anonymous',
-              avatar_url: video.avatar_url,
-              created_at: video.created_at,
-              url: video.video_url,
-              realLikes: realLikes.likes,
-              gamePoints: realLikes.gamePoints
-            });
+      // Fetch content
+      const { data: games } = await supabase
+        .from('game_submissions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      const { data: videos } = await supabase
+        .from('game_videos')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      const { data: art } = await supabase
+        .from('user_art')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Add games
+      if (games) {
+        games.forEach(game => {
+          const realLikes = getRealLikesForUser(game.github_user, 'games');
+          allContent.push({
+            type: 'games',
+            title: game.title || 'Untitled Game',
+            creator: game.github_user || 'Anonymous',
+            avatar_url: game.avatar_url,
+            created_at: game.created_at,
+            realLikes: realLikes.likes,
+            gamePoints: realLikes.gamePoints
           });
-          console.log(`✅ Loaded ${videos.length} videos`);
-        }
-      } catch (error) {
-        console.log('Videos fetch failed:', error.message);
+        });
       }
 
-      // Fetch art
-      try {
-        const artResponse = await fetch(`${supabaseUrl}/rest/v1/user_art?select=*&order=created_at.desc&limit=5`, {
-          headers: headers
-        });
-        
-        if (artResponse.ok) {
-          const art = await artResponse.json();
-          art.forEach(artwork => {
-            const key = `${artwork.github_username}_art`;
-            const realLikes = realLikesMap[key] || { likes: 0, gamePoints: 0 };
-            
-            allContent.push({
-              type: 'art',
-              id: artwork.id,
-              title: artwork.title || 'Untitled Artwork',
-              description: artwork.description || '',
-              creator: artwork.github_username || 'Anonymous',
-              avatar_url: artwork.avatar_url,
-              created_at: artwork.created_at,
-              url: artwork.image_url,
-              realLikes: realLikes.likes,
-              gamePoints: realLikes.gamePoints
-            });
+      // Add videos
+      if (videos) {
+        videos.forEach(video => {
+          const realLikes = getRealLikesForUser(video.github_username, 'videos');
+          allContent.push({
+            type: 'videos',
+            title: video.title || 'Untitled Video',
+            creator: video.github_username || 'Anonymous',
+            avatar_url: video.avatar_url,
+            created_at: video.created_at,
+            realLikes: realLikes.likes,
+            gamePoints: realLikes.gamePoints
           });
-          console.log(`✅ Loaded ${art.length} artworks`);
-        }
-      } catch (error) {
-        console.log('Art fetch failed:', error.message);
+        });
       }
 
-      // Sort by creation time (newest first)
+      // Add art
+      if (art) {
+        art.forEach(artwork => {
+          const realLikes = getRealLikesForUser(artwork.github_username, 'art');
+          allContent.push({
+            type: 'art',
+            title: artwork.title || 'Untitled Artwork',
+            creator: artwork.github_username || 'Anonymous',
+            avatar_url: artwork.avatar_url,
+            created_at: artwork.created_at,
+            realLikes: realLikes.likes,
+            gamePoints: realLikes.gamePoints
+          });
+        });
+      }
+
+      // Sort by creation time
       allContent.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      // Take only the latest 10 items
       const latestContent = allContent.slice(0, 10);
 
-      // Generate HTML for feed table
       if (latestContent.length === 0) {
         feedTableBody.innerHTML = `
           <tr>
@@ -2729,7 +2631,7 @@ crossorigin="anonymous"></script>
               </div>
             </td>
             <td>
-              <div class="post-title">${typeEmojis[item.type]} ${item.title}</div>
+              <div class="post-title">${typeEmojis[item.type] || '📄'} ${item.title}</div>
             </td>
             <td>
               <span class="post-type ${item.type}">${item.type.toUpperCase()}</span>
@@ -2748,14 +2650,12 @@ crossorigin="anonymous"></script>
       }).join('');
 
       feedTableBody.innerHTML = feedHTML;
-      console.log('✅ Activity feed loaded successfully with REAL likes data');
 
     } catch (error) {
-      console.error('Error loading feed:', error);
       feedTableBody.innerHTML = `
         <tr>
           <td colspan="5" class="error-message">
-            Error loading feed. Please try refreshing the page.
+            Error loading feed: ${error.message}
           </td>
         </tr>
       `;
@@ -2763,15 +2663,12 @@ crossorigin="anonymous"></script>
   }
 
   // Load feed when page loads
-  document.addEventListener('DOMContentLoaded', () => {
-    loadLatestFeed();
-    // Refresh feed every 30 seconds
-    setInterval(loadLatestFeed, 30000);
-  });
+  document.addEventListener('DOMContentLoaded', loadLatestFeed);
 </script>
 
 </body>
 </html>
+
 
 
 
