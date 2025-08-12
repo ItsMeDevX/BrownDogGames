@@ -2669,6 +2669,267 @@ crossorigin="anonymous"></script>
 </body>
 </html>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Toast Popup</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Rubik Mono One', sans-serif;
+            background-color: #1e1b2e;
+            color: #fefefe;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: linear-gradient(135deg, #2c1b33, #191425);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: -450px;
+            background: #2a243b;
+            border: 3px solid #ff69b4;
+            color: #fefefe;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(255, 105, 180, 0.4);
+            max-width: 400px;
+            min-width: 350px;
+            z-index: 10000;
+            animation: slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s forwards;
+            font-family: 'Rubik Mono One', sans-serif;
+        }
+
+        @keyframes slideInRight {
+            to {
+                right: 20px;
+            }
+        }
+
+        @keyframes slideOutRight {
+            to {
+                right: -450px;
+            }
+        }
+
+        .toast-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .toast h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ff69b4;
+            text-shadow: 0 2px 4px rgba(255, 105, 180, 0.3);
+        }
+
+        .toast p {
+            margin: 0 0 20px 0;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #ffc0cb;
+        }
+
+        .toast-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .toast-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-family: 'Rubik Mono One', sans-serif;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .primary-btn {
+            background: #ff69b4;
+            color: #1e1b2e;
+        }
+
+        .primary-btn:hover {
+            background: #ff8edb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+        }
+
+        .secondary-btn {
+            background: #666;
+            color: #fefefe;
+            border: 2px solid #3b3750;
+        }
+
+        .secondary-btn:hover {
+            background: #888;
+            transform: translateY(-2px);
+        }
+
+        .close-toast {
+            background: none;
+            border: none;
+            color: #ff69b4;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rubik Mono One', sans-serif;
+        }
+
+        .close-toast:hover {
+            color: #ff8edb;
+        }
+
+        .slide-out {
+            animation: slideOutRight 0.5s ease-in forwards;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #ff69b4;
+            width: 100%;
+            animation: shrinkProgress 15s linear forwards;
+            border-radius: 0 0 9px 9px;
+        }
+
+        @keyframes shrinkProgress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 25px rgba(255, 105, 180, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(255, 105, 180, 0.7);
+            }
+        }
+
+        .toast:hover {
+            animation-name: pulse-glow;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+        }
+
+        @media (max-width: 600px) {
+            .toast {
+                right: -100vw;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                min-width: auto;
+                max-width: none;
+                animation-name: slideInMobile;
+            }
+
+            @keyframes slideInMobile {
+                to {
+                    right: 10px;
+                }
+            }
+
+            @keyframes slideOutMobile {
+                to {
+                    right: -100vw;
+                }
+            }
+
+            .toast.slide-out {
+                animation: slideOutMobile 0.5s ease-in forwards;
+            }
+
+            .toast-buttons {
+                flex-direction: column;
+            }
+
+            .toast-btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Your content goes here -->
+
+    <div id="toast" class="toast">
+        <div class="toast-progress"></div>
+        <div class="toast-header">
+            <h4>🚀 Launch Alert!</h4>
+            <button class="close-toast" onclick="closeToast()">&times;</button>
+        </div>
+        <p>Join us for the big launch and be the first to experience exciting new features! Don't miss out on this exclusive opportunity.</p>
+        <div class="toast-buttons">
+            <button class="toast-btn primary-btn" onclick="window.open('https://otieu.com/4/9661607i', '_blank')">
+                Join Launch
+            </button>
+            <button class="toast-btn secondary-btn" onclick="closeToast()">
+                Maybe Later
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function closeToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('slide-out');
+            setTimeout(() => toast.remove(), 500);
+        }
+
+        // Auto close after 15 seconds
+        setTimeout(closeToast, 15000);
+
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeToast();
+            }
+        });
+
+        // Pause auto-close on hover
+        const toast = document.getElementById('toast');
+        let autoCloseTimer = setTimeout(closeToast, 15000);
+        
+        toast.addEventListener('mouseenter', function() {
+            clearTimeout(autoCloseTimer);
+        });
+        
+        toast.addEventListener('mouseleave', function() {
+            autoCloseTimer = setTimeout(closeToast, 5000);
+        });
+    </script>
+</body>
+</html>
+
+
 
 
 
