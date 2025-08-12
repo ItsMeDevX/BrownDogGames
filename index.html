@@ -2935,7 +2935,7 @@ crossorigin="anonymous"></script>
         function closeToast() {
             console.log('Close button clicked'); // Debug log
             const toast = document.getElementById('toast');
-            if (toast) {
+            if (toast && !toast.classList.contains('slide-out')) {
                 toast.classList.add('slide-out');
                 setTimeout(() => {
                     if (toast.parentNode) {
@@ -2985,17 +2985,8 @@ crossorigin="anonymous"></script>
         }
 
         function setupToastEvents(toast) {
-            // Auto close after 15 seconds
-            let autoCloseTimer = setTimeout(closeToast, 15000);
-            
-            // Pause auto-close on hover
-            toast.addEventListener('mouseenter', function() {
-                clearTimeout(autoCloseTimer);
-            });
-            
-            toast.addEventListener('mouseleave', function() {
-                autoCloseTimer = setTimeout(closeToast, 5000);
-            });
+            // Auto close after 15 seconds - no hover behavior
+            setTimeout(closeToast, 15000);
         }
 
         // Initialize on page load
