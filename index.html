@@ -2705,7 +2705,7 @@ crossorigin="anonymous"></script>
             box-shadow: 0 0 25px rgba(255, 105, 180, 0.4);
             max-width: 400px;
             min-width: 350px;
-            z-index: 10000;
+            z-index: 99999;
             font-family: 'Rubik Mono One', sans-serif;
             pointer-events: auto;
             transform: translateX(450px);
@@ -2738,6 +2738,7 @@ crossorigin="anonymous"></script>
             font-weight: bold;
             color: #ff69b4;
             text-shadow: 0 2px 4px rgba(255, 105, 180, 0.3);
+            pointer-events: none;
         }
 
         .toast p {
@@ -2745,6 +2746,7 @@ crossorigin="anonymous"></script>
             font-size: 13px;
             line-height: 1.5;
             color: #ffc0cb;
+            pointer-events: none;
         }
 
         .toast-buttons {
@@ -2764,6 +2766,9 @@ crossorigin="anonymous"></script>
             font-family: 'Rubik Mono One', sans-serif;
             flex: 1;
             min-width: 120px;
+            pointer-events: auto;
+            position: relative;
+            z-index: 100000;
         }
 
         .primary-btn {
@@ -2777,6 +2782,11 @@ crossorigin="anonymous"></script>
             box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
         }
 
+        .primary-btn:active {
+            transform: translateY(0);
+            background: #ff1493;
+        }
+
         .secondary-btn {
             background: #666;
             color: #fefefe;
@@ -2788,23 +2798,37 @@ crossorigin="anonymous"></script>
             transform: translateY(-2px);
         }
 
+        .secondary-btn:active {
+            transform: translateY(0);
+            background: #555;
+        }
+
         .close-toast {
             background: none;
             border: none;
             color: #ff69b4;
             font-size: 18px;
             cursor: pointer;
-            padding: 0;
-            width: 20px;
-            height: 20px;
+            padding: 5px;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Rubik Mono One', sans-serif;
+            pointer-events: auto;
+            z-index: 100001;
+            position: relative;
         }
 
         .close-toast:hover {
             color: #ff8edb;
+            background: rgba(255, 105, 180, 0.1);
+            border-radius: 4px;
+        }
+
+        .close-toast:active {
+            color: #ff1493;
         }
 
         .slide-out {
@@ -2820,6 +2844,7 @@ crossorigin="anonymous"></script>
             width: 100%;
             animation: shrinkProgress 15s linear forwards;
             border-radius: 0 0 9px 9px;
+            pointer-events: none;
         }
 
         @keyframes shrinkProgress {
@@ -2880,17 +2905,24 @@ crossorigin="anonymous"></script>
     </style>
 </head>
 <body>
-    <!-- Your content goes here -->
+    <!-- Demo content to show toast works -->
+    <div style="padding: 50px; text-align: center;">
+        <h1 style="color: #ff69b4; margin-bottom: 20px;">Cyberpunk Toast Demo</h1>
+        <p style="color: #ffc0cb;">The toast should appear in the bottom right corner.</p>
+        <button onclick="showToast()" style="margin-top: 20px; padding: 10px 20px; background: #ff69b4; color: #1e1b2e; border: none; border-radius: 8px; cursor: pointer; font-family: 'Rubik Mono One', sans-serif;">
+            Show Toast Again
+        </button>
+    </div>
 
     <div id="toast" class="toast">
         <div class="toast-progress"></div>
         <div class="toast-header">
             <h4>🚀 Launch Alert!</h4>
-            <button class="close-toast" onclick="closeToast()">&times;</button>
+            <button class="close-toast" onclick="closeToast()" title="Close">&times;</button>
         </div>
         <p>Join us for the big launch and be the first to experience exciting new features! Don't miss out on this exclusive opportunity.</p>
         <div class="toast-buttons">
-            <button class="toast-btn primary-btn" onclick="window.open('https://otieu.com/4/9661607i', '_blank')">
+            <button class="toast-btn primary-btn" onclick="handleLaunchClick()">
                 Join Launch
             </button>
             <button class="toast-btn secondary-btn" onclick="closeToast()">
@@ -2901,13 +2933,78 @@ crossorigin="anonymous"></script>
 
     <script>
         function closeToast() {
+            console.log('Close button clicked'); // Debug log
             const toast = document.getElementById('toast');
-            toast.classList.add('slide-out');
-            setTimeout(() => toast.remove(), 500);
+            if (toast) {
+                toast.classList.add('slide-out');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 500);
+            }
         }
 
-        // Auto close after 15 seconds
-        setTimeout(closeToast, 15000);
+        function handleLaunchClick() {
+            console.log('Launch button clicked'); // Debug log
+            alert('Launch button clicked! (Replace with your action)');
+            // Replace the alert with your actual action:
+            // window.open('https://yoursite.com', '_blank');
+        }
+
+        function showToast() {
+            // Remove existing toast if any
+            const existingToast = document.getElementById('toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // Create new toast
+            const newToast = document.createElement('div');
+            newToast.id = 'toast';
+            newToast.className = 'toast';
+            newToast.innerHTML = `
+                <div class="toast-progress"></div>
+                <div class="toast-header">
+                    <h4>🚀 Launch Alert!</h4>
+                    <button class="close-toast" onclick="closeToast()" title="Close">&times;</button>
+                </div>
+                <p>Join us for the big launch and be the first to experience exciting new features! Don't miss out on this exclusive opportunity.</p>
+                <div class="toast-buttons">
+                    <button class="toast-btn primary-btn" onclick="handleLaunchClick()">
+                        Join Launch
+                    </button>
+                    <button class="toast-btn secondary-btn" onclick="closeToast()">
+                        Maybe Later
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(newToast);
+            
+            setupToastEvents(newToast);
+        }
+
+        function setupToastEvents(toast) {
+            // Auto close after 15 seconds
+            let autoCloseTimer = setTimeout(closeToast, 15000);
+            
+            // Pause auto-close on hover
+            toast.addEventListener('mouseenter', function() {
+                clearTimeout(autoCloseTimer);
+            });
+            
+            toast.addEventListener('mouseleave', function() {
+                autoCloseTimer = setTimeout(closeToast, 5000);
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                setupToastEvents(toast);
+            }
+        });
 
         // Close with Escape key
         document.addEventListener('keydown', function(e) {
@@ -2916,21 +3013,25 @@ crossorigin="anonymous"></script>
             }
         });
 
-        // Pause auto-close on hover
-        const toast = document.getElementById('toast');
-        let autoCloseTimer = setTimeout(closeToast, 15000);
-        
-        toast.addEventListener('mouseenter', function() {
-            clearTimeout(autoCloseTimer);
-        });
-        
-        toast.addEventListener('mouseleave', function() {
-            autoCloseTimer = setTimeout(closeToast, 5000);
+        // Add click event listeners as backup
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('close-toast')) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeToast();
+            } else if (e.target.classList.contains('primary-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleLaunchClick();
+            } else if (e.target.classList.contains('secondary-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeToast();
+            }
         });
     </script>
 </body>
 </html>
-
 
 
 
