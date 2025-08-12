@@ -3077,62 +3077,58 @@ crossorigin="anonymous"></script>
     return container;
   }
 
-  function openVideoModal(url) {
-    let embedUrl = url;
-    let showExternalNotice = false;
+<!-- Updated openVideoModal function - replace the existing function with this -->
+<script>
+function openVideoModal(url) {
+  let embedUrl = url;
+  let showExternalNotice = false;
 
-    // YouTube - convert to embed URL with autoplay
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
-    if (ytMatch) {
-      embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
-    }
-    // Google Drive - convert to embed URL
-    else if (url.includes('drive.google.com')) {
-      const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
-      if (driveMatch) {
-        embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-      }
-    }
-    // TikTok - show external notice since TikTok doesn't allow embedding in many cases
-    else if (url.includes('tiktok.com')) {
-      showExternalNotice = true;
-      externalLink.href = url;
-      // Try TikTok embed, but it may not work due to restrictions
-      const tiktokMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
-      if (tiktokMatch) {
-        embedUrl = `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}`;
-      } else {
-        // Fallback: show placeholder
-        embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-          <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-            <h2>🎵 TikTok Video</h2>
-            <p>This video is hosted on TikTok.</p>
-            <p><a href="${url}" target="_blank" style="color:#ff0050;text-decoration:none;font-size:18px;">► Open on TikTok</a></p>
-          </body></html>
-        `);
-      }
-    }
-    // X/Twitter - show external notice since Twitter videos have restrictions
-    else if (url.includes('twitter.com') || url.includes('x.com')) {
-      showExternalNotice = true;
-      externalLink.href = url;
-      // Show placeholder since Twitter embed is complex
-      embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-          <h2>🐦 X (Twitter) Video</h2>
-          <p>This video is hosted on X (formerly Twitter).</p>
-          <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
-        </body></html>
-      `);
-    }
-
-    // Show/hide external link notice
-    externalLinkNotice.style.display = showExternalNotice ? 'block' : 'none';
-    
-    videoPlayerIframe.src = embedUrl;
-    videoModal.style.display = 'flex';
-    videoModal.focus();
+  // YouTube - convert to embed URL with autoplay
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+  if (ytMatch) {
+    embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
   }
+  // Google Drive - convert to embed URL
+  else if (url.includes('drive.google.com')) {
+    const driveMatch = url.match(/drive\.google\.com\/.*\/d\/([^\/]+)/);
+    if (driveMatch) {
+      embedUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+    }
+  }
+  // TikTok - show external notice with placeholder (working perfectly as you mentioned)
+  else if (url.includes('tiktok.com')) {
+    showExternalNotice = true;
+    externalLink.href = url;
+    // Show placeholder with TikTok branding
+    embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+      <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+        <h2>🎵 TikTok Video</h2>
+        <p>This video is hosted on TikTok.</p>
+        <p><a href="${url}" target="_blank" style="color:#ff0050;text-decoration:none;font-size:18px;">► Open on TikTok</a></p>
+      </body></html>
+    `);
+  }
+  // X/Twitter - use exact same approach as TikTok
+  else if (url.includes('twitter.com') || url.includes('x.com')) {
+    showExternalNotice = true;
+    externalLink.href = url;
+    // Show placeholder with X/Twitter branding (same system as TikTok)
+    embedUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+      <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+        <h2>🐦 X (Twitter) Video</h2>
+        <p>This video is hosted on X (formerly Twitter).</p>
+        <p><a href="${url}" target="_blank" style="color:#1da1f2;text-decoration:none;font-size:18px;">► Open on X</a></p>
+      </body></html>
+    `);
+  }
+
+  // Show/hide external link notice
+  externalLinkNotice.style.display = showExternalNotice ? 'block' : 'none';
+  
+  videoPlayerIframe.src = embedUrl;
+  videoModal.style.display = 'flex';
+  videoModal.focus();
+}
 
   function closeVideoModal() {
     videoModal.style.display = 'none';
@@ -3435,6 +3431,7 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
+
 
 
 
