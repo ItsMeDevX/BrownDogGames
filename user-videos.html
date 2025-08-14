@@ -2960,94 +2960,27 @@ crossorigin="anonymous"></script>
       return 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok';
     }
 
-    // X (formerly Twitter) thumbnail extraction - Enhanced for x.com
+    // X (formerly Twitter) thumbnail extraction - Simplified approach
     if (url.includes('x.com') || url.includes('twitter.com')) {
-      try {
-        // Extract tweet ID from URL - handle both x.com and twitter.com
-        const xMatch = url.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
-        if (xMatch) {
-          const tweetId = xMatch[1];
-          
-          // Try multiple approaches for getting X/Twitter thumbnails
-          
-          // Approach 1: Try using Twitter's card API (may work for some videos)
-          try {
-            const cardUrl = `https://cards.twitter.com/cards/tco/1/${tweetId}`;
-            // This often doesn't work due to CORS, but we can try
-            const response = await fetch(cardUrl, { mode: 'no-cors' });
-            // Since we can't read the response due to CORS, this approach is limited
-          } catch (e) {
-            console.log('Twitter card API failed:', e);
-          }
-          
-          // Approach 2: Try using a proxy service to get open graph data
-          try {
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl);
-            if (response.ok) {
-              const data = await response.json();
-              const html = data.contents;
-              
-              // Parse HTML for video thumbnail meta tags
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(html, 'text/html');
-              
-              // Look for video thumbnail meta tags
-              const videoThumb = doc.querySelector('meta[property="og:image"]') || 
-                               doc.querySelector('meta[name="twitter:image"]') ||
-                               doc.querySelector('meta[property="twitter:image"]');
-              
-              if (videoThumb && videoThumb.content && videoThumb.content.includes('video_thumb')) {
-                console.log('Found X video thumbnail:', videoThumb.content);
-                return videoThumb.content;
-              }
-              
-              // Look for any image that might be a video thumbnail
-              const anyImage = doc.querySelector('meta[property="og:image"]');
-              if (anyImage && anyImage.content) {
-                console.log('Found X image:', anyImage.content);
-                return anyImage.content;
-              }
-            }
-          } catch (e) {
-            console.log('Proxy thumbnail extraction failed:', e);
-          }
-          
-          // Approach 3: Use X's public thumbnail pattern (may work for some videos)
-          try {
-            // Some X videos have predictable thumbnail URLs
-            const thumbUrl = `https://pbs.twimg.com/ext_tw_video_thumb/${tweetId}/pu/img/placeholder.jpg`;
-            
-            // Test if this URL exists by trying to load it
-            const testImg = new Image();
-            testImg.crossOrigin = 'anonymous';
-            
-            return new Promise((resolve) => {
-              testImg.onload = () => {
-                console.log('Found X video thumbnail via pattern:', thumbUrl);
-                resolve(thumbUrl);
-              };
-              testImg.onerror = () => {
-                console.log('X thumbnail pattern failed, using placeholder');
-                resolve('https://via.placeholder.com/200x120/000000/ffffff?text=🎬+X+Video');
-              };
-              testImg.src = thumbUrl;
-              
-              // Timeout after 3 seconds
-              setTimeout(() => {
-                resolve('https://via.placeholder.com/200x120/000000/ffffff?text=🎬+X+Video');
-              }, 3000);
-            });
-          } catch (e) {
-            console.log('X thumbnail pattern failed:', e);
-          }
-        }
-      } catch (error) {
-        console.log('X thumbnail extraction failed:', error);
-      }
+      console.log('Processing X/Twitter URL:', url);
       
-      // Final fallback to branded X placeholder
-      return 'https://via.placeholder.com/200x120/000000/ffffff?text=🎬+X';
+      // Create a proper SVG thumbnail for X videos
+      const svgThumbnail = `data:image/svg+xml;base64,${btoa(`
+        <svg width="200" height="120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#000000" />
+              <stop offset="100%" stop-color="#1a1a1a" />
+            </linearGradient>
+          </defs>
+          <rect width="200" height="120" fill="url(#grad)" />
+          <circle cx="100" cy="60" r="25" fill="white" opacity="0.9" />
+          <polygon points="92,48 92,72 112,60" fill="black" />
+          <text x="100" y="95" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">X Video</text>
+        </svg>
+      `)}`;
+      
+      return svgThumbnail;
     }
 
     return 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
@@ -3087,31 +3020,16 @@ crossorigin="anonymous"></script>
     // Load actual thumbnail asynchronously
     getThumbnailFromUrl(video.video_url).then(thumbnailUrl => {
       if (thumbnailUrl) {
-        // For X videos, we might get a promise, so handle it properly
-        if (thumbnailUrl instanceof Promise) {
-          thumbnailUrl.then(resolvedUrl => {
-            img.src = resolvedUrl;
-            img.onerror = () => {
-              const fallbackUrl = platformInfo.platform === 'tiktok' 
-                ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
-                : platformInfo.platform === 'x'
-                ? 'https://via.placeholder.com/200x120/000000/ffffff?text=🎬+X'
-                : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
-              img.src = fallbackUrl;
-            };
-          });
-        } else {
-          img.src = thumbnailUrl;
-          // Add error handler for failed thumbnail loads
-          img.onerror = () => {
-            const fallbackUrl = platformInfo.platform === 'tiktok' 
-              ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
-              : platformInfo.platform === 'x'
-              ? 'https://via.placeholder.com/200x120/000000/ffffff?text=🎬+X'
-              : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
-            img.src = fallbackUrl;
-          };
-        }
+        img.src = thumbnailUrl;
+        // Add error handler for failed thumbnail loads
+        img.onerror = () => {
+          const fallbackUrl = platformInfo.platform === 'tiktok' 
+            ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
+            : platformInfo.platform === 'x'
+            ? `data:image/svg+xml;base64,${btoa('<svg width="200" height="120" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="120" fill="#000"/><circle cx="100" cy="60" r="25" fill="white" opacity="0.9"/><polygon points="92,48 92,72 112,60" fill="black"/><text x="100" y="95" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">X Video</text></svg>')}`
+            : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
+          img.src = fallbackUrl;
+        };
       }
     }).catch(error => {
       console.log('Thumbnail loading failed:', error);
@@ -3119,7 +3037,7 @@ crossorigin="anonymous"></script>
       const fallbackUrl = platformInfo.platform === 'tiktok' 
         ? 'https://via.placeholder.com/200x120/ff0050/ffffff?text=🎵+TikTok'
         : platformInfo.platform === 'x'
-        ? 'https://via.placeholder.com/200x120/000000/ffffff?text=🎬+X'
+        ? `data:image/svg+xml;base64,${btoa('<svg width="200" height="120" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="120" fill="#000"/><circle cx="100" cy="60" r="25" fill="white" opacity="0.9"/><polygon points="92,48 92,72 112,60" fill="black"/><text x="100" y="95" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">X Video</text></svg>')}`
         : 'https://via.placeholder.com/200x120/666666/ffffff?text=📹+Video';
       img.src = fallbackUrl;
     });
@@ -3414,33 +3332,17 @@ crossorigin="anonymous"></script>
       // Load actual thumbnail asynchronously
       getThumbnailFromUrl(featuredUser.newestVideo.video_url).then(thumbnailUrl => {
         if (thumbnailUrl) {
-          // For X videos, we might get a promise, so handle it properly
-          if (thumbnailUrl instanceof Promise) {
-            thumbnailUrl.then(resolvedUrl => {
-              featuredThumbnail.src = resolvedUrl;
-              featuredThumbnail.onerror = () => {
-                const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
-                const fallbackUrl = platformInfo.platform === 'tiktok' 
-                  ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
-                  : platformInfo.platform === 'x'
-                  ? 'https://via.placeholder.com/350x180/000000/ffffff?text=🎬+X+Video'
-                  : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
-                featuredThumbnail.src = fallbackUrl;
-              };
-            });
-          } else {
-            featuredThumbnail.src = thumbnailUrl;
-            // Add error handler for failed thumbnail loads
-            featuredThumbnail.onerror = () => {
-              const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
-              const fallbackUrl = platformInfo.platform === 'tiktok' 
-                ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
-                : platformInfo.platform === 'x'
-                ? 'https://via.placeholder.com/350x180/000000/ffffff?text=🎬+X+Video'
-                : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
-              featuredThumbnail.src = fallbackUrl;
-            };
-          }
+          featuredThumbnail.src = thumbnailUrl;
+          // Add error handler for failed thumbnail loads
+          featuredThumbnail.onerror = () => {
+            const platformInfo = getPlatformInfo(featuredUser.newestVideo.video_url);
+            const fallbackUrl = platformInfo.platform === 'tiktok' 
+              ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
+              : platformInfo.platform === 'x'
+              ? `data:image/svg+xml;base64,${btoa('<svg width="350" height="180" xmlns="http://www.w3.org/2000/svg"><rect width="350" height="180" fill="#000"/><circle cx="175" cy="90" r="35" fill="white" opacity="0.9"/><polygon points="160,75 160,105 190,90" fill="black"/><text x="175" y="140" font-family="Arial" font-size="18" font-weight="bold" fill="white" text-anchor="middle">X Video</text></svg>')}`
+              : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
+            featuredThumbnail.src = fallbackUrl;
+          };
         }
       }).catch(error => {
         console.log('Featured thumbnail loading failed:', error);
@@ -3448,7 +3350,7 @@ crossorigin="anonymous"></script>
         const fallbackUrl = platformInfo.platform === 'tiktok' 
           ? 'https://via.placeholder.com/350x180/ff0050/ffffff?text=🎵+TikTok+Video'
           : platformInfo.platform === 'x'
-          ? 'https://via.placeholder.com/350x180/000000/ffffff?text=🎬+X+Video'
+          ? `data:image/svg+xml;base64,${btoa('<svg width="350" height="180" xmlns="http://www.w3.org/2000/svg"><rect width="350" height="180" fill="#000"/><circle cx="175" cy="90" r="35" fill="white" opacity="0.9"/><polygon points="160,75 160,105 190,90" fill="black"/><text x="175" y="140" font-family="Arial" font-size="18" font-weight="bold" fill="white" text-anchor="middle">X Video</text></svg>')}`
           : 'https://via.placeholder.com/350x180/666666/ffffff?text=📹+Featured+Video';
         featuredThumbnail.src = fallbackUrl;
       });
