@@ -2426,16 +2426,6 @@ crossorigin="anonymous"></script>
       margin-bottom: 1rem;
     }
 
-    .download-message {
-      background-color: #1b1b2e;
-      border: 2px solid #ff4f9f;
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 1rem 0;
-      color: #ff82ba;
-      font-size: 1.1rem;
-    }
-
     .button-link {
       display: inline-block;
       background-color: #ff4f9f;
@@ -2671,9 +2661,8 @@ crossorigin="anonymous"></script>
       </section>
 
       <div class="buttons">
-        <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-        <div class="download-message" id="downloadMessage">⏳ Checking VIP access... Please wait 30 seconds</div>
-        <a id="downloadLink" href="https://drive.google.com/uc?export=download&id=1o325h5KlhFuZ8TWXHo0L5QjfUQcn_sMK" class="button-link vip-button" download style="display: none;">⬇ VIP Download</a>
+        <div class="age-free-info">🔞 Must be 18+ to download | 💰 Paid to play with VIP</div>
+        <a href="https://drive.google.com/file/d/1d0Bc72Wt3_Daytlxfjo2KmVp4EMr2VYe/view?usp=sharing">⬇ Download Butt Blaster Arena</a>
         <a href="index.html" class="button-link">← Back to Home</a>
       </div>
     </div>
@@ -2696,9 +2685,8 @@ crossorigin="anonymous"></script>
       </section>
       
       <div class="buttons">
-        <div class="age-free-info">🔞 Must be 18+ to download | 🎮 Free to play</div>
-        <div class="download-message" id="downloadMessage2">⏳ Checking VIP access... Please wait 30 seconds</div>
-        <a id="downloadLink2" href="https://drive.google.com/uc?export=download&id=1Br-WTVtyLu2wR39_YWeM5sASpxulvYJL" class="button-link vip-button" download style="display: none;">⬇ VIP Download</a>
+        <div class="age-free-info">🔞 Must be 18+ to download | 💰 Paid to play with VIP</div>
+        <a href="https://drive.google.com/uc?export=download&id=1Br-WTVtyLu2wR39_YWeM5sASpxulvYJL" class="button-link" download>⬇ Download Erotic Enemies</a>
         <a href="index.html" class="button-link">← Back to Home</a>
       </div>
     </div>
@@ -2706,7 +2694,7 @@ crossorigin="anonymous"></script>
     <!-- VIP Extras Section -->
     <section class="vip-extras-section">
       <h3>👑 VIP Community Extras</h3>
-      <p style="color: #ff82ba; margin-bottom: 2rem;">Exclusive content shared by our VIP members for our new games!</p>
+      <p style="color: #ff82ba; margin-bottom: 2rem;">Exclusive content shared by our VIP members for Butt Blaster Arena & Erotic Enemies!</p>
       
       <div id="extrasContainer" class="extras-grid">
         <div class="loading">Loading VIP extras...</div>
@@ -2781,13 +2769,18 @@ crossorigin="anonymous"></script>
       </div>
     </div>
 
+    <!-- VIP Controls -->
+    <div style="text-align: center; margin: 2rem 0;">
+      <button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()">➕ Add Extra</button>
+    </div>
+
     <!-- Chat Section -->
     <section class="chat-section">
       <h2>🎮 Game Chat</h2>
       
       <div id="game-id-container">
         <label id="game-id-label" for="game-id">Game ID:</label>
-        <input type="text" id="game-id" value="new-games" readonly />
+        <input type="text" id="game-id" value="butt-blaster-erotic-enemies" readonly />
       </div>
 
       <div id="messages">
@@ -2813,13 +2806,13 @@ crossorigin="anonymous"></script>
     let currentUser = null;
     let selectedBadge = '👑';
 
-    // Get likes for a specific extra - use creator's GitHub username with _extra suffix
-    async function getExtraLikes(creatorGithubUsername) {
+    // Get likes for a specific extra - use GitHub username + extra ID
+    async function getExtraLikes(githubUsername, extraId) {
       try {
         const { count, error } = await supabase
           .from('vip_page_views')
           .select('*', { count: 'exact', head: true })
-          .eq('username', `${creatorGithubUsername}_extra`); // Add _extra suffix
+          .eq('username', `${githubUsername}_extra_${extraId}`);
 
         if (error) {
           console.error('Error getting likes:', error);
@@ -2833,18 +2826,17 @@ crossorigin="anonymous"></script>
     }
 
     // Check if current user has liked an extra
-    async function hasUserLikedExtra(creatorGithubUsername) {
+    async function hasUserLikedExtra(githubUsername, extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return false;
 
       try {
-        // Use creator's GitHub username with _extra suffix for checking likes
-        const usernameWithSuffix = `${creatorGithubUsername}_extra`;
+        const likeIdentifier = `${githubUsername}_extra_${extraId}`;
 
         const { data, error } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', usernameWithSuffix)
+          .eq('username', likeIdentifier)
           .eq('user_id', session.session.user.id)
           .single();
 
@@ -2859,7 +2851,7 @@ crossorigin="anonymous"></script>
     }
 
     // Toggle like for an extra using upsert to handle RLS
-    async function toggleExtraLike(creatorGithubUsername) {
+    async function toggleExtraLike(githubUsername, extraId) {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) {
         alert('Please login to like extras');
@@ -2867,15 +2859,14 @@ crossorigin="anonymous"></script>
       }
 
       const userId = session.session.user.id;
-      // Add _extra suffix to the creator's GitHub username for storage
-      const usernameWithSuffix = `${creatorGithubUsername}_extra`;
+      const likeIdentifier = `${githubUsername}_extra_${extraId}`;
 
       try {
         // Check if already liked
         const { data: existingLike, error: checkError } = await supabase
           .from('vip_page_views')
           .select('user_id')
-          .eq('username', usernameWithSuffix)
+          .eq('username', likeIdentifier)
           .eq('user_id', userId)
           .single();
 
@@ -2884,7 +2875,7 @@ crossorigin="anonymous"></script>
           const { error: deleteError } = await supabase
             .from('vip_page_views')
             .delete()
-            .eq('username', usernameWithSuffix)
+            .eq('username', likeIdentifier)
             .eq('user_id', userId);
 
           if (deleteError) throw deleteError;
@@ -2894,12 +2885,11 @@ crossorigin="anonymous"></script>
           const { error: upsertError } = await supabase
             .from('vip_page_views')
             .upsert({
-              username: usernameWithSuffix,
+              username: likeIdentifier,
               user_id: userId,
               view_count: 1,
               first_viewed_at: new Date().toISOString(),
               last_viewed_at: new Date().toISOString()
-              // Removed game_points: 1 - only track view count for likes
             }, {
               onConflict: 'user_id,username'
             });
@@ -2917,16 +2907,13 @@ crossorigin="anonymous"></script>
     // Load VIP Extras with creator GitHub usernames
     async function loadVipExtras() {
       const container = document.getElementById('extrasContainer');
-      console.log('Loading VIP extras for New Games...');
       
       try {
         const { data: extras, error } = await supabase
           .from('vip_extras')
           .select('*')
-          .eq('game_id', 'new-games') // Only load New Games extras
+          .eq('game_id', 'butt-blaster-erotic-enemies') // Game-specific filter
           .order('created_at', { ascending: false });
-
-        console.log('Supabase response:', { extras, error });
 
         if (error) {
           console.error('Error loading extras:', error);
@@ -2935,12 +2922,11 @@ crossorigin="anonymous"></script>
         }
 
         if (!extras || extras.length === 0) {
-          container.innerHTML = `<div class="no-extras">No VIP extras yet for our new games. Be the first to share something awesome!</div>`;
+          container.innerHTML = `<div class="no-extras">No VIP extras yet for Butt Blaster Arena & Erotic Enemies. Be the first to share something awesome!</div>`;
           return;
         }
 
-        console.log('Found', extras.length, 'extras for New Games');
-
+        // Get likes for all extras
         const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
           // Get GitHub username first
           let githubUsername = extra.creator_name || 'Anonymous';
@@ -2962,8 +2948,8 @@ crossorigin="anonymous"></script>
           }
 
           const [likeCount, userHasLiked] = await Promise.all([
-            getExtraLikes(githubUsername), // Pass GitHub username instead of extraId
-            hasUserLikedExtra(githubUsername) // Pass GitHub username instead of extraId
+            getExtraLikes(githubUsername, extra.id), // Pass both GitHub username and extra ID
+            hasUserLikedExtra(githubUsername, extra.id) // Pass both GitHub username and extra ID
           ]);
           
           return {
@@ -3006,7 +2992,7 @@ crossorigin="anonymous"></script>
                 </span>
                 <div class="like-section">
                   <button class="like-btn ${extra.userHasLiked ? 'liked' : ''}" 
-                          onclick="handleLikeClick('${extra.githubUsername}')">
+                          onclick="handleLikeClick('${extra.githubUsername}', '${extra.id}')">
                     ${extra.userHasLiked ? '❤️' : '🤍'} Like
                   </button>
                   <span class="like-count">${extra.likeCount}</span>
@@ -3030,14 +3016,14 @@ crossorigin="anonymous"></script>
     }
 
     // Handle like button clicks
-    window.handleLikeClick = async function(creatorGithubUsername) {
-      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${creatorGithubUsername}')"]`);
+    window.handleLikeClick = async function(githubUsername, extraId) {
+      const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${githubUsername}', '${extraId}')"]`);
       const likeCountSpan = likeBtn.parentElement.querySelector('.like-count');
       
       // Disable button during request
       likeBtn.disabled = true;
       
-      const isLiked = await toggleExtraLike(creatorGithubUsername);
+      const isLiked = await toggleExtraLike(githubUsername, extraId);
       
       if (isLiked !== null) {
         // Update UI
@@ -3050,7 +3036,7 @@ crossorigin="anonymous"></script>
         }
         
         // Update count
-        const newCount = await getExtraLikes(creatorGithubUsername);
+        const newCount = await getExtraLikes(githubUsername, extraId);
         likeCountSpan.textContent = newCount;
       }
       
@@ -3058,7 +3044,7 @@ crossorigin="anonymous"></script>
       likeBtn.disabled = false;
     };
 
-    // Add VIP Extra
+    // Add VIP Extra for Butt Blaster Arena & Erotic Enemies
     async function addVipExtra(extraData) {
       if (!currentUser) {
         alert('Please login first');
@@ -3081,7 +3067,7 @@ crossorigin="anonymous"></script>
             description: extraData.description,
             url: extraData.url,
             type: extraData.type,
-            game_id: 'new-games', // Add game ID for New Games
+            game_id: 'butt-blaster-erotic-enemies', // Game-specific ID
             created_by: currentUser.id,
             creator_name: githubUsername
           }]);
@@ -3140,12 +3126,12 @@ crossorigin="anonymous"></script>
         document.querySelectorAll('.badge-item').forEach(b => b.classList.remove('selected'));
         badge.classList.add('selected');
         selectedBadge = badge.dataset.badge;
-        localStorage.setItem('vip_badge_new_games', selectedBadge);
+        localStorage.setItem('vip_badge_butt_blaster_erotic_enemies', selectedBadge);
       });
     });
 
     // Load saved badge
-    const savedBadge = localStorage.getItem('vip_badge_new_games');
+    const savedBadge = localStorage.getItem('vip_badge_butt_blaster_erotic_enemies');
     if (savedBadge) {
       selectedBadge = savedBadge;
       const badgeElement = document.querySelector(`[data-badge="${savedBadge}"]`);
@@ -3156,19 +3142,20 @@ crossorigin="anonymous"></script>
       document.querySelector('[data-badge="👑"]').classList.add('selected');
     }
 
-    // VIP Download functionality
-    async function showDownloadIfVIP(linkId, msgId) {
+    // VIP features are now enabled based on login status for community features
+    async function checkVIPStatus() {
       const { data } = await supabase.auth.getSession();
       const user = data?.session?.user;
       currentUser = user;
       
-      const link = document.getElementById(linkId);
-      const msg = document.getElementById(msgId);
       const vipBadge = document.getElementById('vipBadge');
       const vipBadgesSection = document.getElementById('vipBadgesSection');
+      const addExtraBtn = document.getElementById('addExtraBtn');
       const msgInput = document.getElementById('msg-input');
 
-      if (!user || !link || !msg) return;
+      if (!user) {
+        return;
+      }
 
       const { data: userData, error } = await supabase
         .from('users')
@@ -3176,67 +3163,29 @@ crossorigin="anonymous"></script>
         .eq('id', user.id)
         .single();
 
-      if (error || !userData?.is_vip) {
-        msg.textContent = '🚫 VIP Only — Please subscribe to access the download.';
-        return;
-      }
-
-      // Enable VIP features (only once, not per download link)
-      if (linkId === 'downloadLink') {
+      if (!error && userData?.is_vip) {
+        // Enable VIP community features
         isVipUser = true;
         vipBadge.style.display = 'inline-block';
         vipBadgesSection.classList.add('show');
+        addExtraBtn.style.display = 'inline-block';
         msgInput.classList.add('vip');
-        
-        // Show add extra button after VIP section
-        setTimeout(() => {
-          const vipSection = document.querySelector('.vip-extras-section');
-          if (vipSection && !document.getElementById('addExtraBtn')) {
-            const addExtraBtn = document.createElement('button');
-            addExtraBtn.id = 'addExtraBtn';
-            addExtraBtn.className = 'button-link vip-button';
-            addExtraBtn.style.display = 'inline-block';
-            addExtraBtn.style.margin = '1rem auto';
-            addExtraBtn.onclick = toggleAddExtra;
-            addExtraBtn.textContent = '➕ Add Extra';
-            
-            const btnContainer = document.createElement('div');
-            btnContainer.style.textAlign = 'center';
-            btnContainer.style.margin = '2rem 0';
-            btnContainer.appendChild(addExtraBtn);
-            
-            vipSection.insertAdjacentElement('afterend', btnContainer);
-          }
-        }, 100);
       }
-
-      let seconds = 30;
-      const countdown = setInterval(() => {
-        msg.textContent = `⏳ Verifying VIP... ${seconds--}s remaining`;
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(countdown);
-        link.style.display = 'inline-block';
-        msg.innerHTML = '✅ <strong>VIP Access Confirmed!</strong> You can now add extras and enjoy VIP chat!';
-        msg.style.background = 'linear-gradient(45deg, #2f1a39, #1a4d2e)';
-        msg.style.borderColor = '#4ade80';
-      }, 30000);
     }
 
-    // Real-time updates for VIP extras - UPDATED FOR NEW GAMES
-    supabase.channel('vip_extras_new_games')
+    // Real-time updates for VIP extras
+    supabase.channel('vip_extras_butt_blaster_erotic_enemies')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'vip_extras',
-        filter: 'game_id=eq.new-games'
+        filter: 'game_id=eq.butt-blaster-erotic-enemies'
       }, () => {
         loadVipExtras();
       })
       .subscribe();
 
-    // Chat functionality
+    // Chat functionality with VIP features
     const messagesDiv = document.getElementById('messages');
     const form = document.getElementById('chat-form');
     const msgInput = document.getElementById('msg-input');
@@ -3324,13 +3273,13 @@ crossorigin="anonymous"></script>
 
     // Initialize all functionalities
     loadVipExtras(); // Load extras for everyone to see
-    showDownloadIfVIP('downloadLink', 'downloadMessage');
-    showDownloadIfVIP('downloadLink2', 'downloadMessage2');
+    checkVIPStatus(); // Check VIP status for community features
     loadMessages();
   </script>
   
 </body>
 </html>
+
 
 
 
