@@ -21,910 +21,827 @@ crossorigin="anonymous"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BrownDogGames - Adult Cartoon Games</title>
-  <style>
-@import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap');
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Rubik Mono One', sans-serif;
-  background-color: #1e1b2e;
-  color: #fefefe;
-  min-height: 100vh;
-  padding: 90px 20px 20px 20px; /* Added top padding for fixed taskbar */
-  background-image: linear-gradient(135deg, #2c1b33, #191425);
-  text-align: center;
-  margin: 0;
-}
-
-/* Access Choice Gate */
-#access-choice-gate {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.95);
-  display: none;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  z-index: 10000;
-  color: #ff69b4;
-  font-family: 'Rubik Mono One', sans-serif;
-  text-align: center;
-  padding: 90px 20px 20px 20px; /* Account for fixed taskbar */
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-#access-choice-gate.show {
-  display: flex;
-}
-
-.choice-gate-content {
-  background: #2a243b;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
-  max-width: 800px;
-  width: 90%;
-  margin: 20px auto;
-}
-
-.access-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin: 30px 0;
-}
-
-.access-option {
-  background: #3b3750;
-  padding: 30px 20px;
-  border-radius: 12px;
-  border: 3px solid transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.access-option:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
-.access-option.vip {
-  border-color: #2ecc71;
-  background: linear-gradient(135deg, #2d4a3a, #3b4d42);
-}
-
-.access-option.vip:hover {
-  border-color: #27ae60;
-  box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
-}
-
-.access-option.free {
-  border-color: #3498db;
-  background: linear-gradient(135deg, #2c3e50, #34495e);
-}
-
-.access-option.free:hover {
-  border-color: #2980b9;
-  box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
-}
-
-.access-option h3 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.access-option.vip h3 {
-  color: #2ecc71;
-}
-
-.access-option.free h3 {
-  color: #3498db;
-}
-
-.access-option .price {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 15px 0;
-}
-
-.access-option.vip .price {
-  color: #2ecc71;
-}
-
-.access-option.free .price {
-  color: #3498db;
-}
-
-.feature-list {
-  list-style: none;
-  text-align: left;
-  margin: 20px 0;
-}
-
-.feature-list li {
-  padding: 8px 0;
-  color: #ffc0cb;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
-}
-
-.feature-list .icon {
-  width: 20px;
-  text-align: center;
-}
-
-.vip-only-features {
-  background: #2d4a3a;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 15px 0;
-  border-left: 4px solid #2ecc71;
-}
-
-.free-features {
-  background: #2c3e50;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 15px 0;
-  border-left: 4px solid #3498db;
-}
-
-/* VIP Process Steps */
-.vip-process {
-  display: none;
-  margin-top: 30px;
-}
-
-.vip-step {
-  background: #3b3750;
-  padding: 20px;
-  border-radius: 8px;
-  margin: 15px 0;
-  border: 2px solid #ff69b4;
-}
-
-.vip-step.completed {
-  background: #2a4d3a;
-  border-color: #2ecc71;
-}
-
-.vip-step h4 {
-  color: #ff69b4;
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.vip-step.completed h4 {
-  color: #2ecc71;
-}
-
-#github-login-btn {
-  background: #333;
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  font-weight: bold;
-  font-size: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin: 10px 0;
-}
-
-#github-login-btn:hover {
-  background: #555;
-}
-
-#github-login-btn:disabled {
-  background: #666;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.login-status {
-  color: #2ecc71;
-  font-size: 0.9rem;
-  margin-top: 10px;
-  display: none;
-}
-
-.login-status.show {
-  display: block;
-}
-
-#vip-paypal-container {
-  margin: 20px 0;
-}
-
-.gate-buttons {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 30px;
-  flex-wrap: wrap;
-}
-
-.gate-buttons button {
-  background: #666;
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  font-weight: bold;
-  font-size: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-  min-width: 150px;
-}
-
-.gate-buttons button:hover {
-  background: #888;
-}
-
-.gate-buttons button.primary {
-  background: #ff69b4;
-  color: #1e1b2e;
-}
-
-.gate-buttons button.primary:hover {
-  background: #ff8edb;
-}
-
-#access-message {
-  margin: 15px 0;
-  padding: 12px;
-  border-radius: 8px;
-  display: none;
-  font-size: 0.9rem;
-}
-
-.success-message {
-  background: #2ecc71;
-  color: white;
-}
-
-.error-message {
-  background: #e74c3c;
-  color: white;
-}
-
-.access-note {
-  background: #3b3750;
-  padding: 20px;
-  border-radius: 12px;
-  margin: 20px 0;
-  border: 2px solid #ff69b4;
-  color: #ffc0cb;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.access-note strong {
-  color: #ff69b4;
-}
-
-/* Fixed Taskbar */
-#taskbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  background-color: #2a243b;
-  border-radius: 0;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
-  padding: 15px 20px;
-  font-family: 'Rubik Mono One', sans-serif;
-  color: #fefefe;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  gap: 20px;
-  min-height: 70px;
-  box-sizing: border-box;
-}
-
-.taskbar-logo {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  min-width: 120px;
-}
-
-.taskbar-logo img {
-  height: 60px;
-  width: auto;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.taskbar-logo img:hover {
-  transform: scale(1.05);
-}
-
-.taskbar-nav {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: nowrap;
-  flex-shrink: 1;
-  min-width: 0;
-}
-
-.taskbar-nav button {
-  background-color: #ff69b4;
-  color: #1e1b2e;
-  border: none;
-  padding: 8px 12px;
-  font-weight: bold;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: 80px;
-}
-
-.taskbar-nav button:hover {
-  background-color: #ff8edb;
-}
-
-.taskbar-nav button.vip-only {
-  background-color: #666;
-  color: #999;
-  cursor: not-allowed;
-  position: relative;
-}
-
-.taskbar-nav button.vip-only:hover::after {
-  content: "VIP Only";
-  position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  white-space: nowrap;
-  z-index: 10000;
-}
-
-.taskbar-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  flex-shrink: 1;
-  min-width: 0;
-}
-
-.taskbar-search input {
-  width: 180px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  background-color: #3b3750;
-  color: #fefefe;
-  flex-shrink: 1;
-  min-width: 120px;
-}
-
-.taskbar-search button {
-  background-color: #ff69b4;
-  color: #1e1b2e;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.taskbar-search button:hover {
-  background-color: #ff8edb;
-}
-
-/* Message Notifications */
-.taskbar-messages {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.messages-button {
-  background-color: #ff69b4;
-  color: #1e1b2e;
-  border: none;
-  padding: 8px 16px;
-  font-weight: bold;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.messages-button:hover {
-  background-color: #ff8edb;
-  transform: scale(1.05);
-}
-
-.messages-button.has-unread {
-  background: linear-gradient(45deg, #ff69b4, #ff1493);
-  animation: pulse-glow 2s infinite;
-}
-
-.message-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: linear-gradient(45deg, #ff4444, #ff6666);
-  color: white;
-  border-radius: 50%;
-  min-width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: bold;
-  border: 2px solid #2a243b;
-  animation: bounce-badge 1s infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
-  }
-}
-
-@keyframes bounce-badge {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-.message-preview-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: #2a243b;
-  border: 2px solid #ff69b4;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-  min-width: 320px;
-  max-width: 400px;
-  display: none;
-  flex-direction: column;
-  z-index: 10001;
-  margin-top: 10px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.message-preview-dropdown.show {
-  display: flex;
-}
-
-.message-preview-header {
-  background: #3b3750;
-  padding: 12px 16px;
-  border-bottom: 1px solid #ff69b4;
-  font-weight: bold;
-  color: #ff69b4;
-  text-align: center;
-  border-radius: 10px 10px 0 0;
-}
-
-.message-preview-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid #3b3750;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.message-preview-item:hover {
-  background-color: #3b3750;
-}
-
-.message-preview-item.unread {
-  background: linear-gradient(90deg, rgba(255, 105, 180, 0.1), transparent);
-  border-left: 3px solid #ff69b4;
-}
-
-.message-preview-avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  border: 2px solid #ff69b4;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.message-preview-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.message-preview-sender {
-  font-weight: bold;
-  color: #ff69b4;
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.message-preview-text {
-  color: #fefefe;
-  font-size: 0.8rem;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.message-preview-time {
-  color: #999;
-  font-size: 0.7rem;
-  margin-top: 2px;
-}
-
-.message-preview-footer {
-  padding: 10px 16px;
-  text-align: center;
-  border-top: 1px solid #3b3750;
-  background: #3b3750;
-  border-radius: 0 0 10px 10px;
-}
-
-.message-preview-footer button {
-  background: linear-gradient(45deg, #ff69b4, #ff8edb);
-  color: #1e1b2e;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.8rem;
-}
-
-.message-preview-footer button:hover {
-  transform: scale(1.05);
-}
-
-.no-messages {
-  text-align: center;
-  color: #999;
-  font-style: italic;
-  padding: 20px;
-  font-size: 0.9rem;
-}
-
-.taskbar-vip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  min-width: 120px;
-}
-
-.taskbar-vip button {
-  background-color: #ff69b4;
-  color: #1e1b2e;
-  border: none;
-  padding: 8px 12px;
-  font-weight: bold;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-}
-
-.taskbar-vip button:hover {
-  background-color: #ff8edb;
-}
-
-.vip-status {
-  color: #2ecc71;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.free-status {
-  color: #3498db;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.taskbar-auth {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-  flex-shrink: 0;
-  min-width: 150px;
-}
-
-.taskbar-auth button {
-  background-color: #ff69b4;
-  color: #1e1b2e;
-  border: none;
-  padding: 8px 12px;
-  font-weight: bold;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-}
-
-.taskbar-auth button:hover {
-  background-color: #ff8edb;
-}
-
-/* Dropdown styles */
-#suggestions-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: #3b3750;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px #00000077;
-  display: none;
-  flex-direction: column;
-  z-index: 10001;
-  margin-top: 5px;
-}
-
-#suggestions-dropdown > div {
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  color: #fefefe;
-}
-
-#suggestions-dropdown > div:hover {
-  background-color: #ff69b4;
-  color: #1e1b2e;
-}
-
-#user-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: #3b3750;
-  border: 2px solid #ff69b4;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px #00000077;
-  min-width: 150px;
-  display: none;
-  flex-direction: column;
-  z-index: 10001;
-  margin-top: 5px;
-}
-
-#user-dropdown button {
-  background: none;
-  border: none;
-  color: #fefefe;
-  padding: 12px 16px;
-  text-align: left;
-  font-weight: bold;
-  font-family: 'Rubik Mono One', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-  width: 100%;
-  border-radius: 0;
-}
-
-#user-dropdown button:hover {
-  background-color: #ff69b4;
-  color: #1e1b2e;
-}
-
-#user-dropdown button:first-child {
-  border-radius: 6px 6px 0 0;
-}
-
-#user-dropdown button:last-child {
-  border-radius: 0 0 6px 6px;
-}
-
-#user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-#user-info img {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  border: 2px solid #ff69b4;
-  object-fit: cover;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .taskbar-search input {
-    width: 150px;
-  }
-  
-  .taskbar-nav {
-    gap: 8px;
-  }
-  
-  .taskbar-nav button {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    min-width: 70px;
-  }
-}
-
-@media (max-width: 900px) {
-  #taskbar {
-    flex-wrap: wrap;
-    min-height: auto;
-    padding: 10px 15px;
-  }
-
-  .taskbar-logo {
-    order: 1;
-    flex-basis: 100%;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-
-  .taskbar-logo img {
-    height: 50px;
-  }
-
-  .taskbar-nav {
-    order: 2;
-    flex-basis: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .taskbar-search {
-    order: 3;
-    flex-basis: 100%;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-
-  .taskbar-messages {
-    order: 4;
-  }
-
-  .taskbar-vip {
-    order: 5;
-  }
-
-  .taskbar-auth {
-    order: 6;
-  }
-
-  body {
-    padding-top: 200px;
-  }
-
-  .access-options {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .gate-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .choice-gate-content {
-    padding: 20px 15px;
-    margin: 10px;
-    max-width: 95%;
-  }
-
-  .message-preview-dropdown {
-    right: -50px;
-    min-width: 280px;
-  }
-}
-
-@media (max-width: 600px) {
-  body {
-    padding: 220px 10px 10px 10px;
-  }
-
-  .taskbar-logo img {
-    height: 45px;
-  }
-
-  .taskbar-nav button {
-    padding: 6px 8px;
-    font-size: 0.75rem;
-    min-width: 60px;
-  }
-
-  .taskbar-search input {
-    width: 120px;
-    min-width: 100px;
-  }
-
-  .choice-gate-content {
-    padding: 15px 10px;
-    margin: 5px;
-  }
-
-  .access-option {
-    padding: 20px 15px;
-  }
-
-  .access-option h3 {
-    font-size: 1.2rem;
-  }
-
-  .access-option .price {
-    font-size: 1.5rem;
-  }
-
-  .message-preview-dropdown {
-    right: -100px;
-    min-width: 260px;
-  }
-}
+ <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Rubik Mono One', sans-serif;
+      background-color: #1e1b2e;
+      color: #fefefe;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: linear-gradient(135deg, #2c1b33, #191425);
+      text-align: center;
+    }
+
+    /* Access Choice Gate */
+    #access-choice-gate {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      justify-content: flex-start;
+      align-items: center;
+      flex-direction: column;
+      z-index: 10000;
+      color: #ff69b4;
+      font-family: 'Rubik Mono One', sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #access-choice-gate.show {
+      display: flex;
+    }
+
+    .choice-gate-content {
+      background: #2a243b;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
+      max-width: 800px;
+      width: 90%;
+      margin: 20px auto;
+    }
+
+    .access-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin: 30px 0;
+    }
+
+    .access-option {
+      background: #3b3750;
+      padding: 30px 20px;
+      border-radius: 12px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .access-option:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .access-option.vip {
+      border-color: #2ecc71;
+      background: linear-gradient(135deg, #2d4a3a, #3b4d42);
+    }
+
+    .access-option.vip:hover {
+      border-color: #27ae60;
+      box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+    }
+
+    .access-option.free {
+      border-color: #3498db;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+    }
+
+    .access-option.free:hover {
+      border-color: #2980b9;
+      box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+    }
+
+    .access-option h3 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .access-option.vip h3 {
+      color: #2ecc71;
+    }
+
+    .access-option.free h3 {
+      color: #3498db;
+    }
+
+    .access-option .price {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    .access-option.vip .price {
+      color: #2ecc71;
+    }
+
+    .access-option.free .price {
+      color: #3498db;
+    }
+
+    .feature-list {
+      list-style: none;
+      text-align: left;
+      margin: 20px 0;
+    }
+
+    .feature-list li {
+      padding: 8px 0;
+      color: #ffc0cb;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+
+    .feature-list .icon {
+      width: 20px;
+      text-align: center;
+    }
+
+    .vip-only-features {
+      background: #2d4a3a;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #2ecc71;
+    }
+
+    .free-features {
+      background: #2c3e50;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #3498db;
+    }
+
+    /* VIP Process Steps */
+    .vip-process {
+      display: none;
+      margin-top: 30px;
+    }
+
+    .vip-step {
+      background: #3b3750;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 2px solid #ff69b4;
+    }
+
+    .vip-step.completed {
+      background: #2a4d3a;
+      border-color: #2ecc71;
+    }
+
+    .vip-step h4 {
+      color: #ff69b4;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+
+    .vip-step.completed h4 {
+      color: #2ecc71;
+    }
+
+    #github-login-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin: 10px 0;
+    }
+
+    #github-login-btn:hover {
+      background: #555;
+    }
+
+    #github-login-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .login-status {
+      color: #2ecc71;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .login-status.show {
+      display: block;
+    }
+
+    #vip-paypal-container {
+      margin: 20px 0;
+    }
+
+    .gate-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .gate-buttons button {
+      background: #666;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      min-width: 150px;
+    }
+
+    .gate-buttons button:hover {
+      background: #888;
+    }
+
+    .gate-buttons button.primary {
+      background: #ff69b4;
+      color: #1e1b2e;
+    }
+
+    .gate-buttons button.primary:hover {
+      background: #ff8edb;
+    }
+
+    #access-message {
+      margin: 15px 0;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+      font-size: 0.9rem;
+    }
+
+    .success-message {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .error-message {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .access-note {
+      background: #3b3750;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px solid #ff69b4;
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .access-note strong {
+      color: #ff69b4;
+    }
+
+    /* Taskbar */
+    #taskbar {
+      max-width: 1200px;
+      margin: 20px auto;
+      background-color: #2a243b;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #00000055;
+      padding: 15px 20px;
+      font-family: 'Rubik Mono One', sans-serif;
+      color: #fefefe;
+      position: relative;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .taskbar-logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .taskbar-logo img {
+      height: 90px;
+      width: auto;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .taskbar-logo img:hover {
+      transform: scale(1.1);
+    }
+
+    .taskbar-nav {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .taskbar-nav button {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .taskbar-nav button:hover {
+      background-color: #ff8edb;
+    }
+
+    .taskbar-nav button.vip-only {
+      background-color: #666;
+      color: #999;
+      cursor: not-allowed;
+      position: relative;
+    }
+
+    .taskbar-nav button.vip-only:hover::after {
+      content: "VIP Only";
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+    }
+
+    .taskbar-search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .taskbar-search input {
+      width: 200px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      background-color: #3b3750;
+      color: #fefefe;
+    }
+
+    .taskbar-search button {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .taskbar-search button:hover {
+      background-color: #ff8edb;
+    }
+
+    /* Message Notifications */
+    .taskbar-messages {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .messages-button {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .messages-button:hover {
+      background-color: #ff8edb;
+      transform: scale(1.05);
+    }
+
+    .messages-button.has-unread {
+      background: linear-gradient(45deg, #ff69b4, #ff1493);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .message-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: linear-gradient(45deg, #ff4444, #ff6666);
+      color: white;
+      border-radius: 50%;
+      min-width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+      border: 2px solid #2a243b;
+      animation: bounce-badge 1s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
+      }
+    }
+
+    @keyframes bounce-badge {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    .message-preview-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: #2a243b;
+      border: 2px solid #ff69b4;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      min-width: 320px;
+      max-width: 400px;
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+      margin-top: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .message-preview-dropdown.show {
+      display: flex;
+    }
+
+    .message-preview-header {
+      background: #3b3750;
+      padding: 12px 16px;
+      border-bottom: 1px solid #ff69b4;
+      font-weight: bold;
+      color: #ff69b4;
+      text-align: center;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .message-preview-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #3b3750;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .message-preview-item:hover {
+      background-color: #3b3750;
+    }
+
+    .message-preview-item.unread {
+      background: linear-gradient(90deg, rgba(255, 105, 180, 0.1), transparent);
+      border-left: 3px solid #ff69b4;
+    }
+
+    .message-preview-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .message-preview-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .message-preview-sender {
+      font-weight: bold;
+      color: #ff69b4;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .message-preview-text {
+      color: #fefefe;
+      font-size: 0.8rem;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .message-preview-time {
+      color: #999;
+      font-size: 0.7rem;
+      margin-top: 2px;
+    }
+
+    .message-preview-footer {
+      padding: 10px 16px;
+      text-align: center;
+      border-top: 1px solid #3b3750;
+      background: #3b3750;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .message-preview-footer button {
+      background: linear-gradient(45deg, #ff69b4, #ff8edb);
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.8rem;
+    }
+
+    .message-preview-footer button:hover {
+      transform: scale(1.05);
+    }
+
+    .no-messages {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      padding: 20px;
+      font-size: 0.9rem;
+    }
+
+    .taskbar-vip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .taskbar-vip button {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .taskbar-vip button:hover {
+      background-color: #ff8edb;
+    }
+
+    .vip-status {
+      color: #2ecc71;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .free-status {
+      color: #3498db;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .taskbar-auth {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .taskbar-auth button {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .taskbar-auth button:hover {
+      background-color: #ff8edb;
+    }
+
+    /* Dropdown styles */
+    #suggestions-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: #3b3750;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px #00000077;
+      display: none;
+      flex-direction: column;
+      z-index: 10;
+      margin-top: 5px;
+    }
+
+    #suggestions-dropdown > div {
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      color: #fefefe;
+    }
+
+    #suggestions-dropdown > div:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+    }
+
+    #user-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: #3b3750;
+      border: 2px solid #ff69b4;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px #00000077;
+      min-width: 150px;
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+      margin-top: 5px;
+    }
+
+    #user-dropdown button {
+      background: none;
+      border: none;
+      color: #fefefe;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: bold;
+      font-family: 'Rubik Mono One', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+      width: 100%;
+      border-radius: 0;
+    }
+
+    #user-dropdown button:hover {
+      background-color: #ff69b4;
+      color: #1e1b2e;
+    }
+
+    #user-dropdown button:first-child {
+      border-radius: 6px 6px 0 0;
+    }
+
+    #user-dropdown button:last-child {
+      border-radius: 0 0 6px 6px;
+    }
+
+    #user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    #user-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #ff69b4;
+      object-fit: cover;
+    }
+
+    @media (max-width: 900px) {
+      #taskbar {
+        max-width: 95%;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .taskbar-logo img {
+        height: 75px;
+      }
+
+      .taskbar-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .taskbar-search input {
+        width: 200px;
+      }
+
+      .access-options {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .gate-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .choice-gate-content {
+        padding: 20px 15px;
+        margin: 10px;
+        max-width: 95%;
+      }
+
+      .message-preview-dropdown {
+        right: -50px;
+        min-width: 280px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .taskbar-logo img {
+        height: 65px;
+      }
+
+      .choice-gate-content {
+        padding: 15px 10px;
+        margin: 5px;
+      }
+
+      .access-option {
+        padding: 20px 15px;
+      }
+
+      .access-option h3 {
+        font-size: 1.2rem;
+      }
+
+      .access-option .price {
+        font-size: 1.5rem;
+      }
+
+      .message-preview-dropdown {
+        right: -100px;
+        min-width: 260px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3036,6 +2953,7 @@ body {
     </script>
 </body>
 </html>
+
 
 
 
