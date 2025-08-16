@@ -318,30 +318,21 @@ crossorigin="anonymous"></script>
 
     /* Taskbar */
     #taskbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 20px auto;
       background-color: #2a243b;
-      border-radius: 0 0 12px 12px;
+      border-radius: 12px;
       box-shadow: 0 0 12px #00000055;
       padding: 15px 20px;
       font-family: 'Rubik Mono One', sans-serif;
       color: #fefefe;
+      position: relative;
       user-select: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 20px;
-      transition: top 0.3s ease-in-out;
-    }
-
-    #taskbar.hidden {
-      top: -120px; /* Adjust based on approximate taskbar height including padding */
     }
 
     .taskbar-logo {
@@ -1533,18 +1524,6 @@ crossorigin="anonymous"></script>
       suggestionsDropdown.style.display = 'none';
       highlightedIndex = -1;
     }
-  });
-
-  // New: Taskbar hide/show on scroll
-  let lastScrollTop = 0;
-  window.addEventListener('scroll', () => {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    if (scrollTop > lastScrollTop && scrollTop > 100) { // Hide only after scrolling past 100px
-      document.getElementById('taskbar').classList.add('hidden');
-    } else {
-      document.getElementById('taskbar').classList.remove('hidden');
-    }
-    lastScrollTop = scrollTop;
   });
 </script>
 
@@ -2974,6 +2953,7 @@ crossorigin="anonymous"></script>
     </script>
 </body>
 </html>
+
 
 
 
