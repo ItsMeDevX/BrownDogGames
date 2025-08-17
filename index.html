@@ -15,7 +15,6 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1336090735244829"
 crossorigin="anonymous"></script>
   
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,7 +36,7 @@ crossorigin="anonymous"></script>
       background-color: #1e1b2e;
       color: #fefefe;
       min-height: 100vh;
-      padding: 20px 20px 20px 220px; /* Reduced padding for smaller panel */
+      padding: 20px;
       background-image: linear-gradient(135deg, #2c1b33, #191425);
       text-align: center;
     }
@@ -317,37 +316,32 @@ crossorigin="anonymous"></script>
       color: #ff69b4;
     }
 
-    /* Side Panel Taskbar */
+    /* Taskbar */
     #taskbar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 200px; /* Reduced width for smaller panel */
+      max-width: 1200px;
+      margin: 20px auto;
       background-color: #2a243b;
-      border-radius: 0 12px 12px 0; /* Rounded on the right side */
+      border-radius: 12px;
       box-shadow: 0 0 12px #00000055;
-      padding: 15px 10px; /* Reduced padding */
+      padding: 15px 20px;
       font-family: 'Rubik Mono One', sans-serif;
       color: #fefefe;
+      position: relative;
       user-select: none;
       display: flex;
-      flex-direction: column; /* Vertical layout */
-      justify-content: flex-start;
       align-items: center;
-      gap: 10px; /* Reduced gap */
-      overflow: hidden; /* No scrolls */
-      z-index: 9999; /* Ensure it's above other content */
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
     }
 
     .taskbar-logo {
       display: flex;
       align-items: center;
-      margin-bottom: 10px; /* Reduced space below logo */
     }
 
     .taskbar-logo img {
-      height: 60px; /* Reduced logo size */
+      height: 90px;
       width: auto;
       cursor: pointer;
       transition: transform 0.2s;
@@ -359,25 +353,22 @@ crossorigin="anonymous"></script>
 
     .taskbar-nav {
       display: flex;
-      flex-direction: column; /* Stack buttons vertically */
-      gap: 8px; /* Reduced gap */
+      gap: 15px;
       align-items: center;
-      width: 100%;
+      flex-wrap: wrap;
     }
 
     .taskbar-nav button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 0.4rem 0.8rem; /* Reduced padding */
+      padding: 0.5rem 1rem;
       font-weight: bold;
-      font-size: 0.8rem; /* Reduced font size */
-      border-radius: 6px; /* Smaller radius */
+      font-size: 0.9rem;
+      border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
       white-space: nowrap;
-      width: 100%; /* Full width buttons */
-      max-width: 160px; /* Reduced max width */
     }
 
     .taskbar-nav button:hover {
@@ -407,20 +398,17 @@ crossorigin="anonymous"></script>
 
     .taskbar-search {
       display: flex;
-      flex-direction: column; /* Stack input and button vertically */
       align-items: center;
-      gap: 8px; /* Reduced gap */
+      gap: 10px;
       position: relative;
-      width: 100%;
     }
 
     .taskbar-search input {
-      width: 100%;
-      max-width: 160px; /* Reduced */
-      padding: 6px 10px; /* Reduced padding */
+      width: 200px;
+      padding: 8px 12px;
       border: none;
       border-radius: 6px;
-      font-size: 0.9rem; /* Reduced font size */
+      font-size: 1rem;
       background-color: #3b3750;
       color: #fefefe;
     }
@@ -429,14 +417,11 @@ crossorigin="anonymous"></script>
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 6px 10px; /* Reduced padding */
+      padding: 8px 12px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
       transition: background-color 0.2s;
-      width: 100%;
-      max-width: 160px; /* Reduced */
-      font-size: 0.9rem; /* Reduced font size */
     }
 
     .taskbar-search button:hover {
@@ -446,30 +431,25 @@ crossorigin="anonymous"></script>
     /* Message Notifications */
     .taskbar-messages {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 8px; /* Reduced gap */
+      gap: 10px;
       position: relative;
-      width: 100%;
     }
 
     .messages-button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 6px 12px; /* Reduced padding */
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.8rem; /* Reduced font size */
-      border-radius: 6px;
+      font-size: 0.9rem;
+      border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
       display: flex;
       align-items: center;
-      gap: 4px; /* Reduced gap */
-      width: 100%;
-      max-width: 160px; /* Reduced */
-      justify-content: center;
+      gap: 6px;
     }
 
     .messages-button:hover {
@@ -520,9 +500,8 @@ crossorigin="anonymous"></script>
 
     .message-preview-dropdown {
       position: absolute;
-      top: 0;
-      left: 100%; /* Position to the right of the button for side panel */
-      margin-left: 10px;
+      top: 100%;
+      right: 0;
       background-color: #2a243b;
       border: 2px solid #ff69b4;
       border-radius: 12px;
@@ -532,6 +511,7 @@ crossorigin="anonymous"></script>
       display: none;
       flex-direction: column;
       z-index: 1000;
+      margin-top: 10px;
       max-height: 400px;
       overflow-y: auto;
     }
@@ -642,24 +622,20 @@ crossorigin="anonymous"></script>
 
     .taskbar-vip {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 8px; /* Reduced gap */
-      width: 100%;
+      gap: 10px;
     }
 
     .taskbar-vip button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 6px 12px; /* Reduced padding */
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.8rem; /* Reduced font size */
-      border-radius: 6px;
+      font-size: 0.9rem;
+      border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
-      width: 100%;
-      max-width: 160px; /* Reduced */
     }
 
     .taskbar-vip button:hover {
@@ -672,7 +648,6 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.8rem; /* Reduced */
     }
 
     .free-status {
@@ -681,31 +656,25 @@ crossorigin="anonymous"></script>
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.8rem; /* Reduced */
     }
 
     .taskbar-auth {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 8px; /* Reduced gap */
+      gap: 10px;
       position: relative;
-      width: 100%;
-      margin-top: auto; /* Push to bottom */
     }
 
     .taskbar-auth button {
       background-color: #ff69b4;
       color: #1e1b2e;
       border: none;
-      padding: 6px 12px; /* Reduced padding */
+      padding: 8px 16px;
       font-weight: bold;
-      font-size: 0.8rem; /* Reduced font size */
-      border-radius: 6px;
+      font-size: 0.9rem;
+      border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s;
-      width: 100%;
-      max-width: 160px; /* Reduced */
     }
 
     .taskbar-auth button:hover {
@@ -742,7 +711,7 @@ crossorigin="anonymous"></script>
     #user-dropdown {
       position: absolute;
       top: 100%;
-      left: 0;
+      right: 0;
       background-color: #3b3750;
       border: 2px solid #ff69b4;
       border-radius: 8px;
@@ -758,13 +727,13 @@ crossorigin="anonymous"></script>
       background: none;
       border: none;
       color: #fefefe;
-      padding: 8px 12px; /* Reduced padding */
+      padding: 12px 16px;
       text-align: left;
       font-weight: bold;
       font-family: 'Rubik Mono One', sans-serif;
       cursor: pointer;
       transition: all 0.2s;
-      font-size: 0.8rem; /* Reduced font size */
+      font-size: 0.9rem;
       width: 100%;
       border-radius: 0;
     }
@@ -785,108 +754,39 @@ crossorigin="anonymous"></script>
     #user-info {
       display: flex;
       align-items: center;
-      gap: 8px; /* Reduced gap */
+      gap: 10px;
       cursor: pointer;
-      width: 100%;
-      justify-content: center;
     }
 
     #user-info img {
-      width: 35px; /* Reduced size */
-      height: 35px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       border: 2px solid #ff69b4;
       object-fit: cover;
     }
 
     @media (max-width: 900px) {
-      body {
-        padding-left: 0; /* Remove padding on small screens */
-      }
-
       #taskbar {
-        position: fixed;
-        top: auto;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        height: auto; /* Auto height for bottom bar on mobile */
-        flex-direction: row; /* Horizontal on mobile */
-        justify-content: space-around;
-        align-items: center;
-        border-radius: 12px 12px 0 0;
-        padding: 5px 3px; /* Further reduced padding */
-        gap: 2px; /* Further reduced gap */
-        overflow-x: auto;
-        overflow-y: hidden;
-        flex-wrap: nowrap;
-        white-space: nowrap;
+        max-width: 95%;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 20px;
       }
 
       .taskbar-logo img {
-        height: 30px; /* Reduced */
+        height: 75px;
       }
 
       .taskbar-nav {
-        flex-direction: row;
-        gap: 2px; /* Reduced */
-        flex-wrap: nowrap;
-      }
-
-      .taskbar-nav button {
-        width: auto;
-        padding: 4px 6px; /* Reduced */
-        font-size: 0.6rem; /* Smaller font */
-      }
-
-      .taskbar-search {
-        flex-direction: row;
-        width: auto;
-        gap: 2px; /* Reduced */
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
       }
 
       .taskbar-search input {
-        width: 100px; /* Reduced */
-        font-size: 0.7rem;
-        padding: 4px 6px; /* Reduced */
-      }
-
-      .taskbar-search button {
-        width: auto;
-        padding: 4px 6px; /* Reduced */
-        font-size: 0.7rem;
-      }
-
-      .taskbar-messages {
-        width: auto;
-      }
-
-      .messages-button {
-        width: auto;
-        padding: 4px 6px; /* Reduced */
-        font-size: 0.6rem;
-      }
-
-      .taskbar-vip {
-        width: auto;
-      }
-
-      .taskbar-vip button {
-        width: auto;
-        padding: 4px 6px; /* Reduced */
-        font-size: 0.6rem;
-      }
-
-      .taskbar-auth {
-        width: auto;
-        margin-top: 0;
-      }
-
-      .taskbar-auth button {
-        width: auto;
-        padding: 4px 6px; /* Reduced */
-        font-size: 0.6rem;
+        width: 200px;
       }
 
       .access-options {
@@ -906,21 +806,18 @@ crossorigin="anonymous"></script>
       }
 
       .message-preview-dropdown {
-        left: 0;
-        top: -100%; /* Position above on mobile */
-        margin-left: 0;
-        margin-bottom: 10px;
+        right: -50px;
         min-width: 280px;
       }
     }
 
     @media (max-width: 600px) {
       body {
-        padding: 10px 10px 50px 10px; /* Adjust for smaller bottom bar height */
+        padding: 10px;
       }
 
       .taskbar-logo img {
-        height: 25px; /* Reduced */
+        height: 65px;
       }
 
       .choice-gate-content {
@@ -941,6 +838,7 @@ crossorigin="anonymous"></script>
       }
 
       .message-preview-dropdown {
+        right: -100px;
         min-width: 260px;
       }
     }
@@ -1019,7 +917,7 @@ crossorigin="anonymous"></script>
   </div>
 </div>
 
-<!-- Side Panel Taskbar -->
+<!-- Taskbar -->
 <div id="taskbar">
   <div class="taskbar-logo">
     <img 
@@ -3055,6 +2953,7 @@ crossorigin="anonymous"></script>
     </script>
 </body>
 </html>
+
 
 
 
