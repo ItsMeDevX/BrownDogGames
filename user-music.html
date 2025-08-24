@@ -2856,7 +2856,7 @@ crossorigin="anonymous"></script>
         usernameSpan.textContent = user.username;
         a.appendChild(usernameSpan);
 
-        // Determine if URL is YouTube, SoundCloud, Spotify, or direct audio
+        // Determine if URL is YouTube, SoundCloud, Spotify, X (Twitter), or direct audio
         const musicUrl = user.music_url;
         let musicPlayer;
         
@@ -2922,6 +2922,21 @@ crossorigin="anonymous"></script>
             musicPlayer.style.width = '100%';
             musicPlayer.style.height = '140px';
             musicPlayer.style.border = 'none';
+          }
+        } else if (musicUrl.includes('x.com') || musicUrl.includes('twitter.com')) {
+          // X (Twitter) embed
+          musicPlayer = document.createElement('div');
+          musicPlayer.className = 'music-player';
+          musicPlayer.style.width = '100%';
+          musicPlayer.style.height = 'auto';
+          musicPlayer.style.minHeight = '140px';
+          musicPlayer.innerHTML = `
+            <blockquote class="twitter-tweet">
+              <a href="${musicUrl}"></a>
+            </blockquote>
+          `;
+          if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load(musicPlayer);
           }
         }
         
@@ -3046,12 +3061,14 @@ crossorigin="anonymous"></script>
       // Username
       featuredUsername.textContent = featuredUser.username;
 
-      // Music Player - Support for YouTube, SoundCloud, Spotify, and direct audio
+      // Music Player - Support for YouTube, SoundCloud, Spotify, X (Twitter), and direct audio
       if (featuredUser.music_url) {
         const musicUrl = featuredUser.music_url;
         
         // Clear the container
         featuredMusicContainer.innerHTML = '';
+        
+        let embedElement;
         
         if (musicUrl.includes('youtube.com') || musicUrl.includes('youtu.be')) {
           // YouTube embed
@@ -3072,36 +3089,22 @@ crossorigin="anonymous"></script>
           }
           
           if (embedSrc) {
-            const iframe = document.createElement('iframe');
-            iframe.src = embedSrc;
-            iframe.style.width = '100%';
-            iframe.style.height = '200px';
-            iframe.style.border = 'none';
-            iframe.style.borderRadius = '12px';
-            iframe.setAttribute('allowfullscreen', 'true');
-            
-            iframe.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            };
-            
-            featuredMusicContainer.appendChild(iframe);
+            embedElement = document.createElement('iframe');
+            embedElement.src = embedSrc;
+            embedElement.style.width = '100%';
+            embedElement.style.height = '200px';
+            embedElement.style.border = 'none';
+            embedElement.style.borderRadius = '12px';
+            embedElement.setAttribute('allowfullscreen', 'true');
           }
         } else if (musicUrl.includes('soundcloud.com')) {
           // SoundCloud embed
-          const iframe = document.createElement('iframe');
-          iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(musicUrl)}&color=%23ff69b4&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
-          iframe.style.width = '100%';
-          iframe.style.height = '200px';
-          iframe.style.border = 'none';
-          iframe.style.borderRadius = '12px';
-          
-          iframe.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          };
-          
-          featuredMusicContainer.appendChild(iframe);
+          embedElement = document.createElement('iframe');
+          embedElement.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(musicUrl)}&color=%23ff69b4&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
+          embedElement.style.width = '100%';
+          embedElement.style.height = '200px';
+          embedElement.style.border = 'none';
+          embedElement.style.borderRadius = '12px';
         } else if (musicUrl.includes('spotify.com')) {
           // Spotify embed
           let spotifyId = '';
@@ -3119,26 +3122,33 @@ crossorigin="anonymous"></script>
           }
           
           if (spotifyId && embedType) {
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
-            iframe.style.width = '100%';
-            iframe.style.height = embedType === 'track' ? '152px' : '200px';
-            iframe.style.border = 'none';
-            iframe.style.borderRadius = '12px';
-            
-            iframe.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            };
-            
-            featuredMusicContainer.appendChild(iframe);
+            embedElement = document.createElement('iframe');
+            embedElement.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
+            embedElement.style.width = '100%';
+            embedElement.style.height = embedType === 'track' ? '152px' : '200px';
+            embedElement.style.border = 'none';
+            embedElement.style.borderRadius = '12px';
+          }
+        } else if (musicUrl.includes('x.com') || musicUrl.includes('twitter.com')) {
+          // X (Twitter) embed
+          embedElement = document.createElement('div');
+          embedElement.style.width = '100%';
+          embedElement.style.height = 'auto';
+          embedElement.style.minHeight = '200px';
+          embedElement.innerHTML = `
+            <blockquote class="twitter-tweet">
+              <a href="${musicUrl}"></a>
+            </blockquote>
+          `;
+          if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load(embedElement);
           }
         } else {
           // Direct audio file - create new audio element
-          const audioElement = document.createElement('audio');
-          audioElement.controls = true;
-          audioElement.style.width = '100%';
-          audioElement.style.background = 'transparent';
+          embedElement = document.createElement('audio');
+          embedElement.controls = true;
+          embedElement.style.width = '100%';
+          embedElement.style.background = 'transparent';
           
           const sourceMP3 = document.createElement('source');
           sourceMP3.src = musicUrl;
@@ -3152,17 +3162,18 @@ crossorigin="anonymous"></script>
           sourceOGG.src = musicUrl;
           sourceOGG.type = 'audio/ogg';
           
-          audioElement.appendChild(sourceMP3);
-          audioElement.appendChild(sourceWAV);
-          audioElement.appendChild(sourceOGG);
-          audioElement.appendChild(document.createTextNode('Your browser does not support the audio element.'));
-          
-          audioElement.onclick = (e) => {
+          embedElement.appendChild(sourceMP3);
+          embedElement.appendChild(sourceWAV);
+          embedElement.appendChild(sourceOGG);
+          embedElement.appendChild(document.createTextNode('Your browser does not support the audio element.'));
+        }
+        
+        if (embedElement) {
+          embedElement.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
           };
-          
-          featuredMusicContainer.appendChild(audioElement);
+          featuredMusicContainer.appendChild(embedElement);
         }
       }
 
@@ -3247,8 +3258,11 @@ crossorigin="anonymous"></script>
     setTimeout(() => updateButtonStates('sortAlpha'), 100);
   </script>
   
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  
 </body>
 </html>
+
 
 
 
