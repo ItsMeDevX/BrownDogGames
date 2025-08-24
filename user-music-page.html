@@ -2318,6 +2318,17 @@ crossorigin="anonymous"></script>
   box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
 }
 
+.fullscreen-music-placeholder[data-platform="x"] {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #1da1f2;
+}
+
+.fullscreen-music-placeholder[data-platform="x"]:hover {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #1da1f2;
+  box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+}
+
 /* Update existing music-container to work with placeholders */
 .music-container {
   position: relative;
@@ -3634,11 +3645,7 @@ crossorigin="anonymous"></script>
         .eq('user_id', currentUser.id)
         .eq('username', username);
 
-      if (updateResult.error) {
-        console.error('Error updating like count:', updateResult.error);
-        return false;
-      }
-
+      if (updateResult.error) throw updateResult.error;
       return true;
     }
 
@@ -3653,11 +3660,7 @@ crossorigin="anonymous"></script>
         last_viewed_at: now,
       }]);
 
-    if (insertResult.error) {
-      console.error('Insert error:', insertResult.error);
-      return false;
-    }
-
+    if (insertResult.error) throw insertResult.error;
     return true;
   }
 
@@ -3904,6 +3907,11 @@ function createMusicPlaceholder(musicUrl, title) {
       platformText = 'Play audio file in fullscreen';
       platformName = 'AUDIO';
       break;
+    case 'x':
+      platformIcon = 'X';
+      platformText = 'View X post in fullscreen';
+      platformName = 'X';
+      break;
   }
   
   placeholder.innerHTML = `
@@ -3921,7 +3929,7 @@ function createMusicPlaceholder(musicUrl, title) {
   return container;
 }
 
-// Enhanced detect music platform/type with YouTube playlist support
+// Enhanced detect music platform/type with YouTube playlist and X support
 function detectMusicType(url) {
   if (!url) return 'unknown';
   
@@ -3935,6 +3943,7 @@ function detectMusicType(url) {
   if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
   if (urlLower.includes('soundcloud.com')) return 'soundcloud';
   if (urlLower.includes('spotify.com')) return 'spotify';
+  if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
   
   // Check for audio file extensions
   const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
@@ -4003,7 +4012,7 @@ function loadMusicInFullscreen(url, musicType, placeholderElement, title) {
   }, 1000);
 }
 
-// Enhanced createActualMusicPlayer with YouTube playlist support
+// Enhanced createActualMusicPlayer with YouTube playlist and X support
 function createActualMusicPlayer(musicUrl) {
   let player;
   
@@ -4099,6 +4108,25 @@ function createActualMusicPlayer(musicUrl) {
         e.stopPropagation();
       };
     }
+  } else if (musicUrl.includes('x.com') || musicUrl.includes('twitter.com')) {
+    // X embed
+    player = document.createElement('div');
+    player.style.width = '100%';
+    player.style.height = 'auto';
+    player.style.minHeight = '200px';
+    player.innerHTML = `
+      <blockquote class="twitter-tweet">
+        <a href="${musicUrl}"></a>
+      </blockquote>
+    `;
+    if (window.twttr && window.twttr.widgets) {
+      window.twttr.widgets.load(player);
+    }
+    
+    player.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
   }
   
   // Fallback to audio player for direct audio files
@@ -4516,7 +4544,7 @@ function createActualMusicPlayer(musicUrl) {
     });
   } else {
     console.warn('Extra form not found - VIP features may not work');
-  }
+  } 
 
   // Subscribe to real-time message updates
   supabase.channel('messages_' + username)
@@ -4589,6 +4617,8 @@ function createActualMusicPlayer(musicUrl) {
     }
   }
 </script>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
