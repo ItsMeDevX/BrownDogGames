@@ -2068,1008 +2068,1004 @@ crossorigin="anonymous"></script>
       animation: glow 2s ease-in-out infinite alternate;
     }
 
-    @keyframes glow {
-      from { box-shadow: 0 0 5px #ffd700; }
-      to { box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
-    }
-
-    .content-section {
-      max-width: 800px;
-      width: 100%;
-      margin-bottom: 40px;
-    }
-
-    .content-container {
-      display: grid;
-      gap: 20px;
-      justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      width: 100%;
-    }
-
-    .card {
-      background: linear-gradient(145deg, #3a2147, #241834);
-      border: 2px solid #ff4f9f;
-      border-radius: 16px;
-      padding: 20px;
-      width: 100%;
-      box-sizing: border-box;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .card:hover::before {
-      left: 100%;
-    }
-
-    .card:hover {
-      border-color: #ff82ba;
-      box-shadow: 0 12px 40px rgba(255, 79, 159, 0.3), 0 0 20px rgba(255, 130, 186, 0.2);
-      transform: translateY(-8px) scale(1.02);
-    }
-
-    .card.selected {
-      border-color: #ff82ba;
-      box-shadow: 0 0 30px #ff4f9f, inset 0 0 20px rgba(255, 79, 159, 0.1);
-      transform: scale(1.05);
-    }
-
-    .title {
-      margin-top: 0;
-      margin-bottom: 0.8rem;
-      text-align: center;
-      font-size: 1.1rem;
-      background: linear-gradient(135deg, #ff4f9f, #ff82ba);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
-      font-weight: bold;
-      position: relative;
-      z-index: 2;
-    }
-
-    .desc {
-      color: #e0e0e0;
-      margin: 0.5rem 0 1.2rem 0;
-      min-height: 2rem;
-      text-align: center;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      opacity: 0.9;
-      position: relative;
-      z-index: 2;
-      display: block;
-      width: 100%;
-      font-style: italic;
-    }
-
-    .image-container {
-      position: relative;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .thumbnail {
-      width: 100%;
-      max-height: 160px;
-      object-fit: cover;
-      border-radius: 12px;
-      margin-bottom: 15px;
-      display: block;
-      transition: transform 0.3s ease, filter 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      position: relative;
-      z-index: 2;
-    }
-
-    .card:hover .thumbnail {
-      transform: scale(1.05);
-      filter: brightness(1.1) contrast(1.1);
-    }
-
-    .fullscreen-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(255, 79, 159, 0.9);
-      color: #ffffff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 3;
-      font-family: 'Rubik Mono One', sans-serif;
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-
-    .image-container:hover .fullscreen-btn {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .fullscreen-btn:hover {
-      background: rgba(255, 130, 186, 1);
-      transform: scale(1.1);
-    }
-
-    .video-player {
-      width: 100%;
-      border-radius: 12px;
-      margin-bottom: 15px;
-      background-color: black;
-      min-height: 220px;
-      max-width: 100%;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      transition: transform 0.3s ease;
-      position: relative;
-      z-index: 2;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ff82ba;
-      font-size: 1rem;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    .video-player:hover {
-      transform: scale(1.02);
-      background-color: #1a1328;
-    }
-
-    .video-player.fullscreen-ready {
-      background: linear-gradient(45deg, #3a2147, #241834);
-      border: 2px dashed #ff4f9f;
-    }
-
-    .video-embed {
-      width: 100%;
-      border-radius: 12px;
-      margin-bottom: 15px;
-      background-color: black;
-      min-height: 220px;
-      max-width: 100%;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      transition: transform 0.3s ease;
-      position: relative;
-      z-index: 2;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ff82ba;
-      font-size: 1rem;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    .video-embed:hover {
-      transform: scale(1.02);
-      background-color: #1a1328;
-    }
-
-    .video-embed.fullscreen-ready {
-      background: linear-gradient(45deg, #3a2147, #241834);
-      border: 2px dashed #ff4f9f;
-    }
-
-    .play-link {
-      display: inline-block;
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
-      padding: 12px 20px;
-      border-radius: 25px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 0.9rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      margin-top: auto;
-      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-      position: relative;
-      z-index: 2;
-      overflow: hidden;
-    }
-
-    .play-link::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .play-link:hover::before {
-      left: 100%;
-    }
-
-    .play-link:hover { 
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-    }
-
-    /* Main Like Section Styles */
-    .main-content {
-      max-width: 600px;
-      width: 100%;
-      background: linear-gradient(145deg, #3a2147, #241834);
-      border: 2px solid #ff4f9f;
-      border-radius: 16px;
-      padding: 40px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 40px;
-    }
-
-    .main-content::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .main-content:hover::before {
-      left: 100%;
-    }
-
-    #like-status {
-      margin: 20px 0 30px;
-      font-size: 1.2rem;
-      color: #e0e0e0;
-      line-height: 1.4;
-      position: relative;
-      z-index: 2;
-      opacity: 0.9;
-      font-family: 'Rubik Mono One', sans-serif;
-    }
-
-    #main-like-btn {
-      display: inline-block;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: bold;
-      font-family: 'Rubik Mono One', sans-serif;
-      border-radius: 25px;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-      position: relative;
-      z-index: 2;
-      overflow: hidden;
-      margin-top: auto;
-    }
-
-    #main-like-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s ease;
-    }
-
-    #main-like-btn:hover::before {
-      left: 100%;
-    }
-
-    #main-like-btn:disabled {
-      background: linear-gradient(135deg, #666, #444);
-      cursor: not-allowed;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    #main-like-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-    }
-
-    /* Video Like System Styles */
-    .video-like-section {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255, 79, 159, 0.3);
-      position: relative;
-      z-index: 2;
-    }
-
-    .video-like-btn {
-      background: linear-gradient(135deg, #ff4f9f, #ff1493);
-      color: #ffffff;
-      border: none;
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Rubik Mono One', sans-serif;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
-    }
-
-    .video-like-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ff82ba, #ff69b4);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
-    }
-
-    .video-like-btn:disabled {
-      background: linear-gradient(135deg, #666, #444);
-      cursor: not-allowed;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .video-like-btn.liked {
-      background: linear-gradient(135deg, #ff69b4, #ff1493);
-      animation: pulse 0.3s ease-in-out;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-
-    .video-like-count {
-      color: #ff82ba;
-      font-size: 0.8rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .video-login-prompt {
-      font-size: 0.7rem;
-      color: #ddd;
-      text-align: center;
-      margin-top: 8px;
-      opacity: 0.8;
-    }
-
-    /* Fullscreen video placeholder */
-    .fullscreen-placeholder {
-      padding: 40px 20px;
-      text-align: center;
-      color: #ff82ba;
-      font-size: 1rem;
-      line-height: 1.5;
-      border: 2px dashed #ff4f9f;
-      border-radius: 12px;
-      background: linear-gradient(45deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.1));
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      width: 100%;
-      min-height: 220px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .fullscreen-placeholder:hover {
-      background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
-      border-color: #ff82ba;
-      transform: scale(1.02);
-      box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-    }
-
-    .fullscreen-placeholder::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .fullscreen-placeholder:hover::before {
-      left: 100%;
-    }
-
-    .fullscreen-placeholder .play-icon {
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-      display: block;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      animation: bounce 2s infinite;
-    }
-
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-10px); }
-      60% { transform: translateY(-5px); }
-    }
-
-    /* Platform-specific placeholder styling */
-    .fullscreen-placeholder[data-platform="youtube"] {
-      background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 79, 159, 0.1));
-      border-color: #ff0000;
-    }
-
-    .fullscreen-placeholder[data-platform="youtube"]:hover {
-      background: linear-gradient(45deg, rgba(255, 0, 0, 0.2), rgba(255, 79, 159, 0.2));
-      border-color: #ff0000;
-      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
-    }
-
-    .fullscreen-placeholder[data-platform="vimeo"] {
-      background: linear-gradient(45deg, rgba(26, 183, 234, 0.1), rgba(255, 79, 159, 0.1));
-      border-color: #1ab7ea;
-    }
-
-    .fullscreen-placeholder[data-platform="vimeo"]:hover {
-      background: linear-gradient(45deg, rgba(26, 183, 234, 0.2), rgba(255, 79, 159, 0.2));
-      border-color: #1ab7ea;
-      box-shadow: 0 4px 15px rgba(26, 183, 234, 0.3);
-    }
-
-    .fullscreen-placeholder[data-platform="tiktok"] {
-      background: linear-gradient(45deg, rgba(254, 44, 85, 0.1), rgba(255, 79, 159, 0.1));
-      border-color: #fe2c55;
-    }
-
-    .fullscreen-placeholder[data-platform="tiktok"]:hover {
-      background: linear-gradient(45deg, rgba(254, 44, 85, 0.2), rgba(255, 79, 159, 0.2));
-      border-color: #fe2c55;
-      box-shadow: 0 4px 15px rgba(254, 44, 85, 0.3);
-    }
-
-    .fullscreen-placeholder[data-platform="twitter"] {
-      background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
-      border-color: #1da1f2;
-    }
-
-    .fullscreen-placeholder[data-platform="twitter"]:hover {
-      background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
-      border-color: #1da1f2;
-      box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
-    }
-
-    #chat-container {
-      max-width: 800px;
-      width: 100%;
-      border: 2px solid #ff4f9f;
-      border-radius: 12px;
-      background-color: #2f1a39;
-      padding: 20px;
-      box-sizing: border-box;
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      height: 450px;
-      overflow: hidden;
-    }
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      padding-right: 10px;
-    }
-    #messages div { margin-bottom: 12px; }
-    #messages strong { color: #ff82ba; }
-
-    #chat-form {
-      display: flex;
-      gap: 10px;
-    }
-    #msg-input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #ff4f9f;
-      background-color: #2f1a39;
-      color: #fff;
-    }
-    button {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    button:hover { background-color: #ff82ba; }
-
-    .no-content {
-      font-size: 1.1rem;
-      text-align: center;
-      color: #ddd;
-      margin-top: 2rem;
-      font-style: italic;
-      background-color: #2f1a39;
-      padding: 1rem;
-      border-radius: 10px;
-    }
-
-    .vip-extras-section {
-      background: linear-gradient(135deg, #2f1a39, #3d2147);
-      border: 2px solid #ffd700;
-      border-radius: 12px;
-      padding: 2rem;
-      margin: 2rem 0;
-      max-width: 800px;
-      width: 100%;
-    }
-
-    .vip-extras-section h3 {
-      color: #ffd700;
-      margin-bottom: 1.5rem;
-      text-shadow: 0 0 10px #ffd700;
-    }
-
-    .page-owner-info {
-      background: rgba(255, 215, 0, 0.1);
-      border: 1px solid #ffd700;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 2rem;
-      text-align: center;
-      color: #ff82ba;
-    }
-
-    .page-owner-info .owner-name {
-      color: #ffd700;
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
-
-    .extras-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .vip-extras-container {
-      background: linear-gradient(135deg, #2f1a39, #3d2147);
-      border: 2px solid #ffd700;
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .vip-extras-container h2 {
-      color: #ffd700;
-      text-shadow: 0 0 10px #ffd700;
-      margin-bottom: 1rem;
-    }
-
-    .vip-extras-description {
-      color: #ff82ba;
-      margin-bottom: 2rem;
-      font-size: 1.1rem;
-    }
-
-    .button-link {
-      display: inline-block;
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      font-weight: bold;
-      text-decoration: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      margin: 0.5rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      font-family: inherit;
-      border: none;
-    }
-
-    .button-link:hover {
-      background-color: #ff82ba;
-    }
-
-    .vip-badges-section {
-      background: linear-gradient(135deg, #2f1a39, #3d2147);
-      border: 2px solid #ffd700;
-      border-radius: 12px;
-      padding: 2rem;
-      margin: 2rem 0;
-      max-width: 800px;
-      width: 100%;
-      display: none;
-    }
-
-    .vip-badges-section.show {
-      display: block;
-    }
-
-    .vip-badges-section h3 {
-      color: #ffd700;
-      margin-bottom: 1.5rem;
-      text-shadow: 0 0 10px #ffd700;
-    }
-
-    .badges-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .badge-item {
-      background-color: #1b1b2e;
-      border: 2px solid #ffd700;
-      border-radius: 8px;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .badge-item:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-    }
-
-    .badge-item.selected {
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
-      color: #1b1b2e;
-    }
-
-    .badge-emoji {
-      font-size: 2rem;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    .badge-name {
-      font-size: 0.8rem;
-      font-weight: bold;
-    }
-
-    .extra-card {
-      background-color: #1b1b2e;
-      border: 2px solid #ffd700;
-      border-radius: 12px;
-      padding: 1rem;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .extra-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-      border-color: #ffed4e;
-    }
-
-    .extra-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 1rem;
-    }
-
-    .extra-type {
-      background-color: #ff4f9f;
-      color: #1b1b2e;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      font-weight: bold;
-    }
-
-    .extra-title {
-      color: #ffd700;
-      margin: 0 0 0.5rem 0;
-      font-size: 1.1rem;
-      text-align: center;
-    }
-
-    .extra-description {
-      color: #ff82ba;
-      margin: 0 0 1rem 0;
-      font-size: 0.9rem;
-      text-align: center;
-      flex-grow: 1;
-    }
-
-    .extra-footer {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-top: auto;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(255, 79, 159, 0.3);
-    }
-
-    .extra-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      width: 100%;
-    }
-
-    .extra-creator {
-      font-size: 0.8rem;
-      color: #888;
-      flex: 1;
-      text-align: center;
-    }
-
-    .like-section {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-shrink: 0;
-    }
-
-    .like-btn {
-      background: none;
-      border: 2px solid #ff4f9f;
-      color: #ff4f9f;
-      border-radius: 20px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 0.8rem;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      white-space: nowrap;
-    }
-
-    .like-btn:hover:not(:disabled) {
-      background: #ff4f9f;
-      color: #1b1b2e;
-      transform: scale(1.05);
-    }
-
-    .like-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .like-btn.liked {
-      background: #ff4f9f;
-      color: #1b1b2e;
-      border-color: #ff4f9f;
-    }
-
-    .like-count {
-      color: #ffd700;
-      font-weight: bold;
-      font-size: 0.9rem;
-      min-width: 20px;
-      text-align: center;
-    }
-
-    .extra-link {
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
-      color: #1b1b2e;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-      text-align: center;
-      display: block;
-      width: 100%;
-      margin-top: 1rem;
-    }
-
-    .extra-link:hover {
-      background: linear-gradient(45deg, #ffed4e, #ffd700);
-      transform: translateY(-1px);
-    }
-
-    .add-extra-section {
-      background-color: #1b1b2e;
-      border: 2px solid #ffd700;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-top: 2rem;
-      display: none;
-    }
-
-    .add-extra-section.show {
-      display: block;
-    }
-
-    .add-extra-section h4 {
-      color: #ffd700;
-      margin: 0 0 1rem 0;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-group label {
-      color: #ff82ba;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      padding: 10px;
-      border: 2px solid #ff4f9f;
-      border-radius: 6px;
-      background-color: #2f1a39;
-      color: #fff;
-      font-family: inherit;
-      font-size: 0.9rem;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #ffd700;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      height: 80px;
-    }
-
-    .message {
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-      padding: 8px;
-      border-radius: 4px;
-    }
-
-    .message.vip {
-      background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 79, 159, 0.1));
-      border-left: 3px solid #ffd700;
-    }
-
-    .message-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .username {
-      font-weight: bold;
-      color: #ff82ba;
-    }
-
-    .username.vip {
-      color: #ffd700;
-      text-shadow: 0 0 5px #ffd700;
-    }
-
-    .user-badge {
-      font-size: 1rem;
-    }
-
-    .message-content {
-      color: #fefefe;
-    }
-
-    .message-time {
-      font-size: 0.7rem;
-      color: #888;
-      margin-left: auto;
-    }
-
-    #msg-input.vip {
-      border-color: #ffd700;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    }
-
-    .vip-button {
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
-      color: #1b1b2e;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-    }
-
-    .vip-button:hover {
-      background: linear-gradient(45deg, #ffed4e, #ffd700);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
-    }
-
-    @media (max-width: 768px) {
-      .main-content {
-        padding: 25px;
-      }
-      
-      #main-like-btn {
-        padding: 10px 16px;
-        font-size: 0.8rem;
-      }
-
-      .video-like-section {
-        flex-direction: column;
-        gap: 8px;
-        align-items: center;
-      }
-      
-      .video-like-btn {
-        font-size: 0.7rem;
-        padding: 4px 8px;
-      }
-      
-      .badges-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-  </style>
-</head>
+@keyframes glow {
+  from { box-shadow: 0 0 5px #ffd700; }
+  to { box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
+}
+
+.content-section {
+  max-width: 800px;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.content-container {
+  display: grid;
+  gap: 20px;
+  justify-items: center;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  width: 100%;
+}
+
+.card {
+  background: linear-gradient(145deg, #3a2147, #241834);
+  border: 2px solid #ff4f9f;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.card:hover::before {
+  left: 100%;
+}
+
+.card:hover {
+  border-color: #ff82ba;
+  box-shadow: 0 12px 40px rgba(255, 79, 159, 0.3), 0 0 20px rgba(255, 130, 186, 0.2);
+  transform: translateY(-8px) scale(1.02);
+}
+
+.card.selected {
+  border-color: #ff82ba;
+  box-shadow: 0 0 30px #ff4f9f, inset 0 0 20px rgba(255, 79, 159, 0.1);
+  transform: scale(1.05);
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+  text-align: center;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #ff4f9f, #ff82ba);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  font-weight: bold;
+  position: relative;
+  z-index: 2;
+}
+
+.desc {
+  color: #e0e0e0;
+  margin: 0.5rem 0 1.2rem 0;
+  min-height: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  opacity: 0.9;
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  font-style: italic;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.thumbnail {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  display: block;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 2;
+}
+
+.card:hover .thumbnail {
+  transform: scale(1.05);
+  filter: brightness(1.1) contrast(1.1);
+}
+
+.fullscreen-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 79, 159, 0.9);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 3;
+  font-family: 'Rubik Mono One', sans-serif;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.image-container:hover .fullscreen-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 130, 186, 1);
+  transform: scale(1.1);
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  background-color: black;
+  min-height: 220px;
+  max-width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff82ba;
+  font-size: 1rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.video-player:hover {
+  transform: scale(1.02);
+  background-color: #1a1328;
+}
+
+.video-player.fullscreen-ready {
+  background: linear-gradient(45deg, #3a2147, #241834);
+  border: 2px dashed #ff4f9f;
+}
+
+.video-embed {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  background-color: black;
+  min-height: 220px;
+  max-width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff82ba;
+  font-size: 1rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.video-embed:hover {
+  transform: scale(1.02);
+  background-color: #1a1328;
+}
+
+.video-embed.fullscreen-ready {
+  background: linear-gradient(45deg, #3a2147, #241834);
+  border: 2px dashed #ff4f9f;
+}
+
+.play-link {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff4f9f, #ff1493);
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  margin-top: auto;
+  box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.play-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.play-link:hover::before {
+  left: 100%;
+}
+
+.play-link:hover { 
+  background: linear-gradient(135deg, #ff82ba, #ff69b4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+}
+
+/* Main Like Section Styles */
+.main-content {
+  max-width: 600px;
+  width: 100%;
+  background: linear-gradient(145deg, #3a2147, #241834);
+  border: 2px solid #ff4f9f;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.main-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.main-content:hover::before {
+  left: 100%;
+}
+
+#like-status {
+  margin: 20px 0 30px;
+  font-size: 1.2rem;
+  color: #e0e0e0;
+  line-height: 1.4;
+  position: relative;
+  z-index: 2;
+  opacity: 0.9;
+  font-family: 'Rubik Mono One', sans-serif;
+}
+
+#main-like-btn {
+  display: inline-block;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ff4f9f, #ff1493);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: 'Rubik Mono One', sans-serif;
+  border-radius: 25px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+#main-like-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+#main-like-btn:hover::before {
+  left: 100%;
+}
+
+#main-like-btn:disabled {
+  background: linear-gradient(135deg, #666, #444);
+  cursor: not-allowed;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#main-like-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff82ba, #ff69b4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+}
+
+/* Video Like System Styles */
+.video-like-section {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 79, 159, 0.3);
+  position: relative;
+  z-index: 2;
+}
+
+.video-like-btn {
+  background: linear-gradient(135deg, #ff4f9f, #ff1493);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Rubik Mono One', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
+}
+
+.video-like-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff82ba, #ff69b4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
+}
+
+.video-like-btn:disabled {
+  background: linear-gradient(135deg, #666, #444);
+  cursor: not-allowed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.video-like-btn.liked {
+  background: linear-gradient(135deg, #ff69b4, #ff1493);
+  animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.video-like-count {
+  color: #ff82ba;
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.video-login-prompt {
+  font-size: 0.7rem;
+  color: #ddd;
+  text-align: center;
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+/* Fullscreen video placeholder */
+.fullscreen-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+  color: #ff82ba;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 2px dashed #ff4f9f;
+  border-radius: 12px;
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.1));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-placeholder:hover {
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
+  border-color: #ff82ba;
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+}
+
+.fullscreen-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.fullscreen-placeholder:hover::before {
+  left: 100%;
+}
+
+.fullscreen-placeholder .play-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+/* Platform-specific placeholder styling */
+.fullscreen-placeholder[data-platform="youtube"] {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #ff0000;
+}
+
+.fullscreen-placeholder[data-platform="youtube"]:hover {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #ff0000;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+}
+
+.fullscreen-placeholder[data-platform="vimeo"] {
+  background: linear-gradient(45deg, rgba(26, 183, 234, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #1ab7ea;
+}
+
+.fullscreen-placeholder[data-platform="vimeo"]:hover {
+  background: linear-gradient(45deg, rgba(26, 183, 234, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #1ab7ea;
+  box-shadow: 0 4px 15px rgba(26, 183, 234, 0.3);
+}
+
+.fullscreen-placeholder[data-platform="tiktok"] {
+  background: linear-gradient(45deg, rgba(254, 44, 85, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #fe2c55;
+}
+
+.fullscreen-placeholder[data-platform="tiktok"]:hover {
+  background: linear-gradient(45deg, rgba(254, 44, 85, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #fe2c55;
+  box-shadow: 0 4px 15px rgba(254, 44, 85, 0.3);
+}
+
+.fullscreen-placeholder[data-platform="twitter"] {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #1da1f2;
+}
+
+.fullscreen-placeholder[data-platform="twitter"]:hover {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #1da1f2;
+  box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+}
+
+#chat-container {
+  max-width: 800px;
+  width: 100%;
+  border: 2px solid #ff4f9f;
+  border-radius: 12px;
+  background-color: #2f1a39;
+  padding: 20px;
+  box-sizing: border-box;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 450px;
+  overflow: hidden;
+}
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 10px;
+}
+#messages div { margin-bottom: 12px; }
+#messages strong { color: #ff82ba; }
+
+#chat-form {
+  display: flex;
+  gap: 10px;
+}
+#msg-input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 2px solid #ff4f9f;
+  background-color: #2f1a39;
+  color: #fff;
+}
+button {
+  background-color: #ff4f9f;
+  color: #1b1b2e;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+button:hover { background-color: #ff82ba; }
+
+.no-content {
+  font-size: 1.1rem;
+  text-align: center;
+  color: #ddd;
+  margin-top: 2rem;
+  font-style: italic;
+  background-color: #2f1a39;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.vip-extras-section {
+  background: linear-gradient(135deg, #2f1a39, #3d2147);
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+  max-width: 800px;
+  width: 100%;
+}
+
+.vip-extras-section h3 {
+  color: #ffd700;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 10px #ffd700;
+}
+
+.page-owner-info {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid #ffd700;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #ff82ba;
+}
+
+.page-owner-info .owner-name {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.extras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.vip-extras-container {
+  background: linear-gradient(135deg, #2f1a39, #3d2147);
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.vip-extras-container h2 {
+  color: #ffd700;
+  text-shadow: 0 0 10px #ffd700;
+  margin-bottom: 1rem;
+}
+
+.vip-extras-description {
+  color: #ff82ba;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.button-link {
+  display: inline-block;
+  background-color: #ff4f9f;
+  color: #1b1b2e;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  margin: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: inherit;
+  border: none;
+}
+
+.button-link:hover {
+  background-color: #ff82ba;
+}
+
+.vip-badges-section {
+  background: linear-gradient(135deg, #2f1a39, #3d2147);
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+  max-width: 800px;
+  width: 100%;
+  display: none;
+}
+
+.vip-badges-section.show {
+  display: block;
+}
+
+.vip-badges-section h3 {
+  color: #ffd700;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 10px #ffd700;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.badge-item {
+  background-color: #1b1b2e;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.badge-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.badge-item.selected {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #1b1b2e;
+}
+
+.badge-emoji {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.badge-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.extra-card {
+  background-color: #1b1b2e;
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.extra-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  border-color: #ffed4e;
+}
+
+.extra-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.extra-type {
+  background-color: #ff4f9f;
+  color: #1b1b2e;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.extra-title {
+  color: #ffd700;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.extra-description {
+  color: #ff82ba;
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.extra-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 79, 159, 0.3);
+}
+
+.extra-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.extra-creator {
+  font-size: 0.8rem;
+  color: #888;
+  flex: 1;
+  text-align: center;
+}
+
+.like-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.like-btn {
+  background: none;
+  border: 2px solid #ff4f9f;
+  color: #ff4f9f;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.like-btn:hover:not(:disabled) {
+  background: #ff4f9f;
+  color: #1b1b2e;
+  transform: scale(1.05);
+}
+
+.like-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.like-btn.liked {
+  background: #ff4f9f;
+  color: #1b1b2e;
+  border-color: #ff4f9f;
+}
+
+.like-count {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 0.9rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+.extra-link {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #1b1b2e;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.extra-link:hover {
+  background: linear-gradient(45deg, #ffed4e, #ffd700);
+  transform: translateY(-1px);
+}
+
+.add-extra-section {
+  background-color: #1b1b2e;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  display: none;
+}
+
+.add-extra-section.show {
+  display: block;
+}
+
+.add-extra-section h4 {
+  color: #ffd700;
+  margin: 0 0 1rem 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: #ff82ba;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px;
+  border: 2px solid #ff4f9f;
+  border-radius: 6px;
+  background-color: #2f1a39;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.form-group textarea {
+  resize: vertical;
+  height: 80px;
+}
+
+.message {
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.message.vip {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 79, 159, 0.1));
+  border-left: 3px solid #ffd700;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.username {
+  font-weight: bold;
+  color: #ff82ba;
+}
+
+.username.vip {
+  color: #ffd700;
+  text-shadow: 0 0 5px #ffd700;
+}
+
+.user-badge {
+  font-size: 1rem;
+}
+
+.message-content {
+  color: #fefefe;
+}
+
+.message-time {
+  font-size: 0.7rem;
+  color: #888;
+  margin-left: auto;
+}
+
+#msg-input.vip {
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.vip-button {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #1b1b2e;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.vip-button:hover {
+  background: linear-gradient(45deg, #ffed4e, #ffd700);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 25px;
+  }
+  
+  #main-like-btn {
+    padding: 10px 16px;
+    font-size: 0.8rem;
+  }
+
+  .video-like-section {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .video-like-btn {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+  
+  .badges-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}  </style></head>
 <body>
 
-  <a href="user-videos.html" class="back-link">⬅️ Back to All Users</a>
-  <h1 id="pageTitle">User Content<span id="vipBadge" class="vip-badge" style="display: none;">👑 VIP</span></h1>
-
-  <section class="content-section" id="like-section">
+  <a href="user-videos.html" class="back-link"> Back to All Users</a>
+  <h1 id="pageTitle">User Content<span id="vipBadge" class="vip-badge" style="display: none;"> VIP</span></h1>  <section class="content-section" id="like-section">
     <div class="main-content">
       <p id="like-status">Loading...</p>
       <button id="main-like-btn">Like</button>
@@ -3082,87 +3078,85 @@ crossorigin="anonymous"></script>
   </section>
 
   <section class="vip-extras-section" id="vip-extras-section">
-    <h3>👑 VIP Community Extras</h3>
+    <h3> VIP Community Extras</h3>
     <div class="page-owner-info">
       <p>Exclusive content shared for <span class="owner-name" id="extras-username"></span></p>
     </div>
     
-    <div id="extrasContainer" class="extras-grid">
-      <div class="loading">Loading VIP extras...</div>
-    </div>
+<div id="extrasContainer" class="extras-grid">
+  <div class="loading">Loading VIP extras...</div>
+</div>
 
-    <div id="addExtraSection" class="add-extra-section">
-      <h4>➕ Share New VIP Extra</h4>
-      <form id="extraForm">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="extraTitle">Title *</label>
-            <input type="text" id="extraTitle" required placeholder="e.g., Bonus Content Pack">
-          </div>
-          <div class="form-group">
-            <label for="extraType">Type *</label>
-            <select id="extraType" required>
-              <option value="">Select type...</option>
-              <option value="download">Download</option>
-              <option value="link">External Link</option>
-              <option value="code">Cheat Code</option>
-              <option value="beta">Beta Access</option>
-              <option value="mod">Mod/Asset</option>
-              <option value="guide">Guide/Tutorial</option>
-              <option value="video">Bonus Video</option>
-              <option value="image">Image Pack</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="extraDescription">Description *</label>
-          <textarea id="extraDescription" required placeholder="Describe what this extra contains..."></textarea>
-        </div>
-        <div class="form-group">
-          <label for="extraUrl">URL/Link *</label>
-          <input type="url" id="extraUrl" required placeholder="https://...">
-        </div>
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-          <button type="submit" class="button-link vip-button">Add Extra</button>
-          <button type="button" class="button-link" onclick="toggleAddExtra()">Cancel</button>
-        </div>
-      </form>
+<div id="addExtraSection" class="add-extra-section">
+  <h4> Share New VIP Extra</h4>
+  <form id="extraForm">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="extraTitle">Title *</label>
+        <input type="text" id="extraTitle" required placeholder="e.g., Bonus Content Pack">
+      </div>
+      <div class="form-group">
+        <label for="extraType">Type *</label>
+        <select id="extraType" required>
+          <option value="">Select type...</option>
+          <option value="download">Download</option>
+          <option value="link">External Link</option>
+          <option value="code">Cheat Code</option>
+          <option value="beta">Beta Access</option>
+          <option value="mod">Mod/Asset</option>
+          <option value="guide">Guide/Tutorial</option>
+          <option value="video">Bonus Video</option>
+          <option value="image">Image Pack</option>
+        </select>
+      </div>
     </div>
+    <div class="form-group">
+      <label for="extraDescription">Description *</label>
+      <textarea id="extraDescription" required placeholder="Describe what this extra contains..."></textarea>
+    </div>
+    <div class="form-group">
+      <label for="extraUrl">URL/Link *</label>
+      <input type="url" id="extraUrl" required placeholder="https://...">
+    </div>
+    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+      <button type="submit" class="button-link vip-button">Add Extra</button>
+      <button type="button" class="button-link" onclick="toggleAddExtra()">Cancel</button>
+    </div>
+  </form>
+</div>
 
-    <button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()">➕ Add VIP Extra</button>
-  </section>
+<button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()"> Add VIP Extra</button>  </section>
 
   <div id="vipBadgesSection" class="vip-badges-section">
-    <h3>👑 VIP Badges</h3>
+    <h3> VIP Badges</h3>
     <p style="color: #ff82ba; margin-bottom: 1.5rem;">Choose your VIP badge that appears in chat:</p>
     
-    <div class="badges-grid">
-      <div class="badge-item" data-badge="👑" data-name="Crown">
-        <span class="badge-emoji">👑</span>
-        <span class="badge-name">Crown</span>
-      </div>
-      <div class="badge-item" data-badge="💎" data-name="Diamond">
-        <span class="badge-emoji">💎</span>
-        <span class="badge-name">Diamond</span>
-      </div>
-      <div class="badge-item" data-badge="🍆" data-name="Eggplant">
-        <span class="badge-emoji">🍆</span>
-        <span class="badge-name">Eggplant</span>
-      </div>
-      <div class="badge-item" data-badge="🐾" data-name="Paws">
-        <span class="badge-emoji">🐾</span>
-        <span class="badge-name">Paws</span>
-      </div>
-      <div class="badge-item" data-badge="💦" data-name="Splash">
-        <span class="badge-emoji">💦</span>
-        <span class="badge-name">Splash</span>
-      </div>
-      <div class="badge-item" data-badge="🎮" data-name="Gaming">
-        <span class="badge-emoji">🎮</span>
-        <span class="badge-name">Gaming</span>
-      </div>
-    </div>
+<div class="badges-grid">
+  <div class="badge-item" data-badge="👑" data-name="Crown">
+    <span class="badge-emoji">👑</span>
+    <span class="badge-name">Crown</span>
   </div>
+  <div class="badge-item" data-badge="💎" data-name="Diamond">
+    <span class="badge-emoji">💎</span>
+    <span class="badge-name">Diamond</span>
+  </div>
+  <div class="badge-item" data-badge="🍆" data-name="Eggplant">
+    <span class="badge-emoji">🍆</span>
+    <span class="badge-name">Eggplant</span>
+  </div>
+  <div class="badge-item" data-badge="🐾" data-name="Paws">
+    <span class="badge-emoji">🐾</span>
+    <span class="badge-name">Paws</span>
+  </div>
+  <div class="badge-item" data-badge="💦" data-name="Splash">
+    <span class="badge-emoji">💦</span>
+    <span class="badge-name">Splash</span>
+  </div>
+  <div class="badge-item" data-badge="🎮" data-name="Gaming">
+    <span class="badge-emoji">🎮</span>
+    <span class="badge-name">Gaming</span>
+  </div>
+</div>  </div>
 
   <section id="chat-container">
     <h2>Chat with <span id="chat-username">Loading...</span></h2>
@@ -3346,10 +3340,10 @@ crossorigin="anonymous"></script>
     if (isLiked !== null) {
       // Update UI
       if (isLiked) {
-        likeBtn.innerHTML = '❤️ Like';
+        likeBtn.innerHTML = ' Like';
         likeBtn.classList.add('liked');
       } else {
-        likeBtn.innerHTML = '🤍 Like';
+        likeBtn.innerHTML = ' Like';
         likeBtn.classList.remove('liked');
       }
       
@@ -3444,18 +3438,18 @@ crossorigin="anonymous"></script>
               '</span>' +
               '<div class="like-section">' +
                 '<button class="like-btn ' + (extra.userHasLiked ? 'liked' : '') + '" onclick="handleLikeClick(\'' + extra.id + '\')">' +
-                  (extra.userHasLiked ? '❤️' : '🤍') + ' Like' +
+                  (extra.userHasLiked ? '' : '') + ' Like' +
                 '</button>' +
                 '<span class="like-count">' + extra.likeCount + '</span>' +
               '</div>' +
             '</div>' +
             '<a href="' + (extra.url || '#') + '" target="_blank" class="extra-link">' +
-              (extra.type === 'download' ? '⬇ Download' : 
-               extra.type === 'link' ? '🔗 Open Link' : 
-               extra.type === 'code' ? '📋 Get Code' : 
-               extra.type === 'video' ? '🎬 Watch Video' :
-               extra.type === 'image' ? '🖼 View Images' :
-               '🎯 Access') +
+              (extra.type === 'download' ? ' Download' : 
+               extra.type === 'link' ? ' Open Link' : 
+               extra.type === 'code' ? ' Get Code' : 
+               extra.type === 'video' ? ' Watch Video' :
+               extra.type === 'image' ? ' View Images' :
+               ' Access') +
             '</a>' +
           '</div>' +
         '</div>';
@@ -3725,9 +3719,9 @@ crossorigin="anonymous"></script>
     const isLiked = userLikedVideos.has(videoId);
     const count = videoLikes[videoId] || 0;
 
-    likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+    likeBtn.innerHTML = isLiked ? ' Liked' : ' Like';
     likeBtn.className = 'video-like-btn' + (isLiked ? ' liked' : '');
-    likeCount.innerHTML = '❤️ ' + count;
+    likeCount.innerHTML = ' ' + count;
 
     if (isLiked) {
       likeBtn.classList.add('liked');
@@ -3742,16 +3736,16 @@ crossorigin="anonymous"></script>
     if (!status || !likeBtn) return;
 
     if (!currentUser) {
-      status.textContent = '❌ Please log in to like this page.';
+      status.textContent = ' Please log in to like this page.';
       likeBtn.style.display = 'none';
       return;
     }
 
     if (userHasLiked) {
-      status.textContent = '❤️ You already liked ' + username + "'s page. Total likes: " + totalLikes;
+      status.textContent = ' You already liked ' + username + "'s page. Total likes: " + totalLikes;
       likeBtn.disabled = true;
     } else {
-      status.textContent = '👍 Total likes for ' + username + ': ' + totalLikes;
+      status.textContent = ' Total likes for ' + username + ': ' + totalLikes;
       likeBtn.disabled = false;
     }
 
@@ -3852,38 +3846,38 @@ crossorigin="anonymous"></script>
     placeholder.setAttribute('data-platform', videoType);
     
     // Platform-specific icons and text
-    let platformIcon = '📹';
+    let platformIcon = '▶️';
     let platformText = 'Click to watch in fullscreen';
     let platformName = videoType.toUpperCase();
     
     switch (videoType) {
       case 'youtube':
-        platformIcon = '📺';
+        platformIcon = '▶️';
         platformText = 'Watch on YouTube in fullscreen';
         platformName = 'YOUTUBE';
         break;
       case 'vimeo':
-        platformIcon = '🎬';
+        platformIcon = '▶️';
         platformText = 'Watch on Vimeo in fullscreen';
         platformName = 'VIMEO';
         break;
       case 'tiktok':
-        platformIcon = '🎵';
+        platformIcon = '▶️';
         platformText = 'Watch on TikTok in fullscreen';
         platformName = 'TIKTOK';
         break;
       case 'twitter':
-        platformIcon = '🐦';
+        platformIcon = '▶️';
         platformText = 'View Twitter post in fullscreen';
         platformName = 'TWITTER/X';
         break;
       case 'drive':
-        platformIcon = '💾';
+        platformIcon = '▶️';
         platformText = 'Play Google Drive video in fullscreen';
         platformName = 'GOOGLE DRIVE';
         break;
       case 'video':
-        platformIcon = '🎥';
+        platformIcon = '▶️';
         platformText = 'Play video in fullscreen';
         platformName = 'VIDEO';
         break;
@@ -3927,7 +3921,7 @@ crossorigin="anonymous"></script>
     if (videoType === 'twitter') {
       setTimeout(() => {
         placeholderElement.innerHTML = `
-          <span class="play-icon">🚫</span>
+          <span class="play-icon">❌</span>
           <div style="margin-bottom: 15px;">TWITTER/X may block embedding</div>
           <button onclick="window.open('${url}', '_blank')" style="
             background: linear-gradient(45deg, #1da1f2, #ff4f9f);
@@ -3942,7 +3936,7 @@ crossorigin="anonymous"></script>
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
           " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            🐦 Open on TWITTER/X
+             Open on TWITTER/X
           </button>
           <div style="margin-top: 10px;">
             <small style="opacity: 0.7;">Click to watch in new tab</small>
@@ -3979,7 +3973,7 @@ crossorigin="anonymous"></script>
           transition: all 0.3s ease;
           box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
         " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          🔗 Open Video Direct
+           Open Video Direct
         </button>
         <div style="margin-top: 10px;">
           <small style="opacity: 0.7;">Click to try again</small>
@@ -4007,7 +4001,7 @@ crossorigin="anonymous"></script>
       } else if (videoElement.msRequestFullscreen) {
         videoElement.msRequestFullscreen();
       } else {
-        console.warn('Fullscreen not supported, showing video in current view');
+        console.warn('Fullscreen not supported, showing video in normal view');
       }
     };
     
@@ -4090,13 +4084,27 @@ crossorigin="anonymous"></script>
         const xId = extractXId(url);
         if (xId) {
           mediaEl = document.createElement('iframe');
-          mediaEl.src = `https://platform.twitter.com/embed/Tweet.html?id=${xId}`;
+          mediaEl.src = `https://platform.twitter.com/embed/Tweet.html?id=${xId}&theme=dark&lang=en`;
           mediaEl.width = '100%';
           mediaEl.height = '100%';
           mediaEl.frameBorder = '0';
           mediaEl.scrolling = 'no';
           mediaEl.className = 'video-embed';
           mediaEl.style.backgroundColor = '#000';
+        } else {
+          // Fallback: show placeholder
+          mediaEl = document.createElement('iframe');
+          mediaEl.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+            <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+              <h2> X Video</h2>
+              <p>This video is hosted on X (formerly Twitter).</p>
+              <p><a href="${url}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+            </body></html>
+          `);
+          mediaEl.style.width = '100%';
+          mediaEl.style.height = '100%';
+          mediaEl.style.border = 'none';
+          mediaEl.className = 'video-embed';
         }
         break;
         
@@ -4239,7 +4247,7 @@ crossorigin="anonymous"></script>
     .order('created_at', { ascending: false });
 
   if (result.error) {
-    videosContainer.innerHTML = '<div class="no-content">❌ Error loading videos: ' + result.error.message + '</div>';
+    videosContainer.innerHTML = '<div class="no-content"> Error loading videos: ' + result.error.message + '</div>';
     return;
   }
 
@@ -4250,15 +4258,15 @@ crossorigin="anonymous"></script>
 
   // Get current user and load like status
   currentUser = await getCurrentUser();
-  console.log('🔍 Current user:', currentUser);
+  console.log(' Current user:', currentUser);
   
   if (currentUser) {
     isVipUser = await checkVipStatus(currentUser);
     userHasLiked = await hasUserLiked(currentUser.id);
     
-    console.log('📊 Current user ID:', currentUser.id);
-    console.log('👑 Is VIP:', isVipUser);
-    console.log('📝 Page username:', username);
+    console.log(' Current user ID:', currentUser.id);
+    console.log(' Is VIP:', isVipUser);
+    console.log(' Page username:', username);
     
     // Show VIP badge and features if user is VIP
     if (isVipUser) {
@@ -4267,35 +4275,35 @@ crossorigin="anonymous"></script>
       const msgInput = document.getElementById('msg-input');
       const addExtraBtn = document.getElementById('addExtraBtn');
       
-      console.log('🎉 User is VIP! Enabling VIP features...');
+      console.log(' User is VIP! Enabling VIP features...');
       
       if (vipBadge) {
         vipBadge.style.display = 'inline-block';
-        console.log('✅ VIP badge shown');
+        console.log(' VIP badge shown');
       }
       
       if (vipBadgesSection) {
         vipBadgesSection.classList.add('show');
-        console.log('✅ VIP badges section shown');
+        console.log(' VIP badges section shown');
       }
       
       if (msgInput) {
         msgInput.classList.add('vip');
-        console.log('✅ VIP chat styling added');
+        console.log(' VIP chat styling added');
       }
       
       // Show add extra button for ALL VIP users (no page owner restriction)
       if (addExtraBtn) {
         addExtraBtn.style.display = 'inline-block';
-        addExtraBtn.textContent = '➕ Add VIP Extra';
-        console.log('✅ Add extra button shown for VIP user');
+        addExtraBtn.textContent = ' Add VIP Extra';
+        console.log(' Add extra button shown for VIP user');
       }
       
     } else {
-      console.log('❌ User is not VIP');
+      console.log(' User is not VIP');
     }
   } else {
-    console.log('❌ No current user logged in');
+    console.log(' No current user logged in');
   }
   
   totalLikes = await getTotalLikes();
@@ -4378,12 +4386,12 @@ crossorigin="anonymous"></script>
     const videoLikeBtn = document.createElement('button');
     videoLikeBtn.className = 'video-like-btn';
     const isLiked = userLikedVideos.has(videoId);
-    videoLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+    videoLikeBtn.innerHTML = isLiked ? ' Liked' : ' Like';
     if (isLiked) videoLikeBtn.classList.add('liked');
     
     if (!currentUser) {
       videoLikeBtn.disabled = true;
-      videoLikeBtn.innerHTML = '🤍 Like';
+      videoLikeBtn.innerHTML = ' Like';
     }
 
     videoLikeBtn.addEventListener('click', function(e) {
@@ -4393,7 +4401,7 @@ crossorigin="anonymous"></script>
 
     const videoLikeCount = document.createElement('div');
     videoLikeCount.className = 'video-like-count';
-    videoLikeCount.innerHTML = '❤️ ' + (videoLikes[videoId] || 0);
+    videoLikeCount.innerHTML = ' ' + (videoLikes[videoId] || 0);
 
     videoLikeSection.appendChild(videoLikeBtn);
     videoLikeSection.appendChild(videoLikeCount);
@@ -4564,11 +4572,11 @@ crossorigin="anonymous"></script>
   function escapeHtml(text) {
     return text.replace(/[&<>"']/g, function(m) {
       switch(m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
+        case '&': return '&';
+        case '<': return '<';
+        case '>': return '>';
+        case '"': return '"';
+        case "'": return ''';
         default: return m;
       }
     });
@@ -4578,7 +4586,7 @@ crossorigin="anonymous"></script>
   if (!username) {
     pageTitle.textContent = 'Error';
     chatHeading.textContent = 'Error';
-    videosContainer.innerHTML = '<p class="no-content">❌ No username provided in URL.</p>';
+    videosContainer.innerHTML = '<p class="no-content"> No username provided in URL.</p>';
     messagesDiv.innerHTML = '';
   } else {
     pageTitle.textContent = username + "'s Content";
@@ -4597,8 +4605,11 @@ crossorigin="anonymous"></script>
   }
 </script>
 
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 </body>
 </html>
+
 
 
 
