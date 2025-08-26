@@ -3133,8 +3133,16 @@ async function getCurrentUser() {
   };
 
   // Load VIP Extras for this user
-  async function loadVipExtras() {
-    const container = document.getElementById('extrasContainer');
+ async function loadVipExtras() {
+  const container = document.getElementById('extrasContainer');
+  
+  if (!supabase) {
+    if (container) container.innerHTML = '<div class="no-content">VIP extras unavailable - database connection failed</div>';
+    return;
+  }
+  
+  // ... rest of your existing function
+}
     const vipExtrasSection = document.getElementById('vip-extras-section');
     const extrasUsername = document.getElementById('extras-username');
     
@@ -4386,4 +4394,5 @@ async function getCurrentUser() {
 
 </body>
 </html>
+
 
