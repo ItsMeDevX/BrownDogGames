@@ -2372,13 +2372,11 @@ crossorigin="anonymous"></script>
 </head>
 <body>
 
-  <a href="index.html" class="back-link">⬅️ Back to Home</a>
-
-  <h1>All User Music Submissions</h1>
+  <a href="index.html" class="back-link"> Back to Home</a>  <h1>All User Music Submissions</h1>
 
   <!-- Featured Artist Section -->
   <section id="featuredArtist" aria-label="Featured Artist">
-    <h2>🎵 Featured Musician</h2>
+    <h2> Featured Musician</h2>
     <div class="avatar-img" id="featuredAvatar"></div>
     <div class="username-text" id="featuredUsername"></div>
     <div id="featuredMusicContainer" style="width: 100%; max-width: 350px; margin: 0 auto 1rem auto; background-color: #4a3157; border-radius: 16px; border: 3px solid #ff8bd8; box-shadow: 0 0 15px #ff8bd8cc; position: relative; z-index: 2;">
@@ -2395,10 +2393,10 @@ crossorigin="anonymous"></script>
   </section>
 
   <div>
-    <button class="back-link" id="sortAlpha">🅰️ Alphabetical</button>
-    <button class="back-link" id="sortNewest">🆕 Newest</button>
-    <button class="back-link" id="sortMostMusic">🎵 Most Music</button>
-    <button class="back-link" id="sortMostLiked">❤️ Most Liked</button>
+    <button class="back-link" id="sortAlpha"> Alphabetical</button>
+    <button class="back-link" id="sortNewest"> Newest</button>
+    <button class="back-link" id="sortMostMusic"> Most Music</button>
+    <button class="back-link" id="sortMostLiked"> Most Liked</button>
   </div>
 
   <div id="userList" class="loading">Loading musicians and calculating comprehensive likes including music and game points...</div>
@@ -2428,58 +2426,58 @@ crossorigin="anonymous"></script>
 
     // Enhanced username extraction function (same as games page)
     function extractUsername(fullUsername) {
-      console.log(`🔍 Music page: Extracting username from: "${fullUsername}"`);
+      console.log(` Music page: Extracting username from: "${fullUsername}"`);
       
       // Handle extra format: ItsMeDevX_extra_ae77d5d3-334d-404c-904f-7c62e8107377
       if (fullUsername.includes('_extra_')) {
         const username = fullUsername.split('_extra_')[0];
-        console.log(`✅ Music page: Extracted from extra: "${username}"`);
+        console.log(` Music page: Extracted from extra: "${username}"`);
         return { username, contentType: 'extras' };
       }
       
       // Handle video format: jsZenO_video_6736ba9f-d596-4429-8a00-a220ff2c40ff
       if (fullUsername.includes('_video_')) {
         const username = fullUsername.split('_video_')[0];
-        console.log(`✅ Music page: Extracted from video: "${username}"`);
+        console.log(` Music page: Extracted from video: "${username}"`);
         return { username, contentType: 'videos' };
       }
       
       // Handle game format: livestrong-cell_game_926810a5-c696-4a3d-9b4d-126126761134
       if (fullUsername.includes('_game_')) {
         const username = fullUsername.split('_game_')[0];
-        console.log(`✅ Music page: Extracted from game: "${username}"`);
+        console.log(` Music page: Extracted from game: "${username}"`);
         return { username, contentType: 'games' };
       }
       
       // Handle artwork format: kenzolerd145_artwork_c0041829-37ec-46ae-9db9-de24d2637abf
       if (fullUsername.includes('_artwork_')) {
         const username = fullUsername.split('_artwork_')[0];
-        console.log(`✅ Music page: Extracted from artwork: "${username}"`);
+        console.log(` Music page: Extracted from artwork: "${username}"`);
         return { username, contentType: 'art' };
       }
       
       // Handle music format: ItsMeDevX_music_1
       if (fullUsername.includes('_music_')) {
         const username = fullUsername.split('_music_')[0];
-        console.log(`✅ Music page: Extracted from music: "${username}"`);
+        console.log(` Music page: Extracted from music: "${username}"`);
         return { username, contentType: 'music' };
       }
       
       // Handle old extra format: extra_someId (map to creator via VIP extras table)
       if (fullUsername.startsWith('extra_')) {
-        console.log(`⚠️ Music page: Found old extra format: "${fullUsername}" - needs creator lookup`);
+        console.log(` Music page: Found old extra format: "${fullUsername}" - needs creator lookup`);
         return { username: fullUsername, contentType: 'extras', needsCreatorLookup: true };
       }
       
       // Default case - assume it's a page view
-      console.log(`✅ Music page: Treating as page view: "${fullUsername}"`);
+      console.log(` Music page: Treating as page view: "${fullUsername}"`);
       return { username: fullUsername, contentType: 'page' };
     }
 
     // Get consolidation mapping from users table + game submissions (same as games page)
     async function getConsolidationMapping() {
       try {
-        console.log('🔍 Music page: Getting consolidation mappings...');
+        console.log(' Music page: Getting consolidation mappings...');
         
         // Get users with github_username
         const { data: users, error: usersError } = await supabase
@@ -2487,7 +2485,7 @@ crossorigin="anonymous"></script>
           .select('id, github_username');
         
         if (usersError) {
-          console.log(`❌ Music page: Error fetching users: ${usersError.message}`);
+          console.log(` Music page: Error fetching users: ${usersError.message}`);
           return {};
         }
 
@@ -2497,12 +2495,12 @@ crossorigin="anonymous"></script>
           .select('user_id, github_user');
         
         if (submissionsError) {
-          console.log(`❌ Music page: Error fetching submissions: ${submissionsError.message}`);
+          console.log(` Music page: Error fetching submissions: ${submissionsError.message}`);
           return {};
         }
 
-        console.log(`👥 Music page: Found ${users?.length || 0} users`);
-        console.log(`🎮 Music page: Found ${gameSubmissions?.length || 0} game submissions`);
+        console.log(` Music page: Found ${users?.length || 0} users`);
+        console.log(` Music page: Found ${gameSubmissions?.length || 0} game submissions`);
 
         // Create mapping
         const consolidationMap = {};
@@ -2514,7 +2512,7 @@ crossorigin="anonymous"></script>
               if (user && user.github_username) {
                 consolidationMap[submission.github_user] = user.github_username;
                 consolidationMap[submission.github_user.toLowerCase()] = user.github_username;
-                console.log(`🔗 Music page: Mapping: "${submission.github_user}" → "${user.github_username}"`);
+                console.log(` Music page: Mapping: "${submission.github_user}" → "${user.github_username}"`);
               }
             }
           });
@@ -2529,14 +2527,14 @@ crossorigin="anonymous"></script>
         Object.entries(manualRules).forEach(([from, to]) => {
           consolidationMap[from] = to;
           consolidationMap[from.toLowerCase()] = to;
-          console.log(`🔧 Music page: Manual mapping: "${from}" → "${to}"`);
+          console.log(` Music page: Manual mapping: "${from}" → "${to}"`);
         });
 
-        console.log(`🗺️ Music page: Total mappings: ${Object.keys(consolidationMap).length}`);
+        console.log(` Music page: Total mappings: ${Object.keys(consolidationMap).length}`);
         return consolidationMap;
         
       } catch (error) {
-        console.log(`❌ Music page: Error getting consolidation mapping: ${error.message}`);
+        console.log(` Music page: Error getting consolidation mapping: ${error.message}`);
         return {};
       }
     }
@@ -2547,13 +2545,13 @@ crossorigin="anonymous"></script>
       
       // Check exact match first
       if (consolidationMap[username]) {
-        console.log(`✅ Music page: Consolidating: "${username}" → "${consolidationMap[username]}"`);
+        console.log(` Music page: Consolidating: "${username}" → "${consolidationMap[username]}"`);
         return consolidationMap[username];
       }
       
       // Check lowercase match
       if (consolidationMap[lower]) {
-        console.log(`✅ Music page: Consolidating (lowercase): "${username}" → "${consolidationMap[lower]}"`);
+        console.log(` Music page: Consolidating (lowercase): "${username}" → "${consolidationMap[lower]}"`);
         return consolidationMap[lower];
       }
       
@@ -2565,7 +2563,7 @@ crossorigin="anonymous"></script>
       if (!username) return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
 
       try {
-        console.log(`🔍 Music page: Getting comprehensive likes breakdown for ${username}`);
+        console.log(` Music page: Getting comprehensive likes breakdown for ${username}`);
 
         // Get consolidation mapping
         const consolidationMap = await getConsolidationMapping();
@@ -2591,7 +2589,7 @@ crossorigin="anonymous"></script>
           });
         }
 
-        console.log(`🗺️ Music page: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
+        console.log(` Music page: Created creator map for ${Object.keys(extraCreatorMap).length} extras`);
 
         // Step 2: Get all view records
         const { data: allViews, error: viewsError } = await supabase
@@ -2623,9 +2621,9 @@ crossorigin="anonymous"></script>
               const creatorInfo = extraCreatorMap[extraId];
               if (creatorInfo && creatorInfo.creatorName) {
                 finalUsername = creatorInfo.creatorName;
-                console.log(`✅ Music page: Mapped old extra ${extraId} to creator: ${finalUsername}`);
+                console.log(` Music page: Mapped old extra ${extraId} to creator: ${finalUsername}`);
               } else {
-                console.log(`⚠️ Music page: No creator found for old extra ${extraId}, skipping`);
+                console.log(` Music page: No creator found for old extra ${extraId}, skipping`);
                 return;
               }
             }
@@ -2652,7 +2650,7 @@ crossorigin="anonymous"></script>
             if (finalContentType === 'page' || finalContentType === 'videos' || finalContentType === 'games' || finalContentType === 'art' || finalContentType === 'music' || finalContentType === 'extras') {
               usersLikesMap[finalUsername][finalContentType] += viewCount;
               usersLikesMap[finalUsername].gamePoints += gamePoints;
-              console.log(`📈 Music page: Added ${viewCount} ${finalContentType} likes + ${gamePoints} game points to ${finalUsername}`);
+              console.log(` Music page: Added ${viewCount} ${finalContentType} likes + ${gamePoints} game points to ${finalUsername}`);
             }
           });
         }
@@ -2665,7 +2663,7 @@ crossorigin="anonymous"></script>
           // Calculate total (including game points)
           userLikesData.total = userLikesData.page + userLikesData.videos + userLikesData.games + userLikesData.art + userLikesData.music + userLikesData.extras + userLikesData.gamePoints;
           
-          console.log(`📊 Music page: Final likes for ${normalizedRequestedUsername}:`, userLikesData);
+          console.log(` Music page: Final likes for ${normalizedRequestedUsername}:`, userLikesData);
           
           return {
             page: userLikesData.page,
@@ -2678,7 +2676,7 @@ crossorigin="anonymous"></script>
             total: userLikesData.total
           };
         } else {
-          console.log(`📊 Music page: No likes found for ${normalizedRequestedUsername}`);
+          console.log(` Music page: No likes found for ${normalizedRequestedUsername}`);
           return { page: 0, videos: 0, games: 0, art: 0, music: 0, extras: 0, gamePoints: 0, total: 0 };
         }
 
@@ -2924,19 +2922,30 @@ crossorigin="anonymous"></script>
             musicPlayer.style.border = 'none';
           }
         } else if (musicUrl.includes('x.com') || musicUrl.includes('twitter.com')) {
-          // X (Twitter) embed
-          musicPlayer = document.createElement('div');
-          musicPlayer.className = 'music-player';
-          musicPlayer.style.width = '100%';
-          musicPlayer.style.height = 'auto';
-          musicPlayer.style.minHeight = '140px';
-          musicPlayer.innerHTML = `
-            <blockquote class="twitter-tweet">
-              <a href="${musicUrl}"></a>
-            </blockquote>
-          `;
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load(musicPlayer);
+          // X (Twitter) embed - adapted from video page
+          const xMatch = musicUrl.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
+          if (xMatch) {
+            const tweetId = xMatch[1];
+            musicPlayer = document.createElement('iframe');
+            musicPlayer.className = 'music-player';
+            musicPlayer.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+            musicPlayer.style.width = '100%';
+            musicPlayer.style.height = '140px';
+            musicPlayer.style.border = 'none';
+          } else {
+            // Fallback: show placeholder
+            musicPlayer = document.createElement('iframe');
+            musicPlayer.className = 'music-player';
+            musicPlayer.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+              <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+                <h2> X Music</h2>
+                <p>This music is hosted on X (formerly Twitter).</p>
+                <p><a href="${musicUrl}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+              </body></html>
+            `);
+            musicPlayer.style.width = '100%';
+            musicPlayer.style.height = '140px';
+            musicPlayer.style.border = 'none';
           }
         }
         
@@ -3011,8 +3020,8 @@ crossorigin="anonymous"></script>
         const likesDiv = document.createElement('div');
         likesDiv.className = 'likes-breakdown';
         likesDiv.innerHTML = `
-          <div class="total-likes">❤️ ${user.likesBreakdown.total} Total Likes</div>
-          <div class="likes-detail">📄 ${user.likesBreakdown.page} • 🎮 ${user.likesBreakdown.games} • 🎬 ${user.likesBreakdown.videos} • 🎨 ${user.likesBreakdown.art} • 🎵 ${user.likesBreakdown.music} • ⭐ ${user.likesBreakdown.extras} • 🎯 ${user.likesBreakdown.gamePoints}</div>
+          <div class="total-likes"> ${user.likesBreakdown.total} Total Likes</div>
+          <div class="likes-detail"> ${user.likesBreakdown.page} •  ${user.likesBreakdown.games} •  ${user.likesBreakdown.videos} •  ${user.likesBreakdown.art} •  ${user.likesBreakdown.music} •  ${user.likesBreakdown.extras} •  ${user.likesBreakdown.gamePoints}</div>
         `;
         a.appendChild(likesDiv);
 
@@ -3130,18 +3139,30 @@ crossorigin="anonymous"></script>
             embedElement.style.borderRadius = '12px';
           }
         } else if (musicUrl.includes('x.com') || musicUrl.includes('twitter.com')) {
-          // X (Twitter) embed
-          embedElement = document.createElement('div');
-          embedElement.style.width = '100%';
-          embedElement.style.height = 'auto';
-          embedElement.style.minHeight = '200px';
-          embedElement.innerHTML = `
-            <blockquote class="twitter-tweet">
-              <a href="${musicUrl}"></a>
-            </blockquote>
-          `;
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load(embedElement);
+          // X (Twitter) embed - adapted from video page
+          const xMatch = musicUrl.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
+          if (xMatch) {
+            const tweetId = xMatch[1];
+            embedElement = document.createElement('iframe');
+            embedElement.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+            embedElement.style.width = '100%';
+            embedElement.style.height = '200px';
+            embedElement.style.border = 'none';
+            embedElement.style.borderRadius = '12px';
+          } else {
+            // Fallback: show placeholder
+            embedElement = document.createElement('iframe');
+            embedElement.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+              <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+                <h2> X Music</h2>
+                <p>This music is hosted on X (formerly Twitter).</p>
+                <p><a href="${musicUrl}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+              </body></html>
+            `);
+            embedElement.style.width = '100%';
+            embedElement.style.height = '200px';
+            embedElement.style.border = 'none';
+            embedElement.style.borderRadius = '12px';
           }
         } else {
           // Direct audio file - create new audio element
@@ -3206,8 +3227,8 @@ crossorigin="anonymous"></script>
 
       // Likes (now includes music and game points!)
       featuredLikes.innerHTML = `
-        <div class="total-likes">❤️ ${featuredUser.likesBreakdown.total} Total Likes</div>
-        <div class="likes-detail">📄 ${featuredUser.likesBreakdown.page} Page • 🎮 ${featuredUser.likesBreakdown.games} Games • 🎬 ${featuredUser.likesBreakdown.videos} Videos • 🎨 ${featuredUser.likesBreakdown.art} Art • 🎵 ${featuredUser.likesBreakdown.music} Music • ⭐ ${featuredUser.likesBreakdown.extras} Extras • 🎯 ${featuredUser.likesBreakdown.gamePoints} Game Points</div>
+        <div class="total-likes"> ${featuredUser.likesBreakdown.total} Total Likes</div>
+        <div class="likes-detail"> ${featuredUser.likesBreakdown.page} Page •  ${featuredUser.likesBreakdown.games} Games •  ${featuredUser.likesBreakdown.videos} Videos •  ${featuredUser.likesBreakdown.art} Art •  ${featuredUser.likesBreakdown.music} Music •  ${featuredUser.likesBreakdown.extras} Extras •  ${featuredUser.likesBreakdown.gamePoints} Game Points</div>
       `;
       
       // Click handler for featured section (but not on the music player)
@@ -3257,9 +3278,6 @@ crossorigin="anonymous"></script>
     // Set initial button state
     setTimeout(() => updateButtonStates('sortAlpha'), 100);
   </script>
-  
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  
 </body>
 </html>
 
