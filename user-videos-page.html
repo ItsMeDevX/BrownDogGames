@@ -2958,12 +2958,29 @@ button:hover { background-color: #ff82ba; }.no-content {
   let selectedBadge = '';
   let activeVideoElements = new Map(); // Track active video elements for cleanup
 
-  // Get current user
-  async function getCurrentUser() {
-    const result = await supabase.auth.getUser();
-    if (result.error || !result.data.user) return null;
-    return result.data.user;
+// Get current user with better error handling
+async function getCurrentUser() {
+  if (!supabase) {
+    console.warn('⚠️ Supabase not available');
+    return null;
   }
+  
+  try {
+    console.log('🔍 Getting current user...');
+    const result = await supabase.auth.getUser();
+    if (result.error) {
+      console.log('ℹ️ No authenticated user:', result.error.message);
+      return null;
+    }
+    if (result.data.user) {
+      console.log('✅ User found:', result.data.user.id);
+    }
+    return result.data.user;
+  } catch (error) {
+    console.error('❌ Error getting current user:', error);
+    return null;
+  }
+}
 
   // Check if user is VIP
   async function checkVipStatus(user) {
@@ -4369,3 +4386,4 @@ button:hover { background-color: #ff82ba; }.no-content {
 
 </body>
 </html>
+
