@@ -2153,12 +2153,6 @@ crossorigin="anonymous"></script>
       background-color: #3b2750;
     }
 
-    .music-player iframe {
-      width: 100%;
-      border: none;
-      border-radius: 10px;
-    }
-
     .fullscreen-music-btn {
       position: absolute;
       top: 8px;
@@ -3754,7 +3748,7 @@ crossorigin="anonymous"></script>
     fullscreenPlayer.innerHTML = '';
     
     // Create the music player for fullscreen
-    const player = createMusicPlayer(musicUrl);
+    const player = createActualMusicPlayer(musicUrl);
     player.className = 'fullscreen-music-player';
     
     // For audio elements, add special styling
@@ -3791,7 +3785,7 @@ crossorigin="anonymous"></script>
     const fullscreenView = document.getElementById('fullscreen-music-view');
     const fullscreenPlayer = document.getElementById('fullscreen-music-player');
     
-    // Stop any playing audio
+    // Stop previous playing audio
     if (currentFullscreenMusic && currentFullscreenMusic.element.tagName === 'AUDIO') {
       currentFullscreenMusic.element.pause();
       currentFullscreenMusic.element.currentTime = 0;
@@ -4109,18 +4103,30 @@ function createActualMusicPlayer(musicUrl) {
       };
     }
   } else if (musicUrl.includes('x.com') || musicUrl.includes('twitter.com')) {
-    // X embed
-    player = document.createElement('div');
-    player.style.width = '100%';
-    player.style.height = 'auto';
-    player.style.minHeight = '200px';
-    player.innerHTML = `
-      <blockquote class="twitter-tweet">
-        <a href="${musicUrl}"></a>
-      </blockquote>
-    `;
-    if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load(player);
+    // X embed - improved iframe support from video page
+    const xMatch = musicUrl.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
+    if (xMatch) {
+      const tweetId = xMatch[1];
+      player = document.createElement('iframe');
+      player.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+      player.style.width = '100%';
+      player.style.height = '200px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+    } else {
+      // Fallback placeholder
+      player = document.createElement('iframe');
+      player.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+          <h2> X Music</h2>
+          <p>This music is hosted on X (formerly Twitter).</p>
+          <p><a href="${musicUrl}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+        </body></html>
+      `);
+      player.style.width = '100%';
+      player.style.height = '200px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
     }
     
     player.onclick = (e) => {
@@ -4618,7 +4624,7 @@ function createActualMusicPlayer(musicUrl) {
   }
 </script>
 
-<script async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
