@@ -3174,9 +3174,10 @@ button:hover { background-color: #ff82ba; }
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
+  // REPLACE THESE WITH YOUR NEW SUPABASE PROJECT'S URL AND ANON KEY
   const supabase = createClient(
-    'https://fwslmbzfukriibnkpzou.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+    'https://your-new-project-ref.supabase.co',  // <--- Update this
+    'your-new-anon-key-here'  // <--- Update this
   );
 
   const pageTitle = document.getElementById('pageTitle');
@@ -3201,9 +3202,14 @@ button:hover { background-color: #ff82ba; }
 
   // Get current user
   async function getCurrentUser() {
-    const result = await supabase.auth.getUser();
-    if (result.error || !result.data.user) return null;
-    return result.data.user;
+    try {
+      const result = await supabase.auth.getUser();
+      if (result.error || !result.data.user) return null;
+      return result.data.user;
+    } catch (err) {
+      console.error('Error getting current user:', err);
+      return null;
+    }
   }
 
   // Check if user is VIP
@@ -3457,7 +3463,7 @@ button:hover { background-color: #ff82ba; }
 
     } catch (err) {
       console.error('Failed to load VIP extras:', err);
-      container.innerHTML = `<div class="no-extras">Failed to load VIP extras: ${err.message}</div>`;
+      container.innerHTML = `<div class="no-extras">Failed to load VIP extras: ${err.message || 'Connection error - check Supabase setup'}</div>`;
     }
   }
 
@@ -3516,34 +3522,44 @@ button:hover { background-color: #ff82ba; }
   async function getTotalLikes() {
     if (!username) return 0;
     
-    // Get main page likes
-    const mainPageResult = await supabase
-      .from('vip_page_views')
-      .select('*', { count: 'exact', head: true })
-      .eq('username', username);
-    
-    // Get all video likes (any username that starts with username_video_)
-    const videoResult = await supabase
-      .from('vip_page_views')
-      .select('*', { count: 'exact', head: true })
-      .like('username', username + '_video_%');
-    
-    const mainPageCount = mainPageResult.count || 0;
-    const videoCount = videoResult.count || 0;
-    
-    return mainPageCount + videoCount;
+    try {
+      // Get main page likes
+      const mainPageResult = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
+      
+      // Get all video likes (any username that starts with username_video_)
+      const videoResult = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .like('username', username + '_video_%');
+      
+      const mainPageCount = mainPageResult.count || 0;
+      const videoCount = videoResult.count || 0;
+      
+      return mainPageCount + videoCount;
+    } catch (err) {
+      console.error('Error getting total likes:', err);
+      return 0;
+    }
   }
 
   // Check if current user has liked this user's page
   async function hasUserLiked(userId) {
     if (!userId || !username) return false;
-    const result = await supabase
-      .from('vip_page_views')
-      .select('user_id')
-      .eq('user_id', userId)
-      .eq('username', username)
-      .maybeSingle();
-    return !!result.data;
+    try {
+      const result = await supabase
+        .from('vip_page_views')
+        .select('user_id')
+        .eq('user_id', userId)
+        .eq('username', username)
+        .maybeSingle();
+      return !!result.data;
+    } catch (err) {
+      console.error('Error checking user like:', err);
+      return false;
+    }
   }
 
   // Get video likes using vip_page_views table
@@ -3552,23 +3568,28 @@ button:hover { background-color: #ff82ba; }
     
     const videoUsernames = videoIds.map(id => username + '_video_' + id);
     
-    const result = await supabase
-      .from('vip_page_views')
-      .select('username, view_count')
-      .in('username', videoUsernames);
+    try {
+      const result = await supabase
+        .from('vip_page_views')
+        .select('username, view_count')
+        .in('username', videoUsernames);
 
-    if (result.error) {
-      console.error('Error fetching video likes:', result.error);
+      if (result.error) {
+        console.error('Error fetching video likes:', result.error);
+        return {};
+      }
+
+      const likes = {};
+      result.data.forEach(item => {
+        const videoId = item.username.split('_video_')[1];
+        likes[videoId] = item.view_count || 0;
+      });
+      
+      return likes;
+    } catch (err) {
+      console.error('Error in getVideoLikes:', err);
       return {};
     }
-
-    const likes = {};
-    result.data.forEach(item => {
-      const videoId = item.username.split('_video_')[1];
-      likes[videoId] = item.view_count || 0;
-    });
-    
-    return likes;
   }
 
   // Get user's liked videos using vip_page_views table
@@ -3577,18 +3598,23 @@ button:hover { background-color: #ff82ba; }
     
     const videoUsernames = videoIds.map(id => username + '_video_' + id);
     
-    const result = await supabase
-      .from('vip_page_views')
-      .select('username')
-      .eq('user_id', userId)
-      .in('username', videoUsernames);
+    try {
+      const result = await supabase
+        .from('vip_page_views')
+        .select('username')
+        .eq('user_id', userId)
+        .in('username', videoUsernames);
 
-    if (result.error) {
-      console.error('Error fetching user liked videos:', result.error);
+      if (result.error) {
+        console.error('Error fetching user liked videos:', result.error);
+        return new Set();
+      }
+
+      return new Set(result.data.map(item => item.username.split('_video_')[1]));
+    } catch (err) {
+      console.error('Error in getUserLikedVideos:', err);
       return new Set();
     }
-
-    return new Set(result.data.map(item => item.username.split('_video_')[1]));
   }
 
   // Like the user's page (main page like)
@@ -3604,50 +3630,55 @@ button:hover { background-color: #ff82ba; }
 
     const now = new Date().toISOString();
 
-    // Check if the user has already liked the page
-    const existingResult = await supabase
-      .from('vip_page_views')
-      .select('view_count, first_viewed_at')
-      .eq('user_id', currentUser.id)
-      .eq('username', username)
-      .single();
-
-    if (existingResult.data) {
-      // If the user already liked, update the view count and last viewed timestamp
-      const updateResult = await supabase
+    try {
+      // Check if the user has already liked the page
+      const existingResult = await supabase
         .from('vip_page_views')
-        .update({
-          view_count: existingResult.data.view_count + 1,
-          last_viewed_at: now,
-        })
+        .select('view_count, first_viewed_at')
         .eq('user_id', currentUser.id)
-        .eq('username', username);
+        .eq('username', username)
+        .single();
 
-      if (updateResult.error) {
-        console.error('Error updating like count:', updateResult.error);
+      if (existingResult.data) {
+        // If the user already liked, update the view count and last viewed timestamp
+        const updateResult = await supabase
+          .from('vip_page_views')
+          .update({
+            view_count: existingResult.data.view_count + 1,
+            last_viewed_at: now,
+          })
+          .eq('user_id', currentUser.id)
+          .eq('username', username);
+
+        if (updateResult.error) {
+          console.error('Error updating like count:', updateResult.error);
+          return false;
+        }
+
+        return true;
+      }
+
+      // If the user hasn't liked, insert a new row with the current timestamp
+      const insertResult = await supabase
+        .from('vip_page_views')
+        .insert([{
+          user_id: currentUser.id,
+          username: username,
+          view_count: 1,
+          first_viewed_at: now,
+          last_viewed_at: now,
+        }]);
+
+      if (insertResult.error) {
+        console.error('Insert error:', insertResult.error);
         return false;
       }
 
       return true;
-    }
-
-    // If the user hasn't liked, insert a new row with the current timestamp
-    const insertResult = await supabase
-      .from('vip_page_views')
-      .insert([{
-        user_id: currentUser.id,
-        username: username,
-        view_count: 1,
-        first_viewed_at: now,
-        last_viewed_at: now,
-      }]);
-
-    if (insertResult.error) {
-      console.error('Insert error:', insertResult.error);
+    } catch (err) {
+      console.error('Error in likeUserPage:', err);
       return false;
     }
-
-    return true;
   }
 
   // Like/unlike video using vip_page_views table
@@ -3661,52 +3692,56 @@ button:hover { background-color: #ff82ba; }
     const isLiked = userLikedVideos.has(videoId);
     const now = new Date().toISOString();
 
-    if (isLiked) {
-      // Unlike - delete the record
-      const result = await supabase
-        .from('vip_page_views')
-        .delete()
-        .eq('user_id', currentUser.id)
-        .eq('username', videoUsername);
+    try {
+      if (isLiked) {
+        // Unlike - delete the record
+        const result = await supabase
+          .from('vip_page_views')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('username', videoUsername);
 
-      if (result.error) {
-        console.error('Error unliking video:', result.error);
-        return;
+        if (result.error) {
+          console.error('Error unliking video:', result.error);
+          return;
+        }
+
+        userLikedVideos.delete(videoId);
+        videoLikes[videoId] = Math.max(0, (videoLikes[videoId] || 1) - 1);
+        
+        // Update total likes count since we removed a like
+        totalLikes = await getTotalLikes();
+        updateLikeStatus();
+      } else {
+        // Like - insert new record
+        const result = await supabase
+          .from('vip_page_views')
+          .insert({
+            user_id: currentUser.id,
+            username: videoUsername,
+            view_count: 1,
+            first_viewed_at: now,
+            last_viewed_at: now
+          });
+
+        if (result.error) {
+          console.error('Error liking video:', result.error);
+          return;
+        }
+
+        userLikedVideos.add(videoId);
+        videoLikes[videoId] = (videoLikes[videoId] || 0) + 1;
+        
+        // Update total likes count since we added a new like
+        totalLikes = await getTotalLikes();
+        updateLikeStatus();
       }
 
-      userLikedVideos.delete(videoId);
-      videoLikes[videoId] = Math.max(0, (videoLikes[videoId] || 1) - 1);
-      
-      // Update total likes count since we removed a like
-      totalLikes = await getTotalLikes();
-      updateLikeStatus();
-    } else {
-      // Like - insert new record
-      const result = await supabase
-        .from('vip_page_views')
-        .insert({
-          user_id: currentUser.id,
-          username: videoUsername,
-          view_count: 1,
-          first_viewed_at: now,
-          last_viewed_at: now
-        });
-
-      if (result.error) {
-        console.error('Error liking video:', result.error);
-        return;
-      }
-
-      userLikedVideos.add(videoId);
-      videoLikes[videoId] = (videoLikes[videoId] || 0) + 1;
-      
-      // Update total likes count since we added a new like
-      totalLikes = await getTotalLikes();
-      updateLikeStatus();
+      // Update UI
+      updateVideoLikeButton(videoId);
+    } catch (err) {
+      console.error('Error in toggleVideoLike:', err);
     }
-
-    // Update UI
-    updateVideoLikeButton(videoId);
   }
 
   // Update video like button appearance
@@ -3753,31 +3788,27 @@ button:hover { background-color: #ff82ba; }
   }
 
   async function incrementVipPageView() {
-    if (!username) return;
-
-    const userData = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
-
-    if (userData.error || !userData.data) {
-      console.error('User not found for VIP increment:', userData.error);
+    if (!username || !currentUser) {
+      console.log('Skipping page view increment - no username or current user');
       return;
     }
 
     const now = new Date().toISOString();
 
-    const result = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.data.id,
-      in_username: username,
-      in_now: now
-    });
+    try {
+      const result = await supabase.rpc('increment_vip_page_view', {
+        in_user_id: currentUser.id,  // Use viewer's ID
+        in_username: username,
+        in_now: now
+      });
 
-    if (result.error) {
-      console.error('Error incrementing VIP page views:', result.error);
-    } else {
-      console.log('Incremented VIP page views for ' + username);
+      if (result.error) {
+        console.error('Error incrementing VIP page views:', result.error);
+      } else {
+        console.log('Incremented VIP page views for ' + username);
+      }
+    } catch (err) {
+      console.error('Error in incrementVipPageView:', err);
     }
   }
 
@@ -4240,186 +4271,188 @@ button:hover { background-color: #ff82ba; }
   }
 
  async function loadVideos() {
-  const result = await supabase
-    .from('game_videos')
-    .select('*')
-    .eq('github_username', username)
-    .order('created_at', { ascending: false });
+  try {
+    const result = await supabase
+      .from('game_videos')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: false });
 
-  if (result.error) {
-    videosContainer.innerHTML = '<div class="no-content"> Error loading videos: ' + result.error.message + '</div>';
-    return;
-  }
+    if (result.error) {
+      videosContainer.innerHTML = '<div class="no-content"> Error loading videos: ' + result.error.message + '</div>';
+      return;
+    }
 
-  if (!result.data.length) {
-    videosContainer.innerHTML = '<p class="no-content">No videos submitted by ' + username + ' yet.</p>';
-    return;
-  }
+    if (!result.data.length) {
+      videosContainer.innerHTML = '<p class="no-content">No videos submitted by ' + username + ' yet.</p>';
+      return;
+    }
 
-  // Get current user and load like status
-  currentUser = await getCurrentUser();
-  console.log(' Current user:', currentUser);
-  
-  if (currentUser) {
-    isVipUser = await checkVipStatus(currentUser);
-    userHasLiked = await hasUserLiked(currentUser.id);
+    // Get current user and load like status
+    currentUser = await getCurrentUser();
+    console.log(' Current user:', currentUser);
     
-    console.log(' Current user ID:', currentUser.id);
-    console.log(' Is VIP:', isVipUser);
-    console.log(' Page username:', username);
-    
-    // Show VIP badge and features if user is VIP
-    if (isVipUser) {
-      const vipBadge = document.getElementById('vipBadge');
-      const vipBadgesSection = document.getElementById('vipBadgesSection');
-      const msgInput = document.getElementById('msg-input');
-      const addExtraBtn = document.getElementById('addExtraBtn');
+    if (currentUser) {
+      isVipUser = await checkVipStatus(currentUser);
+      userHasLiked = await hasUserLiked(currentUser.id);
       
-      console.log(' User is VIP! Enabling VIP features...');
+      console.log(' Current user ID:', currentUser.id);
+      console.log(' Is VIP:', isVipUser);
+      console.log(' Page username:', username);
       
-      if (vipBadge) {
-        vipBadge.style.display = 'inline-block';
-        console.log(' VIP badge shown');
+      // Show VIP badge and features if user is VIP
+      if (isVipUser) {
+        const vipBadge = document.getElementById('vipBadge');
+        const vipBadgesSection = document.getElementById('vipBadgesSection');
+        const msgInput = document.getElementById('msg-input');
+        const addExtraBtn = document.getElementById('addExtraBtn');
+        
+        console.log(' User is VIP! Enabling VIP features...');
+        
+        if (vipBadge) {
+          vipBadge.style.display = 'inline-block';
+          console.log(' VIP badge shown');
+        }
+        
+        if (vipBadgesSection) {
+          vipBadgesSection.classList.add('show');
+          console.log(' VIP badges section shown');
+        }
+        
+        if (msgInput) {
+          msgInput.classList.add('vip');
+          console.log(' VIP chat styling added');
+        }
+        
+        // Show add extra button for ALL VIP users (no page owner restriction)
+        if (addExtraBtn) {
+          addExtraBtn.style.display = 'inline-block';
+          addExtraBtn.textContent = ' Add VIP Extra';
+          console.log(' Add extra button shown for VIP user');
+        }
+        
+      } else {
+        console.log(' User is not VIP');
       }
-      
-      if (vipBadgesSection) {
-        vipBadgesSection.classList.add('show');
-        console.log(' VIP badges section shown');
-      }
-      
-      if (msgInput) {
-        msgInput.classList.add('vip');
-        console.log(' VIP chat styling added');
-      }
-      
-      // Show add extra button for ALL VIP users (no page owner restriction)
-      if (addExtraBtn) {
-        addExtraBtn.style.display = 'inline-block';
-        addExtraBtn.textContent = ' Add VIP Extra';
-        console.log(' Add extra button shown for VIP user');
-      }
-      
     } else {
-      console.log(' User is not VIP');
+      console.log(' No current user logged in');
     }
-  } else {
-    console.log(' No current user logged in');
-  }
-  
-  totalLikes = await getTotalLikes();
+    
+    totalLikes = await getTotalLikes();
 
-  // Update the like status display
-  updateLikeStatus();
+    // Update the like status display
+    updateLikeStatus();
 
-  // Add event listener for main like button
-  const mainLikeBtn = document.getElementById('main-like-btn');
-  if (mainLikeBtn) {
-    mainLikeBtn.addEventListener('click', async function() {
-      const success = await likeUserPage();
-      if (success) {
-        userHasLiked = true;
-        totalLikes = await getTotalLikes();
-        updateLikeStatus();
+    // Add event listener for main like button
+    const mainLikeBtn = document.getElementById('main-like-btn');
+    if (mainLikeBtn) {
+      mainLikeBtn.addEventListener('click', async function() {
+        const success = await likeUserPage();
+        if (success) {
+          userHasLiked = true;
+          totalLikes = await getTotalLikes();
+          updateLikeStatus();
+        }
+      });
+    }
+
+    // Get video likes data
+    const videoIds = result.data.map(video => video.id || 'video-' + result.data.indexOf(video));
+    videoLikes = await getVideoLikes(videoIds);
+    if (currentUser) {
+      userLikedVideos = await getUserLikedVideos(currentUser.id, videoIds);
+    }
+
+    videosContainer.innerHTML = '';
+    result.data.forEach(function(video, index) {
+      const videoId = video.id || 'video-' + index;
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.setAttribute('data-video-id', videoId);
+
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = video.title || 'Untitled Video';
+      card.appendChild(title);
+
+      const desc = document.createElement('p');
+      desc.className = 'desc';
+      
+      // Fixed: Use 'content' from table schema
+      const descriptionText = video.content || 'No description provided';
+      desc.textContent = descriptionText;
+      card.appendChild(desc);
+      
+      // Enhanced DEBUG: Log the entire video object to see what fields are available
+      console.log(`Video ${index} data:`, video);
+      console.log(`Content field value:`, video.content);
+      console.log(`Final description text:`, descriptionText);
+
+      if (video.video_url) {
+        const videoEmbed = createVideoEmbed(video);
+        card.appendChild(videoEmbed.element);
+
+        if (videoEmbed.controls && videoEmbed.controls.length > 0) {
+          const controlsDiv = document.createElement('div');
+          controlsDiv.className = 'video-controls';
+
+          videoEmbed.controls.forEach(control => {
+            const btn = document.createElement('button');
+            btn.className = 'control-btn';
+            btn.textContent = control.text;
+            btn.addEventListener('click', control.action);
+            controlsDiv.appendChild(btn);
+          });
+
+          card.appendChild(controlsDiv);
+        }
       }
-    });
-  }
 
-  // Get video likes data
-  const videoIds = result.data.map(video => video.id || 'video-' + result.data.indexOf(video));
-  videoLikes = await getVideoLikes(videoIds);
-  if (currentUser) {
-    userLikedVideos = await getUserLikedVideos(currentUser.id, videoIds);
-  }
+      // Add video like section
+      const videoLikeSection = document.createElement('div');
+      videoLikeSection.className = 'video-like-section';
 
-  videosContainer.innerHTML = '';
-  result.data.forEach(function(video, index) {
-    const videoId = video.id || 'video-' + index;
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.setAttribute('data-video-id', videoId);
-
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.textContent = video.title || 'Untitled Video';
-    card.appendChild(title);
-
-    // FIX: Check for the correct column name - it should be 'description' not 'content'
-    // Based on your database schema, the column is likely named 'description'
-    const desc = document.createElement('p');
-    desc.className = 'desc';
-    
-    // Try multiple possible column names for description
-    const descriptionText = video.description || video.desc || video.content || 'No description provided';
-    desc.textContent = descriptionText;
-    card.appendChild(desc);
-    
-    // Enhanced DEBUG: Log the entire video object to see what fields are available
-    console.log(`Video ${index} data:`, video);
-    console.log(`Description field value:`, video.description);
-    console.log(`Content field value:`, video.content);
-    console.log(`Final description text:`, descriptionText);
-
-    if (video.video_url) {
-      const videoEmbed = createVideoEmbed(video);
-      card.appendChild(videoEmbed.element);
-
-      if (videoEmbed.controls && videoEmbed.controls.length > 0) {
-        const controlsDiv = document.createElement('div');
-        controlsDiv.className = 'video-controls';
-
-        videoEmbed.controls.forEach(control => {
-          const btn = document.createElement('button');
-          btn.className = 'control-btn';
-          btn.textContent = control.text;
-          btn.addEventListener('click', control.action);
-          controlsDiv.appendChild(btn);
-        });
-
-        card.appendChild(controlsDiv);
+      const videoLikeBtn = document.createElement('button');
+      videoLikeBtn.className = 'video-like-btn';
+      const isLiked = userLikedVideos.has(videoId);
+      videoLikeBtn.innerHTML = isLiked ? ' Liked' : ' Like';
+      if (isLiked) videoLikeBtn.classList.add('liked');
+      
+      if (!currentUser) {
+        videoLikeBtn.disabled = true;
+        videoLikeBtn.innerHTML = ' Like';
       }
-    }
 
-    // Add video like section
-    const videoLikeSection = document.createElement('div');
-    videoLikeSection.className = 'video-like-section';
+      videoLikeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleVideoLike(videoId);
+      });
 
-    const videoLikeBtn = document.createElement('button');
-    videoLikeBtn.className = 'video-like-btn';
-    const isLiked = userLikedVideos.has(videoId);
-    videoLikeBtn.innerHTML = isLiked ? ' Liked' : ' Like';
-    if (isLiked) videoLikeBtn.classList.add('liked');
-    
-    if (!currentUser) {
-      videoLikeBtn.disabled = true;
-      videoLikeBtn.innerHTML = ' Like';
-    }
+      const videoLikeCount = document.createElement('div');
+      videoLikeCount.className = 'video-like-count';
+      videoLikeCount.innerHTML = ' ' + (videoLikes[videoId] || 0);
 
-    videoLikeBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      toggleVideoLike(videoId);
+      videoLikeSection.appendChild(videoLikeBtn);
+      videoLikeSection.appendChild(videoLikeCount);
+      card.appendChild(videoLikeSection);
+
+      // Add login prompt if user not logged in
+      if (!currentUser) {
+        const loginPrompt = document.createElement('p');
+        loginPrompt.className = 'video-login-prompt';
+        loginPrompt.textContent = 'Log in to like videos';
+        card.appendChild(loginPrompt);
+      }
+
+      videosContainer.appendChild(card);
     });
 
-    const videoLikeCount = document.createElement('div');
-    videoLikeCount.className = 'video-like-count';
-    videoLikeCount.innerHTML = ' ' + (videoLikes[videoId] || 0);
-
-    videoLikeSection.appendChild(videoLikeBtn);
-    videoLikeSection.appendChild(videoLikeCount);
-    card.appendChild(videoLikeSection);
-
-    // Add login prompt if user not logged in
-    if (!currentUser) {
-      const loginPrompt = document.createElement('p');
-      loginPrompt.className = 'video-login-prompt';
-      loginPrompt.textContent = 'Log in to like videos';
-      card.appendChild(loginPrompt);
-    }
-
-    videosContainer.appendChild(card);
-  });
-
-  // Load VIP extras after videos are loaded
-  await loadVipExtras();
+    // Load VIP extras after videos are loaded
+    await loadVipExtras();
+  } catch (err) {
+    console.error('Critical error in loadVideos:', err);
+    videosContainer.innerHTML = '<div class="no-content"> Critical error loading videos: ' + (err.message || 'Connection issue - check Supabase URL/key') + '</div>';
+  }
 }
   // Badge selection functionality
   function initializeBadgeSelection() {
@@ -4448,13 +4481,18 @@ button:hover { background-color: #ff82ba; }
   // Enhanced chat functionality with VIP features
   async function getUserGitHubUsername() {
     if (currentUser) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('github_username')
-        .eq('id', currentUser.id)
-        .single();
-      
-      return userData?.github_username || currentUser.user_metadata?.full_name || 'GitHub User';
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', currentUser.id)
+          .single();
+        
+        return userData?.github_username || currentUser.user_metadata?.full_name || 'GitHub User';
+      } catch (err) {
+        console.error('Error getting GitHub username:', err);
+        return 'GitHub User';
+      }
     }
     return 'Guest';
   }
@@ -4463,42 +4501,47 @@ button:hover { background-color: #ff82ba; }
     const gameId = username; // Use the page owner's username as game_id
     if (!gameId) return;
 
-    const result = await supabase
-      .from('messages')
-      .select('*')
-      .eq('game_id', gameId)
-      .order('created_at', { ascending: true });
+    try {
+      const result = await supabase
+        .from('messages')
+        .select('*')
+        .eq('game_id', gameId)
+        .order('created_at', { ascending: true });
 
-    if (result.error) {
-      messagesDiv.innerHTML = '<p style="color:red;">Error loading messages: ' + result.error.message + '</p>';
-      console.error(result.error);
-      return;
+      if (result.error) {
+        messagesDiv.innerHTML = '<p style="color:red;">Error loading messages: ' + result.error.message + '</p>';
+        console.error(result.error);
+        return;
+      }
+
+      if (!result.data.length) {
+        messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
+        return;
+      }
+
+      const currentUsername = await getUserGitHubUsername();
+
+      messagesDiv.innerHTML = result.data.map(function(m) {
+        const isCurrentUserVip = isVipUser && m.github_username === currentUsername;
+        const messageClass = isCurrentUserVip ? 'message vip' : 'message';
+        const usernameClass = isCurrentUserVip ? 'username vip' : 'username';
+        const userBadge = isCurrentUserVip ? selectedBadge : '';
+        const messageTime = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        return '<div class="' + messageClass + '">' +
+          '<div class="message-header">' +
+            '<span class="' + usernameClass + '">' + (m.github_username || 'Guest') + '</span>' +
+            (userBadge ? '<span class="user-badge">' + userBadge + '</span>' : '') +
+            '<span class="message-time">' + messageTime + '</span>' +
+          '</div>' +
+          '<div class="message-content">' + escapeHtml(m.content) + '</div>' +
+        '</div>';
+      }).join('');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    } catch (err) {
+      console.error('Error in loadChatMessages:', err);
+      messagesDiv.innerHTML = '<p style="color:red;">Error loading messages: ' + (err.message || 'Connection issue - check Supabase setup') + '</p>';
     }
-
-    if (!result.data.length) {
-      messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
-      return;
-    }
-
-    const currentUsername = await getUserGitHubUsername();
-
-    messagesDiv.innerHTML = result.data.map(function(m) {
-      const isCurrentUserVip = isVipUser && m.github_username === currentUsername;
-      const messageClass = isCurrentUserVip ? 'message vip' : 'message';
-      const usernameClass = isCurrentUserVip ? 'username vip' : 'username';
-      const userBadge = isCurrentUserVip ? selectedBadge : '';
-      const messageTime = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      
-      return '<div class="' + messageClass + '">' +
-        '<div class="message-header">' +
-          '<span class="' + usernameClass + '">' + (m.github_username || 'Guest') + '</span>' +
-          (userBadge ? '<span class="user-badge">' + userBadge + '</span>' : '') +
-          '<span class="message-time">' + messageTime + '</span>' +
-        '</div>' +
-        '<div class="message-content">' + escapeHtml(m.content) + '</div>' +
-      '</div>';
-    }).join('');
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
   form.addEventListener('submit', async function(e) {
@@ -4510,17 +4553,22 @@ button:hover { background-color: #ff82ba; }
     const githubUsername = await getUserGitHubUsername();
     const gameId = username; // Use the page owner's username as game_id
 
-    const result = await supabase
-      .from('messages')
-      .insert([{ content: message, github_username: githubUsername, game_id: gameId }]);
+    try {
+      const result = await supabase
+        .from('messages')
+        .insert([{ content: message, github_username: githubUsername, game_id: gameId }]);
 
-    if (result.error) {
-      alert('Failed to send message: ' + result.error.message);
-      return;
+      if (result.error) {
+        alert('Failed to send message: ' + result.error.message);
+        return;
+      }
+
+      msgInput.value = '';
+      loadChatMessages();
+    } catch (err) {
+      console.error('Error sending message:', err);
+      alert('Failed to send message: ' + (err.message || 'Connection error'));
     }
-
-    msgInput.value = '';
-    loadChatMessages();
   });
 
   // Handle form submission for VIP extras
@@ -4555,7 +4603,9 @@ button:hover { background-color: #ff82ba; }
     }, () => {
       loadChatMessages();
     })
-    .subscribe();
+    .subscribe((status) => {
+      console.log('Real-time messages subscription status:', status);
+    });
 
   // Subscribe to real-time VIP extras updates
   supabase.channel(`vip_extras_${username}`)
@@ -4567,7 +4617,9 @@ button:hover { background-color: #ff82ba; }
     }, () => {
       loadVipExtras();
     })
-    .subscribe();
+    .subscribe((status) => {
+      console.log('Real-time extras subscription status:', status);
+    });
 
   function escapeHtml(text) {
     return text.replace(/[&<>"']/g, function(m) {
@@ -4583,12 +4635,15 @@ button:hover { background-color: #ff82ba; }
   }
 
   // Main execution block
-  if (!username) {
-    pageTitle.textContent = 'Error';
-    chatHeading.textContent = 'Error';
-    videosContainer.innerHTML = '<p class="no-content"> No username provided in URL.</p>';
-    messagesDiv.innerHTML = '';
-  } else {
+  async function main() {
+    if (!username) {
+      pageTitle.textContent = 'Error';
+      chatHeading.textContent = 'Error';
+      videosContainer.innerHTML = '<p class="no-content"> No username provided in URL.</p>';
+      messagesDiv.innerHTML = '';
+      return;
+    }
+
     pageTitle.textContent = username + "'s Content";
     chatHeading.textContent = username;
     
@@ -4598,18 +4653,26 @@ button:hover { background-color: #ff82ba; }
       gameIdInput.value = username;
     }
 
-    incrementVipPageView();
-    loadVideos();
-    loadChatMessages();
+    // Get current user early
+    currentUser = await getCurrentUser();
+
+    // Increment view if logged in
+    await incrementVipPageView();
+
+    await loadVideos();
+    await loadChatMessages();
     initializeBadgeSelection();
   }
+
+  main().catch(err => {
+    console.error('Critical main execution error:', err);
+    // Fallback UI updates if main fails
+    videosContainer.innerHTML = '<div class="no-content"> Critical error: ' + (err.message || 'Check console and Supabase setup') + '</div>';
+    messagesDiv.innerHTML = '<p style="color:red;">Critical error: ' + (err.message || 'Check console and Supabase setup') + '</p>';
+  });
 </script>
 
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
-
-
-
-
