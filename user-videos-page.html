@@ -2056,6 +2056,8 @@ crossorigin="anonymous"></script>
       max-width: 800px;
       display: inline-block;
     }
+    .back-link:hover { background-color: #ff82ba; }
+
     .vip-badge {
       display: inline-block;
       background: linear-gradient(45deg, #ffd700, #ffed4e);
@@ -2067,35 +2069,289 @@ crossorigin="anonymous"></script>
       margin-left: 15px;
       animation: glow 2s ease-in-out infinite alternate;
     }
+
     @keyframes glow {
       from { box-shadow: 0 0 5px #ffd700; }
       to { box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
     }
-    .loading-message {
-      text-align: center;
-      color: #ff82ba;
-      font-size: 1.1rem;
-      margin: 2rem 0;
-      padding: 2rem;
-      background: rgba(255, 79, 159, 0.1);
-      border-radius: 12px;
-      border: 2px solid #ff4f9f;
-    }
-    .error-message {
-      text-align: center;
-      color: #ff6b6b;
-      font-size: 1rem;
-      margin: 2rem 0;
-      padding: 2rem;
-      background: rgba(255, 107, 107, 0.1);
-      border-radius: 12px;
-      border: 2px solid #ff6b6b;
-    }
+
     .content-section {
       max-width: 800px;
       width: 100%;
       margin-bottom: 40px;
     }
+
+    .content-container {
+      display: grid;
+      gap: 20px;
+      justify-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      width: 100%;
+    }
+
+    .card {
+      background-color: #2f1a39;
+      border: 2px solid #ff4f9f;
+      border-radius: 12px;
+      padding: 16px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: #ff82ba;
+      box-shadow: 0 0 10px #ff82ba;
+    }
+
+    .card.selected {
+      border-color: #ff82ba;
+      box-shadow: 0 0 15px #ff4f9f;
+    }
+
+    .title {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      color: #ff69b4;
+      font-size: 1.2rem;
+    }
+
+    .desc {
+      color: #ddd;
+      margin: 0.5rem 0 1rem 0;
+      min-height: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .video-player {
+      width: 100%;
+      background-color: #3b2750;
+      border-radius: 12px;
+      border: 2px solid #ff69b4;
+      box-shadow: 0 0 10px #ff69b4aa;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .video-player {
+      transform: scale(1.02);
+    }
+
+    .video-player::-webkit-media-controls-panel {
+      background-color: #3b2750;
+    }
+
+    .fullscreen-video-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 79, 159, 0.9);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 3;
+      font-family: 'Rubik Mono One', sans-serif;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .video-container:hover .fullscreen-video-btn {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fullscreen-video-btn:hover {
+      background: rgba(255, 130, 186, 1);
+      transform: scale(1.1);
+    }
+
+    .play-link {
+      display: inline-block;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+      margin-top: auto;
+    }
+    .play-link:hover { background-color: #ff82ba; }
+
+/* Add this CSS to your video page styles */
+
+/* Video fullscreen placeholder */
+.fullscreen-video-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+  color: #ff82ba;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 2px dashed #ff4f9f;
+  border-radius: 12px;
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.1));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-video-placeholder:hover {
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
+  border-color: #ff82ba;
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+}
+
+.fullscreen-video-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.fullscreen-video-placeholder:hover::before {
+  left: 100%;
+}
+
+.fullscreen-video-placeholder .play-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: videoBounce 2s infinite;
+}
+
+@keyframes videoBounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+
+/* Platform-specific placeholder styling for video */
+.fullscreen-video-placeholder[data-platform="youtube"] {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #ff0000;
+}
+
+.fullscreen-video-placeholder[data-platform="youtube"]:hover {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #ff0000;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+}
+
+.fullscreen-video-placeholder[data-platform="youtube-playlist"] {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.15), rgba(255, 165, 0, 0.1));
+  border-color: #ff6600;
+}
+
+.fullscreen-video-placeholder[data-platform="youtube-playlist"]:hover {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.25), rgba(255, 165, 0, 0.15));
+  border-color: #ff6600;
+  box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
+}
+
+.fullscreen-video-placeholder[data-platform="soundcloud"] {
+  background: linear-gradient(45deg, rgba(255, 85, 0, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #ff5500;
+}
+
+.fullscreen-video-placeholder[data-platform="soundcloud"]:hover {
+  background: linear-gradient(45deg, rgba(255, 85, 0, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #ff5500;
+  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
+}
+
+.fullscreen-video-placeholder[data-platform="spotify"] {
+  background: linear-gradient(45deg, rgba(30, 215, 96, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #1ed760;
+}
+
+.fullscreen-video-placeholder[data-platform="spotify"]:hover {
+  background: linear-gradient(45deg, rgba(30, 215, 96, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #1ed760;
+  box-shadow: 0 4px 15px rgba(30, 215, 96, 0.3);
+}
+
+.fullscreen-video-placeholder[data-platform="video"] {
+  background: linear-gradient(45deg, rgba(138, 43, 226, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #8a2be2;
+}
+
+.fullscreen-video-placeholder[data-platform="video"]:hover {
+  background: linear-gradient(45deg, rgba(138, 43, 226, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #8a2be2;
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+}
+
+.fullscreen-video-placeholder[data-platform="audio"] {
+  background: linear-gradient(45deg, rgba(138, 43, 226, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #8a2be2;
+}
+
+.fullscreen-video-placeholder[data-platform="audio"]:hover {
+  background: linear-gradient(45deg, rgba(138, 43, 226, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #8a2be2;
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+}
+
+.fullscreen-video-placeholder[data-platform="x"] {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #1da1f2;
+}
+
+.fullscreen-video-placeholder[data-platform="x"]:hover {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #1da1f2;
+  box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+}
+
+/* Update existing video-container to work with placeholders */
+.video-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Hide the old fullscreen button when using placeholders */
+.video-container .fullscreen-video-btn {
+  display: none;
+}
+
+/* Show fullscreen button only on actual video players (when in fullscreen mode) */
+.video-container .video-player ~ .fullscreen-video-btn {
+  display: block;
+}
+    
+    /* Main Like Section Styles */
     .main-content {
       max-width: 600px;
       width: 100%;
@@ -2110,6 +2366,22 @@ crossorigin="anonymous"></script>
       overflow: hidden;
       margin-bottom: 40px;
     }
+
+    .main-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .main-content:hover::before {
+      left: 100%;
+    }
+
     #like-status {
       margin: 20px 0 30px;
       font-size: 1.2rem;
@@ -2120,6 +2392,7 @@ crossorigin="anonymous"></script>
       opacity: 0.9;
       font-family: 'Rubik Mono One', sans-serif;
     }
+
     #main-like-btn {
       display: inline-block;
       padding: 12px 20px;
@@ -2139,28 +2412,102 @@ crossorigin="anonymous"></script>
       overflow: hidden;
       margin-top: auto;
     }
+
+    #main-like-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    #main-like-btn:hover::before {
+      left: 100%;
+    }
+
     #main-like-btn:disabled {
       background: linear-gradient(135deg, #666, #444);
       cursor: not-allowed;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
-    .content-container {
-      display: grid;
-      gap: 20px;
-      justify-items: center;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+
+    #main-like-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
+    }
+
+    /* Video Like System Styles */
+    .video-like-section {
       width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 79, 159, 0.3);
     }
-    .no-content {
-      font-size: 1.1rem;
-      text-align: center;
+
+    .video-like-btn {
+      background: linear-gradient(135deg, #ff4f9f, #ff1493);
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
+    }
+
+    .video-like-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff82ba, #ff69b4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
+    }
+
+    .video-like-btn:disabled {
+      background: linear-gradient(135deg, #666, #444);
+      cursor: not-allowed;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .video-like-btn.liked {
+      background: linear-gradient(135deg, #ff69b4, #ff1493);
+      animation: pulse 0.3s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .video-like-count {
+      color: #ff82ba;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .video-login-prompt {
+      font-size: 0.7rem;
       color: #ddd;
-      margin-top: 2rem;
-      font-style: italic;
-      background-color: #2f1a39;
-      padding: 1rem;
-      border-radius: 10px;
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0.8;
     }
+
     #chat-container {
       max-width: 800px;
       width: 100%;
@@ -2183,6 +2530,7 @@ crossorigin="anonymous"></script>
     }
     #messages div { margin-bottom: 12px; }
     #messages strong { color: #ff82ba; }
+
     #chat-form {
       display: flex;
       gap: 10px;
@@ -2207,25 +2555,627 @@ crossorigin="anonymous"></script>
       transition: background-color 0.2s ease;
     }
     button:hover { background-color: #ff82ba; }
+
+    /* Fullscreen Video View */
+    .fullscreen-video-view {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #1b1b2e;
+      background-image: linear-gradient(135deg, #361c3e, #1a1328);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .fullscreen-video-view.active {
+      display: flex;
+    }
+
+    .fullscreen-video-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(27, 27, 46, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1001;
+      border-bottom: 2px solid #ff4f9f;
+    }
+
+    .fullscreen-video-title {
+      color: #ff4f9f;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .close-fullscreen-video {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-family: 'Rubik Mono One', sans-serif;
+      font-weight: bold;
+    }
+
+    .close-fullscreen-video:hover {
+      background-color: #ff82ba;
+    }
+
+    .fullscreen-video-player {
+      width: 90vw;
+      max-width: 800px;
+      height: 60vh;
+      max-height: 600px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      margin-top: 80px;
+      background-color: #3b2750;
+      border: 3px solid #ff69b4;
+    }
+
+    .fullscreen-video-player iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+    }
+
+    .no-content {
+      font-size: 1.1rem;
+      text-align: center;
+      color: #ddd;
+      margin-top: 2rem;
+      font-style: italic;
+      background-color: #2f1a39;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+
+    .vip-extras-section {
+      background: linear-gradient(135deg, #2f1a39, #3d2147);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .vip-extras-section h3 {
+      color: #ffd700;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px #ffd700;
+    }
+
+    .page-owner-info {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid #ffd700;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #ff82ba;
+    }
+
+    .page-owner-info .owner-name {
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .extras-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .vip-extras-container {
+      background: linear-gradient(135deg, #2f1a39, #3d2147);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .vip-extras-container h2 {
+      color: #ffd700;
+      text-shadow: 0 0 10px #ffd700;
+      margin-bottom: 1rem;
+    }
+
+    .vip-extras-description {
+      color: #ff82ba;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .button-link {
+      display: inline-block;
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      margin: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-family: inherit;
+      border: none;
+    }
+
+    .button-link:hover {
+      background-color: #ff82ba;
+    }
+
+    .vip-badges-section {
+      background: linear-gradient(135deg, #2f1a39, #3d2147);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      max-width: 800px;
+      width: 100%;
+      display: none;
+    }
+
+    .vip-badges-section.show {
+      display: block;
+    }
+
+    .vip-badges-section h3 {
+      color: #ffd700;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px #ffd700;
+    }
+
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .badge-item {
+      background-color: #1b1b2e;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .badge-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .badge-item.selected {
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      color: #1b1b2e;
+    }
+
+    .badge-emoji {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge-name {
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .extra-card {
+      background-color: #1b1b2e;
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .extra-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+      border-color: #ffed4e;
+    }
+
+    .extra-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .extra-type {
+      background-color: #ff4f9f;
+      color: #1b1b2e;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .extra-title {
+      color: #ffd700;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .extra-description {
+      color: #ff82ba;
+      margin: 0 0 1rem 0;
+      font-size: 0.9rem;
+      text-align: center;
+      flex-grow: 1;
+    }
+
+    .extra-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 79, 159, 0.3);
+    }
+
+    .extra-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .extra-creator {
+      font-size: 0.8rem;
+      color: #888;
+      flex: 1;
+      text-align: center;
+    }
+
+    .like-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .like-btn {
+      background: none;
+      border: 2px solid #ff4f9f;
+      color: #ff4f9f;
+      border-radius: 20px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+    }
+
+    .like-btn:hover:not(:disabled) {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      transform: scale(1.05);
+    }
+
+    .like-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .like-btn.liked {
+      background: #ff4f9f;
+      color: #1b1b2e;
+      border-color: #ff4f9f;
+    }
+
+    .like-count {
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 0.9rem;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .extra-link {
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      color: #1b1b2e;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      text-align: center;
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .extra-link:hover {
+      background: linear-gradient(45deg, #ffed4e, #ffd700);
+      transform: translateY(-1px);
+    }
+
+    .add-extra-section {
+      background-color: #1b1b2e;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      display: none;
+    }
+
+    .add-extra-section.show {
+      display: block;
+    }
+
+    .add-extra-section h4 {
+      color: #ffd700;
+      margin: 0 0 1rem 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      color: #ff82ba;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px;
+      border: 2px solid #ff4f9f;
+      border-radius: 6px;
+      background-color: #2f1a39;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      height: 80px;
+    }
+
+    .message {
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .message.vip {
+      background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 79, 159, 0.1));
+      border-left: 3px solid #ffd700;
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .username {
+      font-weight: bold;
+      color: #ff82ba;
+    }
+
+    .username.vip {
+      color: #ffd700;
+      text-shadow: 0 0 5px #ffd700;
+    }
+
+    .user-badge {
+      font-size: 1rem;
+    }
+
+    .message-content {
+      color: #fefefe;
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      color: #888;
+      margin-left: auto;
+    }
+
+    #msg-input.vip {
+      border-color: #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+
+    .vip-button {
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      color: #1b1b2e;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .vip-button:hover {
+      background: linear-gradient(45deg, #ffed4e, #ffd700);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 25px;
+      }
+      
+      #main-like-btn {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+      }
+
+      .video-like-section {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+      }
+      
+      .video-like-btn {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+      }
+      
+      .video-like-count {
+        font-size: 0.7rem;
+      }
+      
+      .badges-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
-  <a href="user-videos.html" class="back-link">← Back to All Users</a>
+
+  <a href="user-videos.html" class="back-link">⬅️ Back to All Users</a>
   <h1 id="pageTitle">User Content<span id="vipBadge" class="vip-badge" style="display: none;">👑 VIP</span></h1>
-  
+
   <section class="content-section" id="like-section">
     <div class="main-content">
       <p id="like-status">Loading...</p>
-      <button id="main-like-btn" style="display: none;">❤️ Like</button>
+      <button id="main-like-btn">Like</button>
     </div>
   </section>
-  
+
   <section class="content-section" id="videos-section">
-    <h2>Videos</h2>
-    <div id="videos" class="content-container">
-      <div class="loading-message">🎬 Loading videos...</div>
-    </div>
+    <h2>🎥 Videos</h2>
+    <div id="videos" class="content-container">Loading videos...</div>
   </section>
+
+  <section class="vip-extras-section" id="vip-extras-section">
+    <h3>👑 VIP Community Extras</h3>
+    <div class="page-owner-info">
+      <p>Exclusive content shared for <span class="owner-name" id="extras-username"></span></p>
+    </div>
+    
+    <div id="extrasContainer" class="extras-grid">
+      <div class="loading">Loading VIP extras...</div>
+    </div>
+
+    <div id="addExtraSection" class="add-extra-section">
+      <h4>➕ Share New VIP Extra</h4>
+      <form id="extraForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="extraTitle">Title *</label>
+            <input type="text" id="extraTitle" required placeholder="e.g., Bonus Video Pack">
+          </div>
+          <div class="form-group">
+            <label for="extraType">Type *</label>
+            <select id="extraType" required>
+              <option value="">Select type...</option>
+              <option value="download">Download</option>
+              <option value="link">External Link</option>
+              <option value="code">Cheat Code</option>
+              <option value="beta">Beta Access</option>
+              <option value="mod">Mod/Asset</option>
+              <option value="guide">Guide/Tutorial</option>
+              <option value="video">Bonus Video</option>
+              <option value="music">Music Pack</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="extraDescription">Description *</label>
+          <textarea id="extraDescription" required placeholder="Describe what this extra contains..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="extraUrl">URL/Link *</label>
+          <input type="url" id="extraUrl" required placeholder="https://...">
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+          <button type="submit" class="button-link vip-button">Add Extra</button>
+          <button type="button" class="button-link" onclick="toggleAddExtra()">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()">➕ Add VIP Extra</button>
+  </section>
+
+  <div id="vipBadgesSection" class="vip-badges-section">
+    <h3>👑 VIP Badges</h3>
+    <p style="color: #ff82ba; margin-bottom: 1.5rem;">Choose your VIP badge that appears in chat:</p>
+    
+    <div class="badges-grid">
+      <div class="badge-item" data-badge="👑" data-name="Crown">
+        <span class="badge-emoji">👑</span>
+        <span class="badge-name">Crown</span>
+      </div>
+      <div class="badge-item" data-badge="💎" data-name="Diamond">
+        <span class="badge-emoji">💎</span>
+        <span class="badge-name">Diamond</span>
+      </div>
+      <div class="badge-item" data-badge="🍆" data-name="Eggplant">
+        <span class="badge-emoji">🍆</span>
+        <span class="badge-name">Eggplant</span>
+      </div>
+      <div class="badge-item" data-badge="🐾" data-name="Paws">
+        <span class="badge-emoji">🐾</span>
+        <span class="badge-name">Paws</span>
+      </div>
+      <div class="badge-item" data-badge="💦" data-name="Splash">
+        <span class="badge-emoji">💦</span>
+        <span class="badge-name">Splash</span>
+      </div>
+      <div class="badge-item" data-badge="🎮" data-name="Gaming">
+        <span class="badge-emoji">🎮</span>
+        <span class="badge-name">Gaming</span>
+      </div>
+    </div>
+  </div>
 
   <section id="chat-container">
     <h2>Chat with <span id="chat-username">Loading...</span></h2>
@@ -2233,32 +3183,30 @@ crossorigin="anonymous"></script>
       <label id="game-id-label" for="game-id" style="font-size: 1.1rem; color: #ff4f9f; display: block; margin-bottom: 5px;">Game ID:</label>
       <input type="text" id="game-id" readonly style="width: 100%; padding: 10px; font-size: 16px; border: 2px solid #ff4f9f; border-radius: 8px; background-color: #1b1b2e; color: #fff; font-family: inherit;" />
     </div>
-    <div id="messages">
-      <div class="loading-message">💬 Loading messages...</div>
-    </div>
+    <div id="messages"><p>Loading messages...</p></div>
     <form id="chat-form">
       <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off" />
       <button type="submit">Send</button>
     </form>
   </section>
 
-<script type="module">
-  // Import Supabase with error handling
-  let supabase;
-  try {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
-    supabase = createClient(
-      'https://fwslmbzfukriibnkpzou.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
-    );
-    console.log('✅ Supabase client initialized successfully');
-  } catch (error) {
-    console.error('❌ Failed to initialize Supabase:', error);
-    document.getElementById('videos').innerHTML = '<div class="error-message">Failed to load database connection. Please refresh the page.</div>';
-    document.getElementById('messages').innerHTML = '<div class="error-message">Chat unavailable - database connection failed.</div>';
-  }
+  <!-- Fullscreen Video View -->
+  <div id="fullscreen-video-view" class="fullscreen-video-view">
+    <div class="fullscreen-video-header">
+      <h2 id="fullscreen-video-title" class="fullscreen-video-title">Video Player</h2>
+      <button class="close-fullscreen-video" onclick="closeVideoFullscreen()">✕ Close</button>
+    </div>
+    <div id="fullscreen-video-player" class="fullscreen-video-player"></div>
+  </div>
 
-  // DOM elements
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase = createClient(
+    'https://fwslmbzfukriibnkpzou.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
+  );
+
   const pageTitle = document.getElementById('pageTitle');
   const videosContainer = document.getElementById('videos');
   const chatContainer = document.getElementById('chat-container');
@@ -2267,69 +3215,30 @@ crossorigin="anonymous"></script>
   const msgInput = document.getElementById('msg-input');
   const chatHeading = document.getElementById('chat-username');
 
-  // Get username from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('user') || '';
-  console.log('🔍 Username from URL:', username);
 
-  // Global state
   let currentUser = null;
   let totalLikes = 0;
   let userHasLiked = false;
+  let videoLikes = {};
+  let userLikedVideo = new Set();
   let isVipUser = false;
+  let selectedBadge = '👑';
 
-  // Utility function to escape HTML
-  function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Show error message in a container
-  function showError(container, message) {
-    if (container) {
-      container.innerHTML = `<div class="error-message">❌ ${escapeHtml(message)}</div>`;
-    }
-  }
-
-  // Show loading message in a container
-  function showLoading(container, message) {
-    if (container) {
-      container.innerHTML = `<div class="loading-message">⏳ ${escapeHtml(message)}</div>`;
-    }
-  }
-
-  // Get current authenticated user with error handling
+  // Get current user
   async function getCurrentUser() {
-    if (!supabase) {
-      console.error('❌ Supabase not initialized');
-      return null;
-    }
-
-    try {
-      console.log('🔍 Getting current user...');
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error) {
-        console.error('❌ Error getting current user:', error);
-        return null;
-      }
-      
-      console.log('👤 Current user:', user ? user.id : 'Not logged in');
-      return user;
-    } catch (error) {
-      console.error('❌ Exception getting current user:', error);
-      return null;
-    }
+    const result = await supabase.auth.getUser();
+    if (result.error || !result.data.user) return null;
+    return result.data.user;
   }
 
-  // Check if user is VIP with error handling
+  // Check if user is VIP
   async function checkVipStatus(user) {
-    if (!user || !supabase) return false;
+    if (!user) return false;
     
     try {
-      console.log('🔍 Checking VIP status for user:', user.id);
+      console.log('Checking VIP status for user:', user.id);
       
       const { data: userData, error } = await supabase
         .from('users')
@@ -2338,116 +3247,380 @@ crossorigin="anonymous"></script>
         .single();
 
       if (error) {
-        console.error('❌ Error checking VIP status:', error);
+        console.error('Error checking VIP status:', error);
         return false;
       }
 
+      console.log('User data from database:', userData);
       const isVip = userData?.is_vip === true;
-      console.log('👑 VIP status:', isVip);
+      console.log('Is VIP result:', isVip);
       
       return isVip;
     } catch (error) {
-      console.error('❌ Exception checking VIP status:', error);
+      console.error('Error in checkVipStatus:', error);
       return false;
     }
   }
 
-  // Get total likes with error handling
-  async function getTotalLikes() {
-    if (!username || !supabase) return 0;
-    
+  // Get likes for a specific extra
+  async function getExtraLikes(extraId) {
     try {
-      console.log('🔍 Getting total likes for:', username);
-      
-      // Get main page likes
-      const mainPageResult = await supabase
+      const { count, error } = await supabase
         .from('vip_page_views')
         .select('*', { count: 'exact', head: true })
-        .eq('username', username);
-      
-      if (mainPageResult.error) {
-        console.error('❌ Error getting main page likes:', mainPageResult.error);
+        .eq('username', `extra_${extraId}`);
+
+      if (error) {
+        console.error('Error getting likes:', error);
         return 0;
       }
-      
-      // Get all video likes (any username that starts with username_video_)
-      const videoResult = await supabase
-        .from('vip_page_views')
-        .select('*', { count: 'exact', head: true })
-        .like('username', username + '_video_%');
-      
-      if (videoResult.error) {
-        console.error('❌ Error getting video likes:', videoResult.error);
-        return mainPageResult.count || 0;
-      }
-      
-      const mainPageCount = mainPageResult.count || 0;
-      const videoCount = videoResult.count || 0;
-      const total = mainPageCount + videoCount;
-      
-      console.log('❤️ Total likes:', total, '(main:', mainPageCount, ', videos:', videoCount, ')');
-      return total;
+      return count || 0;
     } catch (error) {
-      console.error('❌ Exception getting total likes:', error);
+      console.error('Error getting extra likes:', error);
       return 0;
     }
   }
 
-  // Check if current user has liked this user's page
-  async function hasUserLiked(userId) {
-    if (!userId || !username || !supabase) return false;
-    
+  // Check if current user has liked an extra
+  async function hasUserLikedExtra(extraId) {
+    if (!currentUser) return false;
+
     try {
       const { data, error } = await supabase
         .from('vip_page_views')
         .select('user_id')
-        .eq('user_id', userId)
-        .eq('username', username)
+        .eq('username', `extra_${extraId}`)
+        .eq('user_id', currentUser.id)
         .single();
-      
+
       if (error && error.code !== 'PGRST116') {
-        console.error('❌ Error checking if user liked:', error);
-        return false;
+        console.error('Error checking user like:', error);
       }
-      
-      const hasLiked = !!data;
-      console.log('❤️ User has liked:', hasLiked);
-      return hasLiked;
+      return !error && data;
     } catch (error) {
-      console.error('❌ Exception checking if user liked:', error);
+      console.error('Error in hasUserLikedExtra:', error);
       return false;
     }
   }
 
-  // Update like status display
-  function updateLikeStatus() {
-    const status = document.getElementById('like-status');
-    const likeBtn = document.getElementById('main-like-btn');
-    
-    if (!status || !likeBtn) return;
-
+  // Toggle like for an extra
+  async function toggleExtraLike(extraId) {
     if (!currentUser) {
-      status.textContent = '🔐 Please log in to like this page.';
-      likeBtn.style.display = 'none';
-      return;
+      alert('Please login to like extras');
+      return null;
     }
 
-    if (userHasLiked) {
-      status.textContent = `✅ You already liked ${username}'s page. Total likes: ${totalLikes}`;
-      likeBtn.disabled = true;
-      likeBtn.textContent = '✅ Liked';
-    } else {
-      status.textContent = `❤️ Total likes for ${username}: ${totalLikes}`;
-      likeBtn.disabled = false;
-      likeBtn.textContent = '❤️ Like';
+    const userId = currentUser.id;
+    const extraUsername = `extra_${extraId}`;
+
+    try {
+      // Check if already liked
+      const { data: existingLike, error: checkError } = await supabase
+        .from('vip_page_views')
+        .select('user_id')
+        .eq('username', extraUsername)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingLike) {
+        // Remove like
+        const { error: deleteError } = await supabase
+          .from('vip_page_views')
+          .delete()
+          .eq('username', extraUsername)
+          .eq('user_id', userId);
+
+        if (deleteError) throw deleteError;
+        return false; // unliked
+      } else {
+        // Add like
+        const { error: insertError } = await supabase
+          .from('vip_page_views')
+          .insert([{
+            username: extraUsername,
+            user_id: userId,
+            view_count: 1,
+            first_viewed_at: new Date().toISOString(),
+            last_viewed_at: new Date().toISOString()
+          }]);
+
+        if (insertError) throw insertError;
+        return true; // liked
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      alert('Failed to update like: ' + error.message);
+      return null;
+    }
+  }
+
+  // Handle like button clicks
+  window.handleLikeClick = async function(extraId) {
+    const likeBtn = document.querySelector(`button[onclick="handleLikeClick('${extraId}')"]`);
+    const likeCountSpan = likeBtn.parentElement.querySelector('.like-count');
+    
+    // Disable button during request
+    likeBtn.disabled = true;
+    
+    const isLiked = await toggleExtraLike(extraId);
+    
+    if (isLiked !== null) {
+      // Update UI
+      if (isLiked) {
+        likeBtn.innerHTML = '❤️ Like';
+        likeBtn.classList.add('liked');
+      } else {
+        likeBtn.innerHTML = '🤍 Like';
+        likeBtn.classList.remove('liked');
+      }
+      
+      // Update count
+      const newCount = await getExtraLikes(extraId);
+      likeCountSpan.textContent = newCount;
+    }
+    
+    // Re-enable button
+    likeBtn.disabled = false;
+  };
+
+  // Load VIP Extras for this user
+  async function loadVipExtras() {
+    const container = document.getElementById('extrasContainer');
+    const vipExtrasSection = document.getElementById('vip-extras-section');
+    const extrasUsername = document.getElementById('extras-username');
+    
+    if (extrasUsername) {
+      extrasUsername.textContent = username;
+    }
+    
+    console.log('Loading VIP extras for:', username);
+    console.log('Current user:', currentUser);
+    console.log('Is VIP user:', isVipUser);
+    
+    try {
+      const { data: extras, error } = await supabase
+        .from('vip_extras')
+        .select('*')
+        .eq('game_id', username) // Use the page owner's username as game_id
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading extras:', error);
+        container.innerHTML = `<div class="no-extras">Error loading extras: ${error.message}</div>`;
+        return;
+      }
+
+      console.log('Found extras:', extras);
+
+      if (!extras || extras.length === 0) {
+        if (isVipUser) {
+          container.innerHTML = `<div class="no-extras">No VIP extras yet for ${username}. Be the first to share something awesome!</div>`;
+        } else {
+          container.innerHTML = `<div class="no-extras">No VIP extras available for ${username}.</div>`;
+        }
+        return;
+      }
+
+      // Get likes for all extras
+      const extrasWithLikes = await Promise.all(extras.map(async (extra) => {
+        const [likeCount, userHasLiked] = await Promise.all([
+          getExtraLikes(extra.id),
+          hasUserLikedExtra(extra.id)
+        ]);
+        
+        return {
+          ...extra,
+          likeCount,
+          userHasLiked
+        };
+      }));
+
+      container.innerHTML = extrasWithLikes.map(extra => {
+        // Format the date properly
+        let dateStr = 'Unknown date';
+        if (extra.created_at) {
+          try {
+            const date = new Date(extra.created_at);
+            dateStr = date.toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric',
+              year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+            });
+          } catch (e) {
+            console.error('Date parsing error:', e);
+          }
+        }
+
+        return '<div class="extra-card">' +
+          '<div class="extra-header">' +
+            '<div class="extra-type">' + (extra.type || 'EXTRA').toUpperCase() + '</div>' +
+          '</div>' +
+          '<h4 class="extra-title">' + (extra.title || 'Untitled') + '</h4>' +
+          '<p class="extra-description">' + (extra.description || 'No description') + '</p>' +
+          '<div class="extra-footer">' +
+            '<div class="extra-actions">' +
+              '<span class="extra-creator">' +
+                'Added by ' + (extra.creator_name || username) + '<br>' +
+                '<small>' + dateStr + '</small>' +
+              '</span>' +
+              '<div class="like-section">' +
+                '<button class="like-btn ' + (extra.userHasLiked ? 'liked' : '') + '" onclick="handleLikeClick(\'' + extra.id + '\')">' +
+                  (extra.userHasLiked ? '❤️' : '🤍') + ' Like' +
+                '</button>' +
+                '<span class="like-count">' + extra.likeCount + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<a href="' + (extra.url || '#') + '" target="_blank" class="extra-link">' +
+              (extra.type === 'download' ? '⬇ Download' : 
+               extra.type === 'link' ? '🔗 Open Link' : 
+               extra.type === 'code' ? '📋 Get Code' : 
+               extra.type === 'video' ? '🎬 Watch Video' :
+               extra.type === 'music' ? '🎵 Listen' :
+               '🎯 Access') +
+            '</a>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+    } catch (err) {
+      console.error('Failed to load VIP extras:', err);
+      container.innerHTML = `<div class="no-extras">Failed to load VIP extras: ${err.message}</div>`;
+    }
+  }
+
+  // Add VIP Extra for this user's page
+  async function addVipExtra(extraData) {
+    if (!currentUser || !isVipUser) {
+      alert('VIP access required to add extras');
+      return false;
     }
 
-    likeBtn.style.display = 'inline-block';
+    console.log('Adding VIP extra as VIP user:', currentUser.user_metadata?.full_name || currentUser.id);
+
+    try {
+      const { error } = await supabase
+        .from('vip_extras')
+        .insert([{
+          title: extraData.title,
+          description: extraData.description,
+          url: extraData.url,
+          type: extraData.type,
+          game_id: username, // Use page owner's username as game_id
+          created_by: currentUser.id,
+          creator_name: currentUser.user_metadata?.full_name || 'VIP User'
+        }]);
+
+      if (error) {
+        console.error('Error adding extra:', error);
+        alert('Failed to add extra: ' + error.message);
+        return false;
+      }
+
+      // Reload extras
+      await loadVipExtras();
+      
+      // Reset form and hide
+      document.getElementById('extraForm').reset();
+      document.getElementById('addExtraSection').classList.remove('show');
+      
+      alert('VIP extra added successfully!');
+      return true;
+
+    } catch (err) {
+      console.error('Error adding VIP extra:', err);
+      alert('Failed to add VIP extra: ' + err.message);
+      return false;
+    }
+  }
+
+  // Toggle add extra form
+  window.toggleAddExtra = function() {
+    const section = document.getElementById('addExtraSection');
+    section.classList.toggle('show');
+  };
+
+  // Get total likes - includes main page AND all video likes
+  async function getTotalLikes() {
+    if (!username) return 0;
+    
+    // Get main page likes
+    const mainPageResult = await supabase
+      .from('vip_page_views')
+      .select('*', { count: 'exact', head: true })
+      .eq('username', username);
+    
+    // Get all video likes (any username that starts with username_video_)
+    const videoResult = await supabase
+      .from('vip_page_views')
+      .select('*', { count: 'exact', head: true })
+      .like('username', username + '_video_%');
+    
+    const mainPageCount = mainPageResult.count || 0;
+    const videoCount = videoResult.count || 0;
+    
+    return mainPageCount + videoCount;
+  }
+
+  // Check if current user has liked this user's page
+  async function hasUserLiked(userId) {
+    if (!userId || !username) return false;
+    const result = await supabase
+      .from('vip_page_views')
+      .select('user_id')
+      .eq('user_id', userId)
+      .eq('username', username)
+      .maybeSingle();
+    return !!result.data;
+  }
+
+  // Get video likes using vip_page_views table
+  async function getVideoLikes(videoIds) {
+    if (videoIds.length === 0) return {};
+    
+    const videoUsernames = videoIds.map(id => username + '_video_' + id);
+    
+    const result = await supabase
+      .from('vip_page_views')
+      .select('username, view_count')
+      .in('username', videoUsernames);
+
+    if (result.error) {
+      console.error('Error fetching video likes:', result.error);
+      return {};
+    }
+
+    const likes = {};
+    result.data.forEach(item => {
+      const videoId = item.username.split('_video_')[1];
+      likes[videoId] = item.view_count || 0;
+    });
+    
+    return likes;
+  }
+
+  // Get user's liked video using vip_page_views table
+  async function getUserLikedVideo(userId, videoIds) {
+    if (!userId || videoIds.length === 0) return new Set();
+    
+    const videoUsernames = videoIds.map(id => username + '_video_' + id);
+    
+    const result = await supabase
+      .from('vip_page_views')
+      .select('username')
+      .eq('user_id', userId)
+      .in('username', videoUsernames);
+
+    if (result.error) {
+      console.error('Error fetching user liked video:', result.error);
+      return new Set();
+    }
+
+    return new Set(result.data.map(item => item.username.split('_video_')[1]));
   }
 
   // Like the user's page (main page like)
   async function likeUserPage() {
-    if (!currentUser || !supabase) {
+    if (!currentUser) {
       alert('Please log in to like this page');
       return false;
     }
@@ -2456,191 +3629,839 @@ crossorigin="anonymous"></script>
       return false; // Already liked
     }
 
-    try {
-      console.log('❤️ Liking user page...');
-      const now = new Date().toISOString();
+    const now = new Date().toISOString();
 
-      // Check if the user has already liked the page
-      const { data: existingLike, error: checkError } = await supabase
+    // Check if the user has already liked the page
+    const existingResult = await supabase
+      .from('vip_page_views')
+      .select('view_count, first_viewed_at')
+      .eq('user_id', currentUser.id)
+      .eq('username', username)
+      .single();
+
+    if (existingResult.data) {
+      // If the user already liked, update the view count and last viewed timestamp
+      const updateResult = await supabase
         .from('vip_page_views')
-        .select('view_count, first_viewed_at')
+        .update({
+          view_count: existingResult.data.view_count + 1,
+          last_viewed_at: now,
+        })
         .eq('user_id', currentUser.id)
-        .eq('username', username)
-        .single();
+        .eq('username', username);
 
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('❌ Error checking existing like:', checkError);
-        return false;
-      }
+      if (updateResult.error) throw updateResult.error;
+      return true;
+    }
 
-      if (existingLike) {
-        // If the user already liked, update the view count and last viewed timestamp
-        const { error: updateError } = await supabase
-          .from('vip_page_views')
-          .update({
-            view_count: existingLike.view_count + 1,
-            last_viewed_at: now,
-          })
-          .eq('user_id', currentUser.id)
-          .eq('username', username);
+    // If the user hasn't liked, insert a new row with the current timestamp
+    const insertResult = await supabase
+      .from('vip_page_views')
+      .insert([{
+        user_id: currentUser.id,
+        username: username,
+        view_count: 1,
+        first_viewed_at: now,
+        last_viewed_at: now,
+      }]);
 
-        if (updateError) {
-          console.error('❌ Error updating like count:', updateError);
-          return false;
-        }
+    if (insertResult.error) throw insertResult.error;
+    return true;
+  }
 
-        console.log('✅ Updated existing like');
-        return true;
-      }
+  // Like/unlike video using vip_page_views table
+  async function toggleVideoLike(videoId) {
+    if (!currentUser) {
+      alert('Please log in to like videos');
+      return;
+    }
 
-      // If the user hasn't liked, insert a new row with the current timestamp
-      const { error: insertError } = await supabase
+    const videoUsername = username + '_video_' + videoId;
+    const isLiked = userLikedVideo.has(videoId);
+    const now = new Date().toISOString();
+
+    if (isLiked) {
+      // Unlike - delete the record
+      const result = await supabase
         .from('vip_page_views')
-        .insert([{
+        .delete()
+        .eq('user_id', currentUser.id)
+        .eq('username', videoUsername);
+
+      if (result.error) {
+        console.error('Error unliking video:', result.error);
+        return;
+      }
+
+      userLikedVideo.delete(videoId);
+      videoLikes[videoId] = Math.max(0, (videoLikes[videoId] || 1) - 1);
+      
+      // Update total likes count since we removed a like
+      totalLikes = await getTotalLikes();
+      updateLikeStatus();
+    } else {
+      // Like - insert new record
+      const result = await supabase
+        .from('vip_page_views')
+        .insert({
           user_id: currentUser.id,
-          username: username,
+          username: videoUsername,
           view_count: 1,
           first_viewed_at: now,
-          last_viewed_at: now,
-        }]);
+          last_viewed_at: now
+        });
 
-      if (insertError) {
-        console.error('❌ Error inserting like:', insertError);
-        return false;
+      if (result.error) {
+        console.error('Error liking video:', result.error);
+        return;
       }
 
-      console.log('✅ Successfully liked page');
-      return true;
-    } catch (error) {
-      console.error('❌ Exception liking page:', error);
-      return false;
+      userLikedVideo.add(videoId);
+      videoLikes[videoId] = (videoLikes[videoId] || 0) + 1;
+      
+      // Update total likes count since we added a new like
+      totalLikes = await getTotalLikes();
+      updateLikeStatus();
     }
+
+    // Update UI
+    updateVideoLikeButton(videoId);
   }
 
-  // Load videos with comprehensive error handling
-  async function loadVideos() {
-    if (!supabase) {
-      showError(videosContainer, 'Database connection unavailable');
-      return;
-    }
-
-    try {
-      console.log('🎬 Loading videos for:', username);
-      showLoading(videosContainer, 'Loading videos...');
-
-      const { data: videos, error } = await supabase
-        .from('game_videos')
-        .select('*')
-        .eq('github_username', username)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('❌ Error loading videos:', error);
-        showError(videosContainer, `Error loading videos: ${error.message}`);
-        return;
-      }
-
-      if (!videos || videos.length === 0) {
-        videosContainer.innerHTML = `<p class="no-content">🎬 No videos submitted by ${escapeHtml(username)} yet.</p>`;
-        console.log('📭 No videos found');
-        return;
-      }
-
-      console.log('✅ Loaded videos:', videos.length);
-
-      // Create simple video display
-      videosContainer.innerHTML = videos.map((video, index) => {
-        const title = escapeHtml(video.title || 'Untitled Video');
-        const description = escapeHtml(video.description || video.content || 'No description provided');
-        const videoUrl = video.video_url || '';
-        
-        return `
-          <div class="card" style="background: linear-gradient(145deg, #3a2147, #241834); border: 2px solid #ff4f9f; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
-            <h3 style="color: #ff4f9f; margin-top: 0;">${title}</h3>
-            <p style="color: #e0e0e0; margin-bottom: 1rem;">${description}</p>
-            ${videoUrl ? `
-              <div style="margin-bottom: 1rem;">
-                <a href="${escapeHtml(videoUrl)}" target="_blank" style="
-                  display: inline-block;
-                  background: linear-gradient(135deg, #ff4f9f, #ff1493);
-                  color: #ffffff;
-                  padding: 12px 20px;
-                  border-radius: 25px;
-                  text-decoration: none;
-                  font-weight: bold;
-                  transition: all 0.3s ease;
-                ">🎬 Watch Video</a>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-
-    } catch (error) {
-      console.error('❌ Exception loading videos:', error);
-      showError(videosContainer, `Unexpected error loading videos: ${error.message}`);
-    }
-  }
-
-  // Load chat messages with error handling
-  async function loadChatMessages() {
-    if (!supabase || !username) {
-      showError(messagesDiv, 'Chat unavailable');
-      return;
-    }
-
-    try {
-      console.log('💬 Loading chat messages for:', username);
-      showLoading(messagesDiv, 'Loading messages...');
-
-      const { data: messages, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('game_id', username)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('❌ Error loading messages:', error);
-        showError(messagesDiv, `Error loading messages: ${error.message}`);
-        return;
-      }
-
-      if (!messages || messages.length === 0) {
-        messagesDiv.innerHTML = '<p>💬 No messages yet. Be the first to chat!</p>';
-        console.log('📭 No messages found');
-        return;
-      }
-
-      console.log('✅ Loaded messages:', messages.length);
-
-      messagesDiv.innerHTML = messages.map(message => {
-        const username = escapeHtml(message.github_username || 'Guest');
-        const content = escapeHtml(message.content);
-        const time = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        return `
-          <div style="margin-bottom: 12px; padding: 8px; border-radius: 4px; background: rgba(255, 79, 159, 0.1);">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;">
-              <span style="font-weight: bold; color: #ff82ba;">${username}</span>
-              <span style="font-size: 0.7rem; color: #888; margin-left: auto;">${time}</span>
-            </div>
-            <div style="color: #fefefe;">${content}</div>
-          </div>
-        `;
-      }).join('');
-
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    } catch (error) {
-      console.error('❌ Exception loading messages:', error);
-      showError(messagesDiv, `Unexpected error loading messages: ${error.message}`);
-    }
-  }
-
-  // Get current user's GitHub username
-  async function getUserGitHubUsername() {
-    if (!currentUser || !supabase) return 'Guest';
+  // Update video like button appearance
+  function updateVideoLikeButton(videoId) {
+    const likeBtn = document.querySelector('[data-video-id="' + videoId + '"] .video-like-btn');
+    const likeCount = document.querySelector('[data-video-id="' + videoId + '"] .video-like-count');
     
+    if (!likeBtn || !likeCount) return;
+
+    const isLiked = userLikedVideo.has(videoId);
+    const count = videoLikes[videoId] || 0;
+
+    likeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+    likeBtn.className = 'video-like-btn' + (isLiked ? ' liked' : '');
+    likeCount.innerHTML = '❤️ ' + count;
+
+    if (isLiked) {
+      likeBtn.classList.add('liked');
+    }
+  }
+
+  // Fullscreen video functionality
+  let currentFullscreenVideo = null;
+
+  window.openVideoFullscreen = function(videoUrl, title) {
+    const fullscreenView = document.getElementById('fullscreen-video-view');
+    const fullscreenPlayer = document.getElementById('fullscreen-video-player');
+    const fullscreenTitle = document.getElementById('fullscreen-video-title');
+    
+    // Clear previous content
+    fullscreenPlayer.innerHTML = '';
+    
+    // Create the video player for fullscreen
+    const player = createActualVideoPlayer(videoUrl);
+    player.className = 'fullscreen-video-player';
+    
+    // For video elements, add special styling
+    if (player.tagName === 'VIDEO') {
+      player.style.width = '100%';
+      player.style.height = '100%';
+      player.style.background = 'transparent';
+    }
+    
+    fullscreenPlayer.appendChild(player);
+    fullscreenTitle.textContent = title || 'Video Player';
+    
+    currentFullscreenVideo = { url: videoUrl, element: player };
+    
+    fullscreenView.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
+    // Auto-play if it's a direct video file
+    if (player.tagName === 'VIDEO') {
+      player.play().catch(() => {
+        // Auto-play failed, that's okay
+      });
+    }
+  }
+
+  window.closeVideoFullscreen = function() {
+    const fullscreenView = document.getElementById('fullscreen-video-view');
+    const fullscreenPlayer = document.getElementById('fullscreen-video-player');
+    
+    // Stop previous playing video
+    if (currentFullscreenVideo && currentFullscreenVideo.element.tagName === 'VIDEO') {
+      currentFullscreenVideo.element.pause();
+      currentFullscreenVideo.element.currentTime = 0;
+    }
+    
+    fullscreenView.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    // Clear the player content
+    fullscreenPlayer.innerHTML = '';
+    currentFullscreenVideo = null;
+    
+    // Remove fullscreen change listeners
+    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+  }
+
+  function handleFullscreenChange() {
+    // Check if we've exited fullscreen
+    const isFullscreen = !!(document.fullscreenElement || 
+                           document.webkitFullscreenElement || 
+                           document.mozFullScreenElement || 
+                           document.msFullscreenElement);
+    
+    if (!isFullscreen && currentFullscreenVideo) {
+      // We've exited fullscreen, so close our fullscreen video view
+      closeVideoFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && currentFullscreenVideo) {
+      closeVideoFullscreen();
+    }
+  });
+
+  function updateLikeStatus() {
+    const status = document.getElementById('like-status');
+    const likeBtn = document.getElementById('main-like-btn');
+    
+    if (!status || !likeBtn) return;
+
+    if (!currentUser) {
+      status.textContent = '❌ Please log in to like this page.';
+      likeBtn.style.display = 'none';
+      return;
+    }
+
+    if (userHasLiked) {
+      status.textContent = '❤️ You already liked ' + username + "'s page. Total likes: " + totalLikes;
+      likeBtn.disabled = true;
+    } else {
+      status.textContent = '👍 Total likes for ' + username + ': ' + totalLikes;
+      likeBtn.disabled = false;
+    }
+
+    likeBtn.style.display = 'inline-block';
+  }
+
+// Enhanced createVideoPlayer function with YouTube playlist support
+function createVideoPlayer(videoUrl, withFullscreenBtn = false, title = '') {
+  if (withFullscreenBtn) {
+    // Create placeholder that loads video only on fullscreen (like video page)
+    return createVideoPlaceholder(videoUrl, title);
+  } else {
+    // For fullscreen mode, create the actual player
+    return createActualVideoPlayer(videoUrl);
+  }
+}
+
+// Create video placeholder (similar to video page's fullscreen-placeholder)
+function createVideoPlaceholder(videoUrl, title) {
+  const container = document.createElement('div');
+  container.className = 'video-container';
+  
+  const videoType = detectVideoType(videoUrl);
+  
+  // Create placeholder that loads video only on fullscreen
+  const placeholder = document.createElement('div');
+  placeholder.className = 'fullscreen-video-placeholder';
+  placeholder.setAttribute('data-platform', videoType);
+  
+  // Platform-specific icons and text
+  let platformIcon = '🎥';
+  let platformText = 'Click to play in fullscreen';
+  let platformName = videoType.toUpperCase();
+  
+  switch (videoType) {
+    case 'youtube':
+      platformIcon = '🎥';
+      platformText = 'Play YouTube video in fullscreen';
+      platformName = 'YOUTUBE';
+      break;
+    case 'youtube-playlist':
+      platformIcon = '📋';
+      platformText = 'Play YouTube playlist in fullscreen';
+      platformName = 'YOUTUBE PLAYLIST';
+      break;
+    case 'soundcloud':
+      platformIcon = '🎵';
+      platformText = 'Play SoundCloud in fullscreen';
+      platformName = 'SOUNDCLOUD';
+      break;
+    case 'spotify':
+      platformIcon = '🎶';
+      platformText = 'Play Spotify in fullscreen';
+      platformName = 'SPOTIFY';
+      break;
+    case 'video':
+      platformIcon = '🎬';
+      platformText = 'Play video file in fullscreen';
+      platformName = 'VIDEO';
+      break;
+    case 'audio':
+      platformIcon = '🎧';
+      platformText = 'Play audio file in fullscreen';
+      platformName = 'AUDIO';
+      break;
+    case 'x':
+      platformIcon = 'X';
+      platformText = 'View X post in fullscreen';
+      platformName = 'X';
+      break;
+  }
+  
+  placeholder.innerHTML = `
+    <span class="play-icon">${platformIcon}</span>
+    <div>${platformText}</div>
+    <small style="opacity: 0.7; font-size: 0.8rem;">${platformName}</small>
+  `;
+  
+  // Add click handler to enter fullscreen and load video
+  placeholder.addEventListener('click', () => {
+    loadVideoInFullscreen(videoUrl, videoType, placeholder, title);
+  });
+  
+  container.appendChild(placeholder);
+  return container;
+}
+
+// Enhanced detect video platform/type with YouTube playlist and X support
+function detectVideoType(url) {
+  if (!url) return 'unknown';
+  
+  const urlLower = url.toLowerCase();
+  
+  // Check for YouTube playlist first
+  if (urlLower.includes('youtube.com/playlist') || urlLower.includes('list=')) {
+    return 'youtube-playlist';
+  }
+  
+  if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+  if (urlLower.includes('soundcloud.com')) return 'soundcloud';
+  if (urlLower.includes('spotify.com')) return 'spotify';
+  if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
+  
+  // Check for video file extensions
+  const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
+  const ext = extMatch ? extMatch[1].toLowerCase() : '';
+  const videoExts = ['mp4', 'webm', 'ogv', 'mov', 'avi'];
+  const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
+  
+  if (videoExts.includes(ext)) return 'video';
+  if (audioExts.includes(ext)) return 'audio';
+  
+  return 'unknown';
+}
+
+// Load video in fullscreen mode
+function loadVideoInFullscreen(url, videoType, placeholderElement, title) {
+  // Show loading state
+  const originalContent = placeholderElement.innerHTML;
+  placeholderElement.innerHTML = `
+    <span class="play-icon">⏳</span>
+    <div>Loading ${videoType.toUpperCase()} video...</div>
+    <small style="opacity: 0.7; font-size: 0.8rem;">Entering fullscreen mode</small>
+  `;
+  
+  // Create the actual video player
+  const videoElement = createActualVideoPlayer(url);
+  
+  // Add load event handlers
+  videoElement.onload = function() {
+    console.log(`Successfully loaded ${videoType} video:`, url);
+  };
+  
+  videoElement.onerror = function() {
+    console.error(`Failed to load ${videoType} video:`, url);
+    // Restore placeholder on error
+    placeholderElement.innerHTML = `
+      <span class="play-icon">❌</span>
+      <div style="margin-bottom: 15px;">Failed to load video</div>
+      <button onclick="window.open('${url}', '_blank')" style="
+        background: linear-gradient(45deg, #ff4f9f, #ff1493);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+      " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        🔗 Open Video Direct
+      </button>
+      <div style="margin-top: 10px;">
+        <small style="opacity: 0.7;">Click to try again</small>
+      </div>
+    `;
+    setTimeout(() => {
+      placeholderElement.innerHTML = originalContent;
+    }, 5000);
+    return;
+  };
+  
+  // Use the existing openVideoFullscreen function
+  setTimeout(() => {
+    openVideoFullscreen(url, title);
+    // Restore placeholder since fullscreen handles the player
+    placeholderElement.innerHTML = originalContent;
+  }, 1000);
+}
+
+// Enhanced createActualVideoPlayer with YouTube playlist and X support
+function createActualVideoPlayer(videoUrl) {
+  let player;
+  
+  // Check for YouTube playlist first
+  if (videoUrl.includes('youtube.com/playlist') || videoUrl.includes('list=')) {
+    // YouTube playlist embed
+    let playlistId = '';
+    
+    // Extract playlist ID from different URL formats
+    if (videoUrl.includes('list=')) {
+      const urlParams = new URLSearchParams(videoUrl.split('?')[1] || '');
+      playlistId = urlParams.get('list');
+    }
+    
+    if (playlistId) {
+      player = document.createElement('iframe');
+      player.src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&controls=1&modestbranding=1&rel=0`;
+      player.style.width = '100%';
+      player.style.height = '315px'; // Slightly taller for playlists
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      player.setAttribute('allowfullscreen', 'true');
+      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+      
+      player.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    }
+  } else if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+    // Regular YouTube video embed
+    let videoId = '';
+    if (videoUrl.includes('youtu.be/')) {
+      videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+    } else if (videoUrl.includes('youtube.com/watch?v=')) {
+      videoId = videoUrl.split('v=')[1].split('&')[0];
+    }
+    
+    if (videoId) {
+      player = document.createElement('iframe');
+      player.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0`;
+      player.style.width = '100%';
+      player.style.height = '140px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      player.setAttribute('allowfullscreen', 'true');
+      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+      
+      player.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    }
+  } else if (videoUrl.includes('soundcloud.com')) {
+    // SoundCloud embed
+    player = document.createElement('iframe');
+    player.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(videoUrl)}&color=%23ff69b4&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
+    player.style.width = '100%';
+    player.style.height = '140px';
+    player.style.border = 'none';
+    player.style.borderRadius = '10px';
+    
+    player.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+  } else if (videoUrl.includes('spotify.com')) {
+    // Spotify embed
+    let spotifyId = '';
+    let embedType = '';
+    
+    if (videoUrl.includes('track/')) {
+      spotifyId = videoUrl.split('track/')[1].split('?')[0];
+      embedType = 'track';
+    } else if (videoUrl.includes('album/')) {
+      spotifyId = videoUrl.split('album/')[1].split('?')[0];
+      embedType = 'album';
+    } else if (videoUrl.includes('playlist/')) {
+      spotifyId = videoUrl.split('playlist/')[1].split('?')[0];
+      embedType = 'playlist';
+    }
+    
+    if (spotifyId && embedType) {
+      player = document.createElement('iframe');
+      player.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
+      player.style.width = '100%';
+      player.style.height = embedType === 'track' ? '152px' : '140px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      
+      player.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    }
+  } else if (videoUrl.includes('x.com') || videoUrl.includes('twitter.com')) {
+    // X embed - improved iframe support from video page
+    const xMatch = videoUrl.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
+    if (xMatch) {
+      const tweetId = xMatch[1];
+      player = document.createElement('iframe');
+      player.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+      player.style.width = '100%';
+      player.style.height = '200px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+    } else {
+      // Fallback placeholder
+      player = document.createElement('iframe');
+      player.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+          <h2> X Video</h2>
+          <p>This video is hosted on X (formerly Twitter).</p>
+          <p><a href="${videoUrl}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+        </body></html>
+      `);
+      player.style.width = '100%';
+      player.style.height = '200px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+    }
+    
+    player.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+  }
+  
+  // Fallback to video player for direct video files
+  if (!player) {
+    const extMatch = videoUrl.match(/\.(\w+)(?:\?.*)?$/);
+    const ext = extMatch ? extMatch[1].toLowerCase() : '';
+    const videoExts = ['mp4', 'webm', 'ogv', 'mov', 'avi'];
+    const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
+
+    if (videoExts.includes(ext)) {
+      player = document.createElement('video');
+      player.controls = true;
+      player.style.width = '100%';
+      player.style.background = 'transparent';
+      
+      const sourceMP4 = document.createElement('source');
+      sourceMP4.src = videoUrl;
+      sourceMP4.type = 'video/mp4';
+      
+      const sourceWEBM = document.createElement('source');
+      sourceWEBM.src = videoUrl;
+      sourceWEBM.type = 'video/webm';
+      
+      const sourceOGV = document.createElement('source');
+      sourceOGV.src = videoUrl;
+      sourceOGV.type = 'video/ogg';
+      
+      player.appendChild(sourceMP4);
+      player.appendChild(sourceWEBM);
+      player.appendChild(sourceOGV);
+      player.appendChild(document.createTextNode('Your browser does not support the video element.'));
+      
+      player.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    } else if (audioExts.includes(ext)) {
+      player = document.createElement('audio');
+      player.controls = true;
+      player.style.width = '100%';
+      player.style.background = 'transparent';
+      
+      const sourceMP3 = document.createElement('source');
+      sourceMP3.src = videoUrl;
+      sourceMP3.type = 'audio/mpeg';
+      
+      const sourceWAV = document.createElement('source');
+      sourceWAV.src = videoUrl;
+      sourceWAV.type = 'audio/wav';
+      
+      const sourceOGG = document.createElement('source');
+      sourceOGG.src = videoUrl;
+      sourceOGG.type = 'audio/ogg';
+      
+      player.appendChild(sourceMP3);
+      player.appendChild(sourceWAV);
+      player.appendChild(sourceOGG);
+      player.appendChild(document.createTextNode('Your browser does not support the audio element.'));
+      
+      player.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+    }
+  }
+  
+  return player;
+}
+
+  async function incrementVipPageView() {
+    if (!username) return;
+
+    const userData = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single();
+
+    if (userData.error || !userData.data) {
+      console.error('User not found for VIP increment:', userData.error);
+      return;
+    }
+
+    const now = new Date().toISOString();
+
+    const result = await supabase.rpc('increment_vip_page_view', {
+      in_user_id: userData.data.id,
+      in_username: username,
+      in_now: now
+    });
+
+    if (result.error) {
+      console.error('Error incrementing VIP page views:', result.error);
+    } else {
+      console.log('Incremented VIP page views for ' + username);
+    }
+  }
+
+  async function loadVideos() {
+    const result = await supabase
+      .from('game_videos')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: false });
+
+    if (result.error) {
+      videosContainer.innerHTML = '<div class="no-content">❌ Error loading videos: ' + result.error.message + '</div>';
+      return;
+    }
+
+    if (!result.data.length) {
+      videosContainer.innerHTML = '<p class="no-content">No videos submitted by ' + username + ' yet.</p>';
+      return;
+    }
+
+    // Get current user and load like status
+    currentUser = await getCurrentUser();
+    console.log('🔍 Current user:', currentUser);
+    
+    if (currentUser) {
+      isVipUser = await checkVipStatus(currentUser);
+      userHasLiked = await hasUserLiked(currentUser.id);
+      
+      console.log('📊 Current user ID:', currentUser.id);
+      console.log('👑 Is VIP:', isVipUser);
+      console.log('📝 Page username:', username);
+      
+      // Show VIP badge and features if user is VIP
+      if (isVipUser) {
+        const vipBadge = document.getElementById('vipBadge');
+        const vipBadgesSection = document.getElementById('vipBadgesSection');
+        const msgInput = document.getElementById('msg-input');
+        const addExtraBtn = document.getElementById('addExtraBtn');
+        
+        console.log('🎉 User is VIP! Enabling VIP features...');
+        
+        if (vipBadge) {
+          vipBadge.style.display = 'inline-block';
+          console.log('✅ VIP badge shown');
+        }
+        
+        if (vipBadgesSection) {
+          vipBadgesSection.classList.add('show');
+          console.log('✅ VIP badges section shown');
+        }
+        
+        if (msgInput) {
+          msgInput.classList.add('vip');
+          console.log('✅ VIP chat styling added');
+        }
+        
+        // Show add extra button for ALL VIP users
+        if (addExtraBtn) {
+          addExtraBtn.style.display = 'inline-block';
+          addExtraBtn.textContent = '➕ Add VIP Extra';
+          console.log('✅ Add extra button shown for VIP user');
+        }
+        
+      } else {
+        console.log('❌ User is not VIP');
+      }
+    } else {
+      console.log('❌ No current user logged in');
+    }
+    
+    totalLikes = await getTotalLikes();
+
+    // Update the like status display
+    updateLikeStatus();
+
+    // Add event listener for main like button
+    const mainLikeBtn = document.getElementById('main-like-btn');
+    if (mainLikeBtn) {
+      mainLikeBtn.addEventListener('click', async function() {
+        const success = await likeUserPage();
+        if (success) {
+          userHasLiked = true;
+          totalLikes = await getTotalLikes();
+          updateLikeStatus();
+        }
+      });
+    }
+
+    // Get video likes data
+    const videoIds = result.data.map(video => video.id);
+    videoLikes = await getVideoLikes(videoIds);
+    if (currentUser) {
+      userLikedVideo = await getUserLikedVideo(currentUser.id, videoIds);
+    }
+
+    videosContainer.innerHTML = '';
+    result.data.forEach(function(video, index) {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.setAttribute('data-video-id', video.id);
+
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = video.title || 'Untitled Video';
+      card.appendChild(title);
+
+      if (video.description || video.content) {
+        const desc = document.createElement('p');
+        desc.className = 'desc';
+        desc.textContent = video.description || video.content;
+        card.appendChild(desc);
+      }
+
+      if (video.video_url) {
+        const videoPlayerContainer = createVideoPlayer(video.video_url, true, video.title);
+        card.appendChild(videoPlayerContainer);
+      }
+
+      // Add video like section
+      const videoLikeSection = document.createElement('div');
+      videoLikeSection.className = 'video-like-section';
+
+      const videoLikeBtn = document.createElement('button');
+      videoLikeBtn.className = 'video-like-btn';
+      const isLiked = userLikedVideo.has(video.id);
+      videoLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+      if (isLiked) videoLikeBtn.classList.add('liked');
+      
+      if (!currentUser) {
+        videoLikeBtn.disabled = true;
+        videoLikeBtn.innerHTML = '🤍 Like';
+      }
+
+      videoLikeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleVideoLike(video.id);
+      });
+
+      const videoLikeCount = document.createElement('div');
+      videoLikeCount.className = 'video-like-count';
+      videoLikeCount.innerHTML = '❤️ ' + (videoLikes[video.id] || 0);
+
+      videoLikeSection.appendChild(videoLikeBtn);
+      videoLikeSection.appendChild(videoLikeCount);
+      card.appendChild(videoLikeSection);
+
+      // Add login prompt if user not logged in
+      if (!currentUser) {
+        const loginPrompt = document.createElement('p');
+        loginPrompt.className = 'video-login-prompt';
+        loginPrompt.textContent = 'Log in to like videos';
+        card.appendChild(loginPrompt);
+      }
+
+      videosContainer.appendChild(card);
+    });
+
+    // Load VIP extras after videos is loaded
+    await loadVipExtras();
+  }
+
+  // Badge selection functionality
+  function initializeBadgeSelection() {
+    // Only initialize if user is VIP
+    if (!isVipUser) {
+      console.log('User is not VIP, skipping badge initialization');
+      return;
+    }
+
+    const badgeItems = document.querySelectorAll('.badge-item');
+    if (badgeItems.length === 0) {
+      console.log('No badge items found');
+      return;
+    }
+
+    badgeItems.forEach(badge => {
+      badge.addEventListener('click', () => {
+        document.querySelectorAll('.badge-item').forEach(b => b.classList.remove('selected'));
+        badge.classList.add('selected');
+        selectedBadge = badge.dataset.badge;
+        try {
+          localStorage.setItem(`vip_badge_${username}`, selectedBadge);
+        } catch (error) {
+          console.warn('Could not save badge to localStorage:', error);
+        }
+      });
+    });
+
+    // Load saved badge
     try {
+      const savedBadge = localStorage.getItem(`vip_badge_${username}`);
+      if (savedBadge) {
+        selectedBadge = savedBadge;
+        const badgeElement = document.querySelector(`[data-badge="${savedBadge}"]`);
+        if (badgeElement) {
+          badgeElement.classList.add('selected');
+        }
+      } else {
+        // Default to crown
+        const defaultBadge = document.querySelector('[data-badge="👑"]');
+        if (defaultBadge) {
+          defaultBadge.classList.add('selected');
+        }
+      }
+    } catch (error) {
+      console.warn('Could not load badge from localStorage:', error);
+      // Fallback to crown
+      const defaultBadge = document.querySelector('[data-badge="👑"]');
+      if (defaultBadge) {
+        defaultBadge.classList.add('selected');
+      }
+    }
+  }
+
+  // Enhanced chat functionality with VIP features
+  async function getUserGitHubUsername() {
+    if (currentUser) {
       const { data: userData } = await supabase
         .from('users')
         .select('github_username')
@@ -2648,28 +4469,186 @@ crossorigin="anonymous"></script>
         .single();
       
       return userData?.github_username || currentUser.user_metadata?.full_name || 'GitHub User';
-    } catch (error) {
-      console.error('❌ Error getting GitHub username:', error);
-      return currentUser.user_metadata?.full_name || 'User';
     }
+    return 'Guest';
   }
 
-  // Initialize the page
-  async function initializePage() {
-    console.log('🚀 Initializing page...');
-
-    // Check if username is provided
-    if (!username) {
-      pageTitle.textContent = 'Error';
-      chatHeading.textContent = 'Error';
-      showError(videosContainer, 'No username provided in URL');
-      showError(messagesDiv, 'No username provided');
+  async function loadChatMessages() {
+    const gameId = username; // Use the page owner's username as game_id
+    if (!gameId) {
+      messagesDiv.innerHTML = '<p>No game ID available for chat.</p>';
       return;
     }
 
-    // Set page title and chat heading
-    pageTitle.textContent = `${username}'s Content`;
-    chatHeading.textContent = username;
+    try {
+      const result = await supabase
+        .from('messages')
+        .select('*')
+        .eq('game_id', gameId)
+        .order('created_at', { ascending: true });
+
+      if (result.error) {
+        messagesDiv.innerHTML = '<p style="color:red;">Error loading messages: ' + result.error.message + '</p>';
+        console.error('Chat loading error:', result.error);
+        return;
+      }
+
+      if (!result.data.length) {
+        messagesDiv.innerHTML = '<p>No messages yet. Be the first to chat!</p>';
+        return;
+      }
+
+      const currentUsername = await getUserGitHubUsername();
+
+      messagesDiv.innerHTML = result.data.map(function(m) {
+        const isCurrentUserVip = isVipUser && m.github_username === currentUsername;
+        const messageClass = isCurrentUserVip ? 'message vip' : 'message';
+        const usernameClass = isCurrentUserVip ? 'username vip' : 'username';
+        const userBadge = isCurrentUserVip ? selectedBadge : '';
+        const messageTime = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        return '<div class="' + messageClass + '">' +
+          '<div class="message-header">' +
+            '<span class="' + usernameClass + '">' + (m.github_username || 'Guest') + '</span>' +
+            (userBadge ? '<span class="user-badge">' + userBadge + '</span>' : '') +
+            '<span class="message-time">' + messageTime + '</span>' +
+          '</div>' +
+          '<div class="message-content">' + escapeHtml(m.content) + '</div>' +
+        '</div>';
+      }).join('');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    } catch (error) {
+      console.error('Unexpected error loading chat messages:', error);
+      messagesDiv.innerHTML = '<p style="color:red;">Failed to load messages. Please refresh the page.</p>';
+    }
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const message = msgInput.value.trim();
+    if (!message) return;
+
+    if (!username) {
+      alert('No valid page context for chat');
+      return;
+    }
+
+    try {
+      const githubUsername = await getUserGitHubUsername();
+      const gameId = username; // Use the page owner's username as game_id
+
+      const result = await supabase
+        .from('messages')
+        .insert([{ content: message, github_username: githubUsername, game_id: gameId }]);
+
+      if (result.error) {
+        console.error('Message send error:', result.error);
+        alert('Failed to send message: ' + result.error.message);
+        return;
+      }
+
+      msgInput.value = '';
+      await loadChatMessages();
+    } catch (error) {
+      console.error('Unexpected error sending message:', error);
+      alert('Failed to send message. Please try again.');
+    }
+  });
+
+  // Handle form submission for VIP extras
+  const extraForm = document.getElementById('extraForm');
+  if (extraForm) {
+    extraForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!currentUser || !isVipUser) {
+        alert('VIP access required to add extras');
+        return;
+      }
+
+      const titleEl = document.getElementById('extraTitle');
+      const descEl = document.getElementById('extraDescription');
+      const urlEl = document.getElementById('extraUrl');
+      const typeEl = document.getElementById('extraType');
+
+      if (!titleEl || !descEl || !urlEl || !typeEl) {
+        alert('Form elements not found');
+        return;
+      }
+
+      const formData = {
+        title: titleEl.value.trim(),
+        description: descEl.value.trim(),
+        url: urlEl.value.trim(),
+        type: typeEl.value
+      };
+
+      if (!formData.title || !formData.description || !formData.url || !formData.type) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      // Basic URL validation
+      try {
+        new URL(formData.url);
+      } catch (error) {
+        alert('Please enter a valid URL');
+        return;
+      }
+
+      await addVipExtra(formData);
+    });
+  } else {
+    console.warn('Extra form not found - VIP features may not work');
+  } 
+
+  // Subscribe to real-time message updates
+  supabase.channel('messages_' + username)
+    .on('postgres_changes', { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'messages',
+      filter: `game_id=eq.${username}`
+    }, () => {
+      loadChatMessages();
+    })
+    .subscribe();
+
+  // Subscribe to real-time VIP extras updates
+  supabase.channel(`vip_extras_${username}`)
+    .on('postgres_changes', { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'vip_extras',
+      filter: `game_id=eq.${username}`
+    }, () => {
+      loadVipExtras();
+    })
+    .subscribe();
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, function(m) {
+      switch(m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#39;';
+        default: return m;
+      }
+    });
+  }
+
+  // Main execution block
+  if (!username) {
+    pageTitle.textContent = 'Error';
+    if (chatHeading) chatHeading.textContent = 'Error';
+    if (videosContainer) videosContainer.innerHTML = '<p class="no-content">❌ No username provided in URL.</p>';
+    if (messagesDiv) messagesDiv.innerHTML = '<p style="color:red;">No username provided in URL.</p>';
+  } else {
+    pageTitle.textContent = username + "'s Videos";
+    if (chatHeading) chatHeading.textContent = username;
     
     // Set the game ID to the username
     const gameIdInput = document.getElementById('game-id');
@@ -2677,149 +4656,26 @@ crossorigin="anonymous"></script>
       gameIdInput.value = username;
     }
 
-    // Get current user and check VIP status
+    // Initialize everything in proper order
     try {
-      currentUser = await getCurrentUser();
-      if (currentUser) {
-        isVipUser = await checkVipStatus(currentUser);
-        userHasLiked = await hasUserLiked(currentUser.id);
-        
-        // Show VIP badge if user is VIP
-        if (isVipUser) {
-          const vipBadge = document.getElementById('vipBadge');
-          if (vipBadge) {
-            vipBadge.style.display = 'inline-block';
-            console.log('👑 VIP badge shown');
-          }
-        }
+      await incrementVipPageView();
+      await loadVideos(); // This sets up VIP status and loads content
+      await loadChatMessages();
+      
+      // Initialize badges only after VIP status is confirmed
+      if (isVipUser) {
+        initializeBadgeSelection();
       }
     } catch (error) {
-      console.error('❌ Error during user initialization:', error);
-    }
-
-    // Load likes data
-    try {
-      totalLikes = await getTotalLikes();
-      updateLikeStatus();
-    } catch (error) {
-      console.error('❌ Error loading likes:', error);
-    }
-
-    // Load content
-    await Promise.all([
-      loadVideos(),
-      loadChatMessages()
-    ]);
-
-    console.log('✅ Page initialization complete');
-  }
-
-  // Set up event listeners
-  function setupEventListeners() {
-    // Main like button
-    const mainLikeBtn = document.getElementById('main-like-btn');
-    if (mainLikeBtn) {
-      mainLikeBtn.addEventListener('click', async function() {
-        console.log('👆 Like button clicked');
-        this.disabled = true;
-        this.textContent = '⏳ Liking...';
-        
-        const success = await likeUserPage();
-        if (success) {
-          userHasLiked = true;
-          totalLikes = await getTotalLikes();
-          updateLikeStatus();
-          console.log('✅ Successfully liked page');
-        } else {
-          this.disabled = false;
-          this.textContent = '❤️ Like';
-          console.log('❌ Failed to like page');
-        }
-      });
-    }
-
-    // Chat form
-    if (form) {
-      form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const message = msgInput.value.trim();
-        if (!message || !supabase) return;
-
-        console.log('📝 Sending message:', message);
-        
-        try {
-          const githubUsername = await getUserGitHubUsername();
-          
-          const { error } = await supabase
-            .from('messages')
-            .insert([{ 
-              content: message, 
-              github_username: githubUsername, 
-              game_id: username 
-            }]);
-
-          if (error) {
-            console.error('❌ Error sending message:', error);
-            alert('Failed to send message: ' + error.message);
-            return;
-          }
-
-          msgInput.value = '';
-          console.log('✅ Message sent successfully');
-          await loadChatMessages();
-        } catch (error) {
-          console.error('❌ Exception sending message:', error);
-          alert('Failed to send message');
-        }
-      });
-    }
-  }
-
-  // Start the application
-  async function startApp() {
-    console.log('🏁 Starting application...');
-    
-    setupEventListeners();
-    await initializePage();
-    
-    // Set up real-time subscriptions if Supabase is available
-    if (supabase && username) {
-      try {
-        // Subscribe to message updates
-        supabase.channel(`messages_${username}`)
-          .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'messages',
-            filter: `game_id=eq.${username}`
-          }, () => {
-            console.log('📨 New message received');
-            loadChatMessages();
-          })
-          .subscribe();
-        
-        console.log('🔔 Real-time subscriptions set up');
-      } catch (error) {
-        console.error('❌ Error setting up real-time subscriptions:', error);
+      console.error('Error during page initialization:', error);
+      if (videosContainer) {
+        videosContainer.innerHTML = '<p class="no-content">❌ Error loading page content. Please refresh.</p>';
       }
     }
-    
-    console.log('🎉 Application started successfully');
   }
-
-  // Start the application
-  startApp().catch(error => {
-    console.error('💥 Critical error starting application:', error);
-    document.body.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
-        <h1>⚠️ Application Error</h1>
-        <p>Failed to start the application. Please refresh the page or try again later.</p>
-        <p style="font-size: 0.9rem; opacity: 0.8;">Error: ${escapeHtml(error.message)}</p>
-      </div>
-    `;
-  });
 </script>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
