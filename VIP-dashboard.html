@@ -2723,6 +2723,80 @@ crossorigin="anonymous"></script>
       border-radius: 8px;
     }
     
+    /* New styles for social engagement section */
+    .social-engagement-section {
+      background: linear-gradient(145deg, #2d1a3a, #3b2750);
+      border: 2px solid #ffd700;
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .engagement-title {
+      color: #ffd700;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 0 #000;
+    }
+    
+    .engagement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    
+    .engagement-item {
+      background: linear-gradient(135deg, #3b2750, #4a3157);
+      border: 1px solid #ffd700;
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .engagement-item:hover {
+      transform: scale(1.05);
+      border-color: #ff69b4;
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+    }
+    
+    .engagement-emoji {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .engagement-item-title {
+      color: #ffd700;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .engagement-desc {
+      color: #ffc0cb;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+    
+    .engagement-action {
+      background: linear-gradient(45deg, #ffd700, #ffed4a);
+      color: #1e1b2e;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .engagement-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+    
     @media (max-width: 768px) {
       body {
         padding: 10px;
@@ -2756,6 +2830,10 @@ crossorigin="anonymous"></script>
       .vip-subtitle {
         font-size: 1rem;
       }
+      
+      .engagement-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -2763,13 +2841,13 @@ crossorigin="anonymous"></script>
   <div class="vip-header">
     <div class="vip-crown">👑</div>
     <h1>VIP MEMBERS ONLY</h1>
-    <p class="vip-subtitle">Welcome to your exclusive VIP dashboard</p>
+    <p class="vip-subtitle">Welcome to your exclusive VIP dashboard with social media engagement tools</p>
   </div>
 
   <!-- Access Denied Section (shown for non-VIP users) -->
   <div class="access-denied" id="access-denied" style="display: none;">
     <h2>🚫 VIP Access Required</h2>
-    <p>This exclusive dashboard is only available to VIP members. Upgrade your account to access premium features, direct messaging, and connect with other VIP members!</p>
+    <p>This exclusive dashboard is only available to VIP members. Upgrade your account to access premium features, direct messaging, social engagement tools, and connect with other VIP members!</p>
     <button onclick="window.location.href='index.html'">🏠 Return to Home</button>
     <button onclick="showUpgradeOptions()">⭐ Upgrade to VIP</button>
   </div>
@@ -2902,6 +2980,61 @@ crossorigin="anonymous"></script>
       <!-- Content List -->
       <div class="extras-grid" id="vip-extras-list">
         <!-- VIP extras will be loaded here -->
+      </div>
+    </div>
+
+    <!-- New Social Media Engagement Tools Section -->
+    <div class="social-engagement-section">
+      <h2 class="engagement-title">🔥 Social Media Engagement Tools</h2>
+      <div class="engagement-grid">
+        <div class="engagement-item" onclick="useTool('sms-bomber')">
+          <div class="engagement-emoji">💣</div>
+          <div class="engagement-item-title">SMS Bomber</div>
+          <div class="engagement-desc">Send prank SMS messages to your friends for fun. Unlimited and free for VIPs!</div>
+          <button class="engagement-action">Use Tool</button>
+        </div>
+        
+        <div class="engagement-item" onclick="useTool('call-bomber')">
+          <div class="engagement-emoji">📞</div>
+          <div class="engagement-item-title">Call Bomber</div>
+          <div class="engagement-desc">Make multiple prank calls to surprise your contacts. Exclusive VIP feature!</div>
+          <button class="engagement-action">Use Tool</button>
+        </div>
+        
+        <div class="engagement-item" onclick="useTool('prank-news')">
+          <div class="engagement-emoji">📰</div>
+          <div class="engagement-item-title">Prank News Generator</div>
+          <div class="engagement-desc">Create fake breaking news images to share on social media.</div>
+          <button class="engagement-action">Use Tool</button>
+        </div>
+        
+        <div class="engagement-item" onclick="useTool('instagram-booster')">
+          <div class="engagement-emoji">❤️</div>
+          <div class="engagement-item-title">Instagram Likes & Followers</div>
+          <div class="engagement-desc">Boost your Instagram engagement with free likes and followers.</div>
+          <button class="engagement-action">Use Tool</button>
+        </div>
+        
+        <div class="engagement-item" onclick="useTool('youtube-booster')">
+          <div class="engagement-emoji">📺</div>
+          <div class="engagement-item-title">YouTube Likes & Subscribers</div>
+          <div class="engagement-desc">Increase your YouTube channel's popularity with free subscribers and likes.</div>
+          <button class="engagement-action">Use Tool</button>
+        </div>
+        
+        <div class="engagement-item" onclick="useTool('tiktok-booster')">
+          <div class="engagement-emoji">🎵</div>
+          <div class="engagement-item-title">TikTok Views Booster</div>
+          <div class="engagement-desc">Get more views on your TikTok videos to go viral faster.</div>
+          <button class="engagement-action">Use Tool</button>
+        </div>
+        
+        <div class="engagement-item" onclick="useTool('youtube-analyzer')">
+          <div class="engagement-emoji">📊</div>
+          <div class="engagement-item-title">YouTube Video Analyzer</div>
+          <div class="engagement-desc">Analyze your video performance, engagement, and SEO suggestions.</div>
+          <button class="engagement-action">Use Tool</button>
+        </div>
       </div>
     </div>
 
@@ -4002,6 +4135,53 @@ crossorigin="anonymous"></script>
       window.location.href = 'index.html';
     };
 
+    // New function for using social engagement tools (placeholder)
+    window.useTool = function(toolId) {
+      // Placeholder: In a real implementation, this would open a modal or redirect to a tool page
+      // For now, it alerts with a message and could integrate with Supabase for usage tracking
+      let message = '';
+      switch(toolId) {
+        case 'sms-bomber':
+          message = 'SMS Bomber tool launched! Enter target number to send prank SMS.';
+          break;
+        case 'call-bomber':
+          message = 'Call Bomber tool launched! Enter target number for prank calls.';
+          break;
+        case 'prank-news':
+          message = 'Prank News Generator launched! Create your fake news headline.';
+          break;
+        case 'instagram-booster':
+          message = 'Instagram Booster launched! Enter your post URL for free likes and followers.';
+          break;
+        case 'youtube-booster':
+          message = 'YouTube Booster launched! Enter your channel URL for free subscribers.';
+          break;
+        case 'tiktok-booster':
+          message = 'TikTok Booster launched! Enter your video URL for free views.';
+          break;
+        case 'youtube-analyzer':
+          message = 'YouTube Analyzer launched! Enter video URL for detailed insights.';
+          break;
+        default:
+          message = 'Tool coming soon!';
+      }
+      alert(message);
+      
+      // Optional: Track tool usage in Supabase
+      if (supabase && currentUsername) {
+        supabase
+          .from('tool_usage') // Assume a new table for tracking
+          .insert({
+            user_id: currentUser.id,
+            username: currentUsername,
+            tool_id: toolId,
+            used_at: new Date().toISOString()
+          })
+          .then(() => console.log('Tool usage tracked'))
+          .catch(error => console.error('Error tracking tool usage:', error));
+      }
+    };
+
     // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
       const sendBtn = document.getElementById('send-message-btn');
@@ -4088,6 +4268,3 @@ crossorigin="anonymous"></script>
   </script>
 </body>
 </html>
-
-
-
