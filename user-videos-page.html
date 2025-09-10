@@ -2279,26 +2279,26 @@ crossorigin="anonymous"></script>
   box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
 }
 
-.fullscreen-video-placeholder[data-platform="soundcloud"] {
-  background: linear-gradient(45deg, rgba(255, 85, 0, 0.1), rgba(255, 79, 159, 0.1));
-  border-color: #ff5500;
+.fullscreen-video-placeholder[data-platform="tiktok"] {
+  background: linear-gradient(45deg, rgba(0, 242, 254, 0.1), rgba(238, 21, 132, 0.1));
+  border-color: #ee1d84;
 }
 
-.fullscreen-video-placeholder[data-platform="soundcloud"]:hover {
-  background: linear-gradient(45deg, rgba(255, 85, 0, 0.2), rgba(255, 79, 159, 0.2));
-  border-color: #ff5500;
-  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
+.fullscreen-video-placeholder[data-platform="tiktok"]:hover {
+  background: linear-gradient(45deg, rgba(0, 242, 254, 0.2), rgba(238, 21, 132, 0.2));
+  border-color: #ee1d84;
+  box-shadow: 0 4px 15px rgba(238, 21, 132, 0.3);
 }
 
-.fullscreen-video-placeholder[data-platform="spotify"] {
-  background: linear-gradient(45deg, rgba(30, 215, 96, 0.1), rgba(255, 79, 159, 0.1));
-  border-color: #1ed760;
+.fullscreen-video-placeholder[data-platform="drive"] {
+  background: linear-gradient(45deg, rgba(66, 133, 244, 0.1), rgba(52, 168, 83, 0.1));
+  border-color: #4285f4;
 }
 
-.fullscreen-video-placeholder[data-platform="spotify"]:hover {
-  background: linear-gradient(45deg, rgba(30, 215, 96, 0.2), rgba(255, 79, 159, 0.2));
-  border-color: #1ed760;
-  box-shadow: 0 4px 15px rgba(30, 215, 96, 0.3);
+.fullscreen-video-placeholder[data-platform="drive"]:hover {
+  background: linear-gradient(45deg, rgba(66, 133, 244, 0.2), rgba(52, 168, 83, 0.2));
+  border-color: #4285f4;
+  box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
 }
 
 .fullscreen-video-placeholder[data-platform="video"] {
@@ -3598,8 +3598,8 @@ crossorigin="anonymous"></script>
     return likes;
   }
 
-  // Get user's liked video using vip_page_views table
-  async function getUserLikedVideo(userId, videoIds) {
+  // Get user's liked videos using vip_page_views table
+  async function getUserLikedVideos(userId, videoIds) {
     if (!userId || videoIds.length === 0) return new Set();
     
     const videoUsernames = videoIds.map(id => username + '_video_' + id);
@@ -3611,7 +3611,7 @@ crossorigin="anonymous"></script>
       .in('username', videoUsernames);
 
     if (result.error) {
-      console.error('Error fetching user liked video:', result.error);
+      console.error('Error fetching user liked videos:', result.error);
       return new Set();
     }
 
@@ -3669,7 +3669,7 @@ crossorigin="anonymous"></script>
     return true;
   }
 
-  // Like/unlike video using vip_page_views table
+  // Toggle like for video using vip_page_views table
   async function toggleVideoLike(videoId) {
     if (!currentUser) {
       alert('Please log in to like videos');
@@ -3896,15 +3896,15 @@ function createVideoPlaceholder(videoUrl, title) {
       platformText = 'Play YouTube playlist in fullscreen';
       platformName = 'YOUTUBE PLAYLIST';
       break;
-    case 'soundcloud':
+    case 'tiktok':
       platformIcon = '🎵';
-      platformText = 'Play SoundCloud in fullscreen';
-      platformName = 'SOUNDCLOUD';
+      platformText = 'Play TikTok in fullscreen';
+      platformName = 'TIKTOK';
       break;
-    case 'spotify':
-      platformIcon = '🎶';
-      platformText = 'Play Spotify in fullscreen';
-      platformName = 'SPOTIFY';
+    case 'drive':
+      platformIcon = '📁';
+      platformText = 'Play Google Drive video in fullscreen';
+      platformName = 'GOOGLE DRIVE';
       break;
     case 'video':
       platformIcon = '🎬';
@@ -3938,7 +3938,7 @@ function createVideoPlaceholder(videoUrl, title) {
   return container;
 }
 
-// Enhanced detect video platform/type with YouTube playlist and X support
+// Enhanced detect video platform/type with TikTok, Google Drive, YouTube playlist, and X support (removed Spotify and SoundCloud)
 function detectVideoType(url) {
   if (!url) return 'unknown';
   
@@ -3950,8 +3950,8 @@ function detectVideoType(url) {
   }
   
   if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
-  if (urlLower.includes('soundcloud.com')) return 'soundcloud';
-  if (urlLower.includes('spotify.com')) return 'spotify';
+  if (urlLower.includes('tiktok.com')) return 'tiktok';
+  if (urlLower.includes('drive.google.com')) return 'drive';
   if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
   
   // Check for video file extensions
@@ -4023,7 +4023,7 @@ function loadVideoInFullscreen(url, videoType, placeholderElement, title) {
   }, 1000);
 }
 
-// Enhanced createActualVideoPlayer with YouTube playlist and X support
+// Enhanced createActualVideoPlayer with TikTok, Google Drive, YouTube playlist, and X support (removed Spotify and SoundCloud)
 function createActualVideoPlayer(videoUrl) {
   let player;
   
@@ -4077,48 +4077,71 @@ function createActualVideoPlayer(videoUrl) {
         e.stopPropagation();
       };
     }
-  } else if (videoUrl.includes('soundcloud.com')) {
-    // SoundCloud embed
-    player = document.createElement('iframe');
-    player.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(videoUrl)}&color=%23ff69b4&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
-    player.style.width = '100%';
-    player.style.height = '140px';
-    player.style.border = 'none';
-    player.style.borderRadius = '10px';
+  } else if (videoUrl.includes('tiktok.com')) {
+    // TikTok embed
+    const tiktokMatch = videoUrl.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
+    if (tiktokMatch) {
+      const videoId = tiktokMatch[1];
+      player = document.createElement('iframe');
+      player.src = `https://www.tiktok.com/embed/v2/${videoId}`;
+      player.style.width = '100%';
+      player.style.height = '140px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      player.setAttribute('allowfullscreen', 'true');
+      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    } else {
+      // Fallback for non-standard TikTok URLs
+      player = document.createElement('a');
+      player.href = videoUrl;
+      player.textContent = 'Open TikTok Video';
+      player.target = '_blank';
+      player.style.display = 'block';
+      player.style.width = '100%';
+      player.style.textAlign = 'center';
+      player.style.padding = '10px';
+      player.style.background = '#ff0050';
+      player.style.color = '#fff';
+      player.style.borderRadius = '10px';
+      player.style.textDecoration = 'none';
+    }
     
     player.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
     };
-  } else if (videoUrl.includes('spotify.com')) {
-    // Spotify embed
-    let spotifyId = '';
-    let embedType = '';
-    
-    if (videoUrl.includes('track/')) {
-      spotifyId = videoUrl.split('track/')[1].split('?')[0];
-      embedType = 'track';
-    } else if (videoUrl.includes('album/')) {
-      spotifyId = videoUrl.split('album/')[1].split('?')[0];
-      embedType = 'album';
-    } else if (videoUrl.includes('playlist/')) {
-      spotifyId = videoUrl.split('playlist/')[1].split('?')[0];
-      embedType = 'playlist';
-    }
-    
-    if (spotifyId && embedType) {
+  } else if (videoUrl.includes('drive.google.com')) {
+    // Google Drive embed
+    const driveMatch = videoUrl.match(/drive\.google.com\/.*\/d\/([^\/]+)/);
+    if (driveMatch) {
+      const fileId = driveMatch[1];
       player = document.createElement('iframe');
-      player.src = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator&theme=0`;
+      player.src = `https://drive.google.com/file/d/${fileId}/preview`;
       player.style.width = '100%';
-      player.style.height = embedType === 'track' ? '152px' : '140px';
+      player.style.height = '140px';
       player.style.border = 'none';
       player.style.borderRadius = '10px';
-      
-      player.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
+      player.setAttribute('allowfullscreen', 'true');
+    } else {
+      // Fallback for non-standard Google Drive URLs
+      player = document.createElement('a');
+      player.href = videoUrl;
+      player.textContent = 'Open Google Drive Video';
+      player.target = '_blank';
+      player.style.display = 'block';
+      player.style.width = '100%';
+      player.style.textAlign = 'center';
+      player.style.padding = '10px';
+      player.style.background = '#4285f4';
+      player.style.color = '#fff';
+      player.style.borderRadius = '10px';
+      player.style.textDecoration = 'none';
     }
+    
+    player.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
   } else if (videoUrl.includes('x.com') || videoUrl.includes('twitter.com')) {
     // X embed - improved iframe support from video page
     const xMatch = videoUrl.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
@@ -4213,6 +4236,20 @@ function createActualVideoPlayer(videoUrl) {
         e.preventDefault();
         e.stopPropagation();
       };
+    } else {
+      // Ultimate fallback for unknown types
+      player = document.createElement('a');
+      player.href = videoUrl;
+      player.textContent = 'Open Video';
+      player.target = '_blank';
+      player.style.display = 'block';
+      player.style.width = '100%';
+      player.style.textAlign = 'center';
+      player.style.padding = '10px';
+      player.style.background = '#ff4f9f';
+      player.style.color = '#1b1b2e';
+      player.style.borderRadius = '10px';
+      player.style.textDecoration = 'none';
     }
   }
   
@@ -4337,7 +4374,7 @@ function createActualVideoPlayer(videoUrl) {
     const videoIds = result.data.map(video => video.id);
     videoLikes = await getVideoLikes(videoIds);
     if (currentUser) {
-      userLikedVideo = await getUserLikedVideo(currentUser.id, videoIds);
+      userLikedVideo = await getUserLikedVideos(currentUser.id, videoIds);
     }
 
     videosContainer.innerHTML = '';
@@ -4679,3 +4716,4 @@ function createActualVideoPlayer(videoUrl) {
 
 </body>
 </html>
+
