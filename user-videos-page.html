@@ -2213,7 +2213,7 @@ crossorigin="anonymous"></script>
   position: relative;
   overflow: hidden;
   width: 100%;
-  min-height: 140px;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2332,6 +2332,17 @@ crossorigin="anonymous"></script>
   background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
   border-color: #1da1f2;
   box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+}
+
+.fullscreen-video-placeholder[data-platform="rumble"] {
+  background: linear-gradient(45deg, rgba(133, 199, 66, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #85c742;
+}
+
+.fullscreen-video-placeholder[data-platform="rumble"]:hover {
+  background: linear-gradient(45deg, rgba(133, 199, 66, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #85c742;
+  box-shadow: 0 4px 15px rgba(133, 199, 66, 0.3);
 }
 
 /* Update existing video-container to work with placeholders */
@@ -2617,10 +2628,10 @@ crossorigin="anonymous"></script>
     }
 
     .fullscreen-video-player {
-      width: 90vw;
-      max-width: 800px;
-      height: 60vh;
-      max-height: 600px;
+      width: 95vw;
+      max-width: 1200px;
+      height: 80vh;
+      max-height: 800px;
       border-radius: 12px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       margin-top: 80px;
@@ -3921,6 +3932,11 @@ function createVideoPlaceholder(videoUrl, title) {
       platformText = 'View X post in fullscreen';
       platformName = 'X';
       break;
+    case 'rumble':
+      platformIcon = '🎥';
+      platformText = 'Play Rumble video in fullscreen';
+      platformName = 'RUMBLE';
+      break;
   }
   
   placeholder.innerHTML = `
@@ -3953,6 +3969,7 @@ function detectVideoType(url) {
   if (urlLower.includes('tiktok.com')) return 'tiktok';
   if (urlLower.includes('drive.google.com')) return 'drive';
   if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
+  if (urlLower.includes('rumble.com')) return 'rumble';
   
   // Check for video file extensions
   const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
@@ -4023,7 +4040,7 @@ function loadVideoInFullscreen(url, videoType, placeholderElement, title) {
   }, 1000);
 }
 
-// Enhanced createActualVideoPlayer with TikTok, Google Drive, YouTube playlist, and X support (removed Spotify and SoundCloud)
+// Enhanced createActualVideoPlayer with TikTok, Google Drive, YouTube playlist, X, and Rumble support (removed Spotify and SoundCloud)
 function createActualVideoPlayer(videoUrl) {
   let player;
   
@@ -4042,7 +4059,7 @@ function createActualVideoPlayer(videoUrl) {
       player = document.createElement('iframe');
       player.src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&controls=1&modestbranding=1&rel=0`;
       player.style.width = '100%';
-      player.style.height = '315px'; // Slightly taller for playlists
+      player.style.height = '360px'; // Slightly taller for playlists
       player.style.border = 'none';
       player.style.borderRadius = '10px';
       player.setAttribute('allowfullscreen', 'true');
@@ -4066,7 +4083,7 @@ function createActualVideoPlayer(videoUrl) {
       player = document.createElement('iframe');
       player.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0`;
       player.style.width = '100%';
-      player.style.height = '140px';
+      player.style.height = '240px';
       player.style.border = 'none';
       player.style.borderRadius = '10px';
       player.setAttribute('allowfullscreen', 'true');
@@ -4085,7 +4102,7 @@ function createActualVideoPlayer(videoUrl) {
       player = document.createElement('iframe');
       player.src = `https://www.tiktok.com/embed/v2/${videoId}`;
       player.style.width = '100%';
-      player.style.height = '140px';
+      player.style.height = '240px';
       player.style.border = 'none';
       player.style.borderRadius = '10px';
       player.setAttribute('allowfullscreen', 'true');
@@ -4118,7 +4135,7 @@ function createActualVideoPlayer(videoUrl) {
       player = document.createElement('iframe');
       player.src = `https://drive.google.com/file/d/${fileId}/preview`;
       player.style.width = '100%';
-      player.style.height = '140px';
+      player.style.height = '240px';
       player.style.border = 'none';
       player.style.borderRadius = '10px';
       player.setAttribute('allowfullscreen', 'true');
@@ -4150,7 +4167,7 @@ function createActualVideoPlayer(videoUrl) {
       player = document.createElement('iframe');
       player.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
       player.style.width = '100%';
-      player.style.height = '200px';
+      player.style.height = '300px';
       player.style.border = 'none';
       player.style.borderRadius = '10px';
     } else {
@@ -4164,9 +4181,42 @@ function createActualVideoPlayer(videoUrl) {
         </body></html>
       `);
       player.style.width = '100%';
-      player.style.height = '200px';
+      player.style.height = '300px';
       player.style.border = 'none';
       player.style.borderRadius = '10px';
+    }
+    
+    player.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+  } else if (videoUrl.includes('rumble.com')) {
+    // Rumble embed
+    const rumbleMatch = videoUrl.match(/rumble\.com\/v([a-z0-9]+)(?:-.*)?\.html?/i);
+    if (rumbleMatch) {
+      const videoId = rumbleMatch[1];
+      player = document.createElement('iframe');
+      player.src = `https://rumble.com/embed/v${videoId}/?pub=4`;
+      player.style.width = '100%';
+      player.style.height = '240px';
+      player.style.border = 'none';
+      player.style.borderRadius = '10px';
+      player.setAttribute('allowfullscreen', 'true');
+      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    } else {
+      // Fallback for non-standard Rumble URLs
+      player = document.createElement('a');
+      player.href = videoUrl;
+      player.textContent = 'Open Rumble Video';
+      player.target = '_blank';
+      player.style.display = 'block';
+      player.style.width = '100%';
+      player.style.textAlign = 'center';
+      player.style.padding = '10px';
+      player.style.background = '#85c742';
+      player.style.color = '#fff';
+      player.style.borderRadius = '10px';
+      player.style.textDecoration = 'none';
     }
     
     player.onclick = (e) => {
@@ -4186,6 +4236,7 @@ function createActualVideoPlayer(videoUrl) {
       player = document.createElement('video');
       player.controls = true;
       player.style.width = '100%';
+      player.style.height = '240px';
       player.style.background = 'transparent';
       
       const sourceMP4 = document.createElement('source');
@@ -4716,4 +4767,5 @@ function createActualVideoPlayer(videoUrl) {
 
 </body>
 </html>
+
 
