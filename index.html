@@ -2547,6 +2547,12 @@ crossorigin="anonymous"></script>
         .order('created_at', { ascending: false })
         .limit(5);
 
+      const { data: music } = await supabase
+        .from('user_music')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
       // Add games
       if (games) {
         games.forEach(game => {
@@ -2589,6 +2595,22 @@ crossorigin="anonymous"></script>
             creator: artwork.github_username || 'Anonymous',
             avatar_url: artwork.avatar_url,
             created_at: artwork.created_at,
+            realLikes: realLikes.likes,
+            gamePoints: realLikes.gamePoints
+          });
+        });
+      }
+
+      // Add music
+      if (music) {
+        music.forEach(mus => {
+          const realLikes = getRealLikesForUser(mus.github_username, 'music');
+          allContent.push({
+            type: 'music',
+            title: mus.title || 'Untitled Music',
+            creator: mus.github_username || 'Anonymous',
+            avatar_url: mus.avatar_url,
+            created_at: mus.created_at,
             realLikes: realLikes.likes,
             gamePoints: realLikes.gamePoints
           });
@@ -2668,54 +2690,3 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
