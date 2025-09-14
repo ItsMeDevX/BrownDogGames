@@ -2449,7 +2449,7 @@ crossorigin="anonymous"></script>
     <h2>🎨 Featured Artist</h2>
     <div id="featuredAvatar"></div>
     <div id="featuredUsername"></div>
-    <img src="" alt="Featured user artwork" id="featuredCover" />
+    <div id="featuredCoverContainer"></div>
     <div id="featuredStats"></div>
     <div id="featuredLikes"></div>
   </section>
@@ -2486,7 +2486,7 @@ crossorigin="anonymous"></script>
     const featuredSection = document.getElementById('featuredUser');
     const featuredAvatar = document.getElementById('featuredAvatar');
     const featuredUsername = document.getElementById('featuredUsername');
-    const featuredCover = document.getElementById('featuredCover');
+    const featuredCoverContainer = document.getElementById('featuredCoverContainer');
     const featuredStats = document.getElementById('featuredStats');
     const featuredLikes = document.getElementById('featuredLikes');
 
@@ -2993,21 +2993,55 @@ crossorigin="anonymous"></script>
         usernameSpan.textContent = user.username;
         a.appendChild(usernameSpan);
 
-        // Cover Image (art image)
-        const coverSrc = await getResolvedCoverUrl(user.cover_url);
-        const coverImg = document.createElement('img');
-        coverImg.src = coverSrc;
-        coverImg.alt = `${user.username}'s artwork${user.title ? ` titled "${user.title}"` : ''}`;
-        coverImg.className = 'cover-img';
-        
-        // Add click handler for fullscreen view
-        coverImg.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openArtModal(user.cover_url, coverImg.alt);
-        };
-        
-        a.appendChild(coverImg);
+        // Cover Element (image or X embed)
+        const url = user.cover_url;
+        let coverElement;
+        let altText = `${user.username}'s artwork${user.title ? ` titled "${user.title}"` : ''}`;
+
+        if (url.includes('x.com') || url.includes('twitter.com')) {
+          const xMatch = url.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
+          if (xMatch) {
+            const tweetId = xMatch[1];
+            coverElement = document.createElement('iframe');
+            coverElement.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+            coverElement.style.width = '100%';
+            coverElement.style.height = '180px';
+            coverElement.style.border = 'none';
+            coverElement.className = 'cover-img';
+          } else {
+            // Fallback placeholder
+            coverElement = document.createElement('iframe');
+            coverElement.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+              <html><body style="margin:0;padding:40px;background:#3b2750;color:#fff;font-family:Arial;text-align:center;">
+                <h2>X Art</h2>
+                <p>This art is hosted on X (formerly Twitter).</p>
+                <p><a href="${url}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#3b2750;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+              </body></html>
+            `);
+            coverElement.style.width = '100%';
+            coverElement.style.height = '180px';
+            coverElement.style.border = 'none';
+            coverElement.className = 'cover-img';
+          }
+          // Prevent navigation when clicking on embed
+          coverElement.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          };
+        } else {
+          // Regular image
+          const coverSrc = await getResolvedCoverUrl(url);
+          coverElement = document.createElement('img');
+          coverElement.src = coverSrc;
+          coverElement.alt = altText;
+          coverElement.className = 'cover-img';
+          coverElement.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openArtModal(url, altText);
+          };
+        }
+        a.appendChild(coverElement);
 
         // Art title
         if (user.title) {
@@ -3017,7 +3051,7 @@ crossorigin="anonymous"></script>
           a.appendChild(titleDiv);
         }
 
-        // Stats (games, videos, art, music, extras)
+        // Stats (art, games, videos, music, extras)
         const statsDiv = document.createElement('div');
         statsDiv.className = 'user-stats';
         
@@ -3080,13 +3114,68 @@ crossorigin="anonymous"></script>
       // Username
       featuredUsername.textContent = featuredUser.username;
 
-      // Cover Image (art image)
-      const coverSrc = await getResolvedCoverUrl(featuredUser.cover_url);
-      featuredCover.src = coverSrc;
-      featuredCover.alt = `${featuredUser.username}'s artwork${featuredUser.title ? ` titled "${featuredUser.title}"` : ''}`;
+      // Cover Element (image or X embed)
+      const url = featuredUser.cover_url;
+      let coverElement;
+      let altText = `${featuredUser.username}'s artwork${featuredUser.title ? ` titled "${featuredUser.title}"` : ''}`;
 
-      // Click handler for featured artwork
-      featuredCover.onclick = () => openArtModal(featuredUser.cover_url, featuredCover.alt);
+      if (url.includes('x.com') || url.includes('twitter.com')) {
+        const xMatch = url.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
+        if (xMatch) {
+          const tweetId = xMatch[1];
+          coverElement = document.createElement('iframe');
+          coverElement.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+          coverElement.style.width = '100%';
+          coverElement.style.height = '200px';
+          coverElement.style.border = 'none';
+          coverElement.style.borderRadius = '16px';
+          coverElement.style.border = '3px solid #ff8bd8';
+          coverElement.style.boxShadow = '0 0 15px #ff8bd8cc';
+          coverElement.style.marginBottom = '1.5rem';
+        } else {
+          // Fallback placeholder
+          coverElement = document.createElement('iframe');
+          coverElement.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+            <html><body style="margin:0;padding:40px;background:#4a3157;color:#fff;font-family:Arial;text-align:center;">
+              <h2>Featured X Art</h2>
+              <p>This art is hosted on X (formerly Twitter).</p>
+              <p><a href="${url}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#4a3157;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+            </body></html>
+          `);
+          coverElement.style.width = '100%';
+          coverElement.style.height = '200px';
+          coverElement.style.border = 'none';
+          coverElement.style.borderRadius = '16px';
+          coverElement.style.border = '3px solid #ff8bd8';
+          coverElement.style.boxShadow = '0 0 15px #ff8bd8cc';
+          coverElement.style.marginBottom = '1.5rem';
+        }
+        // Prevent navigation when clicking on embed
+        coverElement.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        };
+      } else {
+        // Regular image
+        const coverSrc = await getResolvedCoverUrl(url);
+        coverElement = document.createElement('img');
+        coverElement.src = coverSrc;
+        coverElement.alt = altText;
+        coverElement.style.width = '100%';
+        coverElement.style.maxWidth = '350px';
+        coverElement.style.height = '180px';
+        coverElement.style.objectFit = 'cover';
+        coverElement.style.borderRadius = '16px';
+        coverElement.style.border = '3px solid #ff8bd8';
+        coverElement.style.boxShadow = '0 0 15px #ff8bd8cc';
+        coverElement.style.marginBottom = '1.5rem';
+        coverElement.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openArtModal(url, altText);
+        };
+      }
+      featuredCoverContainer.appendChild(coverElement);
 
       // Stats (art, games, videos, music, extras)
       featuredStats.innerHTML = `
@@ -3120,7 +3209,7 @@ crossorigin="anonymous"></script>
 
       // Click handler for featured section
       featuredSection.onclick = (e) => {
-        if (e.target !== featuredCover) {
+        if (e.target !== coverElement && !coverElement.contains(e.target)) {
           window.location.href = `user-art-page.html?user=${encodeURIComponent(featuredUser.username)}`;
         }
       };
@@ -3168,15 +3257,3 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
