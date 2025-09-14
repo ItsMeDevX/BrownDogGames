@@ -2469,13 +2469,20 @@ crossorigin="anonymous"></script>
       background-color: #ff82ba;
     }
 
-    .fullscreen-image {
-      max-width: 90vw;
-      max-height: 80vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      margin-top: 80px;
+    .fullscreen-content {
+      width: 90vw;
+  height: 80vh;
+  max-width: 800px;
+  max-height: 600px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  margin-top: 80px;
+  background-color: #3b2750;
+  border: 3px solid #ff69b4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
     }
 
     .vip-extras-section {
@@ -2907,6 +2914,78 @@ crossorigin="anonymous"></script>
         grid-template-columns: repeat(3, 1fr);
       }
     }
+/* Add this CSS to your art page styles */
+
+/* Fullscreen placeholder */
+.fullscreen-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+  color: #ff82ba;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 2px dashed #ff4f9f;
+  border-radius: 12px;
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.1));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-placeholder:hover {
+  background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
+  border-color: #ff82ba;
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
+}
+
+.fullscreen-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.fullscreen-placeholder:hover::before {
+  left: 100%;
+}
+
+.fullscreen-placeholder .play-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+
+/* Platform-specific placeholder styling */
+.fullscreen-placeholder[data-platform="x"] {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #1da1f2;
+}
+
+.fullscreen-placeholder[data-platform="x"]:hover {
+  background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #1da1f2;
+  box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+}
+
   </style>
 </head>
 <body>
@@ -3028,7 +3107,7 @@ crossorigin="anonymous"></script>
       <h2 id="fullscreen-title" class="fullscreen-title">Artwork</h2>
       <button class="close-fullscreen" onclick="closeFullscreen()">✕ Close</button>
     </div>
-    <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
+    <div id="fullscreen-content" class="fullscreen-content"></div>
   </div>
 
 <script type="module">
@@ -3170,7 +3249,7 @@ crossorigin="anonymous"></script>
           .from('vip_page_views')
           .insert([{
             username: extraUsername,
-            user_id: userId,
+            user_id: userId;
             view_count: 1,
             first_viewed_at: new Date().toISOString(),
             last_viewed_at: new Date().toISOString()
@@ -3306,11 +3385,8 @@ crossorigin="anonymous"></script>
               (extra.type === 'download' ? '⬇ Download' : 
                extra.type === 'link' ? '🔗 Open Link' : 
                extra.type === 'code' ? '📋 Get Code' : 
-               extra.type === 'beta' ? '🎯 Access Beta' : 
-               extra.type === 'mod' ? '🛠 Get Mod' : 
-               extra.type === 'guide' ? '📖 Read Guide' : 
-               extra.type === 'video' ? '🎬 Watch Video' : 
-               extra.type === 'image' ? '🖼 View Art' : 
+               extra.type === 'video' ? '🎬 Watch Video' :
+               extra.type === 'image' ? '🖼 View Art Pack' :
                '🎯 Access') +
             '</a>' +
           '</div>' +
@@ -3615,25 +3691,55 @@ crossorigin="anonymous"></script>
     likeBtn.style.display = 'inline-block';
   }
 
-  // Fullscreen functionality
-  window.openFullscreen = function(imageSrc, altText, title) {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    const fullscreenImage = document.getElementById('fullscreen-image');
-    const fullscreenTitle = document.getElementById('fullscreen-title');
-    
-    fullscreenImage.src = imageSrc;
-    fullscreenImage.alt = altText;
-    fullscreenTitle.textContent = title || 'Artwork';
-    fullscreenView.classList.add('active');
-    
-    document.body.style.overflow = 'hidden';
+window.openFullscreen = function(artUrl, altText, title) {
+  const fullscreenView = document.getElementById('fullscreen-view');
+  const fullscreenContent = document.getElementById('fullscreen-content');
+  const fullscreenTitle = document.getElementById('fullscreen-title');
+  
+  // Clear previous content
+  fullscreenContent.innerHTML = '';
+  
+  const type = detectArtType(artUrl);
+  let element;
+  
+  if (type === 'image') {
+    element = document.createElement('img');
+    const fullImageUrl = convertDriveLinkToDirectView(artUrl) || artUrl;
+    element.src = fullImageUrl;
+    element.alt = altText;
+    element.style.width = '100%';
+    element.style.height = 'auto';
+    element.style.maxHeight = '100%';
+    element.style.objectFit = 'contain';
+  } else if (type === 'x') {
+    element = createActualArtDisplay(artUrl);
+    if (element) {
+      element.style.height = '100%';
+    }
   }
+  
+  if (element) {
+    fullscreenContent.appendChild(element);
+  }
+  
+  fullscreenTitle.textContent = title || 'Artwork';
+  
+  fullscreenView.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
 
-  window.closeFullscreen = function() {
-    const fullscreenView = document.getElementById('fullscreen-view');
-    fullscreenView.classList.remove('active');
-    document.body.style.overflow = 'auto';
+window.closeFullscreen = function() {
+  const fullscreenView = document.getElementById('fullscreen-view');
+  const fullscreenContent = document.getElementById('fullscreen-content');
+  
+  fullscreenView.classList.remove('active');
+  document.body.style.overflow = 'auto';
+  
+  // Clear the content
+  if (fullscreenContent) {
+    fullscreenContent.innerHTML = '';
   }
+}
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -3670,7 +3776,7 @@ crossorigin="anonymous"></script>
     }
   }
 
-  async function loadArt() {
+async function loadArt() {
     const result = await supabase
       .from('user_art')
       .select('*')
@@ -3780,63 +3886,51 @@ crossorigin="anonymous"></script>
         card.appendChild(desc);
       }
 
-      if (art.image_url) {
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'image-container';
+if (art.image_url) {
+  const type = detectArtType(art.image_url);
+  if (type === 'image') {
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'image-container';
 
-        let embedElement;
-        const url = art.image_url;
-        
-        if (url.includes('x.com') || url.includes('twitter.com')) {
-          const xMatch = url.match(/(?:x\\.com|twitter\\.com)\\/[^\\/]+\\/status\\/(\\d+)/);
-          if (xMatch) {
-            const tweetId = xMatch[1];
-            embedElement = document.createElement('iframe');
-            embedElement.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
-            embedElement.style.width = '100%';
-            embedElement.style.height = '200px';
-            embedElement.style.border = 'none';
-            embedElement.className = 'thumbnail';
-          } else {
-            // Fallback placeholder
-            embedElement = document.createElement('iframe');
-            embedElement.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-              <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-                <h2>X Art</h2>
-                <p>This art is hosted on X (formerly Twitter).</p>
-                <p><a href="${url}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
-              </body></html>
-            `);
-            embedElement.style.width = '100%';
-            embedElement.style.height = '200px';
-            embedElement.style.border = 'none';
-            embedElement.className = 'thumbnail';
-          }
-          // Prevent propagation if needed
-          embedElement.onclick = (e) => {
-            e.stopPropagation();
-          };
-        } else {
-          const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-          embedElement = document.createElement('img');
-          embedElement.src = thumbUrl || art.image_url;
-          embedElement.alt = 'Artwork: ' + art.title;
-          embedElement.className = 'thumbnail';
+    const img = document.createElement('img');
+    img.className = 'thumbnail';
+    const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+    img.src = thumbUrl || art.image_url;
+    img.alt = 'Artwork: ' + art.title;
 
-          const fullscreenBtn = document.createElement('button');
-          fullscreenBtn.className = 'fullscreen-btn';
-          fullscreenBtn.textContent = '⛶';
-          fullscreenBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
-            openFullscreen(fullImageUrl, embedElement.alt, art.title || 'Untitled Art');
-          });
-          imageContainer.appendChild(fullscreenBtn);
-        }
+    const fullscreenBtn = document.createElement('button');
+    fullscreenBtn.className = 'fullscreen-btn';
+    fullscreenBtn.textContent = '⛶';
+    fullscreenBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openFullscreen(art.image_url, img.alt, art.title || 'Untitled Art');
+    });
 
-        imageContainer.appendChild(embedElement);
-        card.appendChild(imageContainer);
-      }
+    imageContainer.appendChild(img);
+    imageContainer.appendChild(fullscreenBtn);
+    card.appendChild(imageContainer);
+  } else if (type === 'x') {
+    const artContainer = document.createElement('div');
+    artContainer.className = 'image-container';
+    
+    const placeholder = document.createElement('div');
+    placeholder.className = 'fullscreen-placeholder';
+    placeholder.setAttribute('data-platform', 'x');
+    
+    placeholder.innerHTML = `
+      <span class="play-icon">X</span>
+      <div>View X post in fullscreen</div>
+      <small style="opacity: 0.7; font-size: 0.8rem;">X</small>
+    `;
+    
+    placeholder.addEventListener('click', () => {
+      openFullscreen(art.image_url, 'X Post', art.title || 'Untitled Art');
+    });
+    
+    artContainer.appendChild(placeholder);
+    card.appendChild(artContainer);
+  }
+}
 
       // Add artwork like section
       const artworkLikeSection = document.createElement('div');
@@ -4168,8 +4262,50 @@ crossorigin="anonymous"></script>
       }
     }
   }
+function detectArtType(url) {
+  if (!url) return 'unknown';
+  const urlLower = url.toLowerCase();
+  if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
+  return 'image';
+}
+function createActualArtDisplay(artUrl) {
+  let displayElement;
+  if (artUrl.includes('x.com') || artUrl.includes('twitter.com')) {
+    const xMatch = artUrl.match(/(?:x\\.com|twitter\\.com)\\/[^\\/]+\\/status\\/(\\d+)/);
+    if (xMatch) {
+      const tweetId = xMatch[1];
+      displayElement = document.createElement('iframe');
+      displayElement.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+      displayElement.style.width = '100%';
+      displayElement.style.height = '100%';
+      displayElement.style.border = 'none';
+      displayElement.style.borderRadius = '10px';
+    } else {
+      // Fallback placeholder
+      displayElement = document.createElement('iframe');
+      displayElement.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+          <h2> X Art</h2>
+          <p>This art is hosted on X (formerly Twitter).</p>
+          <p><a href="${artUrl}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+        </body></html>
+      `);
+      displayElement.style.width = '100%';
+      displayElement.style.height = '100%';
+      displayElement.style.border = 'none';
+      displayElement.style.borderRadius = '10px';
+    }
+    displayElement.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+  }
+  return displayElement;
+}
+
 </script>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
-
