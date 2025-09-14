@@ -3306,8 +3306,11 @@ crossorigin="anonymous"></script>
               (extra.type === 'download' ? '⬇ Download' : 
                extra.type === 'link' ? '🔗 Open Link' : 
                extra.type === 'code' ? '📋 Get Code' : 
-               extra.type === 'video' ? '🎬 Watch Video' :
-               extra.type === 'image' ? '🖼 View Art Pack' :
+               extra.type === 'beta' ? '🎯 Access Beta' : 
+               extra.type === 'mod' ? '🛠 Get Mod' : 
+               extra.type === 'guide' ? '📖 Read Guide' : 
+               extra.type === 'video' ? '🎬 Watch Video' : 
+               extra.type === 'image' ? '🖼 View Art' : 
                '🎯 Access') +
             '</a>' +
           '</div>' +
@@ -3781,23 +3784,57 @@ crossorigin="anonymous"></script>
         const imageContainer = document.createElement('div');
         imageContainer.className = 'image-container';
 
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = 'Artwork: ' + art.title;
+        let embedElement;
+        const url = art.image_url;
+        
+        if (url.includes('x.com') || url.includes('twitter.com')) {
+          const xMatch = url.match(/(?:x\\.com|twitter\\.com)\\/[^\\/]+\\/status\\/(\\d+)/);
+          if (xMatch) {
+            const tweetId = xMatch[1];
+            embedElement = document.createElement('iframe');
+            embedElement.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+            embedElement.style.width = '100%';
+            embedElement.style.height = '200px';
+            embedElement.style.border = 'none';
+            embedElement.className = 'thumbnail';
+          } else {
+            // Fallback placeholder
+            embedElement = document.createElement('iframe');
+            embedElement.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
+              <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
+                <h2>X Art</h2>
+                <p>This art is hosted on X (formerly Twitter).</p>
+                <p><a href="${url}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
+              </body></html>
+            `);
+            embedElement.style.width = '100%';
+            embedElement.style.height = '200px';
+            embedElement.style.border = 'none';
+            embedElement.className = 'thumbnail';
+          }
+          // Prevent propagation if needed
+          embedElement.onclick = (e) => {
+            e.stopPropagation();
+          };
+        } else {
+          const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+          embedElement = document.createElement('img');
+          embedElement.src = thumbUrl || art.image_url;
+          embedElement.alt = 'Artwork: ' + art.title;
+          embedElement.className = 'thumbnail';
 
-        const fullscreenBtn = document.createElement('button');
-        fullscreenBtn.className = 'fullscreen-btn';
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
-          openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
-        });
+          const fullscreenBtn = document.createElement('button');
+          fullscreenBtn.className = 'fullscreen-btn';
+          fullscreenBtn.textContent = '⛶';
+          fullscreenBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
+            openFullscreen(fullImageUrl, embedElement.alt, art.title || 'Untitled Art');
+          });
+          imageContainer.appendChild(fullscreenBtn);
+        }
 
-        imageContainer.appendChild(img);
-        imageContainer.appendChild(fullscreenBtn);
+        imageContainer.appendChild(embedElement);
         card.appendChild(imageContainer);
       }
 
@@ -4135,11 +4172,3 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
