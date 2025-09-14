@@ -2469,20 +2469,13 @@ crossorigin="anonymous"></script>
       background-color: #ff82ba;
     }
 
-    .fullscreen-content {
-      width: 90vw;
-  height: 80vh;
-  max-width: 800px;
-  max-height: 600px;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  margin-top: 80px;
-  background-color: #3b2750;
-  border: 3px solid #ff69b4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+    .fullscreen-image {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      margin-top: 80px;
     }
 
     .vip-extras-section {
@@ -2914,78 +2907,6 @@ crossorigin="anonymous"></script>
         grid-template-columns: repeat(3, 1fr);
       }
     }
-/* Add this CSS to your art page styles */
-
-/* Fullscreen placeholder */
-.fullscreen-placeholder {
-  padding: 40px 20px;
-  text-align: center;
-  color: #ff82ba;
-  font-size: 1rem;
-  line-height: 1.5;
-  border: 2px dashed #ff4f9f;
-  border-radius: 12px;
-  background: linear-gradient(45deg, rgba(255, 79, 159, 0.1), rgba(255, 130, 186, 0.1));
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  min-height: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.fullscreen-placeholder:hover {
-  background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
-  border-color: #ff82ba;
-  transform: scale(1.02);
-  box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-}
-
-.fullscreen-placeholder::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.fullscreen-placeholder:hover::before {
-  left: 100%;
-}
-
-.fullscreen-placeholder .play-icon {
-  font-size: 2rem;
-  margin-bottom: 12px;
-  display: block;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-8px); }
-  60% { transform: translateY(-4px); }
-}
-
-/* Platform-specific placeholder styling */
-.fullscreen-placeholder[data-platform="x"] {
-  background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
-  border-color: #1da1f2;
-}
-
-.fullscreen-placeholder[data-platform="x"]:hover {
-  background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
-  border-color: #1da1f2;
-  box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
-}
-
   </style>
 </head>
 <body>
@@ -3107,7 +3028,7 @@ crossorigin="anonymous"></script>
       <h2 id="fullscreen-title" class="fullscreen-title">Artwork</h2>
       <button class="close-fullscreen" onclick="closeFullscreen()">✕ Close</button>
     </div>
-    <div id="fullscreen-content" class="fullscreen-content"></div>
+    <img id="fullscreen-image" class="fullscreen-image" alt="Fullscreen artwork">
   </div>
 
 <script type="module">
@@ -3691,55 +3612,25 @@ crossorigin="anonymous"></script>
     likeBtn.style.display = 'inline-block';
   }
 
-window.openFullscreen = function(artUrl, altText, title) {
-  const fullscreenView = document.getElementById('fullscreen-view');
-  const fullscreenContent = document.getElementById('fullscreen-content');
-  const fullscreenTitle = document.getElementById('fullscreen-title');
-  
-  // Clear previous content
-  fullscreenContent.innerHTML = '';
-  
-  const type = detectArtType(artUrl);
-  let element;
-  
-  if (type === 'image') {
-    element = document.createElement('img');
-    const fullImageUrl = convertDriveLinkToDirectView(artUrl) || artUrl;
-    element.src = fullImageUrl;
-    element.alt = altText;
-    element.style.width = '100%';
-    element.style.height = 'auto';
-    element.style.maxHeight = '100%';
-    element.style.objectFit = 'contain';
-  } else if (type === 'x') {
-    element = createActualArtDisplay(artUrl);
-    if (element) {
-      element.style.height = '100%';
-    }
+  // Fullscreen functionality
+  window.openFullscreen = function(imageSrc, altText, title) {
+    const fullscreenView = document.getElementById('fullscreen-view');
+    const fullscreenImage = document.getElementById('fullscreen-image');
+    const fullscreenTitle = document.getElementById('fullscreen-title');
+    
+    fullscreenImage.src = imageSrc;
+    fullscreenImage.alt = altText;
+    fullscreenTitle.textContent = title || 'Artwork';
+    fullscreenView.classList.add('active');
+    
+    document.body.style.overflow = 'hidden';
   }
-  
-  if (element) {
-    fullscreenContent.appendChild(element);
-  }
-  
-  fullscreenTitle.textContent = title || 'Artwork';
-  
-  fullscreenView.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
 
-window.closeFullscreen = function() {
-  const fullscreenView = document.getElementById('fullscreen-view');
-  const fullscreenContent = document.getElementById('fullscreen-content');
-  
-  fullscreenView.classList.remove('active');
-  document.body.style.overflow = 'auto';
-  
-  // Clear the content
-  if (fullscreenContent) {
-    fullscreenContent.innerHTML = '';
+  window.closeFullscreen = function() {
+    const fullscreenView = document.getElementById('fullscreen-view');
+    fullscreenView.classList.remove('active');
+    document.body.style.overflow = 'auto';
   }
-}
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -3750,238 +3641,207 @@ window.closeFullscreen = function() {
   async function incrementVipPageView() {
     if (!username) return;
 
-    try {
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('username', username)
-        .single();
+    const userData = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single();
 
-      if (userError || !userData) {
-        console.error('User not found for VIP increment:', userError || 'No data');
-        return;
-      }
+    if (userData.error || !userData.data) {
+      console.error('User not found for VIP increment:', userData.error);
+      return;
+    }
 
-      const now = new Date().toISOString();
+    const now = new Date().toISOString();
 
-      const result = await supabase.rpc('increment_vip_page_view', {
-        in_user_id: userData.id,
-        in_username: username,
-        in_now: now
-      });
+    const result = await supabase.rpc('increment_vip_page_view', {
+      in_user_id: userData.data.id,
+      in_username: username,
+      in_now: now
+    });
 
-      if (result.error) {
-        console.error('Error incrementing VIP page views:', result.error);
-      } else {
-        console.log('Incremented VIP page views for ' + username);
-      }
-    } catch (error) {
-      console.error('Error in incrementVipPageView:', error);
+    if (result.error) {
+      console.error('Error incrementing VIP page views:', result.error);
+    } else {
+      console.log('Incremented VIP page views for ' + username);
     }
   }
 
-async function loadArt() {
-    try {
-      const result = await supabase
-        .from('user_art')
-        .select('*')
-        .eq('github_username', username)
-        .order('created_at', { ascending: false });
+  async function loadArt() {
+    const result = await supabase
+      .from('user_art')
+      .select('*')
+      .eq('github_username', username)
+      .order('created_at', { ascending: false });
 
-      if (result.error) {
-        artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + result.error.message + '</div>';
-        return;
-      }
+    if (result.error) {
+      artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + result.error.message + '</div>';
+      return;
+    }
 
-      if (!result.data.length) {
-        artContainer.innerHTML = '<p class="no-content">No art submitted by ' + username + ' yet.</p>';
-        return;
-      }
+    if (!result.data.length) {
+      artContainer.innerHTML = '<p class="no-content">No art submitted by ' + username + ' yet.</p>';
+      return;
+    }
 
-      // Get current user and load like status
-      currentUser = await getCurrentUser();
-      console.log('🔍 Current user:', currentUser);
+    // Get current user and load like status
+    currentUser = await getCurrentUser();
+    console.log('🔍 Current user:', currentUser);
+    
+    if (currentUser) {
+      isVipUser = await checkVipStatus(currentUser);
+      userHasLiked = await hasUserLiked(currentUser.id);
       
-      if (currentUser) {
-        isVipUser = await checkVipStatus(currentUser);
-        userHasLiked = await hasUserLiked(currentUser.id);
+      console.log('📊 Current user ID:', currentUser.id);
+      console.log('👑 Is VIP:', isVipUser);
+      console.log('📝 Page username:', username);
+      
+      // Show VIP badge and features if user is VIP
+      if (isVipUser) {
+        const vipBadge = document.getElementById('vipBadge');
+        const vipBadgesSection = document.getElementById('vipBadgesSection');
+        const msgInput = document.getElementById('msg-input');
+        const addExtraBtn = document.getElementById('addExtraBtn');
         
-        console.log('📊 Current user ID:', currentUser.id);
-        console.log('👑 Is VIP:', isVipUser);
-        console.log('📝 Page username:', username);
+        console.log('🎉 User is VIP! Enabling VIP features...');
         
-        // Show VIP badge and features if user is VIP
-        if (isVipUser) {
-          const vipBadge = document.getElementById('vipBadge');
-          const vipBadgesSection = document.getElementById('vipBadgesSection');
-          const msgInput = document.getElementById('msg-input');
-          const addExtraBtn = document.getElementById('addExtraBtn');
-          
-          console.log('🎉 User is VIP! Enabling VIP features...');
-          
-          if (vipBadge) {
-            vipBadge.style.display = 'inline-block';
-            console.log('✅ VIP badge shown');
-          }
-          
-          if (vipBadgesSection) {
-            vipBadgesSection.classList.add('show');
-            console.log('✅ VIP badges section shown');
-          }
-          
-          if (msgInput) {
-            msgInput.classList.add('vip');
-            console.log('✅ VIP chat styling added');
-          }
-          
-          // Show add extra button for ALL VIP users (no page owner restriction)
-          if (addExtraBtn) {
-            addExtraBtn.style.display = 'inline-block';
-            addExtraBtn.textContent = '➕ Add VIP Extra';
-            console.log('✅ Add extra button shown for VIP user');
-          }
-          
-        } else {
-          console.log('❌ User is not VIP');
+        if (vipBadge) {
+          vipBadge.style.display = 'inline-block';
+          console.log('✅ VIP badge shown');
         }
+        
+        if (vipBadgesSection) {
+          vipBadgesSection.classList.add('show');
+          console.log('✅ VIP badges section shown');
+        }
+        
+        if (msgInput) {
+          msgInput.classList.add('vip');
+          console.log('✅ VIP chat styling added');
+        }
+        
+        // Show add extra button for ALL VIP users (no page owner restriction)
+        if (addExtraBtn) {
+          addExtraBtn.style.display = 'inline-block';
+          addExtraBtn.textContent = '➕ Add VIP Extra';
+          console.log('✅ Add extra button shown for VIP user');
+        }
+        
       } else {
-        console.log('❌ No current user logged in');
+        console.log('❌ User is not VIP');
       }
-      
-      totalLikes = await getTotalLikes();
+    } else {
+      console.log('❌ No current user logged in');
+    }
+    
+    totalLikes = await getTotalLikes();
 
-      // Update the like status display
-      updateLikeStatus();
+    // Update the like status display
+    updateLikeStatus();
 
-      // Add event listener for main like button
-      const mainLikeBtn = document.getElementById('main-like-btn');
-      if (mainLikeBtn) {
-        mainLikeBtn.addEventListener('click', async function() {
-          const success = await likeUserPage();
-          if (success) {
-            userHasLiked = true;
-            totalLikes = await getTotalLikes();
-            updateLikeStatus();
-          }
-        });
-      }
-
-      // Get artwork likes data
-      const artworkIds = result.data.map(art => art.id);
-      artworkLikes = await getArtworkLikes(artworkIds);
-      if (currentUser) {
-        userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
-      }
-
-      artContainer.innerHTML = '';
-      result.data.forEach(function(art, index) {
-        const card = document.createElement('article');
-        card.className = 'card';
-        card.setAttribute('data-artwork-id', art.id);
-
-        const title = document.createElement('h3');
-        title.className = 'title';
-        title.textContent = art.title || 'Untitled Art';
-        card.appendChild(title);
-
-        if (art.description) {
-          const desc = document.createElement('p');
-          desc.className = 'desc';
-          desc.textContent = art.description;
-          card.appendChild(desc);
+    // Add event listener for main like button
+    const mainLikeBtn = document.getElementById('main-like-btn');
+    if (mainLikeBtn) {
+      mainLikeBtn.addEventListener('click', async function() {
+        const success = await likeUserPage();
+        if (success) {
+          userHasLiked = true;
+          totalLikes = await getTotalLikes();
+          updateLikeStatus();
         }
+      });
+    }
 
-if (art.image_url) {
-  const type = detectArtType(art.image_url);
-  if (type === 'image') {
-    const imageContainer = document.createElement('div');
-    imageContainer.className = 'image-container';
+    // Get artwork likes data
+    const artworkIds = result.data.map(art => art.id);
+    artworkLikes = await getArtworkLikes(artworkIds);
+    if (currentUser) {
+      userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
+    }
 
-    const img = document.createElement('img');
-    img.className = 'thumbnail';
-    const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-    img.src = thumbUrl || art.image_url;
-    img.alt = 'Artwork: ' + art.title;
+    artContainer.innerHTML = '';
+    result.data.forEach(function(art, index) {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.setAttribute('data-artwork-id', art.id);
 
-    const fullscreenBtn = document.createElement('button');
-    fullscreenBtn.className = 'fullscreen-btn';
-    fullscreenBtn.textContent = '⛶';
-    fullscreenBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      openFullscreen(art.image_url, img.alt, art.title || 'Untitled Art');
-    });
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = art.title || 'Untitled Art';
+      card.appendChild(title);
 
-    imageContainer.appendChild(img);
-    imageContainer.appendChild(fullscreenBtn);
-    card.appendChild(imageContainer);
-  } else if (type === 'x') {
-    const artContainer = document.createElement('div');
-    artContainer.className = 'image-container';
-    
-    const placeholder = document.createElement('div');
-    placeholder.className = 'fullscreen-placeholder';
-    placeholder.setAttribute('data-platform', 'x');
-    
-    placeholder.innerHTML = `
-      <span class="play-icon">X</span>
-      <div>View X post in fullscreen</div>
-      <small style="opacity: 0.7; font-size: 0.8rem;">X</small>
-    `;
-    
-    placeholder.addEventListener('click', () => {
-      openFullscreen(art.image_url, 'X Post', art.title || 'Untitled Art');
-    });
-    
-    artContainer.appendChild(placeholder);
-    card.appendChild(artContainer);
-  }
-}
+      if (art.description) {
+        const desc = document.createElement('p');
+        desc.className = 'desc';
+        desc.textContent = art.description;
+        card.appendChild(desc);
+      }
 
-        // Add artwork like section
-        const artworkLikeSection = document.createElement('div');
-        artworkLikeSection.className = 'artwork-like-section';
+      if (art.image_url) {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
 
-        const artworkLikeBtn = document.createElement('button');
-        artworkLikeBtn.className = 'artwork-like-btn';
-        const isLiked = userLikedArtworks.has(art.id);
-        artworkLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
-        if (isLiked) artworkLikeBtn.classList.add('liked');
-        
-        if (!currentUser) {
-          artworkLikeBtn.disabled = true;
-          artworkLikeBtn.innerHTML = '🤍 Like';
-        }
+        const img = document.createElement('img');
+        img.className = 'thumbnail';
+        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+        img.src = thumbUrl || art.image_url;
+        img.alt = 'Artwork: ' + art.title;
 
-        artworkLikeBtn.addEventListener('click', function(e) {
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'fullscreen-btn';
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.addEventListener('click', function(e) {
           e.stopPropagation();
-          toggleArtworkLike(art.id);
+          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
+          openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
         });
 
-        const artworkLikeCount = document.createElement('div');
-        artworkLikeCount.className = 'artwork-like-count';
-        artworkLikeCount.innerHTML = '❤️ ' + (artworkLikes[art.id] || 0);
+        imageContainer.appendChild(img);
+        imageContainer.appendChild(fullscreenBtn);
+        card.appendChild(imageContainer);
+      }
 
-        artworkLikeSection.appendChild(artworkLikeBtn);
-        artworkLikeSection.appendChild(artworkLikeCount);
-        card.appendChild(artworkLikeSection);
+      // Add artwork like section
+      const artworkLikeSection = document.createElement('div');
+      artworkLikeSection.className = 'artwork-like-section';
 
-        // Add login prompt if user not logged in
-        if (!currentUser) {
-          const loginPrompt = document.createElement('p');
-          loginPrompt.className = 'artwork-login-prompt';
-          loginPrompt.textContent = 'Log in to like artworks';
-          card.appendChild(loginPrompt);
-        }
+      const artworkLikeBtn = document.createElement('button');
+      artworkLikeBtn.className = 'artwork-like-btn';
+      const isLiked = userLikedArtworks.has(art.id);
+      artworkLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+      if (isLiked) artworkLikeBtn.classList.add('liked');
+      
+      if (!currentUser) {
+        artworkLikeBtn.disabled = true;
+        artworkLikeBtn.innerHTML = '🤍 Like';
+      }
 
-        artContainer.appendChild(card);
+      artworkLikeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleArtworkLike(art.id);
       });
 
-      // Load VIP extras after artwork is loaded
-      await loadVipExtras();
-    } catch (error) {
-      console.error('Error in loadArt:', error);
-      artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + error.message + '</div>';
-    }
+      const artworkLikeCount = document.createElement('div');
+      artworkLikeCount.className = 'artwork-like-count';
+      artworkLikeCount.innerHTML = '❤️ ' + (artworkLikes[art.id] || 0);
+
+      artworkLikeSection.appendChild(artworkLikeBtn);
+      artworkLikeSection.appendChild(artworkLikeCount);
+      card.appendChild(artworkLikeSection);
+
+      // Add login prompt if user not logged in
+      if (!currentUser) {
+        const loginPrompt = document.createElement('p');
+        loginPrompt.className = 'artwork-login-prompt';
+        loginPrompt.textContent = 'Log in to like artworks';
+        card.appendChild(loginPrompt);
+      }
+
+      artContainer.appendChild(card);
+    });
+
+    // Load VIP extras after artwork is loaded
+    await loadVipExtras();
   }
 
   // Badge selection functionality
@@ -4040,18 +3900,13 @@ if (art.image_url) {
   // Enhanced chat functionality with VIP features
   async function getUserGitHubUsername() {
     if (currentUser) {
-      try {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('github_username')
-          .eq('id', currentUser.id)
-          .single();
-        
-        return userData?.github_username || currentUser.user_metadata?.full_name || 'GitHub User';
-      } catch (error) {
-        console.error('Error getting GitHub username:', error);
-        return currentUser.user_metadata?.full_name || 'GitHub User';
-      }
+      const { data: userData } = await supabase
+        .from('users')
+        .select('github_username')
+        .eq('id', currentUser.id)
+        .single();
+      
+      return userData?.github_username || currentUser.user_metadata?.full_name || 'GitHub User';
     }
     return 'Guest';
   }
@@ -4259,7 +4114,7 @@ if (art.image_url) {
       gameIdInput.value = username;
     }
 
-    // Initialize everything in proper order with top-level error handling
+    // Initialize everything in proper order
     try {
       await incrementVipPageView();
       await loadArt(); // This sets up VIP status and loads content
@@ -4274,59 +4129,9 @@ if (art.image_url) {
       if (artContainer) {
         artContainer.innerHTML = '<p class="no-content">❌ Error loading page content. Please refresh.</p>';
       }
-      if (messagesDiv) {
-        messagesDiv.innerHTML = '<p style="color:red;">❌ Error loading chat. Please refresh.</p>';
-      }
-      const extrasContainer = document.getElementById('extrasContainer');
-      if (extrasContainer) {
-        extrasContainer.innerHTML = '<p class="no-content">❌ Error loading VIP extras. Please refresh.</p>';
-      }
     }
   }
-function detectArtType(url) {
-  if (!url) return 'unknown';
-  const urlLower = url.toLowerCase();
-  if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
-  return 'image';
-}
-function createActualArtDisplay(artUrl) {
-  let displayElement;
-  if (artUrl.includes('x.com') || artUrl.includes('twitter.com')) {
-    const xMatch = artUrl.match(/(?:x\\.com|twitter\\.com)\\/[^\\/]+\\/status\\/(\\d+)/);
-    if (xMatch) {
-      const tweetId = xMatch[1];
-      displayElement = document.createElement('iframe');
-      displayElement.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
-      displayElement.style.width = '100%';
-      displayElement.style.height = '100%';
-      displayElement.style.border = 'none';
-      displayElement.style.borderRadius = '10px';
-    } else {
-      // Fallback placeholder
-      displayElement = document.createElement('iframe');
-      displayElement.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-          <h2> X Art</h2>
-          <p>This art is hosted on X (formerly Twitter).</p>
-          <p><a href="${artUrl}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
-        </body></html>
-      `);
-      displayElement.style.width = '100%';
-      displayElement.style.height = '100%';
-      displayElement.style.border = 'none';
-      displayElement.style.borderRadius = '10px';
-    }
-    displayElement.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-  }
-  return displayElement;
-}
-
 </script>
-
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
