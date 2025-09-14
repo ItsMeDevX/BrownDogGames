@@ -2017,6 +2017,7 @@ crossorigin="anonymous"></script>
 </body>
 </html>
   
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3249,7 +3250,7 @@ crossorigin="anonymous"></script>
           .from('vip_page_views')
           .insert([{
             username: extraUsername,
-            user_id: userId;
+            user_id: userId,
             view_count: 1,
             first_viewed_at: new Date().toISOString(),
             last_viewed_at: new Date().toISOString()
@@ -3750,141 +3751,146 @@ window.closeFullscreen = function() {
   async function incrementVipPageView() {
     if (!username) return;
 
-    const userData = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
+    try {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .single();
 
-    if (userData.error || !userData.data) {
-      console.error('User not found for VIP increment:', userData.error);
-      return;
-    }
+      if (userError || !userData) {
+        console.error('User not found for VIP increment:', userError || 'No data');
+        return;
+      }
 
-    const now = new Date().toISOString();
+      const now = new Date().toISOString();
 
-    const result = await supabase.rpc('increment_vip_page_view', {
-      in_user_id: userData.data.id,
-      in_username: username,
-      in_now: now
-    });
+      const result = await supabase.rpc('increment_vip_page_view', {
+        in_user_id: userData.id,
+        in_username: username,
+        in_now: now
+      });
 
-    if (result.error) {
-      console.error('Error incrementing VIP page views:', result.error);
-    } else {
-      console.log('Incremented VIP page views for ' + username);
+      if (result.error) {
+        console.error('Error incrementing VIP page views:', result.error);
+      } else {
+        console.log('Incremented VIP page views for ' + username);
+      }
+    } catch (error) {
+      console.error('Error in incrementVipPageView:', error);
     }
   }
 
 async function loadArt() {
-    const result = await supabase
-      .from('user_art')
-      .select('*')
-      .eq('github_username', username)
-      .order('created_at', { ascending: false });
+    try {
+      const result = await supabase
+        .from('user_art')
+        .select('*')
+        .eq('github_username', username)
+        .order('created_at', { ascending: false });
 
-    if (result.error) {
-      artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + result.error.message + '</div>';
-      return;
-    }
+      if (result.error) {
+        artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + result.error.message + '</div>';
+        return;
+      }
 
-    if (!result.data.length) {
-      artContainer.innerHTML = '<p class="no-content">No art submitted by ' + username + ' yet.</p>';
-      return;
-    }
+      if (!result.data.length) {
+        artContainer.innerHTML = '<p class="no-content">No art submitted by ' + username + ' yet.</p>';
+        return;
+      }
 
-    // Get current user and load like status
-    currentUser = await getCurrentUser();
-    console.log('🔍 Current user:', currentUser);
-    
-    if (currentUser) {
-      isVipUser = await checkVipStatus(currentUser);
-      userHasLiked = await hasUserLiked(currentUser.id);
+      // Get current user and load like status
+      currentUser = await getCurrentUser();
+      console.log('🔍 Current user:', currentUser);
       
-      console.log('📊 Current user ID:', currentUser.id);
-      console.log('👑 Is VIP:', isVipUser);
-      console.log('📝 Page username:', username);
-      
-      // Show VIP badge and features if user is VIP
-      if (isVipUser) {
-        const vipBadge = document.getElementById('vipBadge');
-        const vipBadgesSection = document.getElementById('vipBadgesSection');
-        const msgInput = document.getElementById('msg-input');
-        const addExtraBtn = document.getElementById('addExtraBtn');
+      if (currentUser) {
+        isVipUser = await checkVipStatus(currentUser);
+        userHasLiked = await hasUserLiked(currentUser.id);
         
-        console.log('🎉 User is VIP! Enabling VIP features...');
+        console.log('📊 Current user ID:', currentUser.id);
+        console.log('👑 Is VIP:', isVipUser);
+        console.log('📝 Page username:', username);
         
-        if (vipBadge) {
-          vipBadge.style.display = 'inline-block';
-          console.log('✅ VIP badge shown');
+        // Show VIP badge and features if user is VIP
+        if (isVipUser) {
+          const vipBadge = document.getElementById('vipBadge');
+          const vipBadgesSection = document.getElementById('vipBadgesSection');
+          const msgInput = document.getElementById('msg-input');
+          const addExtraBtn = document.getElementById('addExtraBtn');
+          
+          console.log('🎉 User is VIP! Enabling VIP features...');
+          
+          if (vipBadge) {
+            vipBadge.style.display = 'inline-block';
+            console.log('✅ VIP badge shown');
+          }
+          
+          if (vipBadgesSection) {
+            vipBadgesSection.classList.add('show');
+            console.log('✅ VIP badges section shown');
+          }
+          
+          if (msgInput) {
+            msgInput.classList.add('vip');
+            console.log('✅ VIP chat styling added');
+          }
+          
+          // Show add extra button for ALL VIP users (no page owner restriction)
+          if (addExtraBtn) {
+            addExtraBtn.style.display = 'inline-block';
+            addExtraBtn.textContent = '➕ Add VIP Extra';
+            console.log('✅ Add extra button shown for VIP user');
+          }
+          
+        } else {
+          console.log('❌ User is not VIP');
         }
-        
-        if (vipBadgesSection) {
-          vipBadgesSection.classList.add('show');
-          console.log('✅ VIP badges section shown');
-        }
-        
-        if (msgInput) {
-          msgInput.classList.add('vip');
-          console.log('✅ VIP chat styling added');
-        }
-        
-        // Show add extra button for ALL VIP users (no page owner restriction)
-        if (addExtraBtn) {
-          addExtraBtn.style.display = 'inline-block';
-          addExtraBtn.textContent = '➕ Add VIP Extra';
-          console.log('✅ Add extra button shown for VIP user');
-        }
-        
       } else {
-        console.log('❌ User is not VIP');
+        console.log('❌ No current user logged in');
       }
-    } else {
-      console.log('❌ No current user logged in');
-    }
-    
-    totalLikes = await getTotalLikes();
+      
+      totalLikes = await getTotalLikes();
 
-    // Update the like status display
-    updateLikeStatus();
+      // Update the like status display
+      updateLikeStatus();
 
-    // Add event listener for main like button
-    const mainLikeBtn = document.getElementById('main-like-btn');
-    if (mainLikeBtn) {
-      mainLikeBtn.addEventListener('click', async function() {
-        const success = await likeUserPage();
-        if (success) {
-          userHasLiked = true;
-          totalLikes = await getTotalLikes();
-          updateLikeStatus();
+      // Add event listener for main like button
+      const mainLikeBtn = document.getElementById('main-like-btn');
+      if (mainLikeBtn) {
+        mainLikeBtn.addEventListener('click', async function() {
+          const success = await likeUserPage();
+          if (success) {
+            userHasLiked = true;
+            totalLikes = await getTotalLikes();
+            updateLikeStatus();
+          }
+        });
+      }
+
+      // Get artwork likes data
+      const artworkIds = result.data.map(art => art.id);
+      artworkLikes = await getArtworkLikes(artworkIds);
+      if (currentUser) {
+        userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
+      }
+
+      artContainer.innerHTML = '';
+      result.data.forEach(function(art, index) {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.setAttribute('data-artwork-id', art.id);
+
+        const title = document.createElement('h3');
+        title.className = 'title';
+        title.textContent = art.title || 'Untitled Art';
+        card.appendChild(title);
+
+        if (art.description) {
+          const desc = document.createElement('p');
+          desc.className = 'desc';
+          desc.textContent = art.description;
+          card.appendChild(desc);
         }
-      });
-    }
-
-    // Get artwork likes data
-    const artworkIds = result.data.map(art => art.id);
-    artworkLikes = await getArtworkLikes(artworkIds);
-    if (currentUser) {
-      userLikedArtworks = await getUserLikedArtworks(currentUser.id, artworkIds);
-    }
-
-    artContainer.innerHTML = '';
-    result.data.forEach(function(art, index) {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.setAttribute('data-artwork-id', art.id);
-
-      const title = document.createElement('h3');
-      title.className = 'title';
-      title.textContent = art.title || 'Untitled Art';
-      card.appendChild(title);
-
-      if (art.description) {
-        const desc = document.createElement('p');
-        desc.className = 'desc';
-        desc.textContent = art.description;
-        card.appendChild(desc);
-      }
 
 if (art.image_url) {
   const type = detectArtType(art.image_url);
@@ -3932,47 +3938,51 @@ if (art.image_url) {
   }
 }
 
-      // Add artwork like section
-      const artworkLikeSection = document.createElement('div');
-      artworkLikeSection.className = 'artwork-like-section';
+        // Add artwork like section
+        const artworkLikeSection = document.createElement('div');
+        artworkLikeSection.className = 'artwork-like-section';
 
-      const artworkLikeBtn = document.createElement('button');
-      artworkLikeBtn.className = 'artwork-like-btn';
-      const isLiked = userLikedArtworks.has(art.id);
-      artworkLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
-      if (isLiked) artworkLikeBtn.classList.add('liked');
-      
-      if (!currentUser) {
-        artworkLikeBtn.disabled = true;
-        artworkLikeBtn.innerHTML = '🤍 Like';
-      }
+        const artworkLikeBtn = document.createElement('button');
+        artworkLikeBtn.className = 'artwork-like-btn';
+        const isLiked = userLikedArtworks.has(art.id);
+        artworkLikeBtn.innerHTML = isLiked ? '❤️ Liked' : '🤍 Like';
+        if (isLiked) artworkLikeBtn.classList.add('liked');
+        
+        if (!currentUser) {
+          artworkLikeBtn.disabled = true;
+          artworkLikeBtn.innerHTML = '🤍 Like';
+        }
 
-      artworkLikeBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleArtworkLike(art.id);
+        artworkLikeBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleArtworkLike(art.id);
+        });
+
+        const artworkLikeCount = document.createElement('div');
+        artworkLikeCount.className = 'artwork-like-count';
+        artworkLikeCount.innerHTML = '❤️ ' + (artworkLikes[art.id] || 0);
+
+        artworkLikeSection.appendChild(artworkLikeBtn);
+        artworkLikeSection.appendChild(artworkLikeCount);
+        card.appendChild(artworkLikeSection);
+
+        // Add login prompt if user not logged in
+        if (!currentUser) {
+          const loginPrompt = document.createElement('p');
+          loginPrompt.className = 'artwork-login-prompt';
+          loginPrompt.textContent = 'Log in to like artworks';
+          card.appendChild(loginPrompt);
+        }
+
+        artContainer.appendChild(card);
       });
 
-      const artworkLikeCount = document.createElement('div');
-      artworkLikeCount.className = 'artwork-like-count';
-      artworkLikeCount.innerHTML = '❤️ ' + (artworkLikes[art.id] || 0);
-
-      artworkLikeSection.appendChild(artworkLikeBtn);
-      artworkLikeSection.appendChild(artworkLikeCount);
-      card.appendChild(artworkLikeSection);
-
-      // Add login prompt if user not logged in
-      if (!currentUser) {
-        const loginPrompt = document.createElement('p');
-        loginPrompt.className = 'artwork-login-prompt';
-        loginPrompt.textContent = 'Log in to like artworks';
-        card.appendChild(loginPrompt);
-      }
-
-      artContainer.appendChild(card);
-    });
-
-    // Load VIP extras after artwork is loaded
-    await loadVipExtras();
+      // Load VIP extras after artwork is loaded
+      await loadVipExtras();
+    } catch (error) {
+      console.error('Error in loadArt:', error);
+      artContainer.innerHTML = '<div class="no-content">❌ Error loading art: ' + error.message + '</div>';
+    }
   }
 
   // Badge selection functionality
@@ -4031,13 +4041,18 @@ if (art.image_url) {
   // Enhanced chat functionality with VIP features
   async function getUserGitHubUsername() {
     if (currentUser) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('github_username')
-        .eq('id', currentUser.id)
-        .single();
-      
-      return userData?.github_username || currentUser.user_metadata?.full_name || 'GitHub User';
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('github_username')
+          .eq('id', currentUser.id)
+          .single();
+        
+        return userData?.github_username || currentUser.user_metadata?.full_name || 'GitHub User';
+      } catch (error) {
+        console.error('Error getting GitHub username:', error);
+        return currentUser.user_metadata?.full_name || 'GitHub User';
+      }
     }
     return 'Guest';
   }
@@ -4245,7 +4260,7 @@ if (art.image_url) {
       gameIdInput.value = username;
     }
 
-    // Initialize everything in proper order
+    // Initialize everything in proper order with top-level error handling
     try {
       await incrementVipPageView();
       await loadArt(); // This sets up VIP status and loads content
@@ -4259,6 +4274,13 @@ if (art.image_url) {
       console.error('Error during page initialization:', error);
       if (artContainer) {
         artContainer.innerHTML = '<p class="no-content">❌ Error loading page content. Please refresh.</p>';
+      }
+      if (messagesDiv) {
+        messagesDiv.innerHTML = '<p style="color:red;">❌ Error loading chat. Please refresh.</p>';
+      }
+      const extrasContainer = document.getElementById('extrasContainer');
+      if (extrasContainer) {
+        extrasContainer.innerHTML = '<p class="no-content">❌ Error loading VIP extras. Please refresh.</p>';
       }
     }
   }
