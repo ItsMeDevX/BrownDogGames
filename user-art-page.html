@@ -3667,6 +3667,16 @@ crossorigin="anonymous"></script>
     }
   }
 
+  function detectArtType(url) {
+    if (!url) return 'unknown';
+  
+    const urlLower = url.toLowerCase();
+  
+    if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
+  
+    return 'image';
+  }
+
   async function loadArt() {
     const result = await supabase
       .from('user_art')
@@ -3778,27 +3788,51 @@ crossorigin="anonymous"></script>
       }
 
       if (art.image_url) {
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'image-container';
+        const type = detectArtType(art.image_url);
 
-        const img = document.createElement('img');
-        img.className = 'thumbnail';
-        const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
-        img.src = thumbUrl || art.image_url;
-        img.alt = 'Artwork: ' + art.title;
+        if (type === 'x') {
+          const xMatch = art.image_url.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
+          if (xMatch) {
+            const tweetId = xMatch[1];
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
+            iframe.style.width = '100%';
+            iframe.style.height = '200px';
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = '10px';
+            card.appendChild(iframe);
+          } else {
+            const link = document.createElement('a');
+            link.href = art.image_url;
+            link.textContent = 'View on X';
+            link.target = '_blank';
+            link.style.color = '#ff82ba';
+            link.style.textDecoration = 'none';
+            card.appendChild(link);
+          }
+        } else {
+          const imageContainer = document.createElement('div');
+          imageContainer.className = 'image-container';
 
-        const fullscreenBtn = document.createElement('button');
-        fullscreenBtn.className = 'fullscreen-btn';
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
-          openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
-        });
+          const img = document.createElement('img');
+          img.className = 'thumbnail';
+          const thumbUrl = convertDriveLinkToThumbnail(art.image_url);
+          img.src = thumbUrl || art.image_url;
+          img.alt = 'Artwork: ' + art.title;
 
-        imageContainer.appendChild(img);
-        imageContainer.appendChild(fullscreenBtn);
-        card.appendChild(imageContainer);
+          const fullscreenBtn = document.createElement('button');
+          fullscreenBtn.className = 'fullscreen-btn';
+          fullscreenBtn.textContent = '⛶';
+          fullscreenBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const fullImageUrl = convertDriveLinkToDirectView(art.image_url) || art.image_url;
+            openFullscreen(fullImageUrl, img.alt, art.title || 'Untitled Art');
+          });
+
+          imageContainer.appendChild(img);
+          imageContainer.appendChild(fullscreenBtn);
+          card.appendChild(imageContainer);
+        }
       }
 
       // Add artwork like section
@@ -4133,6 +4167,7 @@ crossorigin="anonymous"></script>
   }
 </script>
 
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 </body>
 </html>
-
