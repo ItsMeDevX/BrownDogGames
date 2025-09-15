@@ -2350,6 +2350,15 @@ crossorigin="anonymous"></script>
       opacity: 0.8;
     }
 
+    .likers-avatars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+      justify-content: center;
+      width: 100%;
+    }
+
     #chat-container {
       max-width: 800px;
       width: 100%;
@@ -3135,6 +3144,31 @@ crossorigin="anonymous"></script>
     }
   }
 
+  // Get daily like count for a user (across all likes)
+  async function getDailyLikeCount(userId) {
+    if (!userId) return 0;
+
+    const today = new Date().toISOString().split('T')[0] + 'T00:00:00.000Z';
+
+    try {
+      const { count, error } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gte('first_viewed_at', today);
+
+      if (error) {
+        console.error('Error getting daily like count:', error);
+        return 0;
+      }
+
+      return count || 0;
+    } catch (error) {
+      console.error('Error in getDailyLikeCount:', error);
+      return 0;
+    }
+  }
+
   // Toggle like for an extra
   async function toggleExtraLike(extraId) {
     if (!currentUser) {
@@ -3165,6 +3199,13 @@ crossorigin="anonymous"></script>
         if (deleteError) throw deleteError;
         return false; // unliked
       } else {
+        // Check daily limit before liking
+        const dailyCount = await getDailyLikeCount(userId);
+        if (dailyCount >= 10) {
+          alert('You have reached your daily like limit of 10.');
+          return null;
+        }
+
         // Add like
         const { error: insertError } = await supabase
           .from('vip_page_views')
@@ -3462,6 +3503,13 @@ crossorigin="anonymous"></script>
       return false; // Already liked
     }
 
+    // Check daily limit
+    const dailyCount = await getDailyLikeCount(currentUser.id);
+    if (dailyCount >= 10) {
+      alert('You have reached your daily like limit of 10.');
+      return false;
+    }
+
     const now = new Date().toISOString();
 
     // Check if the user has already liked the page
@@ -3522,7 +3570,7 @@ crossorigin="anonymous"></script>
     const now = new Date().toISOString();
 
     if (isLiked) {
-      // Unlike - delete the record
+      // Unlike - delete the record (unliking doesn't count towards daily limit)
       const result = await supabase
         .from('vip_page_views')
         .delete()
@@ -3541,6 +3589,13 @@ crossorigin="anonymous"></script>
       totalLikes = await getTotalLikes();
       updateLikeStatus();
     } else {
+      // Check daily limit before liking
+      const dailyCount = await getDailyLikeCount(currentUser.id);
+      if (dailyCount >= 10) {
+        alert('You have reached your daily like limit of 10.');
+        return;
+      }
+
       // Like - insert new record
       const result = await supabase
         .from('vip_page_views')
@@ -3567,6 +3622,12 @@ crossorigin="anonymous"></script>
 
     // Update UI
     updateArtworkLikeButton(artworkId);
+
+    // Reload likers avatars
+    const likersDiv = document.querySelector(`[data-artwork-id="${artworkId}"] .likers-avatars`);
+    if (likersDiv) {
+      await loadLikersAvatars(artworkId, likersDiv);
+    }
   }
 
   // Update artwork like button appearance
@@ -3675,6 +3736,81 @@ crossorigin="anonymous"></script>
     if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
   
     return 'image';
+  }
+
+  // Get avatar by user_id (adapted from getAvatarForUsername)
+  async function getAvatarByUserId(userId) {
+    if (!supabase) return null;
+
+    try {
+      // Try game_submissions
+      const { data: gameData } = await supabase
+        .from('game_submissions')
+        .select('avatar_url')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (gameData && gameData.length > 0 && gameData[0].avatar_url) {
+        return gameData[0].avatar_url;
+      }
+
+      // Try game_videos
+      const { data: videoData } = await supabase
+        .from('game_videos')
+        .select('avatar_url')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (videoData && videoData.length > 0 && videoData[0].avatar_url) {
+        return videoData[0].avatar_url;
+      }
+
+      // Try user_art
+      const { data: artData } = await supabase
+        .from('user_art')
+        .select('avatar_url')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (artData && artData.length > 0 && artData[0].avatar_url) {
+        return artData[0].avatar_url;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error getting avatar by user_id:', error);
+      return null;
+    }
+  }
+
+  // Load likers avatars for an artwork
+  async function loadLikersAvatars(artworkId, likersDiv) {
+    const artworkUsername = username + '_artwork_' + artworkId;
+
+    try {
+      const { data, error } = await supabase
+        .from('vip_page_views')
+        .select('user_id')
+        .eq('username', artworkUsername);
+
+      if (error || !data || data.length === 0) {
+        likersDiv.innerHTML = '';
+        return;
+      }
+
+      const uniqueUserIds = [...new Set(data.map(d => d.user_id))];
+      const avatars = await Promise.all(uniqueUserIds.map(getAvatarByUserId));
+
+      likersDiv.innerHTML = avatars
+        .filter(avatar => avatar) // Filter out null avatars
+        .map(avatar => `
+          <img src="${avatar}" alt="Liker" style="width:30px; height:30px; border-radius:50%; border:1px solid #ff4f9f;">
+        `)
+        .join('');
+    } catch (error) {
+      console.error('Error loading likers avatars:', error);
+      likersDiv.innerHTML = '';
+    }
   }
 
   async function loadArt() {
@@ -3861,6 +3997,12 @@ crossorigin="anonymous"></script>
 
       artworkLikeSection.appendChild(artworkLikeBtn);
       artworkLikeSection.appendChild(artworkLikeCount);
+
+      // Add likers avatars div
+      const likersDiv = document.createElement('div');
+      likersDiv.className = 'likers-avatars';
+      artworkLikeSection.appendChild(likersDiv);
+
       card.appendChild(artworkLikeSection);
 
       // Add login prompt if user not logged in
@@ -3872,6 +4014,9 @@ crossorigin="anonymous"></script>
       }
 
       artContainer.appendChild(card);
+
+      // Load likers avatars
+      await loadLikersAvatars(art.id, likersDiv);
     });
 
     // Load VIP extras after artwork is loaded
