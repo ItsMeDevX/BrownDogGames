@@ -3335,6 +3335,21 @@ crossorigin="anonymous"></script>
         if (deleteError) throw deleteError;
         return false; // unliked
       } else {
+        // Check daily like limit
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count, error: countError } = await supabase
+          .from('vip_page_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .gte('first_viewed_at', twentyFourHoursAgo);
+
+        if (countError) throw countError;
+
+        if (count >= 10) {
+          alert('You have reached your daily like limit of 10.');
+          return null;
+        }
+
         // Add like
         const { error: insertError } = await supabase
           .from('vip_page_views')
@@ -3656,6 +3671,24 @@ crossorigin="anonymous"></script>
       return true;
     }
 
+    // Check daily like limit
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count, error: countError } = await supabase
+      .from('vip_page_views')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', currentUser.id)
+      .gte('first_viewed_at', twentyFourHoursAgo);
+
+    if (countError) {
+      console.error('Error checking like limit:', countError);
+      return false;
+    }
+
+    if (count >= 10) {
+      alert('You have reached your daily like limit of 10.');
+      return false;
+    }
+
     // If the user hasn't liked, insert a new row with the current timestamp
     const insertResult = await supabase
       .from('vip_page_views')
@@ -3702,6 +3735,24 @@ crossorigin="anonymous"></script>
       totalLikes = await getTotalLikes();
       updateLikeStatus();
     } else {
+      // Check daily like limit
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count, error: countError } = await supabase
+        .from('vip_page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id)
+        .gte('first_viewed_at', twentyFourHoursAgo);
+
+      if (countError) {
+        console.error('Error checking like limit:', countError);
+        return;
+      }
+
+      if (count >= 10) {
+        alert('You have reached your daily like limit of 10.');
+        return;
+      }
+
       // Like - insert new record
       const result = await supabase
         .from('vip_page_views')
@@ -4179,7 +4230,6 @@ function createActualVideoPlayer(videoUrl) {
   
   // Fallback to video player for direct video files
   if (!player) {
-    const extMatch = videoUrl.match(/\.(\w+)(?:\?.*)?$/);
     const ext = extMatch ? extMatch[1].toLowerCase() : '';
     const videoExts = ['mp4', 'webm', 'ogv', 'mov', 'avi'];
     const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
@@ -4718,16 +4768,3 @@ function createActualVideoPlayer(videoUrl) {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
