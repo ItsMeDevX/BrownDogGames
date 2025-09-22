@@ -3294,6 +3294,31 @@ crossorigin="anonymous"></script>
     }
   }
 
+  // Check if user can like (daily limit)
+  async function canUserLike() {
+    if (!currentUser) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStart = today.toISOString();
+    today.setDate(today.getDate() + 1);
+    const tomorrowStart = today.toISOString();
+
+    const { count, error } = await supabase
+      .from('vip_page_views')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', currentUser.id)
+      .gte('first_viewed_at', todayStart)
+      .lt('first_viewed_at', tomorrowStart);
+
+    if (error) {
+      console.error('Error checking like limit:', error);
+      return false;
+    }
+
+    return (count || 0) < 10;
+  }
+
   // Toggle like for an extra
   async function toggleExtraLike(extraId) {
     if (!currentUser) {
@@ -3324,6 +3349,12 @@ crossorigin="anonymous"></script>
         if (deleteError) throw deleteError;
         return false; // unliked
       } else {
+        // Check daily limit before adding like
+        const canLike = await canUserLike();
+        if (!canLike) {
+          alert('You have reached the daily like limit of 10 likes per day.');
+          return null;
+        }
         // Add like
         const { error: insertError } = await supabase
           .from('vip_page_views')
@@ -3645,6 +3676,13 @@ crossorigin="anonymous"></script>
       return true;
     }
 
+    // Check daily limit before adding like
+    const canLike = await canUserLike();
+    if (!canLike) {
+      alert('You have reached the daily like limit of 10 likes per day.');
+      return false;
+    }
+
     // If the user hasn't liked, insert a new row with the current timestamp
     const insertResult = await supabase
       .from('vip_page_views')
@@ -3691,6 +3729,12 @@ crossorigin="anonymous"></script>
       totalLikes = await getTotalLikes();
       updateLikeStatus();
     } else {
+      // Check daily limit before adding like
+      const canLike = await canUserLike();
+      if (!canLike) {
+        alert('You have reached the daily like limit of 10 likes per day.');
+        return;
+      }
       // Like - insert new record
       const result = await supabase
         .from('vip_page_views')
@@ -4630,18 +4674,3 @@ function createActualMusicPlayer(musicUrl) {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
