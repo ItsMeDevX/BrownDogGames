@@ -2968,7 +2968,7 @@ button:hover { background-color: #ff82ba; }/ Fullscreen Music View */
       
       const { data: userData, error } = await supabase
         .from('users')
-        .select('is_vip')
+        .select('is_vip, vip_expires_at')
         .eq('id', user.id)
         .single();
 
@@ -2978,7 +2978,7 @@ button:hover { background-color: #ff82ba; }/ Fullscreen Music View */
       }
 
       console.log('User data from database:', userData);
-      const isVip = userData?.is_vip === true;
+      const isVip = userData?.is_vip === true && (userData.vip_expires_at == null || new Date(userData.vip_expires_at) > new Date());
       console.log('Is VIP result:', isVip);
       
       return isVip;
@@ -3998,6 +3998,25 @@ function createActualMusicPlayer(musicUrl) {
     console.log(' Current user:', currentUser);
     
     if (currentUser) {
+      // Auto-create user row if not exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (!existingUser) {
+        await supabase
+          .from('users')
+          .insert({
+            id: currentUser.id,
+            is_vip: false, // Set to true for testing if needed, but change back
+            created_at: new Date().toISOString(),
+            vip_expires_at: '2026-01-01 00:00:00', // Future date for testing
+            github_username: currentUser.user_metadata?.full_name || 'Unknown'
+          });
+      }
+
       isVipUser = await checkVipStatus(currentUser);
       userHasLiked = await hasUserLiked(currentUser.id);
       
@@ -4407,6 +4426,4 @@ function createActualMusicPlayer(musicUrl) {
 
 </body>
 </html>
-
-
 
