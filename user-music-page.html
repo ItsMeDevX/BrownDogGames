@@ -2019,8 +2019,7 @@ crossorigin="anonymous"></script>
 </body>
 </html>
   
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>User Content - BrownDogGames</title>
@@ -2071,7 +2070,6 @@ crossorigin="anonymous"></script>
   margin-left: 15px;
   animation: glow 2s ease-in-out infinite alternate;
 }@keyframes
-
  glow {
   from { box-shadow: 0 0 5px #ffd700; }
   to { box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
@@ -2166,7 +2164,7 @@ crossorigin="anonymous"></script>
   cursor: pointer;
   margin-top: auto;
 }
-.play-link:hover { background-color: #ff82ba; }    
+.play-link:hover { background-color: #ff82ba; }/
 .fullscreen-music-placeholder {
   padding: 40px 20px;
   text-align: center;
@@ -2208,14 +2206,12 @@ crossorigin="anonymous"></script>
   display: block;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   animation: musicBounce 2s infinite;
-}
-@keyframes
+}@keyframes
  musicBounce {
   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
   40% { transform: translateY(-8px); }
   60% { transform: translateY(-4px); }
-}
-/ Platform-specific placeholder styling for music /
+}/ Platform-specific placeholder styling for music /
 .fullscreen-music-placeholder[data-platform="youtube"] {
   background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 79, 159, 0.1));
   border-color: #ff0000;
@@ -2258,22 +2254,18 @@ crossorigin="anonymous"></script>
   background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
   border-color: #1da1f2;
   box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
-}
-/ Update existing music-container to work with placeholders /
+}/ Update existing music-container to work with placeholders /
 .music-container {
   position: relative;
   width: 100%;
   margin-bottom: 15px;
-}
-/ Hide the old fullscreen button when using placeholders /
+}/ Hide the old fullscreen button when using placeholders /
 .music-container .fullscreen-music-btn {
   display: none;
-}
-/ Show fullscreen button only on actual music players (when in fullscreen mode) /
+}/ Show fullscreen button only on actual music players (when in fullscreen mode) /
 .music-container .music-player ~ .fullscreen-music-btn {
   display: block;
-}
-/ Main Like Section Styles /
+}/ Main Like Section Styles */
 .main-content {
   max-width: 600px;
   width: 100%;
@@ -2344,8 +2336,7 @@ crossorigin="anonymous"></script>
   background: linear-gradient(135deg, #ff82ba, #ff69b4);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-}
-/ Music Like System Styles /
+}/* Music Like System Styles */
 .music-like-section {
   width: 100%;
   display: flex;
@@ -2381,7 +2372,6 @@ crossorigin="anonymous"></script>
   background: linear-gradient(135deg, #ff69b4, #ff1493);
   animation: pulse 0.3s ease-in-out;
 }@keyframes
-
  pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
@@ -2443,8 +2433,7 @@ button {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-button:hover { background-color: #ff82ba; }
-/ Fullscreen Music View */
+button:hover { background-color: #ff82ba; }/* Fullscreen Music View */
 .fullscreen-music-view {
   position: fixed;
   top: 0;
@@ -2805,7 +2794,6 @@ button:hover { background-color: #ff82ba; }
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
 }@media
-
  (max-width: 768px) {
   .main-content {
     padding: 25px;
@@ -2837,7 +2825,9 @@ button:hover { background-color: #ff82ba; }
     <h3> VIP Community Extras</h3>
     <div class="page-owner-info">
       <p>Exclusive content shared for <span class="owner-name" id="extras-username"></span></p>
-    </div><div id="extrasContainer" class="extras-grid">
+    </div>
+    
+<div id="extrasContainer" class="extras-grid">
   <div class="loading">Loading VIP extras...</div>
 </div>
 
@@ -2905,7 +2895,8 @@ button:hover { background-color: #ff82ba; }
   <div class="badge-item" data-badge="" data-name="Gaming">
     <span class="badge-emoji"></span>
     <span class="badge-name">Gaming</span>
-  </div></div>  </div>
+  </div>
+</div>  </div>
 
   <section id="chat-container">
     <h2>Chat with <span id="chat-username">Loading...</span></h2>
@@ -2972,7 +2963,7 @@ button:hover { background-color: #ff82ba; }
       
       const { data: userData, error } = await supabase
         .from('users')
-        .select('is_vip, vip_expires_at')
+        .select('is_vip')
         .eq('id', user.id)
         .single();
 
@@ -2982,7 +2973,7 @@ button:hover { background-color: #ff82ba; }
       }
 
       console.log('User data from database:', userData);
-      const isVip = userData?.is_vip === true && (userData.vip_expires_at == null || new Date(userData.vip_expires_at) > new Date());
+      const isVip = userData?.is_vip === true;
       console.log('Is VIP result:', isVip);
       
       return isVip;
@@ -4002,25 +3993,6 @@ function createActualMusicPlayer(musicUrl) {
     console.log(' Current user:', currentUser);
     
     if (currentUser) {
-      // Auto-create user row if not exists
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (!existingUser) {
-        await supabase
-          .from('users')
-          .insert({
-            id: currentUser.id,
-            is_vip: false, // Set to true for testing if needed, but change back
-            created_at: new Date().toISOString(),
-            vip_expires_at: '2026-01-01 00:00:00', // Future date for testing
-            github_username: currentUser.user_metadata?.full_name || 'Unknown'
-          });
-      }
-
       isVipUser = await checkVipStatus(currentUser);
       userHasLiked = await hasUserLiked(currentUser.id);
       
@@ -4429,7 +4401,5 @@ function createActualMusicPlayer(musicUrl) {
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
-</html>
-
-
+</html> 
 
