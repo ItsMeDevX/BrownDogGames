@@ -2019,6 +2019,12 @@ crossorigin="anonymous"></script>
 </body>
 </html>
   
+The code I provided earlier should work as intended, based on the changes to switch from the videos table/page to music (using the 'user_music' table and adding Spotify/SoundCloud support). Since the page is stuck on "Loading music...", it's likely due to a JavaScript error preventing the script from completing, a network issue with Supabase, or no matching data for the username (though that should show "No music submitted..." instead of hanging).To debug:Open the page in your browser's developer tools (F12 or right-click > Inspect).
+Go to the Console tab and look for any errors (e.g., syntax issues, Supabase failures).
+I've added some console.log statements in the updated code below for tracing. Reload the page and check what logs appear.
+
+Here's the updated HTML with debug logs in the script. Save this as your file (e.g., user-music.html) and test with a ?user=yourusername in the URL that has data in 'user_music'.html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3140,7 +3146,7 @@ button:hover { background-color: #ff82ba; }
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient(
+  const supabase = create_client(
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
@@ -3938,11 +3944,10 @@ function detectAudioType(url) {
   if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
   
   // Check for audio file extensions
-  const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
-  const ext = extMatch ? extMatch[1].toLowerCase() : '';
+  const ext = (url.match(/\.(\w+)(?:\?.*)?$/) || [])[1] || '';
   const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
   
-  if (audioExts.includes(ext)) return 'audio';
+  if (audioExts.includes(ext.toLowerCase())) return 'audio';
   
   return 'unknown';
 }
@@ -4148,11 +4153,10 @@ function createActualAudioPlayer(audioUrl) {
   
   // Fallback to audio player for direct audio files
   if (!player) {
-    const extMatch = audioUrl.match(/\.(\w+)(?:\?.*)?$/);
-    const ext = extMatch ? extMatch[1].toLowerCase() : '';
+    const ext = (audioUrl.match(/\.(\w+)(?:\?.*)?$/) || [])[1] || '';
     const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
 
-    if (audioExts.includes(ext)) {
+    if (audioExts.includes(ext.toLowerCase())) {
       player = document.createElement('audio');
       player.controls = true;
       player.style.width = '100%';
@@ -4229,13 +4233,19 @@ function createActualAudioPlayer(audioUrl) {
   }
 
   async function loadMusic() {
+    console.log('Starting to load music for username:', username);
+    musicContainer.innerHTML = 'Fetching music data...'; // Temporary message for debug
+
+    console.log('Querying Supabase for user_music...');
     const result = await supabase
       .from('user_music')
       .select('*')
       .eq('github_username', username)
       .order('created_at', { ascending: false });
+    console.log('Supabase query result:', result);
 
     if (result.error) {
+      console.error('Supabase error:', result.error);
       musicContainer.innerHTML = '<div class="no-content"> Error loading music: ' + result.error.message + '</div>';
       return;
     }
@@ -4384,6 +4394,7 @@ function createActualAudioPlayer(audioUrl) {
 
     // Load VIP extras after music is loaded
     await loadVipExtras();
+    console.log('Music loading complete');
   }
 
   // Badge selection functionality
