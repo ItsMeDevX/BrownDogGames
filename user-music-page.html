@@ -2018,12 +2018,6 @@ crossorigin="anonymous"></script>
 
 </body>
 </html>
-  
-The code I provided earlier should work as intended, based on the changes to switch from the videos table/page to music (using the 'user_music' table and adding Spotify/SoundCloud support). Since the page is stuck on "Loading music...", it's likely due to a JavaScript error preventing the script from completing, a network issue with Supabase, or no matching data for the username (though that should show "No music submitted..." instead of hanging).To debug:Open the page in your browser's developer tools (F12 or right-click > Inspect).
-Go to the Console tab and look for any errors (e.g., syntax issues, Supabase failures).
-I've added some console.log statements in the updated code below for tracing. Reload the page and check what logs appear.
-
-Here's the updated HTML with debug logs in the script. Save this as your file (e.g., user-music.html) and test with a ?user=yourusername in the URL that has data in 'user_music'.html
 
 <!DOCTYPE html>
 <html lang="en">
@@ -2076,28 +2070,21 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   font-weight: bold;
   margin-left: 15px;
   animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
+}@keyframes
+ glow {
   from { box-shadow: 0 0 5px #ffd700; }
   to { box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
-}
-
-.content-section {
+}.content-section {
   max-width: 800px;
   width: 100%;
   margin-bottom: 40px;
-}
-
-.content-container {
+}.content-container {
   display: grid;
   gap: 20px;
   justify-items: center;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   width: 100%;
-}
-
-.card {
+}.card {
   background-color: #2f1a39;
   border: 2px solid #ff4f9f;
   border-radius: 12px;
@@ -2110,58 +2097,40 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   flex-direction: column;
   align-items: center;
   position: relative;
-}
-
-.card:hover {
+}.card:hover {
   border-color: #ff82ba;
   box-shadow: 0 0 10px #ff82ba;
-}
-
-.card.selected {
+}.card.selected {
   border-color: #ff82ba;
   box-shadow: 0 0 15px #ff4f9f;
-}
-
-.title {
+}.title {
   margin-top: 0;
   margin-bottom: 0.5rem;
   text-align: center;
   color: #ff69b4;
   font-size: 1.2rem;
-}
-
-.desc {
+}.desc {
   color: #ddd;
   margin: 0.5rem 0 1rem 0;
   min-height: 3rem;
   text-align: center;
   font-size: 0.9rem;
-}
-
-.audio-container {
+}.music-container {
   position: relative;
   width: 100%;
   margin-bottom: 15px;
-}
-
-.audio-player {
+}.music-player {
   width: 100%;
   background-color: #3b2750;
   border-radius: 12px;
   border: 2px solid #ff69b4;
   box-shadow: 0 0 10px #ff69b4aa;
   transition: transform 0.3s ease;
-}
-
-.card:hover .audio-player {
+}.card:hover .music-player {
   transform: scale(1.02);
-}
-
-.audio-player::-webkit-media-controls-panel {
+}.music-player::-webkit-media-controls-panel {
   background-color: #3b2750;
-}
-
-.fullscreen-audio-btn {
+}.fullscreen-music-btn {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -2178,19 +2147,13 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   font-family: 'Rubik Mono One', sans-serif;
   opacity: 0;
   transform: translateY(-10px);
-}
-
-.audio-container:hover .fullscreen-audio-btn {
+}.music-container:hover .fullscreen-music-btn {
   opacity: 1;
   transform: translateY(0);
-}
-
-.fullscreen-audio-btn:hover {
+}.fullscreen-music-btn:hover {
   background: rgba(255, 130, 186, 1);
   transform: scale(1.1);
-}
-
-.play-link {
+}.play-link {
   display: inline-block;
   background-color: #ff4f9f;
   color: #1b1b2e;
@@ -2202,8 +2165,8 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   cursor: pointer;
   margin-top: auto;
 }
-.play-link:hover { background-color: #ff82ba; }/* Add this CSS to your audio page styles *//* Audio fullscreen placeholder */
-.fullscreen-audio-placeholder {
+.play-link:hover { background-color: #ff82ba; }/* Add this CSS to your music page styles // Music fullscreen placeholder /
+.fullscreen-music-placeholder {
   padding: 40px 20px;
   text-align: center;
   color: #ff82ba;
@@ -2222,12 +2185,12 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}.fullscreen-audio-placeholder:hover {
+}.fullscreen-music-placeholder:hover {
   background: linear-gradient(45deg, rgba(255, 79, 159, 0.2), rgba(255, 130, 186, 0.2));
   border-color: #ff82ba;
   transform: scale(1.02);
   box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
-}.fullscreen-audio-placeholder::before {
+}.fullscreen-music-placeholder::before {
   content: '';
   position: absolute;
   top: 0;
@@ -2236,73 +2199,53 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   transition: left 0.6s ease;
-}.fullscreen-audio-placeholder:hover::before {
+}.fullscreen-music-placeholder:hover::before {
   left: 100%;
-}.fullscreen-audio-placeholder .play-icon {
+}.fullscreen-music-placeholder .play-icon {
   font-size: 2rem;
   margin-bottom: 12px;
   display: block;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  animation: audioBounce 2s infinite;
-}@keyframes audioBounce {
+  animation: musicBounce 2s infinite;
+}@keyframes
+ musicBounce {
   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
   40% { transform: translateY(-8px); }
   60% { transform: translateY(-4px); }
-}/* Platform-specific placeholder styling for audio */
-.fullscreen-audio-placeholder[data-platform="youtube"] {
-  background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 79, 159, 0.1));
-  border-color: #ff0000;
-}.fullscreen-audio-placeholder[data-platform="youtube"]:hover {
-  background: linear-gradient(45deg, rgba(255, 0, 0, 0.2), rgba(255, 79, 159, 0.2));
-  border-color: #ff0000;
-  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
-}.fullscreen-audio-placeholder[data-platform="youtube-playlist"] {
-  background: linear-gradient(45deg, rgba(255, 0, 0, 0.15), rgba(255, 165, 0, 0.1));
-  border-color: #ff6600;
-}.fullscreen-audio-placeholder[data-platform="youtube-playlist"]:hover {
-  background: linear-gradient(45deg, rgba(255, 0, 0, 0.25), rgba(255, 165, 0, 0.15));
-  border-color: #ff6600;
-  box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
-}.fullscreen-audio-placeholder[data-platform="spotify"] {
+}/ Platform-specific placeholder styling for music /
+.fullscreen-music-placeholder[data-platform="spotify"] {
   background: linear-gradient(45deg, rgba(30, 215, 96, 0.1), rgba(255, 79, 159, 0.1));
   border-color: #1ed760;
-}.fullscreen-audio-placeholder[data-platform="spotify"]:hover {
+}.fullscreen-music-placeholder[data-platform="spotify"]:hover {
   background: linear-gradient(45deg, rgba(30, 215, 96, 0.2), rgba(255, 79, 159, 0.2));
   border-color: #1ed760;
   box-shadow: 0 4px 15px rgba(30, 215, 96, 0.3);
-}.fullscreen-audio-placeholder[data-platform="soundcloud"] {
-  background: linear-gradient(45deg, rgba(255, 51, 0, 0.1), rgba(255, 79, 159, 0.1));
-  border-color: #ff3300;
-}.fullscreen-audio-placeholder[data-platform="soundcloud"]:hover {
-  background: linear-gradient(45deg, rgba(255, 51, 0, 0.2), rgba(255, 79, 159, 0.2));
-  border-color: #ff3300;
-  box-shadow: 0 4px 15px rgba(255, 51, 0, 0.3);
-}.fullscreen-audio-placeholder[data-platform="audio"] {
+}.fullscreen-music-placeholder[data-platform="soundcloud"] {
+  background: linear-gradient(45deg, rgba(255, 85, 0, 0.1), rgba(255, 79, 159, 0.1));
+  border-color: #ff5500;
+}.fullscreen-music-placeholder[data-platform="soundcloud"]:hover {
+  background: linear-gradient(45deg, rgba(255, 85, 0, 0.2), rgba(255, 79, 159, 0.2));
+  border-color: #ff5500;
+  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
+}.fullscreen-music-placeholder[data-platform="audio"] {
   background: linear-gradient(45deg, rgba(138, 43, 226, 0.1), rgba(255, 79, 159, 0.1));
   border-color: #8a2be2;
-}.fullscreen-audio-placeholder[data-platform="audio"]:hover {
+}.fullscreen-music-placeholder[data-platform="audio"]:hover {
   background: linear-gradient(45deg, rgba(138, 43, 226, 0.2), rgba(255, 79, 159, 0.2));
   border-color: #8a2be2;
   box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-}.fullscreen-audio-placeholder[data-platform="x"] {
-  background: linear-gradient(45deg, rgba(29, 161, 242, 0.1), rgba(255, 79, 159, 0.1));
-  border-color: #1da1f2;
-}.fullscreen-audio-placeholder[data-platform="x"]:hover {
-  background: linear-gradient(45deg, rgba(29, 161, 242, 0.2), rgba(255, 79, 159, 0.2));
-  border-color: #1da1f2;
-  box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
-}/* Update existing audio-container to work with placeholders */
-.audio-container {
+}/ Update existing music-container to work with placeholders /
+.music-container {
   position: relative;
   width: 100%;
   margin-bottom: 15px;
-}/* Hide the old fullscreen button when using placeholders */
-.audio-container .fullscreen-audio-btn {
+}/ Hide the old fullscreen button when using placeholders /
+.music-container .fullscreen-music-btn {
   display: none;
-}/* Show fullscreen button only on actual audio players (when in fullscreen mode) */
-.audio-container .audio-player ~ .fullscreen-audio-btn {
+}/ Show fullscreen button only on actual music players (when in fullscreen mode) /
+.music-container .music-player ~ .fullscreen-music-btn {
   display: block;
-}/* Main Like Section Styles */
+}/ Main Like Section Styles /
 .main-content {
   max-width: 600px;
   width: 100%;
@@ -2316,9 +2259,7 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   position: relative;
   overflow: hidden;
   margin-bottom: 40px;
-}
-
-.main-content::before {
+}.main-content::before {
   content: '';
   position: absolute;
   top: 0;
@@ -2327,13 +2268,9 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 79, 159, 0.1), transparent);
   transition: left 0.6s ease;
-}
-
-.main-content:hover::before {
+}.main-content:hover::before {
   left: 100%;
-}
-
-#like-status {
+}#like-status {
   margin: 20px 0 30px;
   font-size: 1.2rem;
   color: #e0e0e0;
@@ -2342,9 +2279,7 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   z-index: 2;
   opacity: 0.9;
   font-family: 'Rubik Mono One', sans-serif;
-}
-
-#main-like-btn {
+}#main-like-btn {
   display: inline-block;
   padding: 12px 20px;
   background: linear-gradient(135deg, #ff4f9f, #ff1493);
@@ -2362,9 +2297,7 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   z-index: 2;
   overflow: hidden;
   margin-top: auto;
-}
-
-#main-like-btn::before {
+}#main-like-btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -2373,25 +2306,17 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s ease;
-}
-
-#main-like-btn:hover::before {
+}#main-like-btn:hover::before {
   left: 100%;
-}
-
-#main-like-btn:disabled {
+}#main-like-btn:disabled {
   background: linear-gradient(135deg, #666, #444);
   cursor: not-allowed;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-#main-like-btn:hover:not(:disabled) {
+}#main-like-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #ff82ba, #ff69b4);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 79, 159, 0.4);
-}
-
-/* Music Like System Styles */
+}/ Music Like System Styles /
 .music-like-section {
   width: 100%;
   display: flex;
@@ -2400,9 +2325,7 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid rgba(255, 79, 159, 0.3);
-}
-
-.music-like-btn {
+}.music-like-btn {
   background: linear-gradient(135deg, #ff4f9f, #ff1493);
   color: #ffffff;
   border: none;
@@ -2417,49 +2340,36 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   align-items: center;
   gap: 4px;
   box-shadow: 0 2px 8px rgba(255, 79, 159, 0.3);
-}
-
-.music-like-btn:hover:not(:disabled) {
+}.music-like-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #ff82ba, #ff69b4);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 79, 159, 0.4);
-}
-
-.music-like-btn:disabled {
+}.music-like-btn:disabled {
   background: linear-gradient(135deg, #666, #444);
   cursor: not-allowed;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.music-like-btn.liked {
+}.music-like-btn.liked {
   background: linear-gradient(135deg, #ff69b4, #ff1493);
   animation: pulse 0.3s ease-in-out;
-}
-
-@keyframes pulse {
+}@keyframes
+ pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
-}
-
-.music-like-count {
+}.music-like-count {
   color: #ff82ba;
   font-size: 0.8rem;
   font-weight: bold;
   display: flex;
   align-items: center;
   gap: 4px;
-}
-
-.music-login-prompt {
+}.music-login-prompt {
   font-size: 0.7rem;
   color: #ddd;
   text-align: center;
   margin-top: 8px;
   opacity: 0.8;
-}
-
-#chat-container {
+}#chat-container {
   max-width: 800px;
   width: 100%;
   border: 2px solid #ff4f9f;
@@ -2480,9 +2390,7 @@ Here's the updated HTML with debug logs in the script. Save this as your file (e
   padding-right: 10px;
 }
 #messages div { margin-bottom: 12px; }
-#messages strong { color: #ff82ba; }
-
-#chat-form {
+#messages strong { color: #ff82ba; }#chat-form {
   display: flex;
   gap: 10px;
 }
@@ -2505,10 +2413,8 @@ button {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-button:hover { background-color: #ff82ba; }
-
-/* Fullscreen Audio View */
-.fullscreen-audio-view {
+button:hover { background-color: #ff82ba; }/ Fullscreen Music View */
+.fullscreen-music-view {
   position: fixed;
   top: 0;
   left: 0;
@@ -2522,13 +2428,9 @@ button:hover { background-color: #ff82ba; }
   align-items: center;
   justify-content: center;
   padding: 20px;
-}
-
-.fullscreen-audio-view.active {
+}.fullscreen-music-view.active {
   display: flex;
-}
-
-.fullscreen-audio-header {
+}.fullscreen-music-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -2541,16 +2443,12 @@ button:hover { background-color: #ff82ba; }
   align-items: center;
   z-index: 1001;
   border-bottom: 2px solid #ff4f9f;
-}
-
-.fullscreen-audio-title {
+}.fullscreen-music-title {
   color: #ff4f9f;
   font-family: 'Rubik Mono One', sans-serif;
   font-size: 1.2rem;
   margin: 0;
-}
-
-.close-fullscreen-audio {
+}.close-fullscreen-music {
   background: #ff4f9f;
   color: #1b1b2e;
   border: none;
@@ -2561,13 +2459,9 @@ button:hover { background-color: #ff82ba; }
   transition: background-color 0.2s ease;
   font-family: 'Rubik Mono One', sans-serif;
   font-weight: bold;
-}
-
-.close-fullscreen-audio:hover {
+}.close-fullscreen-music:hover {
   background-color: #ff82ba;
-}
-
-.fullscreen-audio-player {
+}.fullscreen-music-player {
   width: 90vw;
   max-width: 800px;
   height: 60vh;
@@ -2577,16 +2471,12 @@ button:hover { background-color: #ff82ba; }
   margin-top: 80px;
   background-color: #3b2750;
   border: 3px solid #ff69b4;
-}
-
-.fullscreen-audio-player iframe {
+}.fullscreen-music-player iframe {
   width: 100%;
   height: 100%;
   border: none;
   border-radius: 8px;
-}
-
-.no-content {
+}.no-content {
   font-size: 1.1rem;
   text-align: center;
   color: #ddd;
@@ -2595,9 +2485,7 @@ button:hover { background-color: #ff82ba; }
   background-color: #2f1a39;
   padding: 1rem;
   border-radius: 10px;
-}
-
-.vip-extras-section {
+}.vip-extras-section {
   background: linear-gradient(135deg, #2f1a39, #3d2147);
   border: 2px solid #ffd700;
   border-radius: 12px;
@@ -2605,15 +2493,11 @@ button:hover { background-color: #ff82ba; }
   margin: 2rem 0;
   max-width: 800px;
   width: 100%;
-}
-
-.vip-extras-section h3 {
+}.vip-extras-section h3 {
   color: #ffd700;
   margin-bottom: 1.5rem;
   text-shadow: 0 0 10px #ffd700;
-}
-
-.page-owner-info {
+}.page-owner-info {
   background: rgba(255, 215, 0, 0.1);
   border: 1px solid #ffd700;
   border-radius: 8px;
@@ -2621,42 +2505,30 @@ button:hover { background-color: #ff82ba; }
   margin-bottom: 2rem;
   text-align: center;
   color: #ff82ba;
-}
-
-.page-owner-info .owner-name {
+}.page-owner-info .owner-name {
   color: #ffd700;
   font-weight: bold;
   font-size: 1.1rem;
-}
-
-.extras-grid {
+}.extras-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
-}
-
-.vip-extras-container {
+}.vip-extras-container {
   background: linear-gradient(135deg, #2f1a39, #3d2147);
   border: 2px solid #ffd700;
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;
-}
-
-.vip-extras-container h2 {
+}.vip-extras-container h2 {
   color: #ffd700;
   text-shadow: 0 0 10px #ffd700;
   margin-bottom: 1rem;
-}
-
-.vip-extras-description {
+}.vip-extras-description {
   color: #ff82ba;
   margin-bottom: 2rem;
   font-size: 1.1rem;
-}
-
-.button-link {
+}.button-link {
   display: inline-block;
   background-color: #ff4f9f;
   color: #1b1b2e;
@@ -2669,13 +2541,9 @@ button:hover { background-color: #ff82ba; }
   transition: background-color 0.2s ease;
   font-family: inherit;
   border: none;
-}
-
-.button-link:hover {
+}.button-link:hover {
   background-color: #ff82ba;
-}
-
-.vip-badges-section {
+}.vip-badges-section {
   background: linear-gradient(135deg, #2f1a39, #3d2147);
   border: 2px solid #ffd700;
   border-radius: 12px;
@@ -2684,26 +2552,18 @@ button:hover { background-color: #ff82ba; }
   max-width: 800px;
   width: 100%;
   display: none;
-}
-
-.vip-badges-section.show {
+}.vip-badges-section.show {
   display: block;
-}
-
-.vip-badges-section h3 {
+}.vip-badges-section h3 {
   color: #ffd700;
   margin-bottom: 1.5rem;
   text-shadow: 0 0 10px #ffd700;
-}
-
-.badges-grid {
+}.badges-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
-}
-
-.badge-item {
+}.badge-item {
   background-color: #1b1b2e;
   border: 2px solid #ffd700;
   border-radius: 8px;
@@ -2711,30 +2571,20 @@ button:hover { background-color: #ff82ba; }
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-}
-
-.badge-item:hover {
+}.badge-item:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-}
-
-.badge-item.selected {
+}.badge-item.selected {
   background: linear-gradient(45deg, #ffd700, #ffed4e);
   color: #1b1b2e;
-}
-
-.badge-emoji {
+}.badge-emoji {
   font-size: 2rem;
   display: block;
   margin-bottom: 0.5rem;
-}
-
-.badge-name {
+}.badge-name {
   font-size: 0.8rem;
   font-weight: bold;
-}
-
-.extra-card {
+}.extra-card {
   background-color: #1b1b2e;
   border: 2px solid #ffd700;
   border-radius: 12px;
@@ -2744,77 +2594,57 @@ button:hover { background-color: #ff82ba; }
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-.extra-card:hover {
+}.extra-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
   border-color: #ffed4e;
-}
-
-.extra-header {
+}.extra-header {
   display: flex;
   justify-content: space-between;
   align-items: start;
   margin-bottom: 1rem;
-}
-
-.extra-type {
+}.extra-type {
   background-color: #ff4f9f;
   color: #1b1b2e;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.7rem;
   font-weight: bold;
-}
-
-.extra-title {
+}.extra-title {
   color: #ffd700;
   margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
   text-align: center;
-}
-
-.extra-description {
+}.extra-description {
   color: #ff82ba;
   margin: 0 0 1rem 0;
   font-size: 0.9rem;
   text-align: center;
   flex-grow: 1;
-}
-
-.extra-footer {
+}.extra-footer {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 79, 159, 0.3);
-}
-
-.extra-actions {
+}.extra-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
   width: 100%;
-}
-
-.extra-creator {
+}.extra-creator {
   font-size: 0.8rem;
   color: #888;
   flex: 1;
   text-align: center;
-}
-
-.like-section {
+}.like-section {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
-}
-
-.like-btn {
+}.like-btn {
   background: none;
   border: 2px solid #ff4f9f;
   color: #ff4f9f;
@@ -2828,35 +2658,25 @@ button:hover { background-color: #ff82ba; }
   align-items: center;
   gap: 0.3rem;
   white-space: nowrap;
-}
-
-.like-btn:hover:not(:disabled) {
+}.like-btn:hover:not(:disabled) {
   background: #ff4f9f;
   color: #1b1b2e;
   transform: scale(1.05);
-}
-
-.like-btn:disabled {
+}.like-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-}
-
-.like-btn.liked {
+}.like-btn.liked {
   background: #ff4f9f;
   color: #1b1b2e;
   border-color: #ff4f9f;
-}
-
-.like-count {
+}.like-count {
   color: #ffd700;
   font-weight: bold;
   font-size: 0.9rem;
   min-width: 20px;
   text-align: center;
-}
-
-.extra-link {
+}.extra-link {
   background: linear-gradient(45deg, #ffd700, #ffed4e);
   color: #1b1b2e;
   text-decoration: none;
@@ -2869,50 +2689,34 @@ button:hover { background-color: #ff82ba; }
   display: block;
   width: 100%;
   margin-top: 1rem;
-}
-
-.extra-link:hover {
+}.extra-link:hover {
   background: linear-gradient(45deg, #ffed4e, #ffd700);
   transform: translateY(-1px);
-}
-
-.add-extra-section {
+}.add-extra-section {
   background-color: #1b1b2e;
   border: 2px solid #ffd700;
   border-radius: 8px;
   padding: 1.5rem;
   margin-top: 2rem;
   display: none;
-}
-
-.add-extra-section.show {
+}.add-extra-section.show {
   display: block;
-}
-
-.add-extra-section h4 {
+}.add-extra-section h4 {
   color: #ffd700;
   margin: 0 0 1rem 0;
-}
-
-.form-grid {
+}.form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
-}
-
-.form-group {
+}.form-group {
   display: flex;
   flex-direction: column;
-}
-
-.form-group label {
+}.form-group label {
   color: #ff82ba;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
-}
-
-.form-group input,
+}.form-group input,
 .form-group select,
 .form-group textarea {
   padding: 10px;
@@ -2922,126 +2726,82 @@ button:hover { background-color: #ff82ba; }
   color: #fff;
   font-family: inherit;
   font-size: 0.9rem;
-}
-
-.form-group input:focus,
+}.form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: #ffd700;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-}
-
-.form-group textarea {
+}.form-group textarea {
   resize: vertical;
   height: 80px;
-}
-
-.message {
+}.message {
   margin-bottom: 12px;
   font-size: 0.9rem;
   padding: 8px;
   border-radius: 4px;
-}
-
-.message.vip {
+}.message.vip {
   background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 79, 159, 0.1));
   border-left: 3px solid #ffd700;
-}
-
-.message-header {
+}.message-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.3rem;
-}
-
-.username {
+}.username {
   font-weight: bold;
   color: #ff82ba;
-}
-
-.username.vip {
+}.username.vip {
   color: #ffd700;
   text-shadow: 0 0 5px #ffd700;
-}
-
-.user-badge {
+}.user-badge {
   font-size: 1rem;
-}
-
-.message-content {
+}.message-content {
   color: #fefefe;
-}
-
-.message-time {
+}.message-time {
   font-size: 0.7rem;
   color: #888;
   margin-left: auto;
-}
-
-#msg-input.vip {
+}#msg-input.vip {
   border-color: #ffd700;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-}
-
-.vip-button {
+}.vip-button {
   background: linear-gradient(45deg, #ffd700, #ffed4e);
   color: #1b1b2e;
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-}
-
-.vip-button:hover {
+}.vip-button:hover {
   background: linear-gradient(45deg, #ffed4e, #ffd700);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
-}
-
-@media (max-width: 768px) {
+}@media
+ (max-width: 768px) {
   .main-content {
     padding: 25px;
-  }
-  
-  #main-like-btn {
+  }  #main-like-btn {
     padding: 10px 16px;
     font-size: 0.8rem;
-  }
-
-  .music-like-section {
+  }  .music-like-section {
     flex-direction: column;
     gap: 8px;
     align-items: center;
-  }
-  
-  .music-like-btn {
+  }  .music-like-btn {
     font-size: 0.7rem;
     padding: 4px 8px;
-  }
-  
-  .music-like-count {
+  }  .music-like-count {
     font-size: 0.7rem;
-  }
-  
-  .badges-grid {
+  }  .badges-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-}  </style></head>
-<body>
-
-  <a href="user-music.html" class="back-link"> Back to All Users</a>
+}  </style></head><body>  <a href="user-music.html" class="back-link"> Back to All Users</a>
   <h1 id="pageTitle">User Content<span id="vipBadge" class="vip-badge" style="display: none;"> VIP</span></h1>  <section class="content-section" id="like-section">
     <div class="main-content">
       <p id="like-status">Loading...</p>
       <button id="main-like-btn">Like</button>
     </div>
-  </section>
-
-  <section class="content-section" id="music-section">
+  </section>  <section class="content-section" id="music-section">
     <h2> Music</h2>
     <div id="music" class="content-container">Loading music...</div>
-  </section>
-
-  <section class="vip-extras-section" id="vip-extras-section">
+  </section>  <section class="vip-extras-section" id="vip-extras-section">
     <h3> VIP Community Extras</h3>
     <div class="page-owner-info">
       <p>Exclusive content shared for <span class="owner-name" id="extras-username"></span></p>
@@ -3070,6 +2830,7 @@ button:hover { background-color: #ff82ba; }
           <option value="mod">Mod/Asset</option>
           <option value="guide">Guide/Tutorial</option>
           <option value="music">Bonus Music</option>
+          <option value="video">Video Pack</option>
         </select>
       </div>
     </div>
@@ -3088,13 +2849,9 @@ button:hover { background-color: #ff82ba; }
   </form>
 </div>
 
-<button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()"> Add VIP Extra</button>  </section>
-
-  <div id="vipBadgesSection" class="vip-badges-section">
+<button id="addExtraBtn" class="button-link vip-button" style="display: none;" onclick="toggleAddExtra()"> Add VIP Extra</button>  </section>  <div id="vipBadgesSection" class="vip-badges-section">
     <h3> VIP Badges</h3>
-    <p style="color: #ff82ba; margin-bottom: 1.5rem;">Choose your VIP badge that appears in chat:</p>
-    
-<div class="badges-grid">
+    <p style="color: #ff82ba; margin-bottom: 1.5rem;">Choose your VIP badge that appears in chat:</p><div class="badges-grid">
   <div class="badge-item" data-badge="" data-name="Crown">
     <span class="badge-emoji"></span>
     <span class="badge-name">Crown</span>
@@ -3134,19 +2891,19 @@ button:hover { background-color: #ff82ba; }
     </form>
   </section>
 
-  <!-- Fullscreen Audio View -->
-  <div id="fullscreen-audio-view" class="fullscreen-audio-view">
-    <div class="fullscreen-audio-header">
-      <h2 id="fullscreen-audio-title" class="fullscreen-audio-title">Audio Player</h2>
-      <button class="close-fullscreen-audio" onclick="closeAudioFullscreen()">✕ Close</button>
+  <!-- Fullscreen Music View -->
+  <div id="fullscreen-music-view" class="fullscreen-music-view">
+    <div class="fullscreen-music-header">
+      <h2 id="fullscreen-music-title" class="fullscreen-music-title">Music Player</h2>
+      <button class="close-fullscreen-music" onclick="closeMusicFullscreen()">✕ Close</button>
     </div>
-    <div id="fullscreen-audio-player" class="fullscreen-audio-player"></div>
+    <div id="fullscreen-music-player" class="fullscreen-music-player"></div>
   </div>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = create_client(
+  const supabase = createClient(
     'https://fwslmbzfukriibnkpzou.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3c2xtYnpmdWtyaWlibmtwem91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NTcxMDcsImV4cCI6MjA2NDQzMzEwN30.juWK3T16_-LGHPii7xLp92Tt5TAZKN3IcZVn6nR8cBA'
   );
@@ -3419,7 +3176,8 @@ button:hover { background-color: #ff82ba; }
           '<div class="extra-footer">' +
             '<div class="extra-actions">' +
               '<span class="extra-creator">' +
-                'Added by ' + (extra.creator_name || username) + '<br>' +
+                'Added by ' + (extra.creator_name || username) + '
+' +
                 '<small>' + dateStr + '</small>' +
               '</span>' +
               '<div class="like-section">' +
@@ -3433,7 +3191,8 @@ button:hover { background-color: #ff82ba; }
               (extra.type === 'download' ? ' Download' : 
                extra.type === 'link' ? ' Open Link' : 
                extra.type === 'code' ? ' Get Code' : 
-               extra.type === 'music' ? ' Listen' :
+               extra.type === 'music' ? ' Listen Music' :
+               extra.type === 'video' ? ' Watch Video' :
                ' Access') +
             '</a>' +
           '</div>' +
@@ -3741,32 +3500,32 @@ button:hover { background-color: #ff82ba; }
     }
   }
 
-  // Fullscreen audio functionality
-  let currentFullscreenAudio = null;
+  // Fullscreen music functionality
+  let currentFullscreenMusic = null;
 
-  window.openAudioFullscreen = function(audioUrl, title) {
-    const fullscreenView = document.getElementById('fullscreen-audio-view');
-    const fullscreenPlayer = document.getElementById('fullscreen-audio-player');
-    const fullscreenTitle = document.getElementById('fullscreen-audio-title');
+  window.openMusicFullscreen = function(musicUrl, title) {
+    const fullscreenView = document.getElementById('fullscreen-music-view');
+    const fullscreenPlayer = document.getElementById('fullscreen-music-player');
+    const fullscreenTitle = document.getElementById('fullscreen-music-title');
     
     // Clear previous content
     fullscreenPlayer.innerHTML = '';
     
-    // Create the audio player for fullscreen
-    const player = createActualAudioPlayer(audioUrl);
-    player.className = 'fullscreen-audio-player';
+    // Create the music player for fullscreen
+    const player = createActualMusicPlayer(musicUrl);
+    player.className = 'fullscreen-music-player';
     
     // For audio elements, add special styling
     if (player.tagName === 'AUDIO') {
       player.style.width = '100%';
-      player.style.height = 'auto';
+      player.style.height = '100%';
       player.style.background = 'transparent';
     }
     
     fullscreenPlayer.appendChild(player);
-    fullscreenTitle.textContent = title || 'Audio Player';
+    fullscreenTitle.textContent = title || 'Music Player';
     
-    currentFullscreenAudio = { url: audioUrl, element: player };
+    currentFullscreenMusic = { url: musicUrl, element: player };
     
     fullscreenView.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -3785,14 +3544,14 @@ button:hover { background-color: #ff82ba; }
     }
   }
 
-  window.closeAudioFullscreen = function() {
-    const fullscreenView = document.getElementById('fullscreen-audio-view');
-    const fullscreenPlayer = document.getElementById('fullscreen-audio-player');
+  window.closeMusicFullscreen = function() {
+    const fullscreenView = document.getElementById('fullscreen-music-view');
+    const fullscreenPlayer = document.getElementById('fullscreen-music-player');
     
     // Stop previous playing audio
-    if (currentFullscreenAudio && currentFullscreenAudio.element.tagName === 'AUDIO') {
-      currentFullscreenAudio.element.pause();
-      currentFullscreenAudio.element.currentTime = 0;
+    if (currentFullscreenMusic && currentFullscreenMusic.element.tagName === 'AUDIO') {
+      currentFullscreenMusic.element.pause();
+      currentFullscreenMusic.element.currentTime = 0;
     }
     
     fullscreenView.classList.remove('active');
@@ -3800,7 +3559,7 @@ button:hover { background-color: #ff82ba; }
     
     // Clear the player content
     fullscreenPlayer.innerHTML = '';
-    currentFullscreenAudio = null;
+    currentFullscreenMusic = null;
     
     // Remove fullscreen change listeners
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
@@ -3816,15 +3575,15 @@ button:hover { background-color: #ff82ba; }
                            document.mozFullScreenElement || 
                            document.msFullscreenElement);
     
-    if (!isFullscreen && currentFullscreenAudio) {
-      // We've exited fullscreen, so close our fullscreen audio view
-      closeAudioFullscreen();
+    if (!isFullscreen && currentFullscreenMusic) {
+      // We've exited fullscreen, so close our fullscreen music view
+      closeMusicFullscreen();
     }
   }
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && currentFullscreenAudio) {
-      closeAudioFullscreen();
+    if (e.key === 'Escape' && currentFullscreenMusic) {
+      closeMusicFullscreen();
     }
   });
 
@@ -3851,64 +3610,49 @@ button:hover { background-color: #ff82ba; }
     likeBtn.style.display = 'inline-block';
   }
 
-// Enhanced createAudioPlayer function with YouTube playlist, Spotify, SoundCloud support
-function createAudioPlayer(audioUrl, withFullscreenBtn = false, title = '') {
+// Enhanced createMusicPlayer function
+function createMusicPlayer(musicUrl, withFullscreenBtn = false, title = '') {
   if (withFullscreenBtn) {
-    // Create placeholder that loads audio only on fullscreen (like audio page)
-    return createAudioPlaceholder(audioUrl, title);
+    // Create placeholder that loads music only on fullscreen
+    return createMusicPlaceholder(musicUrl, title);
   } else {
     // For fullscreen mode, create the actual player
-    return createActualAudioPlayer(audioUrl);
+    return createActualMusicPlayer(musicUrl);
   }
 }
 
-// Create audio placeholder (similar to audio page's fullscreen-placeholder)
-function createAudioPlaceholder(audioUrl, title) {
+// Create music placeholder
+function createMusicPlaceholder(musicUrl, title) {
   const container = document.createElement('div');
-  container.className = 'audio-container';
+  container.className = 'music-container';
   
-  const audioType = detectAudioType(audioUrl);
+  const musicType = detectMusicType(musicUrl);
   
-  // Create placeholder that loads audio only on fullscreen
+  // Create placeholder that loads music only on fullscreen
   const placeholder = document.createElement('div');
-  placeholder.className = 'fullscreen-audio-placeholder';
-  placeholder.setAttribute('data-platform', audioType);
+  placeholder.className = 'fullscreen-music-placeholder';
+  placeholder.setAttribute('data-platform', musicType);
   
   // Platform-specific icons and text
   let platformIcon = '';
   let platformText = 'Click to play in fullscreen';
-  let platformName = audioType.toUpperCase();
+  let platformName = musicType.toUpperCase();
   
-  switch (audioType) {
-    case 'youtube':
-      platformIcon = '';
-      platformText = 'Play YouTube audio in fullscreen';
-      platformName = 'YOUTUBE';
-      break;
-    case 'youtube-playlist':
-      platformIcon = '';
-      platformText = 'Play YouTube playlist in fullscreen';
-      platformName = 'YOUTUBE PLAYLIST';
-      break;
+  switch (musicType) {
     case 'spotify':
       platformIcon = '';
-      platformText = 'Play Spotify audio in fullscreen';
+      platformText = 'Play Spotify in fullscreen';
       platformName = 'SPOTIFY';
       break;
     case 'soundcloud':
       platformIcon = '';
-      platformText = 'Play SoundCloud audio in fullscreen';
+      platformText = 'Play SoundCloud in fullscreen';
       platformName = 'SOUNDCLOUD';
       break;
     case 'audio':
       platformIcon = '';
       platformText = 'Play audio file in fullscreen';
       platformName = 'AUDIO';
-      break;
-    case 'x':
-      platformIcon = 'X';
-      platformText = 'View X post in fullscreen';
-      platformName = 'X';
       break;
   }
   
@@ -3918,64 +3662,58 @@ function createAudioPlaceholder(audioUrl, title) {
     <small style="opacity: 0.7; font-size: 0.8rem;">${platformName}</small>
   `;
   
-  // Add click handler to enter fullscreen and load audio
+  // Add click handler to enter fullscreen and load music
   placeholder.addEventListener('click', () => {
-    loadAudioInFullscreen(audioUrl, audioType, placeholder, title);
+    loadMusicInFullscreen(musicUrl, musicType, placeholder, title);
   });
   
   container.appendChild(placeholder);
   return container;
 }
 
-// Enhanced detect audio platform/type with Spotify, SoundCloud, YouTube playlist, and X support
-function detectAudioType(url) {
+// Detect music platform/type with Spotify and SoundCloud support
+function detectMusicType(url) {
   if (!url) return 'unknown';
   
   const urlLower = url.toLowerCase();
   
-  // Check for YouTube playlist first
-  if (urlLower.includes('youtube.com/playlist') || urlLower.includes('list=')) {
-    return 'youtube-playlist';
-  }
-  
-  if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
   if (urlLower.includes('spotify.com')) return 'spotify';
   if (urlLower.includes('soundcloud.com')) return 'soundcloud';
-  if (urlLower.includes('x.com') || urlLower.includes('twitter.com')) return 'x';
   
   // Check for audio file extensions
-  const ext = (url.match(/\.(\w+)(?:\?.*)?$/) || [])[1] || '';
+  const extMatch = url.match(/\.(\w+)(?:\?.*)?$/);
+  const ext = extMatch ? extMatch[1].toLowerCase() : '';
   const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
   
-  if (audioExts.includes(ext.toLowerCase())) return 'audio';
+  if (audioExts.includes(ext)) return 'audio';
   
   return 'unknown';
 }
 
-// Load audio in fullscreen mode
-function loadAudioInFullscreen(url, audioType, placeholderElement, title) {
+// Load music in fullscreen mode
+function loadMusicInFullscreen(url, musicType, placeholderElement, title) {
   // Show loading state
   const originalContent = placeholderElement.innerHTML;
   placeholderElement.innerHTML = `
     <span class="play-icon"></span>
-    <div>Loading ${audioType.toUpperCase()} audio...</div>
+    <div>Loading ${musicType.toUpperCase()} music...</div>
     <small style="opacity: 0.7; font-size: 0.8rem;">Entering fullscreen mode</small>
   `;
   
-  // Create the actual audio player
-  const audioElement = createActualAudioPlayer(url);
+  // Create the actual music player
+  const musicElement = createActualMusicPlayer(url);
   
   // Add load event handlers
-  audioElement.onload = function() {
-    console.log(`Successfully loaded ${audioType} audio:`, url);
+  musicElement.onload = function() {
+    console.log(`Successfully loaded ${musicType} music:`, url);
   };
   
-  audioElement.onerror = function() {
-    console.error(`Failed to load ${audioType} audio:`, url);
+  musicElement.onerror = function() {
+    console.error(`Failed to load ${musicType} music:`, url);
     // Restore placeholder on error
     placeholderElement.innerHTML = `
       <span class="play-icon"></span>
-      <div style="margin-bottom: 15px;">Failed to load audio</div>
+      <div style="margin-bottom: 15px;">Failed to load music</div>
       <button onclick="window.open('${url}', '_blank')" style="
         background: linear-gradient(45deg, #ff4f9f, #ff1493);
         color: white;
@@ -3989,7 +3727,7 @@ function loadAudioInFullscreen(url, audioType, placeholderElement, title) {
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(255, 79, 159, 0.3);
       " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-         Open Audio Direct
+         Open Music Direct
       </button>
       <div style="margin-top: 10px;">
         <small style="opacity: 0.7;">Click to try again</small>
@@ -4001,203 +3739,78 @@ function loadAudioInFullscreen(url, audioType, placeholderElement, title) {
     return;
   };
   
-  // Use the existing openAudioFullscreen function
+  // Use the existing openMusicFullscreen function
   setTimeout(() => {
-    openAudioFullscreen(url, title);
+    openMusicFullscreen(url, title);
     // Restore placeholder since fullscreen handles the player
     placeholderElement.innerHTML = originalContent;
   }, 1000);
 }
 
-// Enhanced createActualAudioPlayer with Spotify, SoundCloud, YouTube playlist, and X support
-function createActualAudioPlayer(audioUrl) {
+// Create actual music player with Spotify and SoundCloud support
+function createActualMusicPlayer(musicUrl) {
   let player;
   
-  // Check for YouTube playlist first
-  if (audioUrl.includes('youtube.com/playlist') || audioUrl.includes('list=')) {
-    // YouTube playlist embed
-    let playlistId = '';
+  const musicType = detectMusicType(musicUrl);
+  
+  if (musicType === 'spotify') {
+    let embedUrl = '';
+    const urlParts = musicUrl.split('/');
+    const type = urlParts[urlParts.length - 2];
+    const id = urlParts[urlParts.length - 1].split('?')[0];
     
-    // Extract playlist ID from different URL formats
-    if (audioUrl.includes('list=')) {
-      const urlParams = new URLSearchParams(audioUrl.split('?')[1] || '');
-      playlistId = urlParams.get('list');
-    }
-    
-    if (playlistId) {
+    if (type && id) {
+      embedUrl = `https://open.spotify.com/embed/${type}/${id}`;
       player = document.createElement('iframe');
-      player.src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&controls=1&modestbranding=1&rel=0`;
+      player.src = embedUrl;
       player.style.width = '100%';
-      player.style.height = '315px'; // Slightly taller for playlists
+      player.style.height = '352px'; // Standard Spotify height for tracks/albums/playlists
       player.style.border = 'none';
       player.style.borderRadius = '10px';
-      player.setAttribute('allowfullscreen', 'true');
-      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-      
-      player.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
-    }
-  } else if (audioUrl.includes('youtube.com') || audioUrl.includes('youtu.be')) {
-    // Regular YouTube audio embed (treated as video but for music)
-    let videoId = '';
-    if (audioUrl.includes('youtu.be/')) {
-      videoId = audioUrl.split('youtu.be/')[1].split('?')[0];
-    } else if (audioUrl.includes('youtube.com/watch?v=')) {
-      videoId = audioUrl.split('v=')[1].split('&')[0];
-    }
-    
-    if (videoId) {
-      player = document.createElement('iframe');
-      player.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0`;
-      player.style.width = '100%';
-      player.style.height = '140px';
-      player.style.border = 'none';
-      player.style.borderRadius = '10px';
-      player.setAttribute('allowfullscreen', 'true');
-      player.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-      
-      player.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
-    }
-  } else if (audioUrl.includes('spotify.com')) {
-    // Spotify embed
-    let spotifyId = '';
-    let spotifyType = '';
-    
-    const spotifyMatch = audioUrl.match(/spotify\.com\/(track|album|playlist|artist|episode|show)\/([^/?]+)/);
-    if (spotifyMatch) {
-      spotifyType = spotifyMatch[1];
-      spotifyId = spotifyMatch[2];
-    }
-    
-    if (spotifyId && spotifyType) {
-      player = document.createElement('iframe');
-      player.src = `https://open.spotify.com/embed/${spotifyType}/${spotifyId}?utm_source=generator&theme=0`;
-      player.style.width = '100%';
-      player.style.height = '140px';
-      player.style.border = 'none';
-      player.style.borderRadius = '10px';
-      player.setAttribute('allowfullscreen', 'true');
       player.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
-    } else {
-      // Fallback for non-standard Spotify URLs
-      player = document.createElement('a');
-      player.href = audioUrl;
-      player.textContent = 'Open Spotify Audio';
-      player.target = '_blank';
-      player.style.display = 'block';
-      player.style.width = '100%';
-      player.style.textAlign = 'center';
-      player.style.padding = '10px';
-      player.style.background = '#1ed760';
-      player.style.color = '#fff';
-      player.style.borderRadius = '10px';
-      player.style.textDecoration = 'none';
     }
-    
-    player.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-  } else if (audioUrl.includes('soundcloud.com')) {
-    // SoundCloud embed
+  } else if (musicType === 'soundcloud') {
     player = document.createElement('iframe');
-    player.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(audioUrl)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`;
+    player.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(musicUrl)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`;
     player.style.width = '100%';
-    player.style.height = '140px';
+    player.style.height = '166px';
     player.style.border = 'none';
     player.style.borderRadius = '10px';
     player.setAttribute('allowfullscreen', 'true');
-    player.setAttribute('allow', 'autoplay');
+  } else if (musicType === 'audio') {
+    player = document.createElement('audio');
+    player.controls = true;
+    player.style.width = '100%';
+    player.style.background = 'transparent';
     
-    player.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-  } else if (audioUrl.includes('x.com') || audioUrl.includes('twitter.com')) {
-    // X embed - improved iframe support from audio page
-    const xMatch = audioUrl.match(/(?:x\.com|twitter\.com)\/[^\/]+\/status\/(\d+)/);
-    if (xMatch) {
-      const tweetId = xMatch[1];
-      player = document.createElement('iframe');
-      player.src = `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&lang=en`;
-      player.style.width = '100%';
-      player.style.height = '200px';
-      player.style.border = 'none';
-      player.style.borderRadius = '10px';
-    } else {
-      // Fallback placeholder
-      player = document.createElement('iframe');
-      player.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(`
-        <html><body style="margin:0;padding:40px;background:#000;color:#fff;font-family:Arial;text-align:center;">
-          <h2> X Audio</h2>
-          <p>This audio is hosted on X (formerly Twitter).</p>
-          <p><a href="${audioUrl}" target="_blank" style="color:#ffffff;text-decoration:none;font-size:18px;background:#000;padding:10px 20px;border-radius:25px;border:2px solid #fff;">► Open on X</a></p>
-        </body></html>
-      `);
-      player.style.width = '100%';
-      player.style.height = '200px';
-      player.style.border = 'none';
-      player.style.borderRadius = '10px';
-    }
+    const source = document.createElement('source');
+    source.src = musicUrl;
+    const ext = musicUrl.match(/\.(\w+)(?:\?.*)?$/)[1].toLowerCase();
+    source.type = `audio/${ext === 'm4a' ? 'mp4' : ext}`;
     
-    player.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
+    player.appendChild(source);
+    player.appendChild(document.createTextNode('Your browser does not support the audio element.'));
+  } else {
+    // Fallback for unknown types
+    player = document.createElement('a');
+    player.href = musicUrl;
+    player.textContent = 'Open Music';
+    player.target = '_blank';
+    player.style.display = 'block';
+    player.style.width = '100%';
+    player.style.textAlign = 'center';
+    player.style.padding = '10px';
+    player.style.background = '#ff4f9f';
+    player.style.color = '#1b1b2e';
+    player.style.borderRadius = '10px';
+    player.style.textDecoration = 'none';
   }
   
-  // Fallback to audio player for direct audio files
-  if (!player) {
-    const ext = (audioUrl.match(/\.(\w+)(?:\?.*)?$/) || [])[1] || '';
-    const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'];
-
-    if (audioExts.includes(ext.toLowerCase())) {
-      player = document.createElement('audio');
-      player.controls = true;
-      player.style.width = '100%';
-      player.style.background = 'transparent';
-      
-      const sourceMP3 = document.createElement('source');
-      sourceMP3.src = audioUrl;
-      sourceMP3.type = 'audio/mpeg';
-      
-      const sourceWAV = document.createElement('source');
-      sourceWAV.src = audioUrl;
-      sourceWAV.type = 'audio/wav';
-      
-      const sourceOGG = document.createElement('source');
-      sourceOGG.src = audioUrl;
-      sourceOGG.type = 'audio/ogg';
-      
-      player.appendChild(sourceMP3);
-      player.appendChild(sourceWAV);
-      player.appendChild(sourceOGG);
-      player.appendChild(document.createTextNode('Your browser does not support the audio element.'));
-      
-      player.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
-    } else {
-      // Ultimate fallback for unknown types
-      player = document.createElement('a');
-      player.href = audioUrl;
-      player.textContent = 'Open Audio';
-      player.target = '_blank';
-      player.style.display = 'block';
-      player.style.width = '100%';
-      player.style.textAlign = 'center';
-      player.style.padding = '10px';
-      player.style.background = '#ff4f9f';
-      player.style.color = '#1b1b2e';
-      player.style.borderRadius = '10px';
-      player.style.textDecoration = 'none';
-    }
+  if (player) {
+    player.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
   }
   
   return player;
@@ -4233,19 +3846,13 @@ function createActualAudioPlayer(audioUrl) {
   }
 
   async function loadMusic() {
-    console.log('Starting to load music for username:', username);
-    musicContainer.innerHTML = 'Fetching music data...'; // Temporary message for debug
-
-    console.log('Querying Supabase for user_music...');
     const result = await supabase
       .from('user_music')
       .select('*')
       .eq('github_username', username)
       .order('created_at', { ascending: false });
-    console.log('Supabase query result:', result);
 
     if (result.error) {
-      console.error('Supabase error:', result.error);
       musicContainer.innerHTML = '<div class="no-content"> Error loading music: ' + result.error.message + '</div>';
       return;
     }
@@ -4341,16 +3948,16 @@ function createActualAudioPlayer(audioUrl) {
       title.textContent = music.title || 'Untitled Music';
       card.appendChild(title);
 
-      if (music.description) {
+      if (music.description || music.content) {
         const desc = document.createElement('p');
         desc.className = 'desc';
-        desc.textContent = music.description;
+        desc.textContent = music.description || music.content;
         card.appendChild(desc);
       }
 
       if (music.music_url) {
-        const audioPlayerContainer = createAudioPlayer(music.music_url, true, music.title);
-        card.appendChild(audioPlayerContainer);
+        const musicPlayerContainer = createMusicPlayer(music.music_url, true, music.title);
+        card.appendChild(musicPlayerContainer);
       }
 
       // Add music like section
@@ -4394,7 +4001,6 @@ function createActualAudioPlayer(audioUrl) {
 
     // Load VIP extras after music is loaded
     await loadVipExtras();
-    console.log('Music loading complete');
   }
 
   // Badge selection functionality
@@ -4665,8 +4271,6 @@ function createActualAudioPlayer(audioUrl) {
     }
   }
 </script>
-
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
