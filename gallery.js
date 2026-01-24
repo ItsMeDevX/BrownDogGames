@@ -1,4 +1,4 @@
-// Simple click-to-zoom modal for screenshots
+// Click-to-zoom modal for screenshots
 document.addEventListener("click", (e) => {
   const thumb = e.target.closest("[data-full]");
   if (!thumb) return;
@@ -16,7 +16,6 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("click", (e) => {
   const modal = e.target.closest("#imgModal");
   if (!modal) return;
-  // click outside image closes
   if (e.target.id === "imgModal") closeModal();
 });
 
