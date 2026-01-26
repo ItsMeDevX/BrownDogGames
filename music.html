@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Chopper Dodge — BrownDogGames</title>
+  <title>Music — BrownDogGames</title>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="icon" href="/MainIcon.png" type="image/png">
 </head>
@@ -21,73 +21,162 @@
       <a href="index.html">Home</a>
       <a href="games.html">Games</a>
       <a href="assets.html">Templates & Assets</a>
+      <a href="music.html" aria-current="page">Music</a>
       <a href="support.html">Support</a>
     </nav>
   </div>
 </header>
 
 <main class="container">
+  <h1 class="h1">Music</h1>
+  <p class="sub">Original tracks & loops I’ve made — press play and browse the playlist.</p>
 
-<h1 class="h1">Chopper Dodge</h1>
-<p class="sub">A fast-paced PC helicopter game where you fly, shoot, and dodge everything in your path.</p>
+  <div class="grid" style="grid-template-columns: 1.4fr .6fr;">
+    <!-- PLAYER -->
+    <section class="card">
+      <div class="card-pad">
+        <p class="card-title">Player</p>
+        <p class="card-muted" id="nowPlaying">Select a track to play.</p>
 
-<div class="grid" style="grid-template-columns: 1.4fr .6fr;">
-  <section class="card">
-    <div class="card-pad">
-      <p class="card-title">Overview</p>
-      <p class="card-muted">
-        Chopper Dodge is a high-action flying and shooting game for PC players who love speed and reflex-based gameplay.
-        Pilot your chopper through dangerous environments, blast enemies out of the sky, and dodge relentless obstacles
-        as the challenge ramps up.
-      </p>
-      <div class="hr"></div>
+        <!-- Responsive player frame -->
+        <div style="margin-top:14px; border-radius:14px; overflow:hidden; background: rgba(255,255,255,.04);">
+          <div style="position:relative; padding-top:56.25%;">
+            <iframe
+              id="drivePlayer"
+              src=""
+              style="position:absolute; inset:0; width:100%; height:100%; border:0;"
+              allow="autoplay; fullscreen"
+              allowfullscreen
+              title="Google Drive player">
+            </iframe>
+          </div>
+        </div>
 
-      <p class="card-title">Download</p>
-      <p class="card-muted">
-        Replace the link below with your real download page (Itch.io, Steam, Google Drive, Gumroad, etc.).
-      </p>
-      <div class="btn-row">
-        <a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=1eUAgSeNffJ01v-ymJ_hWQUyAssF7MSZc&export=download&authuser=0" target="_blank" rel="noopener">Download (Free)</a>
-        <a class="btn" href="support.html">Get Support</a>
+        <div class="hr"></div>
+
+        <div class="btn-row">
+          <a class="btn btn-primary" id="openInDrive" href="#" target="_blank" rel="noopener">Open in Drive</a>
+          <button class="btn" id="copyLink" type="button">Copy Share Link</button>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <aside class="card">
-    <div class="card-pad">
-      <p class="card-title">Details</p>
-      <p class='card-muted'><strong>Platform:</strong> PC</p>
-      <p class='card-muted'><strong>Status:</strong> Released</p>
-      <div class="hr"></div>
-      <p class="card-muted">Add version, trailer, and system requirements here anytime.</p>
-    </div>
-  </aside>
-</div>
+    <!-- PLAYLIST -->
+    <aside class="card">
+      <div class="card-pad">
+        <p class="card-title">Playlist</p>
+        <p class="card-muted">Click a track to load it in the player.</p>
 
-<div class="hr"></div>
+        <div class="hr"></div>
 
-<section class="card">
-  <div class="card-pad">
-    <p class="card-title">Screenshots</p>
-    <p class="card-muted">Click to view larger.</p>
-    <div class="gallery" style="margin-top:14px;">
-      <img class="thumb" src="ChopperDodgeScreenShot1.jpg" data-full="ChopperDodgeScreenShot1.jpg" alt="Chopper Dodge screenshot 1">
-      <img class="thumb" src="ChopperDodgeScreenShot2.jpg" data-full="ChopperDodgeScreenShot2.jpg" alt="Chopper Dodge screenshot 2">
-    </div>
+        <div id="trackList" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+        <div class="hr"></div>
+        <p class="card-muted" style="font-size:.95em;">
+          Tip: For best playback, set each Drive file to
+          <strong>“Anyone with the link can view.”</strong>
+        </p>
+      </div>
+    </aside>
   </div>
-</section>
 
-<div id="imgModal" class="modal" aria-hidden="true">
-  <img id="imgModalImg" alt="Full screenshot"/>
-  <div class="hint">Click outside the image or press ESC to close</div>
-</div>
-
-<footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+  <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
 </main>
 
 <script>
-document.getElementById("y").textContent = new Date().getFullYear();
+  document.getElementById("y").textContent = new Date().getFullYear();
+
+  // --- Your Drive files (rename titles however you want) ---
+  const tracks = [
+    {
+      title: "Track 01",
+      id: "1yT-kPKwWHy5o4Y9I1LFjR_NCNa_LQ2Yv",
+      share: "https://drive.google.com/file/d/1yT-kPKwWHy5o4Y9I1LFjR_NCNa_LQ2Yv/view?usp=drive_link"
+    },
+    {
+      title: "Track 02",
+      id: "17t5GIbf_3bZ4tQ11O4JWVknrvgY3pH8M",
+      share: "https://drive.google.com/file/d/17t5GIbf_3bZ4tQ11O4JWVknrvgY3pH8M/view?usp=drive_link"
+    },
+    {
+      title: "Track 03",
+      id: "1Es6I_Mo8EUIDCEcXGebIVrlfxdOcwEIq",
+      share: "https://drive.google.com/file/d/1Es6I_Mo8EUIDCEcXGebIVrlfxdOcwEIq/view?usp=drive_link"
+    },
+    {
+      title: "Track 04",
+      id: "1eK3WYhmaatS4KE4UFUcmN3tukxzh6OT3",
+      share: "https://drive.google.com/file/d/1eK3WYhmaatS4KE4UFUcmN3tukxzh6OT3/view?usp=drive_link"
+    }
+  ];
+
+  // Drive preview URL format:
+  // https://drive.google.com/file/d/<FILE_ID>/preview
+  function previewUrl(fileId) {
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+  }
+
+  const player = document.getElementById("drivePlayer");
+  const nowPlaying = document.getElementById("nowPlaying");
+  const openInDrive = document.getElementById("openInDrive");
+  const copyBtn = document.getElementById("copyLink");
+  const list = document.getElementById("trackList");
+
+  let current = null;
+
+  function setActive(index) {
+    current = tracks[index];
+
+    // Load the Drive preview player
+    player.src = previewUrl(current.id);
+
+    // Update UI
+    nowPlaying.textContent = `Now playing: ${current.title}`;
+    openInDrive.href = current.share;
+
+    // Highlight selected button (simple inline styling so it works with your existing CSS)
+    [...list.querySelectorAll("button")].forEach((b, i) => {
+      if (i === index) {
+        b.style.outline = "2px solid rgba(255,255,255,.25)";
+        b.style.transform = "translateY(-1px)";
+      } else {
+        b.style.outline = "none";
+        b.style.transform = "none";
+      }
+    });
+  }
+
+  // Build playlist buttons using your existing "btn" class
+  tracks.forEach((t, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = (i === 0) ? "btn btn-primary" : "btn";
+    btn.textContent = t.title;
+    btn.addEventListener("click", () => {
+      // Make the clicked one primary-looking and others normal
+      [...list.querySelectorAll("button")].forEach(b => b.className = "btn");
+      btn.className = "btn btn-primary";
+      setActive(i);
+    });
+    list.appendChild(btn);
+  });
+
+  // Copy share link
+  copyBtn.addEventListener("click", async () => {
+    if (!current) return;
+    try {
+      await navigator.clipboard.writeText(current.share);
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => (copyBtn.textContent = "Copy Share Link"), 1200);
+    } catch (e) {
+      // Fallback if clipboard is blocked
+      prompt("Copy this link:", current.share);
+    }
+  });
+
+  // Auto-load the first track
+  setActive(0);
 </script>
-<script src="gallery.js"></script>
+
 </body>
 </html>
