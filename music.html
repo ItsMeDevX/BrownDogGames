@@ -11,6 +11,58 @@
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   
 <body>
+  <style>
+    /* Mobile-first: stack player + playlist */
+    .music-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+    }
+
+    /* Desktop: two columns */
+    @media (min-width: 900px){
+      .music-grid{
+        grid-template-columns: 1.4fr .6fr;
+        align-items:start;
+      }
+    }
+
+    /* Buttons: wrap + thumb friendly */
+    .btn-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .btn-row .btn{
+      flex:1 1 120px;
+      min-height:44px;
+    }
+
+    /* Player sizing */
+    .player-frame{
+      margin-top:14px;
+      border-radius:14px;
+      overflow:hidden;
+      background: rgba(255,255,255,.04);
+    }
+    .player-frame .ratio{
+      position:relative;
+      padding-top:70%; /* taller on mobile */
+    }
+    @media (min-width: 900px){
+      .player-frame .ratio{
+        padding-top:56.25%; /* 16:9 on desktop */
+      }
+    }
+    .player-frame iframe{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      border:0;
+    }
+  </style>
+
   <header class="nav">
     <div class="nav-inner">
       <a class="brand" href="index.html">
@@ -30,20 +82,18 @@
     <h1 class="h1">Music</h1>
     <p class="sub">Original tracks & loops I’ve made — press play and browse the playlist.</p>
 
-    <div class="grid" style="grid-template-columns: 1.4fr .6fr;">
+    <div class="music-grid">
       <!-- PLAYER -->
       <section class="card">
         <div class="card-pad">
           <p class="card-title">Player</p>
           <p class="card-muted" id="nowPlaying">Select a track to play.</p>
 
-          <!-- Responsive player frame -->
-          <div style="margin-top:14px; border-radius:14px; overflow:hidden; background: rgba(255,255,255,.04);">
-            <div style="position:relative; padding-top:56.25%;">
+          <div class="player-frame">
+            <div class="ratio">
               <iframe
                 id="drivePlayer"
                 src=""
-                style="position:absolute; inset:0; width:100%; height:100%; border:0;"
                 allow="autoplay; fullscreen"
                 allowfullscreen
                 title="Google Drive player">
