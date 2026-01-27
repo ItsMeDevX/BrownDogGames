@@ -61,6 +61,19 @@
       height:100%;
       border:0;
     }
+
+    /* Playlist UX improvements */
+    #trackList .btn{
+      text-align:left;
+      justify-content:flex-start;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    #trackList .btn.is-active{
+      outline:2px solid rgba(255,255,255,.25);
+      transform:translateY(-1px);
+    }
   </style>
 
   <header class="nav">
@@ -87,7 +100,7 @@
       <section class="card">
         <div class="card-pad">
           <p class="card-title">Player</p>
-          <p class="card-muted" id="nowPlaying">Select a track to play.</p>
+          <p class="card-muted" id="nowPlaying">Loading a random track…</p>
 
           <div class="player-frame">
             <div class="ratio">
@@ -106,8 +119,21 @@
           <div class="btn-row">
             <button class="btn" id="prevTrack" type="button">Previous</button>
             <button class="btn btn-primary" id="nextTrack" type="button">Next</button>
-            <button class="btn" id="sharePage" type="button">Share</button>
+
+            <button class="btn" id="randomTrack" type="button">Random</button>
+            <button class="btn" id="toggleShuffle" type="button">Shuffle: Off</button>
+            <button class="btn" id="toggleRepeat" type="button">Repeat: Off</button>
+
+            <button class="btn" id="openTrack" type="button">Open</button>
+            <button class="btn" id="copyTrackLink" type="button">Copy Track Link</button>
+
+            <button class="btn" id="sharePage" type="button">Share Page</button>
           </div>
+
+          <div class="hr"></div>
+          <p class="card-muted" style="font-size:.95em; margin:0;">
+            Shortcuts: <strong>←</strong>/<strong>→</strong> prev/next, <strong>R</strong> random, <strong>S</strong> shuffle, <strong>L</strong> repeat.
+          </p>
         </div>
       </section>
 
@@ -197,9 +223,11 @@
       { title: "Track 45", id: "1hH5Tf-78DEpWC5SgCUM8i4mRWbRsrc3i" }
     ];
 
-
     function previewUrl(fileId) {
       return "https://drive.google.com/file/d/" + fileId + "/preview";
+    }
+    function viewUrl(fileId) {
+      return "https://drive.google.com/file/d/" + fileId + "/view";
     }
 
     const player = document.getElementById("drivePlayer");
@@ -210,31 +238,227 @@
     const nextBtn = document.getElementById("nextTrack");
     const shareBtn = document.getElementById("sharePage");
 
+    const randomBtn = document.getElementById("randomTrack");
+    const shuffleBtn = document.getElementById("toggleShuffle");
+    const repeatBtn = document.getElementById("toggleRepeat");
+    const openBtn = document.getElementById("openTrack");
+    const copyTrackBtn = document.getElementById("copyTrackLink");
+
+    // State
     let currentIndex = 0;
 
-    function setActive(index) {
-      if (index < 0) index = tracks.length - 1;
-      if (index >= tracks.length) index = 0;
+    // "Shuffle" affects what Next/Prev do.
+    // If shuffle is ON we walk a shuffled "queue" (order).
+    let shuffleOn = false;
+    let playOrder = [];     // array of indices like [3, 10, 0, ...]
+    let orderPos = 0;       // position inside playOrder
 
+    // Repeat modes:
+    // 0 = off, 1 = all, 2 = one
+    let repeatMode = 0;
+
+    // Persist settings (optional but nice)
+    const LS_KEY = "bdg_music_settings_v1";
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (typeof s.shuffleOn === "boolean") shuffleOn = s.shuffleOn;
+        if (typeof s.repeatMode === "number") repeatMode = s.repeatMode;
+      } catch (_) {}
+    }
+    function saveSettings() {
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify({ shuffleOn, repeatMode }));
+      } catch (_) {}
+    }
+
+    function clampIndex(i) {
+      if (i < 0) return tracks.length - 1;
+      if (i >= tracks.length) return 0;
+      return i;
+    }
+
+    function randInt(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    function buildShuffledOrder(startIndex) {
+      // Fisher-Yates shuffle of indices
+      const arr = Array.from({ length: tracks.length }, (_, i) => i);
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+      }
+
+      // Put startIndex at the front (so Next follows the rest randomly)
+      const at = arr.indexOf(startIndex);
+      if (at > 0) {
+        arr.splice(at, 1);
+        arr.unshift(startIndex);
+      }
+      playOrder = arr;
+      orderPos = 0;
+    }
+
+    function updateModeButtons() {
+      shuffleBtn.textContent = "Shuffle: " + (shuffleOn ? "On" : "Off");
+
+      const repeatText = repeatMode === 0 ? "Off" : repeatMode === 1 ? "All" : "One";
+      repeatBtn.textContent = "Repeat: " + repeatText;
+
+      // mild visual cue using existing classes
+      shuffleBtn.className = shuffleOn ? "btn btn-primary" : "btn";
+      repeatBtn.className  = repeatMode !== 0 ? "btn btn-primary" : "btn";
+    }
+
+    function setActive(index, opts = {}) {
+      // opts:
+      // - fromUserClick: if true, keep shuffle queue but jump to that track (if shuffle is on)
+      // - autoplay: true/false (Drive preview usually starts playback automatically if allowed)
+
+      index = clampIndex(index);
       currentIndex = index;
-      const current = tracks[currentIndex];
 
+      const current = tracks[currentIndex];
       player.src = previewUrl(current.id);
       nowPlaying.textContent = "Now playing: " + current.title;
 
-      // Highlight current playlist button
-      const buttons = list.querySelectorAll("button");
-      buttons.forEach((b, i) => {
+      // Update "Open" link target
+      openBtn.disabled = false;
+      openBtn.dataset.href = viewUrl(current.id);
+
+      // Highlight playlist button + scroll into view
+      const buttons = list.querySelectorAll("button[data-track-btn='1']");
+      buttons.forEach((b) => {
+        const i = Number(b.dataset.index);
         if (i === currentIndex) {
-          b.className = "btn btn-primary";
-          b.style.outline = "2px solid rgba(255,255,255,.25)";
-          b.style.transform = "translateY(-1px)";
+          b.classList.add("is-active");
+          b.className = "btn btn-primary is-active";
+          // scroll into view gently
+          b.scrollIntoView({ block: "nearest", behavior: "smooth" });
         } else {
+          b.classList.remove("is-active");
           b.className = "btn";
-          b.style.outline = "none";
-          b.style.transform = "none";
         }
       });
+
+      // If shuffle is ON and this wasn't just a "next/prev",
+      // re-seed the shuffle order so next picks up randomly after this track.
+      if (shuffleOn && opts.fromUserClick) {
+        buildShuffledOrder(currentIndex);
+      }
+    }
+
+    function playNext() {
+      if (repeatMode === 2) {
+        // Repeat One: reload same track (acts like replay)
+        setActive(currentIndex);
+        return;
+      }
+
+      if (shuffleOn) {
+        // advance within shuffled order
+        orderPos += 1;
+
+        if (orderPos >= playOrder.length) {
+          if (repeatMode === 1) {
+            // Repeat All: reshuffle
+            buildShuffledOrder(currentIndex);
+            orderPos = 1; // move past current
+          } else {
+            // Repeat Off: wrap back to first item in this shuffle order
+            orderPos = 0;
+          }
+        }
+
+        const nextIndex = playOrder[orderPos];
+        setActive(nextIndex);
+        return;
+      }
+
+      // normal order
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= tracks.length) {
+        if (repeatMode === 1) setActive(0);
+        else setActive(tracks.length - 1); // stop at end-ish behavior
+      } else {
+        setActive(nextIndex);
+      }
+    }
+
+    function playPrev() {
+      if (repeatMode === 2) {
+        setActive(currentIndex);
+        return;
+      }
+
+      if (shuffleOn) {
+        orderPos -= 1;
+        if (orderPos < 0) {
+          if (repeatMode === 1) {
+            // Repeat All: go to end of current shuffle order
+            orderPos = playOrder.length - 1;
+          } else {
+            orderPos = 0;
+          }
+        }
+        const prevIndex = playOrder[orderPos];
+        setActive(prevIndex);
+        return;
+      }
+
+      // normal order
+      const prevIndex = currentIndex - 1;
+      if (prevIndex < 0) {
+        if (repeatMode === 1) setActive(tracks.length - 1);
+        else setActive(0);
+      } else {
+        setActive(prevIndex);
+      }
+    }
+
+    function playRandom(notSame = true) {
+      if (tracks.length <= 1) {
+        setActive(0);
+        return;
+      }
+      let idx = randInt(tracks.length);
+      if (notSame) {
+        let guard = 0;
+        while (idx === currentIndex && guard < 20) {
+          idx = randInt(tracks.length);
+          guard++;
+        }
+      }
+      setActive(idx, { fromUserClick: true });
+    }
+
+    function cycleRepeatMode() {
+      repeatMode = (repeatMode + 1) % 3; // 0 -> 1 -> 2 -> 0
+      updateModeButtons();
+      saveSettings();
+    }
+
+    function toggleShuffle() {
+      shuffleOn = !shuffleOn;
+      if (shuffleOn) {
+        buildShuffledOrder(currentIndex);
+      }
+      updateModeButtons();
+      saveSettings();
+    }
+
+    async function copyTextWithFallback(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (e) {
+        window.prompt("Copy this:", text);
+        return false;
+      }
     }
 
     // Build playlist
@@ -243,36 +467,84 @@
       btn.type = "button";
       btn.className = "btn";
       btn.textContent = t.title;
+      btn.dataset.index = String(i);
+      btn.dataset.trackBtn = "1";
+      btn.title = t.title;
+
       btn.addEventListener("click", function () {
-        setActive(i);
+        setActive(i, { fromUserClick: true });
       });
+
       list.appendChild(btn);
     });
 
-    // Previous/Next
-    prevBtn.addEventListener("click", function () {
-      setActive(currentIndex - 1);
+    // Controls
+    prevBtn.addEventListener("click", playPrev);
+    nextBtn.addEventListener("click", playNext);
+
+    randomBtn.addEventListener("click", function () {
+      playRandom(true);
     });
 
-    nextBtn.addEventListener("click", function () {
-      setActive(currentIndex + 1);
+    shuffleBtn.addEventListener("click", toggleShuffle);
+    repeatBtn.addEventListener("click", cycleRepeatMode);
+
+    openBtn.addEventListener("click", function () {
+      const href = openBtn.dataset.href;
+      if (href) window.open(href, "_blank", "noopener,noreferrer");
+    });
+
+    copyTrackBtn.addEventListener("click", async function () {
+      const url = viewUrl(tracks[currentIndex].id);
+      const ok = await copyTextWithFallback(url);
+      copyTrackBtn.textContent = ok ? "Copied!" : "Copy Track Link";
+      setTimeout(() => (copyTrackBtn.textContent = "Copy Track Link"), 1200);
     });
 
     // Share page (copies website link)
     shareBtn.addEventListener("click", async function () {
-      try {
-        await navigator.clipboard.writeText(MUSIC_PAGE_URL);
-        shareBtn.textContent = "Link copied!";
-        setTimeout(function () {
-          shareBtn.textContent = "Share";
-        }, 1200);
-      } catch (e) {
-        window.prompt("Copy this link:", MUSIC_PAGE_URL);
-      }
+      const ok = await copyTextWithFallback(MUSIC_PAGE_URL);
+      shareBtn.textContent = ok ? "Link copied!" : "Share Page";
+      setTimeout(function () {
+        shareBtn.textContent = "Share Page";
+      }, 1200);
     });
 
-    // Auto-load first track
-    setActive(0);
+    // Keyboard shortcuts (ignore when typing in inputs)
+    document.addEventListener("keydown", (e) => {
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+      if (tag === "input" || tag === "textarea" || e.isComposing) return;
+
+      // Prevent page scroll on space
+      if (e.code === "Space") {
+        e.preventDefault();
+        playNext();
+        return;
+      }
+
+      if (e.key === "ArrowRight") { playNext(); return; }
+      if (e.key === "ArrowLeft") { playPrev(); return; }
+      if (e.key === "r" || e.key === "R") { playRandom(true); return; }
+      if (e.key === "s" || e.key === "S") { toggleShuffle(); return; }
+      if (e.key === "l" || e.key === "L") { cycleRepeatMode(); return; }
+    });
+
+    // Optional: try to auto-advance when a track ends.
+    // NOTE: Google Drive preview iframe doesn't reliably expose "ended" events due to cross-origin restrictions,
+    // so this is a best-effort feature and may not fire in all browsers.
+    // If you later switch to a real <audio> element, you can hook ended events properly.
+
+    // Init
+    loadSettings();
+    updateModeButtons();
+
+    // Start on a random track (as requested)
+    // If shuffle is ON, build shuffle order around that random start
+    const startIndex = randInt(tracks.length);
+    currentIndex = startIndex;
+
+    if (shuffleOn) buildShuffledOrder(startIndex);
+    setActive(startIndex, { fromUserClick: true });
   </script>
 </body>
 </html>
