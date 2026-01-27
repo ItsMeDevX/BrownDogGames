@@ -53,12 +53,12 @@
 
         <div class="hr"></div>
 
-        <div class="btn-row">
-          <a class="btn btn-primary" id="openInDrive" href="#" target="_blank" rel="noopener">Open in Drive</a>
-          <button class="btn" id="copyLink" type="button">Copy Share Link</button>
-        </div>
-      </div>
-    </section>
+<div class="btn-row">
+  <button class="btn" id="prevTrack" type="button">Previous</button>
+  <button class="btn btn-primary" id="nextTrack" type="button">Next</button>
+  <button class="btn" id="sharePage" type="button">Share</button>
+</div>
+
 
     <!-- PLAYLIST -->
     <aside class="card">
@@ -85,127 +85,129 @@
 <script>
   document.getElementById("y").textContent = new Date().getFullYear();
 
-  // --- Your Drive files (rename titles however you want) ---
-const tracks = [
-  { title: "Track 01", id: "1yT-kPKwWHy5o4Y9I1LFjR_NCNa_LQ2Yv", share: "https://drive.google.com/file/d/1yT-kPKwWHy5o4Y9I1LFjR_NCNa_LQ2Yv/view?usp=drive_link" },
-  { title: "Track 02", id: "17t5GIbf_3bZ4tQ11O4JWVknrvgY3pH8M", share: "https://drive.google.com/file/d/17t5GIbf_3bZ4tQ11O4JWVknrvgY3pH8M/view?usp=drive_link" },
-  { title: "Track 03", id: "1Es6I_Mo8EUIDCEcXGebIVrlfxdOcwEIq", share: "https://drive.google.com/file/d/1Es6I_Mo8EUIDCEcXGebIVrlfxdOcwEIq/view?usp=drive_link" },
-  { title: "Track 04", id: "1eK3WYhmaatS4KE4UFUcmN3tukxzh6OT3", share: "https://drive.google.com/file/d/1eK3WYhmaatS4KE4UFUcmN3tukxzh6OT3/view?usp=drive_link" },
+  // ✅ Share URL (your website page)
+  const MUSIC_PAGE_URL = "https://www.browndoggames.com/music.html";
 
-  { title: "Track 05", id: "1oEeYgznLp_cEl8zyK31yo9p5H7hiJfwd", share: "https://drive.google.com/file/d/1oEeYgznLp_cEl8zyK31yo9p5H7hiJfwd/view?usp=drive_link" },
-  { title: "Track 06", id: "1YiVKydAWzTKLRcQE84sQL_8iL2XzHsIo", share: "https://drive.google.com/file/d/1YiVKydAWzTKLRcQE84sQL_8iL2XzHsIo/view?usp=drive_link" },
-  { title: "Track 07", id: "10VzBEzaO78JqYNPjQxburIHj9vFkdwEO", share: "https://drive.google.com/file/d/10VzBEzaO78JqYNPjQxburIHj9vFkdwEO/view?usp=drive_link" },
-  { title: "Track 08", id: "1HbWFoojGLoxKDhZsBOK1pMydVT5OIJDU", share: "https://drive.google.com/file/d/1HbWFoojGLoxKDhZsBOK1pMydVT5OIJDU/view?usp=drive_link" },
-  { title: "Track 09", id: "1yBMpgkrqMP4R0sQrcU6KOS59c0gdKl58", share: "https://drive.google.com/file/d/1yBMpgkrqMP4R0sQrcU6KOS59c0gdKl58/view?usp=drive_link" },
-  { title: "Track 10", id: "1TpAOr9Pbx2GGvUbkETcnhb03whvPKzYp", share: "https://drive.google.com/file/d/1TpAOr9Pbx2GGvUbkETcnhb03whvPKzYp/view?usp=drive_link" },
+  // --- Your Drive files (rename titles whenever you want) ---
+  const tracks = [
+    { title: "Track 01", id: "1yT-kPKwWHy5o4Y9I1LFjR_NCNa_LQ2Yv" },
+    { title: "Track 02", id: "17t5GIbf_3bZ4tQ11O4JWVknrvgY3pH8M" },
+    { title: "Track 03", id: "1Es6I_Mo8EUIDCEcXGebIVrlfxdOcwEIq" },
+    { title: "Track 04", id: "1eK3WYhmaatS4KE4UFUcmN3tukxzh6OT3" },
 
-  { title: "Track 11", id: "1RUeGlRos0b5wZx1ry_HMoPrvRB9peNjA", share: "https://drive.google.com/file/d/1RUeGlRos0b5wZx1ry_HMoPrvRB9peNjA/view?usp=drive_link" },
-  { title: "Track 12", id: "1EAb2lAeHY94r9v0Vf5_ychPvKNa33OLe", share: "https://drive.google.com/file/d/1EAb2lAeHY94r9v0Vf5_ychPvKNa33OLe/view?usp=drive_link" },
-  { title: "Track 13", id: "1GdMJpjgrsCzrk8fAwa3rs9dLnuzulRbF", share: "https://drive.google.com/file/d/1GdMJpjgrsCzrk8fAwa3rs9dLnuzulRbF/view?usp=drive_link" },
-  { title: "Track 14", id: "1dFdtYEoGjkK3J4dcL0Xve1ATYanI5eMP", share: "https://drive.google.com/file/d/1dFdtYEoGjkK3J4dcL0Xve1ATYanI5eMP/view?usp=drive_link" },
-  { title: "Track 15", id: "1v2KlPBCPQBt8abOhnsFaVoAOv3FFxzFG", share: "https://drive.google.com/file/d/1v2KlPBCPQBt8abOhnsFaVoAOv3FFxzFG/view?usp=drive_link" },
+    { title: "Track 05", id: "1oEeYgznLp_cEl8zyK31yo9p5H7hiJfwd" },
+    { title: "Track 06", id: "1YiVKydAWzTKLRcQE84sQL_8iL2XzHsIo" },
+    { title: "Track 07", id: "10VzBEzaO78JqYNPjQxburIHj9vFkdwEO" },
+    { title: "Track 08", id: "1HbWFoojGLoxKDhZsBOK1pMydVT5OIJDU" },
+    { title: "Track 09", id: "1yBMpgkrqMP4R0sQrcU6KOS59c0gdKl58" },
+    { title: "Track 10", id: "1TpAOr9Pbx2GGvUbkETcnhb03whvPKzYp" },
 
-  { title: "Track 16", id: "1rjiFNKtBimfOR7JzAM53DmI6-C3HFjjk", share: "https://drive.google.com/file/d/1rjiFNKtBimfOR7JzAM53DmI6-C3HFjjk/view?usp=drive_link" },
-  { title: "Track 17", id: "1_MapxHLPQV5in7hwXxOA0ktCRnGp1ZGy", share: "https://drive.google.com/file/d/1_MapxHLPQV5in7hwXxOA0ktCRnGp1ZGy/view?usp=drive_link" },
-  { title: "Track 18", id: "1-b8c4r_MIySK-AwQz6N1e4LNCp2LcXJO", share: "https://drive.google.com/file/d/1-b8c4r_MIySK-AwQz6N1e4LNCp2LcXJO/view?usp=drive_link" },
-  { title: "Track 19", id: "1sXXWSCBo1btoANviXX4gxrKx_K8UFGSc", share: "https://drive.google.com/file/d/1sXXWSCBo1btoANviXX4gxrKx_K8UFGSc/view?usp=drive_link" },
-  { title: "Track 20", id: "1lv79S-tepJ4W86xoKs_yUfae6Ce57kp-", share: "https://drive.google.com/file/d/1lv79S-tepJ4W86xoKs_yUfae6Ce57kp-/view?usp=drive_link" },
+    { title: "Track 11", id: "1RUeGlRos0b5wZx1ry_HMoPrvRB9peNjA" },
+    { title: "Track 12", id: "1EAb2lAeHY94r9v0Vf5_ychPvKNa33OLe" },
+    { title: "Track 13", id: "1GdMJpjgrsCzrk8fAwa3rs9dLnuzulRbF" },
+    { title: "Track 14", id: "1dFdtYEoGjkK3J4dcL0Xve1ATYanI5eMP" },
+    { title: "Track 15", id: "1v2KlPBCPQBt8abOhnsFaVoAOv3FFxzFG" },
 
-  { title: "Track 21", id: "1NviNa9rRv5G6u8S-A4WosJi5U5AkhCto", share: "https://drive.google.com/file/d/1NviNa9rRv5G6u8S-A4WosJi5U5AkhCto/view?usp=drive_link" },
-  { title: "Track 22", id: "1pnMSIlrr-dr5TcFaIeyeNwQudDLNDKe2", share: "https://drive.google.com/file/d/1pnMSIlrr-dr5TcFaIeyeNwQudDLNDKe2/view?usp=drive_link" },
-  { title: "Track 23", id: "1WNPnwP7bhlFSpswdXECSJKSqaq7bmXrG", share: "https://drive.google.com/file/d/1WNPnwP7bhlFSpswdXECSJKSqaq7bmXrG/view?usp=drive_link" },
-  { title: "Track 24", id: "1lwR1wZ5YWcSxKI3uInAy4k4sqFCojnK5", share: "https://drive.google.com/file/d/1lwR1wZ5YWcSxKI3uInAy4k4sqFCojnK5/view?usp=drive_link" },
-  { title: "Track 25", id: "1klEiWijhJvVSPB-Qd46ifwWUWMwpprvu", share: "https://drive.google.com/file/d/1klEiWijhJvVSPB-Qd46ifwWUWMwpprvu/view?usp=drive_link" },
+    { title: "Track 16", id: "1rjiFNKtBimfOR7JzAM53DmI6-C3HFjjk" },
+    { title: "Track 17", id: "1_MapxHLPQV5in7hwXxOA0ktCRnGp1ZGy" },
+    { title: "Track 18", id: "1-b8c4r_MIySK-AwQz6N1e4LNCp2LcXJO" },
+    { title: "Track 19", id: "1sXXWSCBo1btoANviXX4gxrKx_K8UFGSc" },
+    { title: "Track 20", id: "1lv79S-tepJ4W86xoKs_yUfae6Ce57kp-" },
 
-  { title: "Track 26", id: "13SJyfenLLbMDPWXXmOYJ89bTMOUMEoGu", share: "https://drive.google.com/file/d/13SJyfenLLbMDPWXXmOYJ89bTMOUMEoGu/view?usp=drive_link" },
-  { title: "Track 27", id: "17RkvghgcST6GlzuCxBk5xckoXVI7K3g8", share: "https://drive.google.com/file/d/17RkvghgcST6GlzuCxBk5xckoXVI7K3g8/view?usp=drive_link" },
-  { title: "Track 28", id: "1Ay0hnJQouYcBjjW0fcC0fVG-GqKp6AtU", share: "https://drive.google.com/file/d/1Ay0hnJQouYcBjjW0fcC0fVG-GqKp6AtU/view?usp=drive_link" },
-  { title: "Track 29", id: "1bOr0czje3la0mcUvZa8gAgiijyrX6YEk", share: "https://drive.google.com/file/d/1bOr0czje3la0mcUvZa8gAgiijyrX6YEk/view?usp=drive_link" },
-  { title: "Track 30", id: "1vleqwaGgBr-TOq_aU1rK0Rcr5sKiWKyD", share: "https://drive.google.com/file/d/1vleqwaGgBr-TOq_aU1rK0Rcr5sKiWKyD/view?usp=drive_link" },
+    { title: "Track 21", id: "1NviNa9rRv5G6u8S-A4WosJi5U5AkhCto" },
+    { title: "Track 22", id: "1pnMSIlrr-dr5TcFaIeyeNwQudDLNDKe2" },
+    { title: "Track 23", id: "1WNPnwP7bhlFSpswdXECSJKSqaq7bmXrG" },
+    { title: "Track 24", id: "1lwR1wZ5YWcSxKI3uInAy4k4sqFCojnK5" },
+    { title: "Track 25", id: "1klEiWijhJvVSPB-Qd46ifwWUWMwpprvu" },
 
-  { title: "Track 31", id: "140ggCUYd8t4zFGlnHTyqnLm-MAPRojsk", share: "https://drive.google.com/file/d/140ggCUYd8t4zFGlnHTyqnLm-MAPRojsk/view?usp=drive_link" },
-  { title: "Track 32", id: "1Q-GGDbMRuukA_w7fYp0dt572DaSIFpwc", share: "https://drive.google.com/file/d/1Q-GGDbMRuukA_w7fYp0dt572DaSIFpwc/view?usp=drive_link" },
-  { title: "Track 33", id: "161wJn6MMeAgoBURcG9lICdKu_gnyESXl", share: "https://drive.google.com/file/d/161wJn6MMeAgoBURcG9lICdKu_gnyESXl/view?usp=drive_link" },
-  { title: "Track 34", id: "1qZ6sJcxTFqIBQsL72WDRpedFGpCodVZ0", share: "https://drive.google.com/file/d/1qZ6sJcxTFqIBQsL72WDRpedFGpCodVZ0/view?usp=drive_link" },
-  { title: "Track 35", id: "1g9Lnqa3N3z0208Iwm71NUQqzygDd32HG", share: "https://drive.google.com/file/d/1g9Lnqa3N3z0208Iwm71NUQqzygDd32HG/view?usp=drive_link" },
+    { title: "Track 26", id: "13SJyfenLLbMDPWXXmOYJ89bTMOUMEoGu" },
+    { title: "Track 27", id: "17RkvghgcST6GlzuCxBk5xckoXVI7K3g8" },
+    { title: "Track 28", id: "1Ay0hnJQouYcBjjW0fcC0fVG-GqKp6AtU" },
+    { title: "Track 29", id: "1bOr0czje3la0mcUvZa8gAgiijyrX6YEk" },
+    { title: "Track 30", id: "1vleqwaGgBr-TOq_aU1rK0Rcr5sKiWKyD" },
 
-  { title: "Track 36", id: "1onBL8BylaOSp_0YwW6gSwi_uOmAL0OKU", share: "https://drive.google.com/file/d/1onBL8BylaOSp_0YwW6gSwi_uOmAL0OKU/view?usp=drive_link" },
-  { title: "Track 37", id: "1xXn3M7le5TbfKFM8aMtieM9F1P9sdENp", share: "https://drive.google.com/file/d/1xXn3M7le5TbfKFM8aMtieM9F1P9sdENp/view?usp=drive_link" },
-  { title: "Track 38", id: "1tsZCfOljWUh0sPBALgyRmwVTuDi8Z58Y", share: "https://drive.google.com/file/d/1tsZCfOljWUh0sPBALgyRmwVTuDi8Z58Y/view?usp=drive_link" },
-  { title: "Track 39", id: "1VIkJVJ7E9s24r0UmI-PnhMOgLaO5iYKm", share: "https://drive.google.com/file/d/1VIkJVJ7E9s24r0UmI-PnhMOgLaO5iYKm/view?usp=drive_link" },
-  { title: "Track 40", id: "1tLftc_tAjLK4DpurFC3VByif0e7_kqfX", share: "https://drive.google.com/file/d/1tLftc_tAjLK4DpurFC3VByif0e7_kqfX/view?usp=drive_link" },
+    { title: "Track 31", id: "140ggCUYd8t4zFGlnHTyqnLm-MAPRojsk" },
+    { title: "Track 32", id: "1Q-GGDbMRuukA_w7fYp0dt572DaSIFpwc" },
+    { title: "Track 33", id: "161wJn6MMeAgoBURcG9lICdKu_gnyESXl" },
+    { title: "Track 34", id: "1qZ6sJcxTFqIBQsL72WDRpedFGpCodVZ0" },
+    { title: "Track 35", id: "1g9Lnqa3N3z0208Iwm71NUQqzygDd32HG" },
 
-  { title: "Track 41", id: "1tdx_ugWSNQSIqYFEQSBUvH1xXBmJEOmq", share: "https://drive.google.com/file/d/1tdx_ugWSNQSIqYFEQSBUvH1xXBmJEOmq/view?usp=drive_link" },
-  { title: "Track 42", id: "1mXiqUz9_84IUxJAeJWzZ4z82TShI-3RF", share: "https://drive.google.com/file/d/1mXiqUz9_84IUxJAeJWzZ4z82TShI-3RF/view?usp=drive_link" },
-  { title: "Track 43", id: "11M5SXovbbT8MG7mJtYTVcYpTRptTVaQi", share: "https://drive.google.com/file/d/11M5SXovbbT8MG7mJtYTVcYpTRptTVaQi/view?usp=drive_link" },
-  { title: "Track 44", id: "1ocLC_yCk1ANHumH7LGE3hGlyRdpKJofe", share: "https://drive.google.com/file/d/1ocLC_yCk1ANHumH7LGE3hGlyRdpKJofe/view?usp=drive_link" }
-];
+    { title: "Track 36", id: "1onBL8BylaOSp_0YwW6gSwi_uOmAL0OKU" },
+    { title: "Track 37", id: "1xXn3M7le5TbfKFM8aMtieM9F1P9sdENp" },
+    { title: "Track 38", id: "1tsZCfOljWUh0sPBALgyRmwVTuDi8Z58Y" },
+    { title: "Track 39", id: "1VIkJVJ7E9s24r0UmI-PnhMOgLaO5iYKm" },
+    { title: "Track 40", id: "1tLftc_tAjLK4DpurFC3VByif0e7_kqfX" },
 
-  // Drive preview URL format:
-  // https://drive.google.com/file/d/<FILE_ID>/preview
+    { title: "Track 41", id: "1tdx_ugWSNQSIqYFEQSBUvH1xXBmJEOmq" },
+    { title: "Track 42", id: "1mXiqUz9_84IUxJAeJWzZ4z82TShI-3RF" },
+    { title: "Track 43", id: "11M5SXovbbT8MG7mJtYTVcYpTRptTVaQi" },
+    { title: "Track 44", id: "1ocLC_yCk1ANHumH7LGE3hGlyRdpKJofe" }
+  ];
+
   function previewUrl(fileId) {
     return `https://drive.google.com/file/d/${fileId}/preview`;
   }
 
   const player = document.getElementById("drivePlayer");
   const nowPlaying = document.getElementById("nowPlaying");
-  const openInDrive = document.getElementById("openInDrive");
-  const copyBtn = document.getElementById("copyLink");
   const list = document.getElementById("trackList");
 
-  let current = null;
+  const prevBtn = document.getElementById("prevTrack");
+  const nextBtn = document.getElementById("nextTrack");
+  const shareBtn = document.getElementById("sharePage");
+
+  let currentIndex = 0;
 
   function setActive(index) {
-    current = tracks[index];
+    if (index < 0) index = tracks.length - 1;
+    if (index >= tracks.length) index = 0;
 
-    // Load the Drive preview player
+    currentIndex = index;
+    const current = tracks[currentIndex];
+
     player.src = previewUrl(current.id);
-
-    // Update UI
     nowPlaying.textContent = `Now playing: ${current.title}`;
-    openInDrive.href = current.share;
 
-    // Highlight selected button (simple inline styling so it works with your existing CSS)
+    // Highlight selected playlist button
     [...list.querySelectorAll("button")].forEach((b, i) => {
-      if (i === index) {
+      if (i === currentIndex) {
+        b.className = "btn btn-primary";
         b.style.outline = "2px solid rgba(255,255,255,.25)";
         b.style.transform = "translateY(-1px)";
       } else {
+        b.className = "btn";
         b.style.outline = "none";
         b.style.transform = "none";
       }
     });
   }
 
-  // Build playlist buttons using your existing "btn" class
+  // Build playlist
   tracks.forEach((t, i) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = (i === 0) ? "btn btn-primary" : "btn";
+    btn.className = "btn";
     btn.textContent = t.title;
-    btn.addEventListener("click", () => {
-      // Make the clicked one primary-looking and others normal
-      [...list.querySelectorAll("button")].forEach(b => b.className = "btn");
-      btn.className = "btn btn-primary";
-      setActive(i);
-    });
+    btn.addEventListener("click", () => setActive(i));
     list.appendChild(btn);
   });
 
-  // Copy share link
-  copyBtn.addEventListener("click", async () => {
-    if (!current) return;
+  // Previous / Next
+  prevBtn.addEventListener("click", () => setActive(currentIndex - 1));
+  nextBtn.addEventListener("click", () => setActive(currentIndex + 1));
+
+  // Share = copies your website music page
+  shareBtn.addEventListener("click", async () => {
     try {
-      await navigator.clipboard.writeText(current.share);
-      copyBtn.textContent = "Copied!";
-      setTimeout(() => (copyBtn.textContent = "Copy Share Link"), 1200);
+      await navigator.clipboard.writeText(MUSIC_PAGE_URL);
+      shareBtn.textContent = "Link copied!";
+      setTimeout(() => (shareBtn.textContent = "Share"), 1200);
     } catch (e) {
-      // Fallback if clipboard is blocked
-      prompt("Copy this link:", current.share);
+      prompt("Copy this link:", MUSIC_PAGE_URL);
     }
   });
 
-  // Auto-load the first track
+  // Load first track
   setActive(0);
 </script>
 
