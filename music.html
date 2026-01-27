@@ -11,205 +11,216 @@
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   
 <body>
-<header class="nav">
-  <div class="nav-inner">
-    <a class="brand" href="index.html">
-      <img src="MainIcon.png" alt="BrownDogGames logo" class="site-logo">
-      <span>BrownDogGames</span>
-    </a>
-    <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="games.html">Games</a>
-      <a href="assets.html">Templates & Assets</a>
-      <a href="support.html">Support</a>
-    </nav>
-  </div>
-</header>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="MainIcon.png" alt="BrownDogGames logo" class="site-logo">
+        <span>BrownDogGames</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="assets.html">Templates & Assets</a>
+        <a href="support.html">Support</a>
+      </nav>
+    </div>
+  </header>
 
-<main class="container">
-  <h1 class="h1">Music</h1>
-  <p class="sub">Original tracks & loops I’ve made — press play and browse the playlist.</p>
+  <main class="container">
+    <h1 class="h1">Music</h1>
+    <p class="sub">Original tracks & loops I’ve made — press play and browse the playlist.</p>
 
-  <div class="grid" style="grid-template-columns: 1.4fr .6fr;">
-    <!-- PLAYER -->
-    <section class="card">
-      <div class="card-pad">
-        <p class="card-title">Player</p>
-        <p class="card-muted" id="nowPlaying">Select a track to play.</p>
+    <div class="grid" style="grid-template-columns: 1.4fr .6fr;">
+      <!-- PLAYER -->
+      <section class="card">
+        <div class="card-pad">
+          <p class="card-title">Player</p>
+          <p class="card-muted" id="nowPlaying">Select a track to play.</p>
 
-        <!-- Responsive player frame -->
-        <div style="margin-top:14px; border-radius:14px; overflow:hidden; background: rgba(255,255,255,.04);">
-          <div style="position:relative; padding-top:56.25%;">
-            <iframe
-              id="drivePlayer"
-              src=""
-              style="position:absolute; inset:0; width:100%; height:100%; border:0;"
-              allow="autoplay; fullscreen"
-              allowfullscreen
-              title="Google Drive player">
-            </iframe>
+          <!-- Responsive player frame -->
+          <div style="margin-top:14px; border-radius:14px; overflow:hidden; background: rgba(255,255,255,.04);">
+            <div style="position:relative; padding-top:56.25%;">
+              <iframe
+                id="drivePlayer"
+                src=""
+                style="position:absolute; inset:0; width:100%; height:100%; border:0;"
+                allow="autoplay; fullscreen"
+                allowfullscreen
+                title="Google Drive player">
+              </iframe>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="btn-row">
+            <button class="btn" id="prevTrack" type="button">Previous</button>
+            <button class="btn btn-primary" id="nextTrack" type="button">Next</button>
+            <button class="btn" id="sharePage" type="button">Share</button>
           </div>
         </div>
+      </section>
 
-        <div class="hr"></div>
+      <!-- PLAYLIST -->
+      <aside class="card">
+        <div class="card-pad">
+          <p class="card-title">Playlist</p>
+          <p class="card-muted">Click a track to load it in the player.</p>
 
-<div class="btn-row">
-  <button class="btn" id="prevTrack" type="button">Previous</button>
-  <button class="btn btn-primary" id="nextTrack" type="button">Next</button>
-  <button class="btn" id="sharePage" type="button">Share</button>
-</div>
+          <div class="hr"></div>
 
+          <div id="trackList" style="display:flex; flex-direction:column; gap:10px;"></div>
 
-    <!-- PLAYLIST -->
-    <aside class="card">
-      <div class="card-pad">
-        <p class="card-title">Playlist</p>
-        <p class="card-muted">Click a track to load it in the player.</p>
+          <div class="hr"></div>
+          <p class="card-muted" style="font-size:.95em;">
+            Tip: For best playback, set each Drive file to
+            <strong>“Anyone with the link can view.”</strong>
+          </p>
+        </div>
+      </aside>
+    </div>
 
-        <div class="hr"></div>
+    <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+  </main>
 
-        <div id="trackList" style="display:flex; flex-direction:column; gap:10px;"></div>
+  <script>
+    // Footer year
+    document.getElementById("y").textContent = new Date().getFullYear();
 
-        <div class="hr"></div>
-        <p class="card-muted" style="font-size:.95em;">
-          Tip: For best playback, set each Drive file to
-          <strong>“Anyone with the link can view.”</strong>
-        </p>
-      </div>
-    </aside>
-  </div>
+    // Share copies this page (edit if your filename differs)
+    const MUSIC_PAGE_URL = "https://www.browndoggames.com/music.html";
 
-  <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
-</main>
+    // Tracks (IDs only; share links not needed for playback)
+    const tracks = [
+      { title: "Track 01", id: "1yT-kPKwWHy5o4Y9I1LFjR_NCNa_LQ2Yv" },
+      { title: "Track 02", id: "17t5GIbf_3bZ4tQ11O4JWVknrvgY3pH8M" },
+      { title: "Track 03", id: "1Es6I_Mo8EUIDCEcXGebIVrlfxdOcwEIq" },
+      { title: "Track 04", id: "1eK3WYhmaatS4KE4UFUcmN3tukxzh6OT3" },
 
-<script>
-  document.getElementById("y").textContent = new Date().getFullYear();
+      { title: "Track 05", id: "1oEeYgznLp_cEl8zyK31yo9p5H7hiJfwd" },
+      { title: "Track 06", id: "1YiVKydAWzTKLRcQE84sQL_8iL2XzHsIo" },
+      { title: "Track 07", id: "10VzBEzaO78JqYNPjQxburIHj9vFkdwEO" },
+      { title: "Track 08", id: "1HbWFoojGLoxKDhZsBOK1pMydVT5OIJDU" },
+      { title: "Track 09", id: "1yBMpgkrqMP4R0sQrcU6KOS59c0gdKl58" },
+      { title: "Track 10", id: "1TpAOr9Pbx2GGvUbkETcnhb03whvPKzYp" },
 
-  // ✅ Share URL (your website page)
-  const MUSIC_PAGE_URL = "https://www.browndoggames.com/music.html";
+      { title: "Track 11", id: "1RUeGlRos0b5wZx1ry_HMoPrvRB9peNjA" },
+      { title: "Track 12", id: "1EAb2lAeHY94r9v0Vf5_ychPvKNa33OLe" },
+      { title: "Track 13", id: "1GdMJpjgrsCzrk8fAwa3rs9dLnuzulRbF" },
+      { title: "Track 14", id: "1dFdtYEoGjkK3J4dcL0Xve1ATYanI5eMP" },
+      { title: "Track 15", id: "1v2KlPBCPQBt8abOhnsFaVoAOv3FFxzFG" },
 
-  // --- Your Drive files (rename titles whenever you want) ---
-  const tracks = [
-    { title: "Track 01", id: "1yT-kPKwWHy5o4Y9I1LFjR_NCNa_LQ2Yv" },
-    { title: "Track 02", id: "17t5GIbf_3bZ4tQ11O4JWVknrvgY3pH8M" },
-    { title: "Track 03", id: "1Es6I_Mo8EUIDCEcXGebIVrlfxdOcwEIq" },
-    { title: "Track 04", id: "1eK3WYhmaatS4KE4UFUcmN3tukxzh6OT3" },
+      { title: "Track 16", id: "1rjiFNKtBimfOR7JzAM53DmI6-C3HFjjk" },
+      { title: "Track 17", id: "1_MapxHLPQV5in7hwXxOA0ktCRnGp1ZGy" },
+      { title: "Track 18", id: "1-b8c4r_MIySK-AwQz6N1e4LNCp2LcXJO" },
+      { title: "Track 19", id: "1sXXWSCBo1btoANviXX4gxrKx_K8UFGSc" },
+      { title: "Track 20", id: "1lv79S-tepJ4W86xoKs_yUfae6Ce57kp-" },
 
-    { title: "Track 05", id: "1oEeYgznLp_cEl8zyK31yo9p5H7hiJfwd" },
-    { title: "Track 06", id: "1YiVKydAWzTKLRcQE84sQL_8iL2XzHsIo" },
-    { title: "Track 07", id: "10VzBEzaO78JqYNPjQxburIHj9vFkdwEO" },
-    { title: "Track 08", id: "1HbWFoojGLoxKDhZsBOK1pMydVT5OIJDU" },
-    { title: "Track 09", id: "1yBMpgkrqMP4R0sQrcU6KOS59c0gdKl58" },
-    { title: "Track 10", id: "1TpAOr9Pbx2GGvUbkETcnhb03whvPKzYp" },
+      { title: "Track 21", id: "1NviNa9rRv5G6u8S-A4WosJi5U5AkhCto" },
+      { title: "Track 22", id: "1pnMSIlrr-dr5TcFaIeyeNwQudDLNDKe2" },
+      { title: "Track 23", id: "1WNPnwP7bhlFSpswdXECSJKSqaq7bmXrG" },
+      { title: "Track 24", id: "1lwR1wZ5YWcSxKI3uInAy4k4sqFCojnK5" },
+      { title: "Track 25", id: "1klEiWijhJvVSPB-Qd46ifwWUWMwpprvu" },
 
-    { title: "Track 11", id: "1RUeGlRos0b5wZx1ry_HMoPrvRB9peNjA" },
-    { title: "Track 12", id: "1EAb2lAeHY94r9v0Vf5_ychPvKNa33OLe" },
-    { title: "Track 13", id: "1GdMJpjgrsCzrk8fAwa3rs9dLnuzulRbF" },
-    { title: "Track 14", id: "1dFdtYEoGjkK3J4dcL0Xve1ATYanI5eMP" },
-    { title: "Track 15", id: "1v2KlPBCPQBt8abOhnsFaVoAOv3FFxzFG" },
+      { title: "Track 26", id: "13SJyfenLLbMDPWXXmOYJ89bTMOUMEoGu" },
+      { title: "Track 27", id: "17RkvghgcST6GlzuCxBk5xckoXVI7K3g8" },
+      { title: "Track 28", id: "1Ay0hnJQouYcBjjW0fcC0fVG-GqKp6AtU" },
+      { title: "Track 29", id: "1bOr0czje3la0mcUvZa8gAgiijyrX6YEk" },
+      { title: "Track 30", id: "1vleqwaGgBr-TOq_aU1rK0Rcr5sKiWKyD" },
 
-    { title: "Track 16", id: "1rjiFNKtBimfOR7JzAM53DmI6-C3HFjjk" },
-    { title: "Track 17", id: "1_MapxHLPQV5in7hwXxOA0ktCRnGp1ZGy" },
-    { title: "Track 18", id: "1-b8c4r_MIySK-AwQz6N1e4LNCp2LcXJO" },
-    { title: "Track 19", id: "1sXXWSCBo1btoANviXX4gxrKx_K8UFGSc" },
-    { title: "Track 20", id: "1lv79S-tepJ4W86xoKs_yUfae6Ce57kp-" },
+      { title: "Track 31", id: "140ggCUYd8t4zFGlnHTyqnLm-MAPRojsk" },
+      { title: "Track 32", id: "1Q-GGDbMRuukA_w7fYp0dt572DaSIFpwc" },
+      { title: "Track 33", id: "161wJn6MMeAgoBURcG9lICdKu_gnyESXl" },
+      { title: "Track 34", id: "1qZ6sJcxTFqIBQsL72WDRpedFGpCodVZ0" },
+      { title: "Track 35", id: "1g9Lnqa3N3z0208Iwm71NUQqzygDd32HG" },
 
-    { title: "Track 21", id: "1NviNa9rRv5G6u8S-A4WosJi5U5AkhCto" },
-    { title: "Track 22", id: "1pnMSIlrr-dr5TcFaIeyeNwQudDLNDKe2" },
-    { title: "Track 23", id: "1WNPnwP7bhlFSpswdXECSJKSqaq7bmXrG" },
-    { title: "Track 24", id: "1lwR1wZ5YWcSxKI3uInAy4k4sqFCojnK5" },
-    { title: "Track 25", id: "1klEiWijhJvVSPB-Qd46ifwWUWMwpprvu" },
+      { title: "Track 36", id: "1onBL8BylaOSp_0YwW6gSwi_uOmAL0OKU" },
+      { title: "Track 37", id: "1xXn3M7le5TbfKFM8aMtieM9F1P9sdENp" },
+      { title: "Track 38", id: "1tsZCfOljWUh0sPBALgyRmwVTuDi8Z58Y" },
+      { title: "Track 39", id: "1VIkJVJ7E9s24r0UmI-PnhMOgLaO5iYKm" },
+      { title: "Track 40", id: "1tLftc_tAjLK4DpurFC3VByif0e7_kqfX" },
 
-    { title: "Track 26", id: "13SJyfenLLbMDPWXXmOYJ89bTMOUMEoGu" },
-    { title: "Track 27", id: "17RkvghgcST6GlzuCxBk5xckoXVI7K3g8" },
-    { title: "Track 28", id: "1Ay0hnJQouYcBjjW0fcC0fVG-GqKp6AtU" },
-    { title: "Track 29", id: "1bOr0czje3la0mcUvZa8gAgiijyrX6YEk" },
-    { title: "Track 30", id: "1vleqwaGgBr-TOq_aU1rK0Rcr5sKiWKyD" },
+      { title: "Track 41", id: "1tdx_ugWSNQSIqYFEQSBUvH1xXBmJEOmq" },
+      { title: "Track 42", id: "1mXiqUz9_84IUxJAeJWzZ4z82TShI-3RF" },
+      { title: "Track 43", id: "11M5SXovbbT8MG7mJtYTVcYpTRptTVaQi" },
+      { title: "Track 44", id: "1ocLC_yCk1ANHumH7LGE3hGlyRdpKJofe" }
+    ];
 
-    { title: "Track 31", id: "140ggCUYd8t4zFGlnHTyqnLm-MAPRojsk" },
-    { title: "Track 32", id: "1Q-GGDbMRuukA_w7fYp0dt572DaSIFpwc" },
-    { title: "Track 33", id: "161wJn6MMeAgoBURcG9lICdKu_gnyESXl" },
-    { title: "Track 34", id: "1qZ6sJcxTFqIBQsL72WDRpedFGpCodVZ0" },
-    { title: "Track 35", id: "1g9Lnqa3N3z0208Iwm71NUQqzygDd32HG" },
+    function previewUrl(fileId) {
+      return "https://drive.google.com/file/d/" + fileId + "/preview";
+    }
 
-    { title: "Track 36", id: "1onBL8BylaOSp_0YwW6gSwi_uOmAL0OKU" },
-    { title: "Track 37", id: "1xXn3M7le5TbfKFM8aMtieM9F1P9sdENp" },
-    { title: "Track 38", id: "1tsZCfOljWUh0sPBALgyRmwVTuDi8Z58Y" },
-    { title: "Track 39", id: "1VIkJVJ7E9s24r0UmI-PnhMOgLaO5iYKm" },
-    { title: "Track 40", id: "1tLftc_tAjLK4DpurFC3VByif0e7_kqfX" },
+    const player = document.getElementById("drivePlayer");
+    const nowPlaying = document.getElementById("nowPlaying");
+    const list = document.getElementById("trackList");
 
-    { title: "Track 41", id: "1tdx_ugWSNQSIqYFEQSBUvH1xXBmJEOmq" },
-    { title: "Track 42", id: "1mXiqUz9_84IUxJAeJWzZ4z82TShI-3RF" },
-    { title: "Track 43", id: "11M5SXovbbT8MG7mJtYTVcYpTRptTVaQi" },
-    { title: "Track 44", id: "1ocLC_yCk1ANHumH7LGE3hGlyRdpKJofe" }
-  ];
+    const prevBtn = document.getElementById("prevTrack");
+    const nextBtn = document.getElementById("nextTrack");
+    const shareBtn = document.getElementById("sharePage");
 
-  function previewUrl(fileId) {
-    return `https://drive.google.com/file/d/${fileId}/preview`;
-  }
+    let currentIndex = 0;
 
-  const player = document.getElementById("drivePlayer");
-  const nowPlaying = document.getElementById("nowPlaying");
-  const list = document.getElementById("trackList");
+    function setActive(index) {
+      if (index < 0) index = tracks.length - 1;
+      if (index >= tracks.length) index = 0;
 
-  const prevBtn = document.getElementById("prevTrack");
-  const nextBtn = document.getElementById("nextTrack");
-  const shareBtn = document.getElementById("sharePage");
+      currentIndex = index;
+      const current = tracks[currentIndex];
 
-  let currentIndex = 0;
+      player.src = previewUrl(current.id);
+      nowPlaying.textContent = "Now playing: " + current.title;
 
-  function setActive(index) {
-    if (index < 0) index = tracks.length - 1;
-    if (index >= tracks.length) index = 0;
+      // Highlight current playlist button
+      const buttons = list.querySelectorAll("button");
+      buttons.forEach((b, i) => {
+        if (i === currentIndex) {
+          b.className = "btn btn-primary";
+          b.style.outline = "2px solid rgba(255,255,255,.25)";
+          b.style.transform = "translateY(-1px)";
+        } else {
+          b.className = "btn";
+          b.style.outline = "none";
+          b.style.transform = "none";
+        }
+      });
+    }
 
-    currentIndex = index;
-    const current = tracks[currentIndex];
+    // Build playlist
+    tracks.forEach((t, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn";
+      btn.textContent = t.title;
+      btn.addEventListener("click", function () {
+        setActive(i);
+      });
+      list.appendChild(btn);
+    });
 
-    player.src = previewUrl(current.id);
-    nowPlaying.textContent = `Now playing: ${current.title}`;
+    // Previous/Next
+    prevBtn.addEventListener("click", function () {
+      setActive(currentIndex - 1);
+    });
 
-    // Highlight selected playlist button
-    [...list.querySelectorAll("button")].forEach((b, i) => {
-      if (i === currentIndex) {
-        b.className = "btn btn-primary";
-        b.style.outline = "2px solid rgba(255,255,255,.25)";
-        b.style.transform = "translateY(-1px)";
-      } else {
-        b.className = "btn";
-        b.style.outline = "none";
-        b.style.transform = "none";
+    nextBtn.addEventListener("click", function () {
+      setActive(currentIndex + 1);
+    });
+
+    // Share page (copies website link)
+    shareBtn.addEventListener("click", async function () {
+      try {
+        await navigator.clipboard.writeText(MUSIC_PAGE_URL);
+        shareBtn.textContent = "Link copied!";
+        setTimeout(function () {
+          shareBtn.textContent = "Share";
+        }, 1200);
+      } catch (e) {
+        window.prompt("Copy this link:", MUSIC_PAGE_URL);
       }
     });
-  }
 
-  // Build playlist
-  tracks.forEach((t, i) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "btn";
-    btn.textContent = t.title;
-    btn.addEventListener("click", () => setActive(i));
-    list.appendChild(btn);
-  });
-
-  // Previous / Next
-  prevBtn.addEventListener("click", () => setActive(currentIndex - 1));
-  nextBtn.addEventListener("click", () => setActive(currentIndex + 1));
-
-  // Share = copies your website music page
-  shareBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(MUSIC_PAGE_URL);
-      shareBtn.textContent = "Link copied!";
-      setTimeout(() => (shareBtn.textContent = "Share"), 1200);
-    } catch (e) {
-      prompt("Copy this link:", MUSIC_PAGE_URL);
-    }
-  });
-
-  // Load first track
-  setActive(0);
-</script>
-
+    // Auto-load first track
+    setActive(0);
+  </script>
 </body>
 </html>
