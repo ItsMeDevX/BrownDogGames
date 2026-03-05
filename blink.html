@@ -242,13 +242,15 @@ onSnapshot
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 
+/* CORRECT PROJECT */
 const firebaseConfig = {
-apiKey: "AIzaSyA3TGV1VXOrytAhX0kqk8bVAPsEcANE-oQ",
-authDomain: "crack-fold-458513-h0.firebaseapp.com",
-projectId: "crack-fold-458513-h0",
-storageBucket: "crack-fold-458513-h0.firebasestorage.app",
-messagingSenderId: "1051697335973",
-appId: "1:1051697335973:web:9bfd819cbea223a1fbc74c"
+apiKey: "AIzaSyDne81zI7jacOhQK_FSb6kVe1vDDVIXJWY",
+authDomain: "browndoggames-c3200.firebaseapp.com",
+projectId: "browndoggames-c3200",
+storageBucket: "browndoggames-c3200.firebasestorage.app",
+messagingSenderId: "998286005711",
+appId: "1:998286005711:web:6f470cc91aa8c437ca2eba",
+measurementId: "G-PXGYSHRYHJ"
 };
 
 
@@ -264,24 +266,29 @@ const logoutBtn = document.getElementById("logoutBtn");
 const userName = document.getElementById("userName");
 
 
-loginBtn.onclick = () => signInWithPopup(auth, provider);
+loginBtn.onclick = async () => {
+try{
+await signInWithPopup(auth, provider);
+}catch(err){
+console.error(err);
+alert(err.message);
+}
+};
+
+
 logoutBtn.onclick = () => signOut(auth);
 
 
 onAuthStateChanged(auth,(user)=>{
 
 if(user){
-
 userName.textContent = user.displayName;
 loginBtn.style.display="none";
 logoutBtn.style.display="inline";
-
 }else{
-
 userName.textContent="";
 loginBtn.style.display="inline";
 logoutBtn.style.display="none";
-
 }
 
 });
@@ -304,28 +311,21 @@ return;
 }
 
 const text = commentInput.value.trim();
-
 if(text==="") return;
 
 await addDoc(collection(db,"comments"),{
-
 page:pageId,
 name:user.displayName,
 avatar:user.photoURL,
 text:text,
 time:Date.now()
-
 });
 
 commentInput.value="";
-
 };
 
 
-const q = query(
-collection(db,"comments"),
-orderBy("time")
-);
+const q = query(collection(db,"comments"),orderBy("time"));
 
 
 onSnapshot(q,(snapshot)=>{
@@ -335,7 +335,6 @@ commentsList.innerHTML="";
 snapshot.forEach(doc=>{
 
 const data = doc.data();
-
 if(data.page !== pageId) return;
 
 const div = document.createElement("div");
@@ -344,18 +343,13 @@ div.className = "comment";
 const time = new Date(data.time).toLocaleString();
 
 div.innerHTML = `
-
 <img src="${data.avatar}">
-
 <div class="comment-body">
-
 <div>
 <span class="comment-name">${data.name}</span>
 <span class="comment-time">${time}</span>
 </div>
-
 <div class="comment-text">${data.text}</div>
-
 </div>
 `;
 
