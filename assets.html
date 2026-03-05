@@ -47,7 +47,6 @@ Ready-made templates and packs for Unreal Engine. Each item has screenshots and 
 
 <div class="grid">
 
-
 <a class="card game-card" href="platformer-paradise.html">
 <img src="PPThumbNale.png" alt="Platformer Paradise Template thumbnail">
 <div class="card-pad">
@@ -58,7 +57,6 @@ Ready-made templates and packs for Unreal Engine. Each item has screenshots and 
 <span class="badge">Unreal Engine Template</span>
 <span class="badge good">Available</span>
 </div>
-
 </div>
 </a>
 
@@ -73,7 +71,6 @@ Ready-made templates and packs for Unreal Engine. Each item has screenshots and 
 <span class="badge">Unreal Engine Template</span>
 <span class="badge good">Available</span>
 </div>
-
 </div>
 </a>
 
@@ -88,7 +85,6 @@ Ready-made templates and packs for Unreal Engine. Each item has screenshots and 
 <span class="badge">Unreal Engine Template</span>
 <span class="badge good">Available</span>
 </div>
-
 </div>
 </a>
 
@@ -103,7 +99,6 @@ Ready-made templates and packs for Unreal Engine. Each item has screenshots and 
 <span class="badge">Unreal Engine Template</span>
 <span class="badge good">Available</span>
 </div>
-
 </div>
 </a>
 
@@ -118,10 +113,8 @@ Ready-made templates and packs for Unreal Engine. Each item has screenshots and 
 <span class="badge">Unreal Engine Template</span>
 <span class="badge good">Available</span>
 </div>
-
 </div>
 </a>
-
 
 </div>
 
@@ -140,17 +133,16 @@ document.getElementById("y").textContent = new Date().getFullYear();
 
 <script type="module">
 
-import { initializeApp }
+import { initializeApp } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
-import {
+import { 
 getAuth,
 GoogleAuthProvider,
 signInWithPopup,
 signOut,
 onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 
 const firebaseConfig = {
@@ -165,7 +157,6 @@ measurementId: "G-PXGYSHRYHJ"
 
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
@@ -175,7 +166,9 @@ const logoutBtn = document.getElementById("logoutBtn");
 const userName = document.getElementById("userName");
 
 
-loginBtn.onclick = async () => {
+loginBtn.onclick = async function(e){
+e.preventDefault();
+
 try{
 await signInWithPopup(auth, provider);
 }catch(err){
@@ -185,19 +178,22 @@ alert(err.message);
 };
 
 
-logoutBtn.onclick = () => signOut(auth);
+logoutBtn.onclick = function(e){
+e.preventDefault();
+signOut(auth);
+};
 
 
-onAuthStateChanged(auth,(user)=>{
+onAuthStateChanged(auth,function(user){
 
 if(user){
 userName.textContent = user.displayName;
-loginBtn.style.display="none";
-logoutBtn.style.display="inline";
+loginBtn.style.display = "none";
+logoutBtn.style.display = "inline";
 }else{
-userName.textContent="";
-loginBtn.style.display="inline";
-logoutBtn.style.display="none";
+userName.textContent = "";
+loginBtn.style.display = "inline";
+logoutBtn.style.display = "none";
 }
 
 });
