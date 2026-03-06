@@ -21,17 +21,32 @@
 </a>
 
 <nav class="nav-links">
+
 <a href="index.html">Home</a>
 <a href="games.html">Games</a>
 <a href="music.html">Music</a>
 <a href="assets.html">Templates & Assets</a>
 <a href="support.html">Support</a>
 
-<a href="#" id="loginBtn">Login</a>
-<a href="#" id="logoutBtn" style="display:none;">Logout</a>
-<span id="userName"></span>
-</nav>
+<button id="loginBtn" class="btn">Login with GitHub</button>
 
+<div id="userMenu" class="user-menu" style="display:none;">
+
+<img id="userAvatar" class="avatar">
+
+<div class="dropdown" id="dropdown">
+
+<a href="dashboard.html">Dashboard</a>
+<a href="messages.html">Messages</a>
+<a href="profile.html">Profile</a>
+<hr>
+<a href="#" id="logoutBtn">Logout</a>
+
+</div>
+
+</div>
+
+</nav>
 </div>
 </header>
 
@@ -44,6 +59,7 @@
 A high-energy VR dance game where rhythm meets reflexes!
 Groove to the music, dodge dynamic obstacles, and unleash your style.
 </p>
+
 
 <div class="grid" style="grid-template-columns:1.4fr .6fr;">
 
@@ -87,46 +103,9 @@ Get Support
 <p class="card-muted"><strong>Platform:</strong> PC VR</p>
 <p class="card-muted"><strong>Status:</strong> Released</p>
 
-<div class="hr"></div>
-
-<p class="card-muted">
-Add version, trailer, and system requirements anytime.
-</p>
-
 </div>
 </aside>
 
-</div>
-
-
-<div class="hr"></div>
-
-
-<section class="card">
-<div class="card-pad">
-
-<p class="card-title">Screenshots</p>
-<p class="card-muted">Click to enlarge</p>
-
-<div class="gallery" style="margin-top:14px;">
-
-<img class="thumb"
-src="AliveInside ScreenShot1.jpg"
-data-full="AliveInside ScreenShot1.jpg">
-
-<img class="thumb"
-src="AliveInside ScreenShot2.jpg"
-data-full="AliveInside ScreenShot2.jpg">
-
-</div>
-
-</div>
-</section>
-
-
-<div id="imgModal" class="modal">
-<img id="imgModalImg">
-<div class="hint">Click outside image or press ESC</div>
 </div>
 
 
@@ -142,10 +121,7 @@ data-full="AliveInside ScreenShot2.jpg">
 
 <div class="btn-row">
 
-<input
-id="commentInput"
-placeholder="Write a comment..."
-style="flex:1;padding:10px;">
+<input id="commentInput" placeholder="Write a comment..." style="flex:1;padding:10px;">
 
 <button class="btn btn-primary" id="postComment">
 Post
@@ -166,19 +142,53 @@ Post
 
 <style>
 
+.avatar{
+width:36px;
+height:36px;
+border-radius:50%;
+cursor:pointer;
+}
+
+.user-menu{
+position:relative;
+}
+
+.dropdown{
+display:none;
+position:absolute;
+right:0;
+top:45px;
+background:#1c1c1c;
+border-radius:8px;
+min-width:160px;
+padding:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.4);
+}
+
+.dropdown a{
+display:block;
+padding:8px;
+color:#fff;
+text-decoration:none;
+}
+
+.dropdown a:hover{
+background:#333;
+}
+
 .comments{
 display:flex;
 flex-direction:column;
-gap:14px;
+gap:12px;
 margin-bottom:15px;
 }
 
 .comment{
 display:flex;
-gap:12px;
+gap:10px;
+background:#1b1b1b;
 padding:12px;
 border-radius:10px;
-background:#1b1b1b;
 }
 
 .comment img{
@@ -209,152 +219,154 @@ margin-top:6px;
 
 
 <script>
-document.getElementById("y").textContent = new Date().getFullYear();
+document.getElementById("y").textContent = new Date().getFullYear()
 </script>
-
-<script src="gallery.js"></script>
 
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { createClient }
+from "https://esm.sh/@supabase/supabase-js@2"
 
-import {
-getAuth,
-GoogleAuthProvider,
-signInWithPopup,
-signOut,
-onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+const supabase = createClient(
+"https://towafchlhtrwpmyvrfys.supabase.co",
+"YOUR_ANON_KEY"
+)
 
-import {
-getFirestore,
-collection,
-addDoc,
-query,
-orderBy,
-onSnapshot
-}
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const loginBtn = document.getElementById("loginBtn")
+const logoutBtn = document.getElementById("logoutBtn")
+const userMenu = document.getElementById("userMenu")
+const avatar = document.getElementById("userAvatar")
+const dropdown = document.getElementById("dropdown")
 
+const commentsList = document.getElementById("commentsList")
+const commentInput = document.getElementById("commentInput")
+const postComment = document.getElementById("postComment")
 
-const firebaseConfig = {
-apiKey: "AIzaSyDne81zI7jacOhQK_FSb6kVe1vDDVIXJWY",
-authDomain: "browndoggames-c3200.firebaseapp.com",
-projectId: "browndoggames-c3200",
-storageBucket: "browndoggames-c3200.firebasestorage.app",
-messagingSenderId: "998286005711",
-appId: "1:998286005711:web:6f470cc91aa8c437ca2eba",
-measurementId: "G-PXGYSHRYHJ"
-};
+const pageId = window.location.pathname
+
+let currentUser = null
 
 
-const app = initializeApp(firebaseConfig);
+// LOGIN
+loginBtn.onclick = async ()=>{
 
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-const db = getFirestore(app);
+await supabase.auth.signInWithOAuth({
+provider:"github"
+})
 
-
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const userName = document.getElementById("userName");
-
-
-loginBtn.onclick = async () => {
-try{
-await signInWithPopup(auth, provider);
-}catch(err){
-console.error(err);
-alert(err.message);
-}
-};
-
-
-logoutBtn.onclick = () => signOut(auth);
-
-
-onAuthStateChanged(auth,(user)=>{
-
-if(user){
-userName.textContent = user.displayName;
-loginBtn.style.display="none";
-logoutBtn.style.display="inline";
-}else{
-userName.textContent="";
-loginBtn.style.display="inline";
-logoutBtn.style.display="none";
 }
 
-});
 
+// LOGOUT
+logoutBtn.onclick = async ()=>{
 
-const commentsList = document.getElementById("commentsList");
-const commentInput = document.getElementById("commentInput");
-const postComment = document.getElementById("postComment");
+await supabase.auth.signOut()
+location.reload()
 
-const pageId = window.location.pathname;
-
-
-postComment.onclick = async () => {
-
-const user = auth.currentUser;
-
-if(!user){
-alert("Please login first");
-return;
 }
 
-const text = commentInput.value.trim();
-if(text==="") return;
 
-await addDoc(collection(db,"comments"),{
+// CHECK SESSION
+const { data:{ session } } = await supabase.auth.getSession()
+
+if(session){
+
+currentUser = session.user
+
+loginBtn.style.display="none"
+userMenu.style.display="block"
+
+avatar.src = currentUser.user_metadata.avatar_url
+
+}
+
+
+// DROPDOWN
+avatar.onclick = ()=>{
+dropdown.style.display =
+dropdown.style.display==="block"
+? "none"
+: "block"
+}
+
+
+// POST COMMENT
+postComment.onclick = async ()=>{
+
+if(!currentUser){
+alert("Login first")
+return
+}
+
+const text = commentInput.value.trim()
+if(text==="") return
+
+await supabase
+.from("comments")
+.insert({
 page:pageId,
-name:user.displayName,
-avatar:user.photoURL,
-text:text,
-time:Date.now()
-});
+name:currentUser.user_metadata.user_name,
+avatar:currentUser.user_metadata.avatar_url,
+text:text
+})
 
-commentInput.value="";
-};
+commentInput.value=""
 
-
-const q = query(collection(db,"comments"),orderBy("time"));
+}
 
 
-onSnapshot(q,(snapshot)=>{
+// LOAD COMMENTS
+async function loadComments(){
 
-commentsList.innerHTML="";
+const { data } = await supabase
+.from("comments")
+.select("*")
+.eq("page",pageId)
+.order("created_at",{ascending:true})
 
-snapshot.forEach(doc=>{
+commentsList.innerHTML=""
 
-const data = doc.data();
-if(data.page !== pageId) return;
+data.forEach(c=>{
 
-const div = document.createElement("div");
-div.className = "comment";
+const div=document.createElement("div")
+div.className="comment"
 
-const time = new Date(data.time).toLocaleString();
+const time=new Date(c.created_at).toLocaleString()
 
-div.innerHTML = `
-<img src="${data.avatar}">
+div.innerHTML=`
+<img src="${c.avatar}">
 <div class="comment-body">
 <div>
-<span class="comment-name">${data.name}</span>
+<span class="comment-name">${c.name}</span>
 <span class="comment-time">${time}</span>
 </div>
-<div class="comment-text">${data.text}</div>
+<div class="comment-text">${c.text}</div>
 </div>
-`;
+`
 
-commentsList.appendChild(div);
+commentsList.appendChild(div)
 
-});
+})
 
-});
+}
+
+loadComments()
+
+
+// REALTIME COMMENTS
+supabase
+.channel("comments")
+.on("postgres_changes",
+{
+event:"INSERT",
+schema:"public",
+table:"comments"
+},
+payload=>{
+loadComments()
+})
+.subscribe()
 
 </script>
 
