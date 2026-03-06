@@ -1,4 +1,3 @@
-
 document.getElementById("uploadBtn").onclick=async()=>{
 
 const title=document.getElementById("title").value
