@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 flex items-center justify-center h-screen text-white">
+
+<div class="bg-slate-800 p-10 rounded text-center">
+<h1 class="text-3xl mb-4">Login</h1>
+<p class="mb-6">Sign in with GitHub</p>
+<button id="loginBtn" class="bg-orange-500 px-6 py-3 rounded">Login</button>
+</div>
+
+<script src="supabase.js"></script>
+
+<script>
+document.getElementById("loginBtn").onclick = async () => {
+await supabase.auth.signInWithOAuth({ provider: "github" })
+}
+</script>
+
+</body>
+</html>
