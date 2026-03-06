@@ -1,6 +1,6 @@
 
-const SUPABASE_URL="YOUR_SUPABASE_URL"
-const SUPABASE_KEY="YOUR_SUPABASE_KEY"
+const SUPABASE_URL="https://towafchlhtrwpmyvrfys.supabase.co"
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvd2FmY2hsaHRyd3BteXZyZnlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODUzNzIsImV4cCI6MjA4ODM2MTM3Mn0.RNlG1ffpo-NQ6-dcb4CjQFMBuV-GzKn2cbdg73CUDo4"
 
 const supabase = window.supabase.createClient(
 SUPABASE_URL,
