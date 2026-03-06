@@ -1,4 +1,3 @@
-
 async function loadGames(){
 
 const {data} = await supabase.from("games").select("*")
