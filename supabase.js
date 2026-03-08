@@ -5,6 +5,14 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
+// Process OAuth redirect automatically
+await supabase.auth.getSession()
+
+// Clean access token from URL after login
+if (window.location.hash.includes("access_token")) {
+  history.replaceState({}, document.title, window.location.pathname)
+}
+
 export async function login(){
   await supabase.auth.signInWithOAuth({
     provider: "github"
