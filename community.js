@@ -1,7 +1,7 @@
 
 import {supabase,getUser} from "./supabase.js"
 
-export async function addLink(e){
+export async function addLink(e,category){
  e.preventDefault()
 
  const user = await getUser()
@@ -16,16 +16,17 @@ export async function addLink(e){
  await supabase.from("community_links").insert({
   title:title,
   link:link,
+  category:category,
   user_id:user.id,
   username:user.user_metadata.user_name,
   avatar:user.user_metadata.avatar_url
  })
 
  e.target.reset()
- loadLinks()
+ loadLinks(category)
 }
 
-export async function deleteLink(id){
+export async function deleteLink(id,category){
  const user=await getUser()
 
  await supabase
@@ -34,7 +35,7 @@ export async function deleteLink(id){
   .eq("id",id)
   .eq("user_id",user.id)
 
- loadLinks()
+ loadLinks(category)
 }
 
 export async function reportLink(id){
@@ -49,14 +50,17 @@ export async function reportLink(id){
  alert("Reported")
 }
 
-export async function loadLinks(){
+export async function loadLinks(category){
 
  const {data}=await supabase
   .from("community_links")
   .select("*")
+  .eq("category",category)
   .order("created_at",{ascending:false})
 
- const list=document.getElementById("links")
+ const list=document.getElementById(category+"List")
+ if(!list) return
+
  list.innerHTML=""
 
  data.forEach(item=>{
@@ -68,7 +72,7 @@ export async function loadLinks(){
   <img src="${item.avatar}" width="24" style="border-radius:50%;vertical-align:middle">
   <b>${item.username}</b> :
   <a href="${item.link}" target="_blank">${item.title}</a>
-  <button onclick="deleteLink('${item.id}')">delete</button>
+  <button onclick="deleteLink('${item.id}','${category}')">delete</button>
   <button onclick="reportLink('${item.id}')">report</button>
   `
 
@@ -81,8 +85,11 @@ export async function loadLinks(){
 supabase.channel("links")
  .on("postgres_changes",
  {event:"*",schema:"public",table:"community_links"},
- payload=>loadLinks()
- ).subscribe()
+ payload=>{
+   const cats=["games","music","assets"]
+   cats.forEach(c=>loadLinks(c))
+ })
+ .subscribe()
 
 window.deleteLink=deleteLink
 window.reportLink=reportLink
