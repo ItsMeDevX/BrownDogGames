@@ -15,7 +15,7 @@ export async function login(){
   await supabase.auth.signInWithOAuth({
     provider:"github",
     options:{
-      redirectTo:"https://www.browndoggames.com/"
+      redirectTo: window.location.origin
     }
   })
 }
@@ -30,7 +30,6 @@ export async function getUser(){
   return data.user
 }
 
-// Clean OAuth URL
 export function cleanUrl(){
  if(window.location.hash.includes("access_token")){
    history.replaceState({},document.title,window.location.pathname)
