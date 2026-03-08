@@ -88,5 +88,22 @@ if(user){
 }
 
 </script>
+
+<script type="module">
+import { login, getUser, cleanUrl } from "./supabase.js"
+
+cleanUrl()
+window.login = login
+
+const user = await getUser()
+
+if(user){
+ const btn=document.getElementById("loginBtn")
+ if(btn) btn.style.display="none"
+ const d=document.getElementById("userDisplay")
+ if(d) d.innerText="Logged in"
+}
+</script>
+
 </body>
 </html>

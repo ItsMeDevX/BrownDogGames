@@ -24,7 +24,7 @@
       <a href="assets.html">Templates & Assets</a>
       <a href="support.html">Support</a>
       <a href="community.html">Community</a>
-    </nav>
+    <button id="loginBtn" onclick="login()">Login with GitHub</button><span id="userDisplay" style="margin-left:10px;"></span></nav>
   </div>
 </header>
 <main class="container">
@@ -73,6 +73,23 @@
   <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
 </main>
 <script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+
+
+<script type="module">
+import { login, getUser, cleanUrl } from "./supabase.js"
+
+cleanUrl()
+window.login = login
+
+const user = await getUser()
+
+if(user){
+ const btn=document.getElementById("loginBtn")
+ if(btn) btn.style.display="none"
+ const d=document.getElementById("userDisplay")
+ if(d) d.innerText="Logged in"
+}
+</script>
 
 </body>
 </html>
