@@ -1,0 +1,66 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Community Music — BrownDogGames</title>
+<link rel="stylesheet" href="styles.css"/>
+<link rel="icon" href="assets/images/MainIcon.png">
+</head>
+
+<body>
+
+<header class="nav">
+<div class="nav-inner">
+<a class="brand" href="index.html">
+<img src="assets/images/MainIcon.png" class="site-logo">
+<span>BrownDogGames</span>
+</a>
+
+<nav class="nav-links">
+<a href="index.html">Home</a>
+<a href="community.html">Community</a>
+</nav>
+</div>
+</header>
+
+<main class="container">
+
+<h1 class="h1">Community Music</h1>
+<p class="sub">Games shared by the community.</p>
+
+<section class="card">
+<div class="card-pad">
+<p class="card-title">Add Your Game</p>
+
+<form onsubmit="addLink(event,'musicList')">
+<input placeholder="Game Name" id="title" required style="width:100%;padding:10px;margin-bottom:10px;">
+<input placeholder="Game Link" id="link" required style="width:100%;padding:10px;margin-bottom:10px;">
+<button class="btn btn-primary">Add Music</button>
+</form>
+
+<div id="musicList" style="margin-top:20px;"></div>
+
+</div>
+</section>
+
+</main>
+
+<script>
+function addLink(e,list){
+e.preventDefault()
+const title=document.getElementById('title').value
+const link=document.getElementById('link').value
+
+const p=document.createElement('p')
+p.innerHTML=`<a href="${link}" target="_blank">${title}</a>`
+
+document.getElementById(list).appendChild(p)
+
+e.target.reset()
+}
+</script>
+
+</body>
+</html>
