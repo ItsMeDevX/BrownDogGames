@@ -21,7 +21,7 @@
 <nav class="nav-links">
 <a href="index.html">Home</a>
 <a href="community.html">Community</a>
-</nav>
+ <button id="loginBtn" onclick="login()">Login with GitHub</button><span id="userDisplay" style="margin-left:10px;"></span></nav>
 </div>
 </header>
 
@@ -50,15 +50,24 @@
 
 
 
+
 <script type="module">
 import { addLink, loadLinks } from "./community.js"
-import { login } from "./supabase.js"
+import { login, getUser } from "./supabase.js"
 
 window.addLink = addLink
 window.login = login
 
+const user = await getUser()
+
+if(user){
+ const btn=document.getElementById("loginBtn")
+ if(btn) btn.style.display="none"
+ const d=document.getElementById("userDisplay")
+ if(d) d.innerText="Logged in"
+}
+
 loadLinks("games")
 </script>
-
 </body>
 </html>
