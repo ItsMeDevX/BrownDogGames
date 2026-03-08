@@ -83,5 +83,24 @@ if(session){
 
 </script>
  
+
+<script type="module">
+import { addLink, loadLinks } from "./community.js"
+import { login, supabase } from "./supabase.js"
+
+window.addLink = addLink
+window.login = login
+
+loadLinks("assets")
+
+supabase.auth.onAuthStateChange((event, session)=>{
+ if(session){
+  const btn=document.getElementById("loginBtn")
+  if(btn) btn.style.display="none"
+  const d=document.getElementById("userDisplay")
+  if(d) d.innerText="Logged in"
+ }
+})
+</script>
 </body>
 </html>
