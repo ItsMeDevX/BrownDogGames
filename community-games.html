@@ -18,14 +18,10 @@
 <span>BrownDogGames</span>
 </a>
 
- <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="games.html">Games</a>
-      <a href="music.html">Music</a>
-      <a href="assets.html">Templates & Assets</a>
-      <a href="support.html">Support</a>
-      <a href="community.html">Community</a>
-    </nav>
+<nav class="nav-links">
+<a href="index.html">Home</a>
+<a href="community.html">Community</a>
+</nav>
 </div>
 </header>
 
@@ -38,7 +34,7 @@
 <div class="card-pad">
 <p class="card-title">Add Your Game</p>
 
-<form onsubmit="addLink(event,'gamesList')">
+<form onsubmit="addLink(event,'games')">
 <input placeholder="Game Name" id="title" required style="width:100%;padding:10px;margin-bottom:10px;">
 <input placeholder="Game Link" id="link" required style="width:100%;padding:10px;margin-bottom:10px;">
 <button class="btn btn-primary">Add Game</button>
@@ -51,19 +47,17 @@
 
 </main>
 
-<script>
-function addLink(e,list){
-e.preventDefault()
-const title=document.getElementById('title').value
-const link=document.getElementById('link').value
 
-const p=document.createElement('p')
-p.innerHTML=`<a href="${link}" target="_blank">${title}</a>`
 
-document.getElementById(list).appendChild(p)
 
-e.target.reset()
-}
+<script type="module">
+import { addLink, loadLinks } from "./community.js"
+import { login } from "./supabase.js"
+
+window.addLink = addLink
+window.login = login
+
+loadLinks("games")
 </script>
 
 </body>
