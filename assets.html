@@ -107,19 +107,39 @@
 
 
 <script type="module">
-import { login, getUser, cleanUrl } from "./supabase.js"
+import { login, getUser, supabase } from "./supabase.js"
 
-cleanUrl()
 window.login = login
 
-const user = await getUser()
+// Wait for Supabase auth state
+supabase.auth.onAuthStateChange(async (event, session) => {
 
-if(user){
+  if(session){
+    const btn=document.getElementById("loginBtn")
+    if(btn) btn.style.display="none"
+
+    const d=document.getElementById("userDisplay")
+    if(d) d.innerText="Logged in"
+
+    // now safe to remove token from URL
+    if(window.location.hash.includes("access_token")){
+      history.replaceState({},document.title,window.location.pathname)
+    }
+  }
+
+})
+
+// check existing session
+const {data:{session}} = await supabase.auth.getSession()
+
+if(session){
  const btn=document.getElementById("loginBtn")
  if(btn) btn.style.display="none"
+
  const d=document.getElementById("userDisplay")
  if(d) d.innerText="Logged in"
 }
+
 </script>
 
 </body>
