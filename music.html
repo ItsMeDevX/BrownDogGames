@@ -11,134 +11,158 @@
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   
 <body>
-  <style>
-    /* Mobile-first: stack player + playlist */
-    .music-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:16px;
-    }
 
-    /* Desktop: two columns */
-    @media (min-width: 900px){
-      .music-grid{
-        grid-template-columns: 1.4fr .6fr;
-        align-items:start;
-      }
-    }
+<style>
+/* Mobile-first: stack player + playlist */
+.music-grid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:16px;
+}
 
-    /* Buttons: wrap + thumb friendly */
-    .btn-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .btn-row .btn{
-      flex:1 1 120px;
-      min-height:44px;
-    }
+/* Desktop: two columns */
+@media (min-width: 900px){
+  .music-grid{
+    grid-template-columns: 1.4fr .6fr;
+    align-items:start;
+  }
+}
 
-    /* Player sizing */
-    .player-frame{
-      margin-top:14px;
-      border-radius:14px;
-      overflow:hidden;
-      background: rgba(255,255,255,.04);
-    }
-    .player-frame .ratio{
-      position:relative;
-      padding-top:70%; /* taller on mobile */
-    }
-    @media (min-width: 900px){
-      .player-frame .ratio{
-        padding-top:56.25%; /* 16:9 on desktop */
-      }
-    }
-    .player-frame iframe{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      border:0;
-    }
+/* Buttons */
+.btn-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn-row .btn{
+  flex:1 1 120px;
+  min-height:44px;
+}
 
-    /* Playlist UX improvements */
-    #trackList .btn{
-      text-align:left;
-      justify-content:flex-start;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    #trackList .btn.is-active{
-      outline:2px solid rgba(255,255,255,.25);
-      transform:translateY(-1px);
-    }
-  </style>
+/* Player sizing */
+.player-frame{
+  margin-top:14px;
+  border-radius:14px;
+  overflow:hidden;
+  background: rgba(255,255,255,.04);
+}
 
-  <header class="nav">
-    <div class="nav-inner">
-      <a class="brand" href="index.html">
-        <img src="assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
-        <span>BrownDogGames</span>
-      </a>
-      <nav class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="music.html">Music</a>
-        <a href="assets.html">Templates & Assets</a>
-        <a href="support.html">Support</a>
-        <a href="community.html">Community</a>
-      <button id="loginBtn" onclick="login()">Login with GitHub</button><span id="userDisplay" style="margin-left:10px;"></span></nav>
-    </div>
-  </header>
+.player-frame .ratio{
+  position:relative;
+  padding-top:70%;
+}
 
-  <main class="container">
-    <h1 class="h1">Music</h1>
-    <p class="sub">Original tracks & loops I’ve made — press play and browse the playlist.</p>
+@media (min-width: 900px){
+  .player-frame .ratio{
+    padding-top:56.25%;
+  }
+}
 
-    <div class="music-grid">
-      <!-- PLAYER -->
-      <section class="card">
-        <div class="card-pad">
-          <p class="card-title">Player</p>
-          <p class="card-muted" id="nowPlaying">Loading a random track…</p>
+.player-frame iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+}
 
-          <div class="player-frame">
-            <div class="ratio">
-              <iframe
-                id="drivePlayer"
-                src=""
-                allow="autoplay; fullscreen"
-                allowfullscreen
-                title="Google Drive player">
-              </iframe>
-            </div>
-          </div>
+#trackList .btn{
+  text-align:left;
+  justify-content:flex-start;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-          <div class="hr"></div>
+#trackList .btn.is-active{
+  outline:2px solid rgba(255,255,255,.25);
+  transform:translateY(-1px);
+}
+</style>
 
-          <div class="btn-row">
-            <button class="btn" id="prevTrack" type="button">Previous</button>
-            <button class="btn btn-primary" id="nextTrack" type="button">Next</button>
 
-            <button class="btn" id="randomTrack" type="button">Random</button>
-            <button class="btn" id="toggleShuffle" type="button">Shuffle: Off</button>
-            <button class="btn" id="toggleRepeat" type="button">Repeat: Off</button>
+<header class="nav">
+  <div class="nav-inner">
 
-            <button class="btn" id="openTrack" type="button">Open</button>
-            <button class="btn" id="copyTrackLink" type="button">Copy Track Link</button>
+    <a class="brand" href="index.html">
+      <img src="assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
+      <span>BrownDogGames</span>
+    </a>
 
-            <button class="btn" id="sharePage" type="button">Share Page</button>
-          </div>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="games.html">Games</a>
+      <a href="music.html">Music</a>
+      <a href="assets.html">Templates & Assets</a>
+      <a href="support.html">Support</a>
+      <a href="community.html">Community</a>
 
-          <div class="hr"></div>
-          <p class="card-muted" style="font-size:.95em; margin:0;">
-            Shortcuts: <strong>←</strong>/<strong>→</strong> prev/next, <strong>R</strong> random, <strong>S</strong> shuffle, <strong>L</strong> repeat.
-          </p>
-        </div>
-      </section>
+      <!-- AUTH BUTTONS -->
+      <button id="loginBtn" onclick="login()">Login with GitHub</button>
+      <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+      <span id="userDisplay" style="margin-left:10px;"></span>
 
+    </nav>
+
+  </div>
+</header>
+
+
+<main class="container">
+
+<h1 class="h1">Music</h1>
+<p class="sub">Original tracks & loops I’ve made — press play and browse the playlist.</p>
+
+
+<div class="music-grid">
+
+<!-- PLAYER -->
+<section class="card">
+
+<div class="card-pad">
+
+<p class="card-title">Player</p>
+<p class="card-muted" id="nowPlaying">Loading a random track…</p>
+
+<div class="player-frame">
+<div class="ratio">
+
+<iframe
+id="drivePlayer"
+src=""
+allow="autoplay; fullscreen"
+allowfullscreen
+title="Google Drive player">
+</iframe>
+
+</div>
+</div>
+
+<div class="hr"></div>
+
+<div class="btn-row">
+<button class="btn" id="prevTrack">Previous</button>
+<button class="btn btn-primary" id="nextTrack">Next</button>
+
+<button class="btn" id="randomTrack">Random</button>
+<button class="btn" id="toggleShuffle">Shuffle: Off</button>
+<button class="btn" id="toggleRepeat">Repeat: Off</button>
+
+<button class="btn" id="openTrack">Open</button>
+<button class="btn" id="copyTrackLink">Copy Track Link</button>
+
+<button class="btn" id="sharePage">Share Page</button>
+</div>
+
+<div class="hr"></div>
+
+<p class="card-muted" style="font-size:.95em;">
+Shortcuts: ← → R S L
+</p>
+
+</div>
+</section>
+  
       <!-- PLAYLIST -->
       <aside class="card">
         <div class="card-pad">
@@ -550,40 +574,52 @@
   </script>
 
 <script type="module">
-import { login, getUser, supabase } from "./supabase.js"
+
+import { login, supabase } from "./supabase.js"
 
 window.login = login
 
-// Wait for Supabase auth state
-supabase.auth.onAuthStateChange(async (event, session) => {
+window.logout = async () => {
+  await supabase.auth.signOut()
+  location.reload()
+}
+
+
+// Auth state listener
+supabase.auth.onAuthStateChange((event, session) => {
 
   if(session){
-    const btn=document.getElementById("loginBtn")
-    if(btn) btn.style.display="none"
 
-    const d=document.getElementById("userDisplay")
-    if(d) d.innerText="Logged in"
+    document.getElementById("loginBtn").style.display="none"
+    document.getElementById("logoutBtn").style.display="inline-block"
 
-    // now safe to remove token from URL
+    document.getElementById("userDisplay").innerText =
+      session.user.user_metadata.user_name
+
     if(window.location.hash.includes("access_token")){
       history.replaceState({},document.title,window.location.pathname)
     }
+
   }
 
 })
 
-// check existing session
+
+// Check existing session
 const {data:{session}} = await supabase.auth.getSession()
 
 if(session){
- const btn=document.getElementById("loginBtn")
- if(btn) btn.style.display="none"
 
- const d=document.getElementById("userDisplay")
- if(d) d.innerText="Logged in"
+  document.getElementById("loginBtn").style.display="none"
+  document.getElementById("logoutBtn").style.display="inline-block"
+
+  document.getElementById("userDisplay").innerText =
+    session.user.user_metadata.user_name
+
 }
 
 </script>
-  
+
+
 </body>
 </html>
