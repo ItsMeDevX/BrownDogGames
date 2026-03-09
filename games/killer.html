@@ -11,78 +11,326 @@
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   
 <body>
+
 <header class="nav">
   <div class="nav-inner">
     <a class="brand" href="../index.html">
       <img src="../assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
       <span>BrownDogGames</span>
     </a>
-  <nav class="nav-links">
-  <a href="../index.html">Home</a>
-  <a href="../games.html">Games</a>
-  <a href="../music.html">Music</a>
-  <a href="../assets.html">Templates & Assets</a>
-  <a href="../support.html">Support</a>
-  <a href="../community.html">Community</a>
-</nav>
+
+    <nav class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../games.html">Games</a>
+      <a href="../music.html">Music</a>
+      <a href="../assets.html">Templates & Assets</a>
+      <a href="../support.html">Support</a>
+      <a href="../community.html">Community</a>
+
+      <button id="loginBtn" onclick="login()">Login with GitHub</button>
+      <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+      <span id="userDisplay" style="margin-left:10px;"></span>
+    </nav>
+
   </div>
 </header>
+
 <main class="container">
 
 <h1 class="h1">Killer</h1>
-<p class="sub">Discover what it's like to see the world through a serial killer's eyes.</p>
+
+<p class="sub">
+Discover what it's like to see the world through a serial killer's eyes.
+</p>
 
 <div class="grid" style="grid-template-columns: 1.4fr .6fr;">
-  <section class="card">
-    <div class="card-pad">
-      <p class="card-title">Overview</p>
-      <p class="card-muted">Discover what it's like to see the world through a serial killer's eyes.</p>
-      <div class="hr"></div>
 
-      <p class="card-title">Download</p>
-      <p class="card-muted">
-        Replace the link below with your real download page (Itch.io, Steam, Google Drive, Gumroad, etc.).
-      </p>
-      <div class="btn-row">
-        <a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=1QvUjNRQQ1ud9XNl-hQye7Au3vDOQIyhZ&export=download&authuser=0" target="_blank" rel="noopener">Download (Free)</a>
-        <a class="btn" href="../support.html">Get Support</a>
-      </div>
-    </div>
-  </section>
+<section class="card">
+<div class="card-pad">
 
-  <aside class="card">
-    <div class="card-pad">
-      <p class="card-title">Details</p>
-      <p class='card-muted'><strong>Platform:</strong> PC</p>
-      <p class='card-muted'><strong>Status:</strong> Released</p>
-      <div class="hr"></div>
-      <p class="card-muted">Add version, trailer, and system requirements here anytime.</p>
-    </div>
-  </aside>
+<p class="card-title">Overview</p>
+
+<p class="card-muted">
+Discover what it's like to see the world through a serial killer's eyes.
+</p>
+
+<div class="hr"></div>
+
+<p class="card-title">Download</p>
+
+<p class="card-muted">
+Download the game below.
+</p>
+
+<div class="btn-row">
+<a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=1QvUjNRQQ1ud9XNl-hQye7Au3vDOQIyhZ&export=download&authuser=0" target="_blank">Download (Free)</a>
+<a class="btn" href="../support.html">Get Support</a>
+</div>
+
+</div>
+</section>
+
+<aside class="card">
+<div class="card-pad">
+
+<p class="card-title">Details</p>
+
+<p class="card-muted"><strong>Platform:</strong> PC</p>
+<p class="card-muted"><strong>Status:</strong> Released</p>
+
+<div class="hr"></div>
+
+<p class="card-muted">
+Add version, trailer, and system requirements here anytime.
+</p>
+
+</div>
+</aside>
+
 </div>
 
 
 <div class="hr"></div>
-<section class="card">
-  <div class="card-pad">
-    <p class="card-title">Screenshots</p>
-    <p class="card-muted">Click to view larger.</p>
-    <div class="gallery" style="margin-top:14px;">
-      <img class="thumb" src="../assets/images/KillerScreenShot1.jpg" data-full="../assets/images/KillerScreenShot1.jpg" alt="Killer screenshot 1">
-      <img class="thumb" src="../assets/images/KillerScreenShot2.jpg" data-full="../assets/images/KillerScreenShot2.jpg" alt="Killer screenshot 2">
-    </div>
-  </div>
-</section>
 
-<div id="imgModal" class="modal" aria-hidden="true">
-  <img id="imgModalImg" alt="Full screenshot"/>
-  <div class="hint">Click outside the image or press ESC to close</div>
+<section class="card">
+<div class="card-pad">
+
+<p class="card-title">Screenshots</p>
+<p class="card-muted">Click to view larger.</p>
+
+<div class="gallery" style="margin-top:14px;">
+<img class="thumb" src="../assets/images/KillerScreenShot1.jpg" data-full="../assets/images/KillerScreenShot1.jpg">
+<img class="thumb" src="../assets/images/KillerScreenShot2.jpg" data-full="../assets/images/KillerScreenShot2.jpg">
 </div>
 
+</div>
+</section>
 
-  <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+
+<div class="hr"></div>
+
+<section class="card">
+<div class="card-pad">
+
+<p class="card-title">Player Comments</p>
+
+<form onsubmit="addComment(event)">
+<input id="commentInput" placeholder="Write a comment..." required style="width:100%;padding:10px;margin-bottom:10px;">
+<button class="btn btn-primary">Post Comment</button>
+</form>
+
+<div id="commentsList" style="margin-top:20px;"></div>
+
+</div>
+</section>
+
+
+<div id="imgModal" class="modal" aria-hidden="true">
+<img id="imgModalImg" alt="Full screenshot"/>
+<div class="hint">Click outside the image or press ESC to close</div>
+</div>
+
+<footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+
 </main>
-<script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+
+<script>
+document.getElementById("y").textContent = new Date().getFullYear();
+</script>
+
 <script src="gallery.js"></script>
+
+
+<script type="module">
+
+import { login, supabase } from "../supabase.js"
+
+window.login = login
+
+window.logout = async () => {
+ await supabase.auth.signOut()
+ location.reload()
+}
+
+const GAME_ID = "killer"
+
+
+function escapeHTML(text){
+ return text.replace(/[&<>"']/g, m => ({
+   "&":"&amp;",
+   "<":"&lt;",
+   ">":"&gt;",
+   '"':"&quot;",
+   "'":"&#039;"
+ })[m])
+}
+
+
+async function loadComments(){
+
+const { data } = await supabase
+.from("comments")
+.select("*")
+.eq("game", GAME_ID)
+.order("id",{ascending:false})
+
+const { data:{session} } = await supabase.auth.getSession()
+const userId = session?.user?.id
+
+const list=document.getElementById("commentsList")
+list.innerHTML=""
+
+if(!data) return
+
+data.forEach(c=>{
+
+const div=document.createElement("div")
+
+div.style.display="flex"
+div.style.gap="10px"
+div.style.padding="12px"
+div.style.borderBottom="1px solid #333"
+
+const deleteBtn = userId===c.user_id
+? `<button onclick="deleteComment(${c.id})">🗑</button>`
+: ""
+
+div.innerHTML = `
+
+<a href="https://github.com/${c.username}" target="_blank">
+<img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
+</a>
+
+<div style="flex:1">
+
+<strong>
+<a href="https://github.com/${c.username}" target="_blank">
+${c.username}
+</a>
+</strong>
+
+<br>
+
+${escapeHTML(c.text)}
+
+<br>
+
+<button onclick="likeComment(${c.id},${c.likes||0})">
+👍 ${c.likes||0}
+</button>
+
+${deleteBtn}
+
+</div>
+`
+
+list.appendChild(div)
+
+})
+
+}
+
+
+
+window.addComment = async function(event){
+
+event.preventDefault()
+
+const { data:{session} } = await supabase.auth.getSession()
+
+if(!session){
+alert("Login with GitHub to comment.")
+return
+}
+
+const text=document.getElementById("commentInput").value.trim()
+
+if(text.length<2){
+alert("Comment too short")
+return
+}
+
+if(text.length>300){
+alert("Comment too long")
+return
+}
+
+await supabase.from("comments").insert({
+game: GAME_ID,
+text: text,
+user_id: session.user.id,
+username: session.user.user_metadata.user_name,
+avatar_url: session.user.user_metadata.avatar_url,
+likes:0
+})
+
+document.getElementById("commentInput").value=""
+
+}
+
+
+
+window.likeComment = async function(id,currentLikes){
+
+await supabase
+.from("comments")
+.update({likes:currentLikes+1})
+.eq("id",id)
+
+}
+
+
+
+window.deleteComment = async function(id){
+
+if(!confirm("Delete this comment?")) return
+
+await supabase
+.from("comments")
+.delete()
+.eq("id",id)
+
+}
+
+
+
+supabase
+.channel("comments")
+.on("postgres_changes",
+{ event:"*", schema:"public", table:"comments" },
+payload=>{
+loadComments()
+})
+.subscribe()
+
+
+
+supabase.auth.onAuthStateChange((event,session)=>{
+
+if(session){
+
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
+
+}
+
+})
+
+
+const {data:{session}} = await supabase.auth.getSession()
+
+if(session){
+
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
+
+}
+
+loadComments()
+
+</script>
+
 </body>
 </html>
