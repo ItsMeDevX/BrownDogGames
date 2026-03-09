@@ -19,7 +19,7 @@
       <span>BrownDogGames</span>
     </a>
 
-    <nav class="nav-links">
+   <nav class="nav-links">
       <a href="../index.html">Home</a>
       <a href="../games.html">Games</a>
       <a href="../music.html">Music</a>
@@ -28,8 +28,9 @@
       <a href="../community.html">Community</a>
 
       <button id="loginBtn" onclick="login()">Login with GitHub</button>
+      <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
       <span id="userDisplay" style="margin-left:10px;"></span>
-    </nav>
+   </nav>
   </div>
 </header>
 
@@ -51,12 +52,9 @@ A high-energy VR dance game where rhythm meets reflexes! Groove to the music, do
 <div class="hr"></div>
 
 <p class="card-title">Download</p>
-<p class="card-muted">
-Replace the link below with your real download page (Itch.io, Steam, Google Drive, Gumroad, etc.).
-</p>
 
 <div class="btn-row">
-<a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=1Sy1GWh1xQ8ivrKAVgSO9OJxapgZYJvzu&export=download&authuser=0" target="_blank" rel="noopener">Download (Free)</a>
+<a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=1Sy1GWh1xQ8ivrKAVgSO9OJxapgZYJvzu&export=download&authuser=0" target="_blank">Download (Free)</a>
 <a class="btn" href="../support.html">Get Support</a>
 </div>
 
@@ -66,16 +64,11 @@ Replace the link below with your real download page (Itch.io, Steam, Google Driv
 <aside class="card">
 <div class="card-pad">
 
-<p class="card-title">Details</p>
+<p class="card-title">Game Information</p>
 
 <p class="card-muted"><strong>Platform:</strong> PC VR</p>
 <p class="card-muted"><strong>Status:</strong> Released</p>
-
-<div class="hr"></div>
-
-<p class="card-muted">
-Add version, trailer, and system requirements here anytime.
-</p>
+<p class="card-muted"><strong>Genre:</strong> VR Rhythm</p>
 
 </div>
 </aside>
@@ -88,20 +81,10 @@ Add version, trailer, and system requirements here anytime.
 <div class="card-pad">
 
 <p class="card-title">Screenshots</p>
-<p class="card-muted">Click to view larger.</p>
 
 <div class="gallery" style="margin-top:14px;">
-
-<img class="thumb"
-src="../assets/images/AliveInside%20ScreenShot1.jpg"
-data-full="../assets/images/AliveInside%20ScreenShot1.jpg"
-alt="Alive Inside screenshot 1">
-
-<img class="thumb"
-src="../assets/images/AliveInside%20ScreenShot2.jpg"
-data-full="../assets/images/AliveInside%20ScreenShot2.jpg"
-alt="Alive Inside screenshot 2">
-
+<img class="thumb" src="../assets/images/AliveInside%20ScreenShot1.jpg" data-full="../assets/images/AliveInside%20ScreenShot1.jpg">
+<img class="thumb" src="../assets/images/AliveInside%20ScreenShot2.jpg" data-full="../assets/images/AliveInside%20ScreenShot2.jpg">
 </div>
 
 </div>
@@ -113,7 +96,6 @@ alt="Alive Inside screenshot 2">
 <div class="card-pad">
 
 <p class="card-title">Player Comments</p>
-<p class="card-muted">You must be logged in with GitHub to post a comment.</p>
 
 <form onsubmit="addComment(event)">
 <input id="commentInput" placeholder="Write a comment..." required style="width:100%;padding:10px;margin-bottom:10px;">
@@ -124,11 +106,6 @@ alt="Alive Inside screenshot 2">
 
 </div>
 </section>
-
-<div id="imgModal" class="modal" aria-hidden="true">
-<img id="imgModalImg" alt="Full screenshot">
-<div class="hint">Click outside the image or press ESC to close</div>
-</div>
 
 <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
 
@@ -146,7 +123,22 @@ import { login, supabase } from "../supabase.js"
 
 window.login = login
 
+window.logout = async () => {
+ await supabase.auth.signOut()
+ location.reload()
+}
+
 const GAME_ID = "alive_inside"
+
+function escapeHTML(text){
+ return text.replace(/[&<>"']/g, m => ({
+   "&":"&amp;",
+   "<":"&lt;",
+   ">":"&gt;",
+   '"':"&quot;",
+   "'":"&#039;"
+ })[m])
+}
 
 async function loadComments(){
 
@@ -155,6 +147,9 @@ const { data } = await supabase
 .select("*")
 .eq("game", GAME_ID)
 .order("id",{ascending:false})
+
+const { data:{session} } = await supabase.auth.getSession()
+const userId = session?.user?.id
 
 const list=document.getElementById("commentsList")
 list.innerHTML=""
@@ -170,11 +165,36 @@ div.style.gap="10px"
 div.style.padding="12px"
 div.style.borderBottom="1px solid #333"
 
+const deleteBtn = userId===c.user_id
+? `<button onclick="deleteComment(${c.id})">🗑</button>`
+: ""
+
 div.innerHTML = `
+
+<a href="https://github.com/${c.username}" target="_blank">
 <img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
-<div>
-<strong>${c.username}</strong><br>
-${c.text}
+</a>
+
+<div style="flex:1">
+
+<strong>
+<a href="https://github.com/${c.username}" target="_blank">
+${c.username}
+</a>
+</strong>
+
+<br>
+
+${escapeHTML(c.text)}
+
+<br>
+
+<button onclick="likeComment(${c.id},${c.likes||0})">
+👍 ${c.likes||0}
+</button>
+
+${deleteBtn}
+
 </div>
 `
 
@@ -188,40 +208,74 @@ window.addComment = async function(event){
 
 event.preventDefault()
 
-const { data:{user} } = await supabase.auth.getUser()
+const { data:{session} } = await supabase.auth.getSession()
 
-if(!user){
-alert("You must login with GitHub to comment.")
+if(!session){
+alert("Login with GitHub to comment.")
 return
 }
 
-const text=document.getElementById("commentInput").value
+const text=document.getElementById("commentInput").value.trim()
+
+if(text.length<2){
+alert("Comment too short")
+return
+}
+
+if(text.length>300){
+alert("Comment too long")
+return
+}
 
 await supabase.from("comments").insert({
 game: GAME_ID,
 text: text,
-user_id: user.id,
-username: user.user_metadata.user_name,
-avatar_url: user.user_metadata.avatar_url
+user_id: session.user.id,
+username: session.user.user_metadata.user_name,
+avatar_url: session.user.user_metadata.avatar_url,
+likes:0
 })
 
 document.getElementById("commentInput").value=""
 
-loadComments()
+}
+
+window.likeComment = async function(id,currentLikes){
+
+await supabase
+.from("comments")
+.update({likes:currentLikes+1})
+.eq("id",id)
 
 }
 
-supabase.auth.onAuthStateChange(async (event, session)=>{
+window.deleteComment = async function(id){
+
+if(!confirm("Delete this comment?")) return
+
+await supabase
+.from("comments")
+.delete()
+.eq("id",id)
+
+}
+
+supabase
+.channel("comments")
+.on("postgres_changes",
+{ event:"*", schema:"public", table:"comments" },
+payload=>{
+loadComments()
+})
+.subscribe()
+
+supabase.auth.onAuthStateChange((event,session)=>{
 
 if(session){
 
-const btn=document.getElementById("loginBtn")
-if(btn) btn.style.display="none"
-
-const d=document.getElementById("userDisplay")
-if(d) d.innerText=session.user.user_metadata.user_name
-
-loadComments()
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
 
 }
 
@@ -231,15 +285,13 @@ const {data:{session}} = await supabase.auth.getSession()
 
 if(session){
 
-const btn=document.getElementById("loginBtn")
-if(btn) btn.style.display="none"
-
-const d=document.getElementById("userDisplay")
-if(d) d.innerText=session.user.user_metadata.user_name
-
-loadComments()
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
 
 }
+
+loadComments()
 
 </script>
 
