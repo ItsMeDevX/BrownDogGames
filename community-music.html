@@ -21,22 +21,29 @@
 <nav class="nav-links">
 <a href="index.html">Home</a>
 <a href="community.html">Community</a>
- <button id="loginBtn" onclick="login()">Login with GitHub</button><span id="userDisplay" style="margin-left:10px;"></span></nav>
+
+<!-- AUTH BUTTONS -->
+<button id="loginBtn" onclick="login()">Login with GitHub</button>
+<button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+<span id="userDisplay" style="margin-left:10px;"></span>
+
+</nav>
 </div>
 </header>
 
 <main class="container">
 
 <h1 class="h1">Community Music</h1>
-<p class="sub">Games shared by the community.</p>
+<p class="sub">Music shared by the community.</p>
 
 <section class="card">
 <div class="card-pad">
-<p class="card-title">Add Your Game</p>
+
+<p class="card-title">Add Your Music</p>
 
 <form onsubmit="addLink(event,'music')">
-<input placeholder="Game Name" id="title" required style="width:100%;padding:10px;margin-bottom:10px;">
-<input placeholder="Game Link" id="link" required style="width:100%;padding:10px;margin-bottom:10px;">
+<input placeholder="Music Name" id="title" required style="width:100%;padding:10px;margin-bottom:10px;">
+<input placeholder="Music Link" id="link" required style="width:100%;padding:10px;margin-bottom:10px;">
 <button class="btn btn-primary">Add Music</button>
 </form>
 
@@ -45,45 +52,17 @@
 </div>
 </section>
 
+<footer class="footer">
+© <span id="y"></span> BrownDogGames
+</footer>
+
 </main>
 
-<script type="module">
-import { login, getUser, supabase } from "./supabase.js"
-
-window.login = login
-
-// Wait for Supabase auth state
-supabase.auth.onAuthStateChange(async (event, session) => {
-
-  if(session){
-    const btn=document.getElementById("loginBtn")
-    if(btn) btn.style.display="none"
-
-    const d=document.getElementById("userDisplay")
-    if(d) d.innerText="Logged in"
-
-    // now safe to remove token from URL
-    if(window.location.hash.includes("access_token")){
-      history.replaceState({},document.title,window.location.pathname)
-    }
-  }
-
-})
-
-// check existing session
-const {data:{session}} = await supabase.auth.getSession()
-
-if(session){
- const btn=document.getElementById("loginBtn")
- if(btn) btn.style.display="none"
-
- const d=document.getElementById("userDisplay")
- if(d) d.innerText="Logged in"
-}
-
+<script>
+document.getElementById("y").textContent = new Date().getFullYear()
 </script>
- 
 
+<!-- COMMUNITY + AUTH SYSTEM -->
 <script type="module">
 import { addLink, loadLinks } from "./community.js"
 import { login, supabase } from "./supabase.js"
@@ -91,16 +70,47 @@ import { login, supabase } from "./supabase.js"
 window.addLink = addLink
 window.login = login
 
+window.logout = async () => {
+  await supabase.auth.signOut()
+  location.reload()
+}
+
+// Load music for everyone (even if not logged in)
 loadLinks("music")
 
-supabase.auth.onAuthStateChange((event, session)=>{
- if(session){
-  const btn=document.getElementById("loginBtn")
-  if(btn) btn.style.display="none"
-  const d=document.getElementById("userDisplay")
-  if(d) d.innerText="Logged in"
- }
+// Auth state listener
+supabase.auth.onAuthStateChange((event, session) => {
+
+  if(session){
+
+    document.getElementById("loginBtn").style.display="none"
+    document.getElementById("logoutBtn").style.display="inline-block"
+
+    document.getElementById("userDisplay").innerText =
+      session.user.user_metadata.user_name
+
+    if(window.location.hash.includes("access_token")){
+      history.replaceState({},document.title,window.location.pathname)
+    }
+
+  }
+
 })
+
+// Check existing session
+const {data:{session}} = await supabase.auth.getSession()
+
+if(session){
+
+  document.getElementById("loginBtn").style.display="none"
+  document.getElementById("logoutBtn").style.display="inline-block"
+
+  document.getElementById("userDisplay").innerText =
+    session.user.user_metadata.user_name
+
+}
+
 </script>
+
 </body>
 </html>
