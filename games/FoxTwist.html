@@ -11,20 +11,26 @@
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   
 <body>
+
 <header class="nav">
   <div class="nav-inner">
     <a class="brand" href="../index.html">
       <img src="../assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
       <span>BrownDogGames</span>
     </a>
+
    <nav class="nav-links">
-  <a href="../index.html">Home</a>
-  <a href="../games.html">Games</a>
-  <a href="../music.html">Music</a>
-  <a href="../assets.html">Templates & Assets</a>
-  <a href="../support.html">Support</a>
-  <a href="../community.html">Community</a>
-</nav>
+      <a href="../index.html">Home</a>
+      <a href="../games.html">Games</a>
+      <a href="../music.html">Music</a>
+      <a href="../assets.html">Templates & Assets</a>
+      <a href="../support.html">Support</a>
+      <a href="../community.html">Community</a>
+
+      <button id="loginBtn" onclick="login()">Login with GitHub</button>
+      <span id="userDisplay" style="margin-left:10px;"></span>
+   </nav>
+
   </div>
 </header>
 
@@ -42,16 +48,19 @@
         An evil fox witch has stolen the staff from the old fox wizard, unleashing chaos across the land. Dash through vibrant
         levels, dodge traps, defeat enemies, and uncover secrets as you restore the staff and stop the witch’s magic.
       </p>
+
       <div class="hr"></div>
 
       <p class="card-title">Download</p>
       <p class="card-muted">
         Download Fox Twist below.
       </p>
+
       <div class="btn-row">
-        <a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=13S9KroCfcvdpVqUGv1SuXt2fFWWAQhLs&export=download&authuser=0" target="_blank" rel="noopener">Download (Free)</a>
+        <a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=13S9KroCfcvdpVqUGv1SuXt2fFWWAQhLs&export=download&authuser=0" target="_blank">Download (Free)</a>
         <a class="btn" href="../support.html">Get Support</a>
       </div>
+
     </div>
   </section>
 
@@ -60,6 +69,7 @@
       <p class="card-title">Details</p>
       <p class='card-muted'><strong>Platform:</strong> PC</p>
       <p class='card-muted'><strong>Status:</strong> Released</p>
+
       <div class="hr"></div>
       <p class="card-muted">Add version, trailer, and system requirements here anytime.</p>
     </div>
@@ -70,24 +80,138 @@
 
 <section class="card">
   <div class="card-pad">
+
     <p class="card-title">Screenshots</p>
     <p class="card-muted">Click to view larger.</p>
-<div class="gallery" style="margin-top:14px;">
-  <img class="thumb" src="../assets/images/FoxTwisScreenShot1.jpg" data-full="../assets/images/FoxTwisScreenShot1.jpg" alt="Fox Twist screenshot 1">
-  <img class="thumb" src="../assets/images/FoxTwisScreenShot2.jpg" data-full="../assets/images/FoxTwisScreenShot2.jpg" alt="Fox Twist screenshot 2">
-</div>
+
+    <div class="gallery" style="margin-top:14px;">
+      <img class="thumb" src="../assets/images/FoxTwisScreenShot1.jpg" data-full="../assets/images/FoxTwisScreenShot1.jpg">
+      <img class="thumb" src="../assets/images/FoxTwisScreenShot2.jpg" data-full="../assets/images/FoxTwisScreenShot2.jpg">
+    </div>
+
   </div>
 </section>
 
+<div class="hr"></div>
+
+<section class="card">
+<div class="card-pad">
+
+<p class="card-title">Comments</p>
+<p class="card-muted">You must be logged in to comment.</p>
+
+<form onsubmit="addComment(event)">
+<input id="commentInput" placeholder="Write a comment..." required style="width:100%;padding:10px;margin-bottom:10px;">
+<button class="btn btn-primary">Post Comment</button>
+</form>
+
+<div id="commentsList" style="margin-top:20px;"></div>
+
+</div>
+</section>
+
 <div id="imgModal" class="modal" aria-hidden="true">
-  <img id="imgModalImg" alt="Full screenshot"/>
+  <img id="imgModalImg"/>
   <div class="hint">Click outside the image or press ESC to close</div>
 </div>
 
 <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+
 </main>
 
-<script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+<script>
+document.getElementById("y").textContent = new Date().getFullYear();
+</script>
+
 <script src="gallery.js"></script>
+
+
+<script type="module">
+
+import { login, supabase } from "../supabase.js"
+
+window.login = login
+
+async function loadComments(){
+
+const { data } = await supabase
+.from("comments")
+.select("*")
+.eq("game","fox_twist")
+.order("id",{ascending:false})
+
+const list=document.getElementById("commentsList")
+list.innerHTML=""
+
+data.forEach(c=>{
+
+const div=document.createElement("div")
+div.style.padding="10px"
+div.style.borderBottom="1px solid #333"
+
+div.innerText=c.text
+
+list.appendChild(div)
+
+})
+
+}
+
+window.addComment = async function(event){
+
+event.preventDefault()
+
+const { data:{user} } = await supabase.auth.getUser()
+
+if(!user){
+alert("You must login to comment.")
+return
+}
+
+const text=document.getElementById("commentInput").value
+
+await supabase.from("comments").insert({
+game:"fox_twist",
+text:text,
+user_id:user.id
+})
+
+document.getElementById("commentInput").value=""
+
+loadComments()
+
+}
+
+supabase.auth.onAuthStateChange(async (event, session)=>{
+
+if(session){
+
+const btn=document.getElementById("loginBtn")
+if(btn) btn.style.display="none"
+
+const d=document.getElementById("userDisplay")
+if(d) d.innerText="Logged in"
+
+loadComments()
+
+}
+
+})
+
+const {data:{session}} = await supabase.auth.getSession()
+
+if(session){
+
+const btn=document.getElementById("loginBtn")
+if(btn) btn.style.display="none"
+
+const d=document.getElementById("userDisplay")
+if(d) d.innerText="Logged in"
+
+loadComments()
+
+}
+
+</script>
+
 </body>
-</html>
