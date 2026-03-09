@@ -11,12 +11,14 @@
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   
 <body>
+
 <header class="nav">
   <div class="nav-inner">
     <a class="brand" href="index.html">
       <img src="assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
       <span>BrownDogGames</span>
     </a>
+
     <nav class="nav-links">
       <a href="index.html">Home</a>
       <a href="games.html">Games</a>
@@ -24,9 +26,14 @@
       <a href="assets.html">Templates & Assets</a>
       <a href="support.html">Support</a>
       <a href="community.html">Community</a>
-    <button id="loginBtn" onclick="login()">Login with GitHub</button><span id="userDisplay" style="margin-left:10px;"></span></nav>
+
+      <button id="loginBtn" onclick="login()">Login with GitHub</button>
+      <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+      <span id="userDisplay" style="margin-left:10px;"></span>
+    </nav>
   </div>
 </header>
+
 <main class="container">
 
 <section class="hero">
@@ -34,14 +41,15 @@
     <div>
       <h1 class="h1">Games and Unreal Engine templates.</h1>
       <p class="sub">
-        BrownDogGames builds VR and PC games — plus ready‑to‑use Unreal Engine templates and asset packs.
+        BrownDogGames builds VR and PC games — plus ready-to-use Unreal Engine templates and asset packs.
         Download releases, browse the catalog, and grab dev resources.
       </p>
+
       <div class="btn-row">
         <a class="btn btn-primary" href="games.html">Browse Games</a>
         <a class="btn" href="music.html">Browse Music</a>
-         <a class="btn" href="assets.html">Templates & Assets</a>
-         <a class="btn" href="community.html">Community</a>
+        <a class="btn" href="assets.html">Templates & Assets</a>
+        <a class="btn" href="community.html">Community</a>
       </div>
     </div>
 
@@ -49,12 +57,18 @@
       <div class="card-pad">
         <p class="card-title">Featured Game</p>
         <p class="card-muted"><strong>Alive Inside</strong></p>
+
         <div class="hr"></div>
-        <p class="card-muted">A high-energy VR dance game where rhythm meets reflexes! Groove to the music, dodge dynamic obstacles, and unleash your style.</p>
+
+        <p class="card-muted">
+          A high-energy VR dance game where rhythm meets reflexes! Groove to the music, dodge dynamic obstacles, and unleash your style.
+        </p>
+
         <div class="btn-row">
           <a class="btn btn-primary" href="alive-inside.html">Open Game Page</a>
           <a class="btn" href="support.html">Contact</a>
         </div>
+
       </div>
     </div>
   </div>
@@ -70,43 +84,59 @@
   </div>
 </section>
 
-  <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+<footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+
 </main>
-<script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+
+<script>
+document.getElementById("y").textContent = new Date().getFullYear();
+</script>
 
 
 <script type="module">
-import { login, getUser, supabase } from "./supabase.js"
+
+import { login, supabase } from "./supabase.js"
 
 window.login = login
 
-// Wait for Supabase auth state
-supabase.auth.onAuthStateChange(async (event, session) => {
+window.logout = async () => {
+  await supabase.auth.signOut()
+  location.reload()
+}
+
+
+// Auth state change listener
+supabase.auth.onAuthStateChange((event, session) => {
 
   if(session){
-    const btn=document.getElementById("loginBtn")
-    if(btn) btn.style.display="none"
 
-    const d=document.getElementById("userDisplay")
-    if(d) d.innerText="Logged in"
+    document.getElementById("loginBtn").style.display="none"
+    document.getElementById("logoutBtn").style.display="inline-block"
 
-    // now safe to remove token from URL
+    document.getElementById("userDisplay").innerText =
+      session.user.user_metadata.user_name
+
+    // remove access token from URL
     if(window.location.hash.includes("access_token")){
       history.replaceState({},document.title,window.location.pathname)
     }
+
   }
 
 })
 
-// check existing session
+
+// Check existing session on load
 const {data:{session}} = await supabase.auth.getSession()
 
 if(session){
- const btn=document.getElementById("loginBtn")
- if(btn) btn.style.display="none"
 
- const d=document.getElementById("userDisplay")
- if(d) d.innerText="Logged in"
+  document.getElementById("loginBtn").style.display="none"
+  document.getElementById("logoutBtn").style.display="inline-block"
+
+  document.getElementById("userDisplay").innerText =
+    session.user.user_metadata.user_name
+
 }
 
 </script>
