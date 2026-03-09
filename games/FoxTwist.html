@@ -115,7 +115,7 @@ and new content may be added in future versions.
 <button class="btn btn-primary">Post Comment</button>
 </form>
 
-<div id="commentsList"></div>
+<div id="commentsList" style="margin-top:20px;"></div>
 
 </div>
 </section>
@@ -159,10 +159,19 @@ if(!data) return
 data.forEach(c=>{
 
 const div=document.createElement("div")
-div.style.padding="10px"
+
+div.style.display="flex"
+div.style.gap="10px"
+div.style.padding="12px"
 div.style.borderBottom="1px solid #333"
 
-div.innerText=c.text
+div.innerHTML = `
+<img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
+<div>
+<strong>${c.username}</strong><br>
+${c.text}
+</div>
+`
 
 list.appendChild(div)
 
@@ -186,7 +195,9 @@ const text=document.getElementById("commentInput").value
 await supabase.from("comments").insert({
 game: GAME_ID,
 text: text,
-user_id: user.id
+user_id: user.id,
+username: user.user_metadata.user_name,
+avatar_url: user.user_metadata.avatar_url
 })
 
 document.getElementById("commentInput").value=""
@@ -203,7 +214,7 @@ const btn=document.getElementById("loginBtn")
 if(btn) btn.style.display="none"
 
 const d=document.getElementById("userDisplay")
-if(d) d.innerText="Logged in"
+if(d) d.innerText=session.user.user_metadata.user_name
 
 loadComments()
 
@@ -219,7 +230,7 @@ const btn=document.getElementById("loginBtn")
 if(btn) btn.style.display="none"
 
 const d=document.getElementById("userDisplay")
-if(d) d.innerText="Logged in"
+if(d) d.innerText=session.user.user_metadata.user_name
 
 loadComments()
 
