@@ -30,7 +30,6 @@
       <button id="loginBtn" onclick="login()">Login with GitHub</button>
       <span id="userDisplay" style="margin-left:10px;"></span>
    </nav>
-
   </div>
 </header>
 
@@ -40,56 +39,67 @@
 <p class="sub">A magical side-scrolling platform adventure.</p>
 
 <div class="grid" style="grid-template-columns: 1.4fr .6fr;">
-  <section class="card">
-    <div class="card-pad">
-      <p class="card-title">Overview</p>
-      <p class="card-muted">
-        Fox Twist is a side-scrolling platform game that follows the adventures of a young fox on a mission to defend the world.
-        An evil fox witch has stolen the staff from the old fox wizard, unleashing chaos across the land. Dash through vibrant
-        levels, dodge traps, defeat enemies, and uncover secrets as you restore the staff and stop the witch’s magic.
-      </p>
 
-      <div class="hr"></div>
+<section class="card">
+<div class="card-pad">
 
-      <p class="card-title">Download</p>
-      <p class="card-muted">
-        Download Fox Twist below.
-      </p>
+<p class="card-title">Overview</p>
+<p class="card-muted">
+Fox Twist is a side-scrolling platform game that follows the adventures of a young fox on a mission to defend the world.
+An evil fox witch has stolen the staff from the old fox wizard, unleashing chaos across the land. Dash through vibrant
+levels, dodge traps, defeat enemies, and uncover secrets as you restore the staff and stop the witch’s magic.
+</p>
 
-      <div class="btn-row">
-        <a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=13S9KroCfcvdpVqUGv1SuXt2fFWWAQhLs&export=download&authuser=0" target="_blank">Download (Free)</a>
-        <a class="btn" href="../support.html">Get Support</a>
-      </div>
+<div class="hr"></div>
 
-    </div>
-  </section>
+<p class="card-title">Download</p>
+<p class="card-muted">
+Play Fox Twist today and begin your journey across the magical forest.
+</p>
 
-  <aside class="card">
-    <div class="card-pad">
-      <p class="card-title">Details</p>
-      <p class='card-muted'><strong>Platform:</strong> PC</p>
-      <p class='card-muted'><strong>Status:</strong> Released</p>
+<div class="btn-row">
+<a class="btn btn-primary" href="https://drive.usercontent.google.com/download?id=13S9KroCfcvdpVqUGv1SuXt2fFWWAQhLs&export=download&authuser=0" target="_blank">Download (Free)</a>
+<a class="btn" href="../support.html">Get Support</a>
+</div>
 
-      <div class="hr"></div>
-      <p class="card-muted">Add version, trailer, and system requirements here anytime.</p>
-    </div>
-  </aside>
+</div>
+</section>
+
+<aside class="card">
+<div class="card-pad">
+
+<p class="card-title">Game Information</p>
+
+<p class="card-muted"><strong>Platform:</strong> PC</p>
+<p class="card-muted"><strong>Status:</strong> Released</p>
+<p class="card-muted"><strong>Genre:</strong> Platformer Adventure</p>
+
+<div class="hr"></div>
+
+<p class="card-muted">
+Fox Twist is an early release from BrownDogGames. Updates, improvements,
+and new content may be added in future versions.
+</p>
+
+</div>
+</aside>
+
 </div>
 
 <div class="hr"></div>
 
 <section class="card">
-  <div class="card-pad">
+<div class="card-pad">
 
-    <p class="card-title">Screenshots</p>
-    <p class="card-muted">Click to view larger.</p>
+<p class="card-title">Screenshots</p>
+<p class="card-muted">Click an image to view it larger.</p>
 
-    <div class="gallery" style="margin-top:14px;">
-      <img class="thumb" src="../assets/images/FoxTwisScreenShot1.jpg" data-full="../assets/images/FoxTwisScreenShot1.jpg">
-      <img class="thumb" src="../assets/images/FoxTwisScreenShot2.jpg" data-full="../assets/images/FoxTwisScreenShot2.jpg">
-    </div>
+<div class="gallery" style="margin-top:14px;">
+<img class="thumb" src="../assets/images/FoxTwisScreenShot1.jpg" data-full="../assets/images/FoxTwisScreenShot1.jpg">
+<img class="thumb" src="../assets/images/FoxTwisScreenShot2.jpg" data-full="../assets/images/FoxTwisScreenShot2.jpg">
+</div>
 
-  </div>
+</div>
 </section>
 
 <div class="hr"></div>
@@ -97,22 +107,22 @@
 <section class="card">
 <div class="card-pad">
 
-<p class="card-title">Comments</p>
-<p class="card-muted">You must be logged in to comment.</p>
+<p class="card-title">Player Comments</p>
+<p class="card-muted">You must be logged in with GitHub to post a comment.</p>
 
 <form onsubmit="addComment(event)">
 <input id="commentInput" placeholder="Write a comment..." required style="width:100%;padding:10px;margin-bottom:10px;">
 <button class="btn btn-primary">Post Comment</button>
 </form>
 
-<div id="commentsList" style="margin-top:20px;"></div>
+<div id="commentsList"></div>
 
 </div>
 </section>
 
 <div id="imgModal" class="modal" aria-hidden="true">
-  <img id="imgModalImg"/>
-  <div class="hint">Click outside the image or press ESC to close</div>
+<img id="imgModalImg">
+<div class="hint">Click outside the image or press ESC to close</div>
 </div>
 
 <footer class="footer">© <span id="y"></span> BrownDogGames</footer>
@@ -125,23 +135,26 @@ document.getElementById("y").textContent = new Date().getFullYear();
 
 <script src="gallery.js"></script>
 
-
 <script type="module">
 
 import { login, supabase } from "../supabase.js"
 
 window.login = login
 
+const GAME_ID = "fox_twist"
+
 async function loadComments(){
 
 const { data } = await supabase
 .from("comments")
 .select("*")
-.eq("game","fox_twist")
+.eq("game", GAME_ID)
 .order("id",{ascending:false})
 
 const list=document.getElementById("commentsList")
 list.innerHTML=""
+
+if(!data) return
 
 data.forEach(c=>{
 
@@ -164,16 +177,16 @@ event.preventDefault()
 const { data:{user} } = await supabase.auth.getUser()
 
 if(!user){
-alert("You must login to comment.")
+alert("You must login with GitHub to comment.")
 return
 }
 
 const text=document.getElementById("commentInput").value
 
 await supabase.from("comments").insert({
-game:"fox_twist",
-text:text,
-user_id:user.id
+game: GAME_ID,
+text: text,
+user_id: user.id
 })
 
 document.getElementById("commentInput").value=""
