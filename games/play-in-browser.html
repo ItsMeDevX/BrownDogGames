@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
@@ -36,6 +37,7 @@
 </a>
 
 <nav class="nav-links">
+
 <a href="../index.html">Home</a>
 <a href="../games.html">Games</a>
 <a href="../music.html">Music</a>
@@ -46,6 +48,7 @@
 <button id="loginBtn" onclick="login()">Login with GitHub</button>
 <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
 <span id="userDisplay" style="margin-left:10px;"></span>
+
 </nav>
 
 </div>
@@ -101,22 +104,6 @@ style="width:100%;height:720px;border:none;background:#000;margin-top:15px;borde
 <section class="card">
 <div class="card-pad">
 
-<p class="card-title">Screenshots</p>
-<p class="card-muted">Click to view larger.</p>
-
-<div class="gallery" style="margin-top:14px;">
-<img class="thumb" src="../assets/images/sample1.png">
-<img class="thumb" src="../assets/images/sample2.png">
-</div>
-
-</div>
-</section>
-
-<div class="hr"></div>
-
-<section class="card">
-<div class="card-pad">
-
 <p class="card-title">Player Comments</p>
 
 <form onsubmit="addComment(event)">
@@ -141,6 +128,184 @@ document.getElementById("y").textContent = new Date().getFullYear();
 function loadGame(url){
 document.getElementById("gameFrame").src = url;
 }
+</script>
+
+<script type="module">
+
+import { login, supabase } from "../supabase.js"
+
+window.login = login
+
+window.logout = async () => {
+ await supabase.auth.signOut()
+ location.reload()
+}
+
+const GAME_ID = "browser-games"
+
+function escapeHTML(text){
+ return text.replace(/[&<>"']/g, m => ({
+   "&":"&amp;",
+   "<":"&lt;",
+   ">":"&gt;",
+   '"':"&quot;",
+   "'":"&#039;"
+ })[m])
+}
+
+async function loadComments(){
+
+const { data } = await supabase
+.from("comments")
+.select("*")
+.eq("game", GAME_ID)
+.order("id",{ascending:false})
+
+const { data:{session} } = await supabase.auth.getSession()
+const userId = session?.user?.id
+
+const list=document.getElementById("commentsList")
+list.innerHTML=""
+
+if(!data) return
+
+data.forEach(c=>{
+
+const div=document.createElement("div")
+
+div.style.display="flex"
+div.style.gap="10px"
+div.style.padding="12px"
+div.style.borderBottom="1px solid #333"
+
+const deleteBtn = userId===c.user_id
+? `<button onclick="deleteComment(${c.id})">🗑</button>`
+: ""
+
+div.innerHTML = `
+
+<a href="https://github.com/${c.username}" target="_blank">
+<img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
+</a>
+
+<div style="flex:1">
+
+<strong>
+<a href="https://github.com/${c.username}" target="_blank">
+${c.username}
+</a>
+</strong>
+
+<br>
+
+${escapeHTML(c.text)}
+
+<br>
+
+<button onclick="likeComment(${c.id},${c.likes||0})">
+👍 ${c.likes||0}
+</button>
+
+${deleteBtn}
+
+</div>
+`
+
+list.appendChild(div)
+
+})
+
+}
+
+window.addComment = async function(event){
+
+event.preventDefault()
+
+const { data:{session} } = await supabase.auth.getSession()
+
+if(!session){
+alert("Login with GitHub to comment.")
+return
+}
+
+const text=document.getElementById("commentInput").value.trim()
+
+if(text.length<2){
+alert("Comment too short")
+return
+}
+
+if(text.length>300){
+alert("Comment too long")
+return
+}
+
+await supabase.from("comments").insert({
+game: GAME_ID,
+text: text,
+user_id: session.user.id,
+username: session.user.user_metadata.user_name,
+avatar_url: session.user.user_metadata.avatar_url,
+likes:0
+})
+
+document.getElementById("commentInput").value=""
+
+}
+
+window.likeComment = async function(id,currentLikes){
+
+await supabase
+.from("comments")
+.update({likes:currentLikes+1})
+.eq("id",id)
+
+}
+
+window.deleteComment = async function(id){
+
+if(!confirm("Delete this comment?")) return
+
+await supabase
+.from("comments")
+.delete()
+.eq("id",id)
+
+}
+
+supabase
+.channel("comments")
+.on("postgres_changes",
+{ event:"*", schema:"public", table:"comments" },
+payload=>{
+loadComments()
+})
+.subscribe()
+
+supabase.auth.onAuthStateChange((event,session)=>{
+
+if(session){
+
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
+
+}
+
+})
+
+const {data:{session}} = await supabase.auth.getSession()
+
+if(session){
+
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
+
+}
+
+loadComments()
+
 </script>
 
 </body>
