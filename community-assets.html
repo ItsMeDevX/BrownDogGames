@@ -6,22 +6,21 @@
 <title>Community Assets — BrownDogGames</title>
 <link rel="stylesheet" href="styles.css"/>
 <link rel="icon" href="assets/images/MainIcon.png">
+
+<meta name="description" content="Discover and share game assets with the BrownDogGames community. Find templates, models, and resources shared by developers.">
+<meta name="keywords" content="community assets, game assets, Unreal Engine assets, developer resources, BrownDogGames community">
+<meta name="author" content="BrownDogGames">
+
 </head>
 
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
 <script>(function(s){s.dataset.zone='9368472',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-  
-<meta name="description" content="Discover and share game assets with the BrownDogGames community. Find templates, models, and resources shared by developers.">
 
-<meta name="keywords" content="community assets, game assets, Unreal Engine assets, developer resources, BrownDogGames community">
-
-<meta name="author" content="BrownDogGames">
-  
 <body>
 
 <header class="nav">
 <div class="nav-inner">
+
 <a class="brand" href="index.html">
 <img src="assets/images/MainIcon.png" class="site-logo">
 <span>BrownDogGames</span>
@@ -31,7 +30,6 @@
 <a href="index.html">Home</a>
 <a href="community.html">Community</a>
 
-<!-- AUTH BUTTONS -->
 <button id="loginBtn" onclick="login()">Login with GitHub</button>
 <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
 <span id="userDisplay" style="margin-left:10px;"></span>
@@ -47,6 +45,7 @@
 
 <section class="card">
 <div class="card-pad">
+
 <p class="card-title">Add Your Game</p>
 
 <form onsubmit="addLink(event,'assets')">
@@ -66,12 +65,69 @@
 
 </main>
 
+
+<!-- EMBED VIEWER -->
+<div id="embedViewer" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.95);
+display:none;
+z-index:9999;
+flex-direction:column;
+">
+
+<div style="padding:12px;background:#111;color:white;display:flex;justify-content:space-between;align-items:center;">
+<span>Viewer</span>
+<button onclick="closeViewer()" style="padding:6px 12px;">Close</button>
+</div>
+
+<iframe
+id="viewerFrame"
+style="flex:1;border:none;width:100%;height:100%;"
+allowfullscreen
+sandbox="allow-scripts allow-same-origin allow-forms allow-popups">
+</iframe>
+
+</div>
+
+
 <script>
+
 document.getElementById("y").textContent = new Date().getFullYear()
+
+function openViewer(url){
+
+  const viewer = document.getElementById("embedViewer")
+  const frame = document.getElementById("viewerFrame")
+
+  frame.src = url
+  viewer.style.display = "flex"
+
+}
+
+function closeViewer(){
+
+  const viewer = document.getElementById("embedViewer")
+  const frame = document.getElementById("viewerFrame")
+
+  frame.src = ""
+  viewer.style.display = "none"
+
+}
+
+document.addEventListener("keydown", e=>{
+if(e.key==="Escape") closeViewer()
+})
+
 </script>
+
 
 <!-- COMMUNITY SYSTEM -->
 <script type="module">
+
 import { addLink, loadLinks } from "./community.js"
 import { login, supabase } from "./supabase.js"
 
@@ -79,8 +135,10 @@ window.addLink = addLink
 window.login = login
 
 window.logout = async () => {
+
   await supabase.auth.signOut()
   location.reload()
+
 }
 
 loadLinks("assets")
