@@ -2,44 +2,83 @@
 <html lang="en">
 <head>
 
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Play in Browser — BrownDogGames</title>
-
-<link rel="stylesheet" href="../styles.css"/>
-<link rel="icon" href="../assets/images/MainIcon.png">
+<title>BrownDogGames Portal</title>
 
 <style>
 
-.game-list{
-margin-top:20px;
+body{
+background:#111;
+color:white;
+font-family:sans-serif;
+margin:0;
 }
 
-.game-item{
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+#search{
+width:100%;
+padding:12px;
+margin-bottom:20px;
+}
+
+.games{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+gap:20px;
+}
+
+.game{
 border:1px solid #333;
+border-radius:6px;
 padding:10px;
-margin-bottom:10px;
+background:#1a1a1a;
+}
+
+.game img{
+width:100%;
 border-radius:6px;
 }
 
-.game-item img{
-width:200px;
-border-radius:6px;
+button{
+padding:10px;
+margin-top:10px;
+cursor:pointer;
 }
 
-/* FULLSCREEN GAME */
-
-#gameFrame.fullscreen{
+#player{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
-z-index:9999;
-border:none;
-border-radius:0;
 background:black;
+display:none;
+z-index:9999;
+}
+
+#frame{
+width:100%;
+height:100%;
+border:none;
+}
+
+#close{
+position:absolute;
+top:15px;
+right:20px;
+z-index:10000;
+padding:10px;
 }
 
 </style>
@@ -48,49 +87,56 @@ background:black;
 
 <body>
 
-<main class="container">
+<div class="container">
 
-<h1>Browser Games</h1>
+<h1>BrownDogGames Portal</h1>
 
-<input id="searchInput" placeholder="Search games..." style="width:100%;padding:10px;margin-bottom:20px;">
+<input id="search" placeholder="Search games...">
 
-<div id="gameList" class="game-list"></div>
+<h2>FreeToGame Browser Games</h2>
+<div id="freeGames" class="games"></div>
 
-<h2>Game Player</h2>
+<h2>Itch.io HTML5 Games</h2>
+<div id="itchGames" class="games"></div>
 
-<iframe id="gameFrame"
-style="width:100%;height:700px;border:none;background:black;border-radius:8px;">
-</iframe>
+<button onclick="loadMoreItch()">Load More itch.io Games</button>
 
-</main>
+</div>
+
+<div id="player">
+<button id="close">Close</button>
+<iframe id="frame"></iframe>
+</div>
 
 <script>
 
-let allGames=[]
+let freeGames=[]
+let itchGames=[]
+let itchPage=1
 
 /* =========================
-LOAD API THROUGH PROXY
+LOAD FREETOGAME
 ========================= */
 
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
 .then(games=>{
 
-allGames = games
+freeGames = games
 
-renderGames(games)
+renderFreeGames(games)
 
 })
 
-function renderGames(games){
+function renderFreeGames(games){
 
-const list=document.getElementById("gameList")
-list.innerHTML=""
+const container=document.getElementById("freeGames")
+container.innerHTML=""
 
 games.forEach(game=>{
 
 const div=document.createElement("div")
-div.className="game-item"
+div.className="game"
 
 div.innerHTML=`
 
@@ -100,58 +146,121 @@ div.innerHTML=`
 
 <p>${game.short_description}</p>
 
-<a href="${game.game_url}" target="_blank">
-${game.game_url}
-</a>
-
-<br><br>
-
-<button>Play in Frame</button>
+<button>Play</button>
 
 `
 
 div.querySelector("button").onclick=()=>{
-
-const frame=document.getElementById("gameFrame")
-
-frame.src = game.game_url
-
-frame.classList.add("fullscreen")
-
+openGame(game.game_url)
 }
 
-list.appendChild(div)
+container.appendChild(div)
 
 })
 
 }
 
 /* =========================
-SEARCH
+LOAD ITCH.IO
 ========================= */
 
-document.getElementById("searchInput").addEventListener("input",function(){
+async function loadMoreItch(){
 
-const q=this.value.toLowerCase()
+const proxy="https://api.allorigins.win/raw?url="
+const url=`https://itch.io/games/html5?page=${itchPage}`
 
-const filtered=allGames.filter(g=>
-g.title.toLowerCase().includes(q)
-)
+const res=await fetch(proxy+encodeURIComponent(url))
+const html=await res.text()
 
-renderGames(filtered)
+const parser=new DOMParser()
+const doc=parser.parseFromString(html,"text/html")
+
+const items=doc.querySelectorAll(".game_cell")
+
+items.forEach(item=>{
+
+const title=item.querySelector(".title").innerText
+const link=item.querySelector("a").href
+
+const game={title,link}
+
+itchGames.push(game)
+
+renderItchGame(game)
 
 })
 
-/* ESC KEY TO EXIT FULLSCREEN */
+itchPage++
+
+}
+
+function renderItchGame(game){
+
+const container=document.getElementById("itchGames")
+
+const div=document.createElement("div")
+div.className="game"
+
+div.innerHTML=`
+
+<h3>${game.title}</h3>
+
+<button>Open Game</button>
+
+`
+
+div.querySelector("button").onclick=()=>{
+window.open(game.link,"_blank")
+}
+
+container.appendChild(div)
+
+}
+
+loadMoreItch()
+
+/* =========================
+SEARCH
+========================= */
+
+document.getElementById("search").addEventListener("input",function(){
+
+const q=this.value.toLowerCase()
+
+const filtered=freeGames.filter(g=>
+g.title.toLowerCase().includes(q)
+)
+
+renderFreeGames(filtered)
+
+})
+
+/* =========================
+GAME PLAYER
+========================= */
+
+function openGame(url){
+
+document.getElementById("player").style.display="block"
+
+document.getElementById("frame").src=url
+
+}
+
+document.getElementById("close").onclick=function(){
+
+document.getElementById("player").style.display="none"
+
+document.getElementById("frame").src=""
+
+}
 
 document.addEventListener("keydown",function(e){
 
 if(e.key==="Escape"){
 
-const frame=document.getElementById("gameFrame")
-
-frame.classList.remove("fullscreen")
-frame.src=""
+document.getElementById("player").style.display="none"
+document.getElementById("frame").src=""
 
 }
 
