@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-
 <head>
 
 <meta charset="utf-8"/>
@@ -13,18 +12,6 @@
 
 <style>
 
-body{
-background:#0f0f0f;
-color:white;
-font-family:sans-serif;
-}
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
-
 .game-list{
 margin-top:20px;
 }
@@ -34,7 +21,6 @@ border:1px solid #333;
 padding:10px;
 margin-bottom:10px;
 border-radius:6px;
-background:#1a1a1a;
 }
 
 .game-item img{
@@ -42,18 +28,7 @@ width:200px;
 border-radius:6px;
 }
 
-/* CATEGORY FILTER */
-
-select{
-width:100%;
-padding:10px;
-margin-bottom:20px;
-background:#111;
-color:white;
-border:1px solid #333;
-}
-
-/* FULLSCREEN OVERLAY */
+/* FULLSCREEN GAME PLAYER */
 
 #gameOverlay{
 position:fixed;
@@ -70,44 +45,35 @@ z-index:9999;
 width:100%;
 height:100%;
 border:none;
-}
-
-/* BUTTONS */
-
-.overlay-btn{
-position:absolute;
-top:20px;
-padding:10px 15px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-color:white;
+background:black;
 }
 
 #closeGame{
+position:absolute;
+top:20px;
 right:20px;
-background:red;
+padding:10px;
 }
 
 #fullscreenBtn{
-right:110px;
-background:#3b82f6;
+position:absolute;
+top:20px;
+right:120px;
+padding:10px;
 }
 
-/* LOADING */
-
-#loadingScreen{
+#loading{
 position:absolute;
 top:0;
 left:0;
 width:100%;
 height:100%;
 background:black;
+color:white;
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:24px;
-z-index:5;
+font-size:22px;
 }
 
 </style>
@@ -120,28 +86,20 @@ z-index:5;
 
 <h1>Browser Games</h1>
 
-<select id="categoryFilter">
-<option value="all">All Categories</option>
-<option value="MMORPG">MMORPG</option>
-<option value="Shooter">Shooter</option>
-<option value="Strategy">Strategy</option>
-<option value="Card">Card</option>
-<option value="Racing">Racing</option>
-<option value="Sports">Sports</option>
-</select>
+<input id="searchInput" placeholder="Search games..." style="width:100%;padding:10px;margin-bottom:20px;">
 
 <div id="gameList" class="game-list"></div>
 
 </main>
 
-<!-- GAME OVERLAY -->
+<!-- FULLSCREEN PLAYER -->
 
 <div id="gameOverlay">
 
-<button id="closeGame" class="overlay-btn">Close</button>
-<button id="fullscreenBtn" class="overlay-btn">Fullscreen</button>
+<button id="closeGame">Close</button>
+<button id="fullscreenBtn">Fullscreen</button>
 
-<div id="loadingScreen">Loading Game...</div>
+<div id="loading">Loading Game...</div>
 
 <iframe id="gameFrame"></iframe>
 
@@ -151,7 +109,7 @@ z-index:5;
 
 let allGames=[]
 
-/* LOAD GAMES */
+/* LOAD API */
 
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
@@ -183,13 +141,13 @@ div.innerHTML=`
 
 <p>${game.short_description}</p>
 
-<p><b>${game.genre}</b></p>
-
-<a href="${game.game_url}" target="_blank">${game.game_url}</a>
+<a href="${game.game_url}" target="_blank">
+${game.game_url}
+</a>
 
 <br><br>
 
-<button>Play Game</button>
+<button>Play in Frame</button>
 
 `
 
@@ -197,16 +155,14 @@ div.querySelector("button").onclick=()=>{
 
 document.getElementById("gameOverlay").style.display="block"
 
-document.getElementById("loadingScreen").style.display="flex"
-
 const frame=document.getElementById("gameFrame")
+
+document.getElementById("loading").style.display="flex"
 
 frame.src = game.game_url
 
 frame.onload=()=>{
-
-document.getElementById("loadingScreen").style.display="none"
-
+document.getElementById("loading").style.display="none"
 }
 
 }
@@ -217,18 +173,15 @@ list.appendChild(div)
 
 }
 
-/* CATEGORY FILTER */
+/* SEARCH */
 
-document.getElementById("categoryFilter").addEventListener("change",function(){
+document.getElementById("searchInput").addEventListener("input",function(){
 
-const cat=this.value
+const q=this.value.toLowerCase()
 
-if(cat==="all"){
-renderGames(allGames)
-return
-}
-
-const filtered=allGames.filter(g=>g.genre===cat)
+const filtered=allGames.filter(g=>
+g.title.toLowerCase().includes(q)
+)
 
 renderGames(filtered)
 
@@ -256,7 +209,7 @@ closeGame()
 
 })
 
-/* FULLSCREEN BUTTON */
+/* FULLSCREEN */
 
 document.getElementById("fullscreenBtn").onclick=function(){
 
@@ -271,5 +224,4 @@ iframe.requestFullscreen()
 </script>
 
 </body>
-
 </html>
