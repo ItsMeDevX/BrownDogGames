@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
 
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 
 <title>BrownDogGames Portal</title>
 
 <style>
 
 body{
+font-family:sans-serif;
 background:#111;
 color:white;
-font-family:sans-serif;
 margin:0;
 }
 
@@ -20,16 +20,6 @@ margin:0;
 max-width:1200px;
 margin:auto;
 padding:20px;
-}
-
-h1{
-margin-bottom:20px;
-}
-
-#search{
-width:100%;
-padding:12px;
-margin-bottom:20px;
 }
 
 .games{
@@ -77,8 +67,8 @@ border:none;
 position:absolute;
 top:15px;
 right:20px;
-z-index:10000;
 padding:10px;
+z-index:10000;
 }
 
 </style>
@@ -89,17 +79,9 @@ padding:10px;
 
 <div class="container">
 
-<h1>BrownDogGames Portal</h1>
+<h1>Browser Games</h1>
 
-<input id="search" placeholder="Search games...">
-
-<h2>FreeToGame Browser Games</h2>
-<div id="freeGames" class="games"></div>
-
-<h2>Itch.io HTML5 Games</h2>
-<div id="itchGames" class="games"></div>
-
-<button onclick="loadMoreItch()">Load More itch.io Games</button>
+<div id="games" class="games"></div>
 
 </div>
 
@@ -110,27 +92,21 @@ padding:10px;
 
 <script>
 
-let freeGames=[]
-let itchGames=[]
-let itchPage=1
-
-/* =========================
-LOAD FREETOGAME
-========================= */
+let allGames=[]
 
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
 .then(games=>{
 
-freeGames = games
+allGames = games
 
-renderFreeGames(games)
+renderGames(games)
 
 })
 
-function renderFreeGames(games){
+function renderGames(games){
 
-const container=document.getElementById("freeGames")
+const container=document.getElementById("games")
 container.innerHTML=""
 
 games.forEach(game=>{
@@ -146,7 +122,7 @@ div.innerHTML=`
 
 <p>${game.short_description}</p>
 
-<button>Play</button>
+<button>Play Game</button>
 
 `
 
@@ -160,89 +136,9 @@ container.appendChild(div)
 
 }
 
-/* =========================
-LOAD ITCH.IO
-========================= */
-
-async function loadMoreItch(){
-
-const proxy="https://api.allorigins.win/raw?url="
-const url=`https://itch.io/games/html5?page=${itchPage}`
-
-const res=await fetch(proxy+encodeURIComponent(url))
-const html=await res.text()
-
-const parser=new DOMParser()
-const doc=parser.parseFromString(html,"text/html")
-
-const items=doc.querySelectorAll(".game_cell")
-
-items.forEach(item=>{
-
-const title=item.querySelector(".title").innerText
-const link=item.querySelector("a").href
-
-const game={title,link}
-
-itchGames.push(game)
-
-renderItchGame(game)
-
-})
-
-itchPage++
-
-}
-
-function renderItchGame(game){
-
-const container=document.getElementById("itchGames")
-
-const div=document.createElement("div")
-div.className="game"
-
-div.innerHTML=`
-
-<h3>${game.title}</h3>
-
-<button>Open Game</button>
-
-`
-
-div.querySelector("button").onclick=()=>{
-window.open(game.link,"_blank")
-}
-
-container.appendChild(div)
-
-}
-
-loadMoreItch()
-
-/* =========================
-SEARCH
-========================= */
-
-document.getElementById("search").addEventListener("input",function(){
-
-const q=this.value.toLowerCase()
-
-const filtered=freeGames.filter(g=>
-g.title.toLowerCase().includes(q)
-)
-
-renderFreeGames(filtered)
-
-})
-
-/* =========================
-GAME PLAYER
-========================= */
-
 function openGame(url){
 
 document.getElementById("player").style.display="block"
-
 document.getElementById("frame").src=url
 
 }
@@ -250,7 +146,6 @@ document.getElementById("frame").src=url
 document.getElementById("close").onclick=function(){
 
 document.getElementById("player").style.display="none"
-
 document.getElementById("frame").src=""
 
 }
