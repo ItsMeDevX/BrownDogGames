@@ -28,7 +28,7 @@ width:200px;
 border-radius:6px;
 }
 
-/* FULLSCREEN GAME PLAYER */
+/* FULL PAGE PLAYER */
 
 #gameOverlay{
 position:fixed;
@@ -50,12 +50,9 @@ background:black;
 
 #closeGame{
 position:absolute;
-top:15px;
+top:20px;
 right:20px;
-padding:10px 15px;
-border:none;
-border-radius:6px;
-cursor:pointer;
+padding:10px;
 z-index:10000;
 }
 
@@ -73,30 +70,20 @@ z-index:10000;
 
 </main>
 
-<!-- FULLSCREEN PLAYER -->
-
 <div id="gameOverlay">
-
 <button id="closeGame">Close</button>
-
 <iframe id="gameFrame"></iframe>
-
 </div>
 
 <script>
 
 let allGames=[]
 
-/* =========================
-LOAD API THROUGH PROXY
-========================= */
-
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
 .then(games=>{
 
 allGames = games
-
 renderGames(games)
 
 })
@@ -111,7 +98,7 @@ games.forEach(game=>{
 const div=document.createElement("div")
 div.className="game-item"
 
-div.innerHTML=`
+div.innerHTML = `
 
 <img src="${game.thumbnail}">
 
@@ -142,8 +129,6 @@ list.appendChild(div)
 })
 
 }
-
-/* CLOSE BUTTON */
 
 document.getElementById("closeGame").onclick=function(){
 
