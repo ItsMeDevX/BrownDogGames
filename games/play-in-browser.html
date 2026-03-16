@@ -12,6 +12,40 @@
 
 <meta name="description" content="Play browser games directly on BrownDogGames.">
 
+<style>
+
+.game-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+gap:15px;
+margin-top:20px;
+}
+
+.game-card{
+border:1px solid #333;
+padding:10px;
+border-radius:8px;
+background:#111;
+}
+
+.game-card img{
+width:100%;
+border-radius:6px;
+}
+
+.game-title{
+font-weight:bold;
+margin-top:8px;
+}
+
+.game-desc{
+font-size:13px;
+opacity:0.8;
+margin-top:5px;
+}
+
+</style>
+
 </head>
 
 <body>
@@ -57,12 +91,16 @@ Free browser games powered by FreeToGame API
 
 <p class="card-title">Game Library</p>
 
-<input id="searchInput" placeholder="Search games..." style="width:100%;padding:10px;margin-bottom:15px;">
+<input id="searchInput"
+placeholder="Search games..."
+style="width:100%;padding:10px;margin-bottom:15px;">
 
-<div id="gameButtons" class="btn-row" style="flex-wrap:wrap;"></div>
+<div id="gameGrid" class="game-grid"></div>
+
+<h2 style="margin-top:30px">Game Player</h2>
 
 <iframe id="gameFrame"
-style="width:100%;height:720px;border:none;background:#000;margin-top:15px;border-radius:8px;">
+style="width:100%;height:720px;border:none;background:#000;margin-top:10px;border-radius:8px;">
 </iframe>
 
 </div>
@@ -76,7 +114,11 @@ style="width:100%;height:720px;border:none;background:#000;margin-top:15px;borde
 <p class="card-title">Player Comments</p>
 
 <form onsubmit="addComment(event)">
-<input id="commentInput" placeholder="Write a comment..." required style="width:100%;padding:10px;margin-bottom:10px;">
+<input id="commentInput"
+placeholder="Write a comment..."
+required
+style="width:100%;padding:10px;margin-bottom:10px;">
+
 <button class="btn btn-primary">Post Comment</button>
 </form>
 
@@ -90,14 +132,12 @@ style="width:100%;height:720px;border:none;background:#000;margin-top:15px;borde
 </main>
 
 <script>
+
 document.getElementById("y").textContent = new Date().getFullYear()
-</script>
 
-<script>
-
-/* ===============================
-LOAD GAMES FROM FREETOGAME API
-=============================== */
+/* ============================
+LOAD GAMES FROM API
+============================ */
 
 let allGames=[]
 
@@ -113,34 +153,56 @@ renderGames(games)
 
 function renderGames(games){
 
-const container=document.getElementById("gameButtons")
-container.innerHTML=""
+const grid=document.getElementById("gameGrid")
+grid.innerHTML=""
 
 games.forEach(game=>{
 
-const btn=document.createElement("button")
+const card=document.createElement("div")
+card.className="game-card"
 
-btn.className="btn"
+card.innerHTML=`
 
-btn.innerText=game.title
+<img src="${game.thumbnail}">
 
-btn.onclick=()=>{
+<div class="game-title">${game.title}</div>
 
+<div class="game-desc">
+${game.short_description}
+</div>
+
+<div style="margin-top:6px;font-size:12px">
+Genre: ${game.genre}
+</div>
+
+<a href="${game.game_url}" target="_blank">
+${game.game_url}
+</a>
+
+<br><br>
+
+<button class="btn">
+Play in Frame
+</button>
+
+`
+
+card.querySelector("button").onclick=()=>{
 document.getElementById("gameFrame").src = game.game_url
-
 }
 
-container.appendChild(btn)
+grid.appendChild(card)
 
 })
 
 }
 
-/* ===============================
+/* ============================
 SEARCH
-=============================== */
+============================ */
 
-document.getElementById("searchInput").addEventListener("input",function(){
+document.getElementById("searchInput")
+.addEventListener("input",function(){
 
 const q=this.value.toLowerCase()
 
@@ -168,12 +230,12 @@ window.logout = async () => {
 const GAME_ID = "browser-games"
 
 function escapeHTML(text){
- return text.replace(/[&<>"']/g, m => ({
-   "&":"&amp;",
-   "<":"&lt;",
-   ">":"&gt;",
-   '"':"&quot;",
-   "'":"&#039;"
+ return text.replace(/[&<>"']/g,m=>({
+ "&":"&amp;",
+ "<":"&lt;",
+ ">":"&gt;",
+ '"':"&quot;",
+ "'":"&#039;"
  })[m])
 }
 
@@ -182,7 +244,7 @@ async function loadComments(){
 const { data } = await supabase
 .from("comments")
 .select("*")
-.eq("game", GAME_ID)
+.eq("game",GAME_ID)
 .order("id",{ascending:false})
 
 const { data:{session} } = await supabase.auth.getSession()
@@ -206,7 +268,7 @@ const deleteBtn = userId===c.user_id
 ? `<button onclick="deleteComment(${c.id})">🗑</button>`
 : ""
 
-div.innerHTML = `
+div.innerHTML=`
 
 <a href="https://github.com/${c.username}" target="_blank">
 <img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
@@ -255,12 +317,14 @@ return
 const text=document.getElementById("commentInput").value.trim()
 
 await supabase.from("comments").insert({
+
 game: GAME_ID,
 text: text,
 user_id: session.user.id,
 username: session.user.user_metadata.user_name,
 avatar_url: session.user.user_metadata.avatar_url,
 likes:0
+
 })
 
 document.getElementById("commentInput").value=""
