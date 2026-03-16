@@ -10,38 +10,22 @@
 <link rel="stylesheet" href="../styles.css"/>
 <link rel="icon" href="../assets/images/MainIcon.png">
 
-<meta name="description" content="Play browser games directly on BrownDogGames.">
-
 <style>
 
-.game-grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-gap:15px;
+.game-list{
 margin-top:20px;
 }
 
-.game-card{
+.game-item{
 border:1px solid #333;
 padding:10px;
-border-radius:8px;
-background:#111;
-}
-
-.game-card img{
-width:100%;
+margin-bottom:10px;
 border-radius:6px;
 }
 
-.game-title{
-font-weight:bold;
-margin-top:8px;
-}
-
-.game-desc{
-font-size:13px;
-opacity:0.8;
-margin-top:5px;
+.game-item img{
+width:200px;
+border-radius:6px;
 }
 
 </style>
@@ -50,98 +34,31 @@ margin-top:5px;
 
 <body>
 
-<header class="nav">
-<div class="nav-inner">
-
-<a class="brand" href="../index.html">
-<img src="../assets/images/MainIcon.png" class="site-logo">
-<span>BrownDogGames</span>
-</a>
-
-<nav class="nav-links">
-
-<a href="../index.html">Home</a>
-<a href="../games.html">Games</a>
-<a href="../music.html">Music</a>
-<a href="../assets.html">Templates & Assets</a>
-<a href="../support.html">Support</a>
-<a href="../community.html">Community</a>
-
-<button id="loginBtn" onclick="login()">Login with GitHub</button>
-<button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
-<span id="userDisplay"></span>
-
-</nav>
-
-</div>
-</header>
-
 <main class="container">
 
-<h1 class="h1">Play in Browser</h1>
+<h1>Browser Games</h1>
 
-<p class="sub">
-Free browser games powered by FreeToGame API
-</p>
+<input id="searchInput" placeholder="Search games..." style="width:100%;padding:10px;margin-bottom:20px;">
 
-<div class="hr"></div>
+<div id="gameList" class="game-list"></div>
 
-<section class="card">
-<div class="card-pad">
-
-<p class="card-title">Game Library</p>
-
-<input id="searchInput"
-placeholder="Search games..."
-style="width:100%;padding:10px;margin-bottom:15px;">
-
-<div id="gameGrid" class="game-grid"></div>
-
-<h2 style="margin-top:30px">Game Player</h2>
+<h2>Game Player</h2>
 
 <iframe id="gameFrame"
-style="width:100%;height:720px;border:none;background:#000;margin-top:10px;border-radius:8px;">
+style="width:100%;height:700px;border:none;background:black;border-radius:8px;">
 </iframe>
-
-</div>
-</section>
-
-<div class="hr"></div>
-
-<section class="card">
-<div class="card-pad">
-
-<p class="card-title">Player Comments</p>
-
-<form onsubmit="addComment(event)">
-<input id="commentInput"
-placeholder="Write a comment..."
-required
-style="width:100%;padding:10px;margin-bottom:10px;">
-
-<button class="btn btn-primary">Post Comment</button>
-</form>
-
-<div id="commentsList" style="margin-top:20px;"></div>
-
-</div>
-</section>
-
-<footer class="footer">© <span id="y"></span> BrownDogGames</footer>
 
 </main>
 
 <script>
 
-document.getElementById("y").textContent = new Date().getFullYear()
-
-/* ============================
-LOAD GAMES FROM API
-============================ */
-
 let allGames=[]
 
-fetch("https://www.freetogame.com/api/games?platform=browser")
+/* =========================
+LOAD API THROUGH PROXY
+========================= */
+
+fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
 .then(games=>{
 
@@ -153,27 +70,21 @@ renderGames(games)
 
 function renderGames(games){
 
-const grid=document.getElementById("gameGrid")
-grid.innerHTML=""
+const list=document.getElementById("gameList")
+list.innerHTML=""
 
 games.forEach(game=>{
 
-const card=document.createElement("div")
-card.className="game-card"
+const div=document.createElement("div")
+div.className="game-item"
 
-card.innerHTML=`
+div.innerHTML=`
 
 <img src="${game.thumbnail}">
 
-<div class="game-title">${game.title}</div>
+<h3>${game.title}</h3>
 
-<div class="game-desc">
-${game.short_description}
-</div>
-
-<div style="margin-top:6px;font-size:12px">
-Genre: ${game.genre}
-</div>
+<p>${game.short_description}</p>
 
 <a href="${game.game_url}" target="_blank">
 ${game.game_url}
@@ -181,28 +92,25 @@ ${game.game_url}
 
 <br><br>
 
-<button class="btn">
-Play in Frame
-</button>
+<button>Play in Frame</button>
 
 `
 
-card.querySelector("button").onclick=()=>{
+div.querySelector("button").onclick=()=>{
 document.getElementById("gameFrame").src = game.game_url
 }
 
-grid.appendChild(card)
+list.appendChild(div)
 
 })
 
 }
 
-/* ============================
+/* =========================
 SEARCH
-============================ */
+========================= */
 
-document.getElementById("searchInput")
-.addEventListener("input",function(){
+document.getElementById("searchInput").addEventListener("input",function(){
 
 const q=this.value.toLowerCase()
 
@@ -213,154 +121,6 @@ g.title.toLowerCase().includes(q)
 renderGames(filtered)
 
 })
-
-</script>
-
-<script type="module">
-
-import { login, supabase } from "../supabase.js"
-
-window.login = login
-
-window.logout = async () => {
- await supabase.auth.signOut()
- location.reload()
-}
-
-const GAME_ID = "browser-games"
-
-function escapeHTML(text){
- return text.replace(/[&<>"']/g,m=>({
- "&":"&amp;",
- "<":"&lt;",
- ">":"&gt;",
- '"':"&quot;",
- "'":"&#039;"
- })[m])
-}
-
-async function loadComments(){
-
-const { data } = await supabase
-.from("comments")
-.select("*")
-.eq("game",GAME_ID)
-.order("id",{ascending:false})
-
-const { data:{session} } = await supabase.auth.getSession()
-const userId = session?.user?.id
-
-const list=document.getElementById("commentsList")
-list.innerHTML=""
-
-if(!data) return
-
-data.forEach(c=>{
-
-const div=document.createElement("div")
-
-div.style.display="flex"
-div.style.gap="10px"
-div.style.padding="12px"
-div.style.borderBottom="1px solid #333"
-
-const deleteBtn = userId===c.user_id
-? `<button onclick="deleteComment(${c.id})">🗑</button>`
-: ""
-
-div.innerHTML=`
-
-<a href="https://github.com/${c.username}" target="_blank">
-<img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
-</a>
-
-<div style="flex:1">
-
-<strong>
-<a href="https://github.com/${c.username}" target="_blank">
-${c.username}
-</a>
-</strong>
-
-<br>
-
-${escapeHTML(c.text)}
-
-<br>
-
-<button onclick="likeComment(${c.id},${c.likes||0})">
-👍 ${c.likes||0}
-</button>
-
-${deleteBtn}
-
-</div>
-`
-
-list.appendChild(div)
-
-})
-
-}
-
-window.addComment = async function(event){
-
-event.preventDefault()
-
-const { data:{session} } = await supabase.auth.getSession()
-
-if(!session){
-alert("Login with GitHub to comment.")
-return
-}
-
-const text=document.getElementById("commentInput").value.trim()
-
-await supabase.from("comments").insert({
-
-game: GAME_ID,
-text: text,
-user_id: session.user.id,
-username: session.user.user_metadata.user_name,
-avatar_url: session.user.user_metadata.avatar_url,
-likes:0
-
-})
-
-document.getElementById("commentInput").value=""
-
-}
-
-window.likeComment = async function(id,currentLikes){
-
-await supabase
-.from("comments")
-.update({likes:currentLikes+1})
-.eq("id",id)
-
-}
-
-window.deleteComment = async function(id){
-
-if(!confirm("Delete this comment?")) return
-
-await supabase
-.from("comments")
-.delete()
-.eq("id",id)
-
-}
-
-supabase
-.channel("comments")
-.on("postgres_changes",
-{ event:"*", schema:"public", table:"comments" },
-payload=>{
-loadComments()
-})
-.subscribe()
-
-loadComments()
 
 </script>
 
