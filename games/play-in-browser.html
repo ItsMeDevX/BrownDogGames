@@ -5,63 +5,30 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-<title>Browser Games — BrownDogGames</title>
+<title>Play in Browser — BrownDogGames</title>
 
 <link rel="stylesheet" href="../styles.css"/>
 <link rel="icon" href="../assets/images/MainIcon.png">
 
 <style>
 
-body{
-background:#0f0f0f;
-color:white;
-font-family:sans-serif;
-}
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
-
 .game-list{
 margin-top:20px;
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-gap:20px;
 }
 
 .game-item{
 border:1px solid #333;
 padding:10px;
-border-radius:8px;
-background:#1a1a1a;
+margin-bottom:10px;
+border-radius:6px;
 }
 
 .game-item img{
-width:100%;
+width:200px;
 border-radius:6px;
 }
 
-button{
-padding:10px 15px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-background:#3b82f6;
-color:white;
-margin-top:10px;
-}
-
-select{
-padding:10px;
-margin-top:10px;
-background:#111;
-color:white;
-border:1px solid #333;
-}
-
-/* GAME OVERLAY */
+/* FULLSCREEN GAME PLAYER */
 
 #gameOverlay{
 position:fixed;
@@ -74,7 +41,7 @@ display:none;
 z-index:9999;
 }
 
-#gameFrame{
+#gameOverlay iframe{
 width:100%;
 height:100%;
 border:none;
@@ -84,30 +51,14 @@ border:none;
 position:absolute;
 top:15px;
 right:20px;
+padding:10px 15px;
 background:red;
-}
-
-#fullscreenBtn{
-position:absolute;
-top:15px;
-right:100px;
-background:#3b82f6;
-}
-
-/* LOADING SCREEN */
-
-#loadingScreen{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:black;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:22px;
-z-index:5;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-size:16px;
+z-index:10000;
 }
 
 </style>
@@ -120,32 +71,15 @@ z-index:5;
 
 <h1>Browser Games</h1>
 
-<label>Category:</label>
-
-<select id="categoryFilter">
-<option value="all">All</option>
-<option value="MMORPG">MMORPG</option>
-<option value="Shooter">Shooter</option>
-<option value="Strategy">Strategy</option>
-<option value="Card">Card</option>
-<option value="Racing">Racing</option>
-<option value="Fighting">Fighting</option>
-<option value="Social">Social</option>
-<option value="Sports">Sports</option>
-</select>
-
 <div id="gameList" class="game-list"></div>
 
 </main>
 
-<!-- GAME OVERLAY -->
+<!-- FULLSCREEN GAME PLAYER -->
 
 <div id="gameOverlay">
 
 <button id="closeGame">Close</button>
-<button id="fullscreenBtn">Fullscreen</button>
-
-<div id="loadingScreen">Loading Game...</div>
 
 <iframe id="gameFrame"></iframe>
 
@@ -158,10 +92,8 @@ let allGames=[]
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
 .then(games=>{
-
 allGames = games
 renderGames(games)
-
 })
 
 function renderGames(games){
@@ -182,7 +114,7 @@ div.innerHTML=`
 
 <p>${game.short_description}</p>
 
-<p><b>${game.genre}</b></p>
+<br>
 
 <button>Play Game</button>
 
@@ -190,16 +122,8 @@ div.innerHTML=`
 
 div.querySelector("button").onclick=()=>{
 
+document.getElementById("gameFrame").src = game.game_url
 document.getElementById("gameOverlay").style.display="block"
-document.getElementById("loadingScreen").style.display="flex"
-
-const frame=document.getElementById("gameFrame")
-
-frame.src=game.game_url
-
-frame.onload=()=>{
-document.getElementById("loadingScreen").style.display="none"
-}
 
 }
 
@@ -209,53 +133,12 @@ list.appendChild(div)
 
 }
 
-/* CATEGORY FILTER */
-
-document.getElementById("categoryFilter").addEventListener("change",function(){
-
-const cat=this.value
-
-if(cat==="all"){
-renderGames(allGames)
-return
-}
-
-const filtered=allGames.filter(g=>g.genre===cat)
-
-renderGames(filtered)
-
-})
-
 /* CLOSE GAME */
 
-function closeGame(){
+document.getElementById("closeGame").onclick=()=>{
 
 document.getElementById("gameOverlay").style.display="none"
 document.getElementById("gameFrame").src=""
-
-}
-
-document.getElementById("closeGame").onclick=closeGame
-
-/* ESC KEY CLOSE */
-
-document.addEventListener("keydown",function(e){
-
-if(e.key==="Escape"){
-closeGame()
-}
-
-})
-
-/* FULLSCREEN */
-
-document.getElementById("fullscreenBtn").onclick=function(){
-
-const iframe=document.getElementById("gameFrame")
-
-if(iframe.requestFullscreen){
-iframe.requestFullscreen()
-}
 
 }
 
