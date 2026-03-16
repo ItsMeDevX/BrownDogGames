@@ -8,15 +8,9 @@
 <title>Play in Browser — BrownDogGames</title>
 
 <link rel="stylesheet" href="../styles.css"/>
-<link rel="icon" href="../assets/images/MainIcon.png" type="image/png">
+<link rel="icon" href="../assets/images/MainIcon.png">
 
-<script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
-<script>(function(s){s.dataset.zone='9368472',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-  
 <meta name="description" content="Play browser games directly on BrownDogGames.">
-<meta name="keywords" content="browser games, html5 games, play online games">
-<meta name="author" content="BrownDogGames">
 
 </head>
 
@@ -26,7 +20,7 @@
 <div class="nav-inner">
 
 <a class="brand" href="../index.html">
-<img src="../assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
+<img src="../assets/images/MainIcon.png" class="site-logo">
 <span>BrownDogGames</span>
 </a>
 
@@ -41,7 +35,7 @@
 
 <button id="loginBtn" onclick="login()">Login with GitHub</button>
 <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
-<span id="userDisplay" style="margin-left:10px;"></span>
+<span id="userDisplay"></span>
 
 </nav>
 
@@ -53,7 +47,7 @@
 <h1 class="h1">Play in Browser</h1>
 
 <p class="sub">
-Play HTML games directly inside your browser.
+Free browser games powered by FreeToGame API
 </p>
 
 <div class="hr"></div>
@@ -63,28 +57,9 @@ Play HTML games directly inside your browser.
 
 <p class="card-title">Game Library</p>
 
-<p class="card-muted">
-Select a game to start playing.
-</p>
+<input id="searchInput" placeholder="Search games..." style="width:100%;padding:10px;margin-bottom:15px;">
 
-<div class="btn-row">
-
-<button class="btn btn-primary"
-onclick="loadGame('https://venerable-scone-2b1b19.netlify.app/')">
-Breakout Game
-</button>
-
-<button class="btn"
-onclick="loadGame('https://inquisitive-melba-d19a9d.netlify.app/')">
-Snake Game
-</button>
-
-<button class="btn"
-onclick="loadGame('https://dulcet-fenglisu-5a78b0.netlify.app/')">
-Flappy Game
-</button>
-
-</div>
+<div id="gameButtons" class="btn-row" style="flex-wrap:wrap;"></div>
 
 <iframe id="gameFrame"
 style="width:100%;height:720px;border:none;background:#000;margin-top:15px;border-radius:8px;">
@@ -115,13 +90,68 @@ style="width:100%;height:720px;border:none;background:#000;margin-top:15px;borde
 </main>
 
 <script>
-document.getElementById("y").textContent = new Date().getFullYear();
+document.getElementById("y").textContent = new Date().getFullYear()
 </script>
 
 <script>
-function loadGame(url){
-document.getElementById("gameFrame").src = url;
+
+/* ===============================
+LOAD GAMES FROM FREETOGAME API
+=============================== */
+
+let allGames=[]
+
+fetch("https://www.freetogame.com/api/games?platform=browser")
+.then(res=>res.json())
+.then(games=>{
+
+allGames = games
+
+renderGames(games)
+
+})
+
+function renderGames(games){
+
+const container=document.getElementById("gameButtons")
+container.innerHTML=""
+
+games.forEach(game=>{
+
+const btn=document.createElement("button")
+
+btn.className="btn"
+
+btn.innerText=game.title
+
+btn.onclick=()=>{
+
+document.getElementById("gameFrame").src = game.game_url
+
 }
+
+container.appendChild(btn)
+
+})
+
+}
+
+/* ===============================
+SEARCH
+=============================== */
+
+document.getElementById("searchInput").addEventListener("input",function(){
+
+const q=this.value.toLowerCase()
+
+const filtered=allGames.filter(g=>
+g.title.toLowerCase().includes(q)
+)
+
+renderGames(filtered)
+
+})
+
 </script>
 
 <script type="module">
@@ -224,16 +254,6 @@ return
 
 const text=document.getElementById("commentInput").value.trim()
 
-if(text.length<2){
-alert("Comment too short")
-return
-}
-
-if(text.length>300){
-alert("Comment too long")
-return
-}
-
 await supabase.from("comments").insert({
 game: GAME_ID,
 text: text,
@@ -275,28 +295,6 @@ payload=>{
 loadComments()
 })
 .subscribe()
-
-supabase.auth.onAuthStateChange((event,session)=>{
-
-if(session){
-
-document.getElementById("loginBtn").style.display="none"
-document.getElementById("logoutBtn").style.display="inline-block"
-document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
-
-}
-
-})
-
-const {data:{session}} = await supabase.auth.getSession()
-
-if(session){
-
-document.getElementById("loginBtn").style.display="none"
-document.getElementById("logoutBtn").style.display="inline-block"
-document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
-
-}
 
 loadComments()
 
