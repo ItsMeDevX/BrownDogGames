@@ -5,70 +5,51 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-<title>BrownDogGames Portal</title>
+<title>Play in Browser — BrownDogGames</title>
+
+<link rel="stylesheet" href="../styles.css"/>
+<link rel="icon" href="../assets/images/MainIcon.png" type="image/png">
+
+<script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+<script>(function(s){s.dataset.zone='9368472',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+<meta name="description" content="Play browser games directly on BrownDogGames.">
+<meta name="keywords" content="browser games, html5 games, play online games">
+<meta name="author" content="BrownDogGames">
 
 <style>
 
-body{
-font-family:sans-serif;
-background:#111;
-color:white;
-margin:0;
-}
-
-.container{
-max-width:1200px;
-margin:auto;
-padding:20px;
-}
-
-.games{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-gap:20px;
-}
-
-.game{
-border:1px solid #333;
-border-radius:6px;
-padding:10px;
-background:#1a1a1a;
-}
-
-.game img{
-width:100%;
-border-radius:6px;
-}
-
-button{
-padding:10px;
-margin-top:10px;
-cursor:pointer;
-}
-
-#player{
+.game-popup{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
-background:black;
+background:rgba(0,0,0,0.85);
 display:none;
+align-items:center;
+justify-content:center;
 z-index:9999;
 }
 
-#frame{
-width:100%;
-height:100%;
-border:none;
+.game-popup-inner{
+background:#111;
+padding:20px;
+border-radius:10px;
+width:90%;
+max-width:1100px;
 }
 
-#close{
-position:absolute;
-top:15px;
-right:20px;
-padding:10px;
-z-index:10000;
+.close-btn{
+margin-bottom:10px;
+padding:8px 16px;
+background:#ff4444;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+font-size:14px;
 }
 
 </style>
@@ -77,89 +58,303 @@ z-index:10000;
 
 <body>
 
-<div class="container">
+<header class="nav">
+<div class="nav-inner">
 
-<h1>Browser Games</h1>
+<a class="brand" href="../index.html">
+<img src="../assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
+<span>BrownDogGames</span>
+</a>
 
-<div id="games" class="games"></div>
+<nav class="nav-links">
+
+<a href="../index.html">Home</a>
+<a href="../games.html">Games</a>
+<a href="../music.html">Music</a>
+<a href="../assets.html">Templates & Assets</a>
+<a href="../support.html">Support</a>
+<a href="../community.html">Community</a>
+
+<button id="loginBtn" onclick="login()">Login with GitHub</button>
+<button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+<span id="userDisplay" style="margin-left:10px;"></span>
+
+</nav>
+
+</div>
+</header>
+
+<main class="container">
+
+<h1 class="h1">Play in Browser</h1>
+
+<p class="sub">
+Play HTML games directly inside your browser.
+</p>
+
+<div class="hr"></div>
+
+<section class="card">
+<div class="card-pad">
+
+<p class="card-title">Game Library</p>
+
+<p class="card-muted">
+Select a game to start playing.
+</p>
+
+<div class="btn-row">
+
+<button class="btn btn-primary"
+onclick="loadGame('https://venerable-scone-2b1b19.netlify.app/')">
+Breakout Game
+</button>
+
+<button class="btn"
+onclick="loadGame('https://inquisitive-melba-d19a9d.netlify.app/')">
+Snake Game
+</button>
+
+<button class="btn"
+onclick="loadGame('https://dulcet-fenglisu-5a78b0.netlify.app/')">
+Flappy Game
+</button>
 
 </div>
 
-<div id="player">
-<button id="close">Close</button>
-<iframe id="frame"></iframe>
+</div>
+</section>
+
+<div class="hr"></div>
+
+<section class="card">
+<div class="card-pad">
+
+<p class="card-title">Player Comments</p>
+
+<form onsubmit="addComment(event)">
+<input id="commentInput" placeholder="Write a comment..." required style="width:100%;padding:10px;margin-bottom:10px;">
+<button class="btn btn-primary">Post Comment</button>
+</form>
+
+<div id="commentsList" style="margin-top:20px;"></div>
+
+</div>
+</section>
+
+<footer class="footer">© <span id="y"></span> BrownDogGames</footer>
+
+</main>
+
+<!-- GAME POPUP -->
+
+<div id="gamePopup" class="game-popup">
+
+<div class="game-popup-inner">
+
+<button class="close-btn" onclick="closeGame()">✖ Close</button>
+
+<iframe id="gameFrame"
+style="width:100%;height:720px;border:none;background:#000;border-radius:8px;">
+</iframe>
+
+</div>
+
 </div>
 
 <script>
+document.getElementById("y").textContent = new Date().getFullYear();
+</script>
 
-let allGames=[]
+<script>
 
-fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
-.then(res=>res.json())
-.then(games=>{
+function loadGame(url){
+document.getElementById("gameFrame").src = url
+document.getElementById("gamePopup").style.display = "flex"
+}
 
-allGames = games
+function closeGame(){
+document.getElementById("gamePopup").style.display = "none"
+document.getElementById("gameFrame").src = ""
+}
 
-renderGames(games)
+</script>
 
-})
+<script type="module">
 
-function renderGames(games){
+import { login, supabase } from "../supabase.js"
 
-const container=document.getElementById("games")
-container.innerHTML=""
+window.login = login
 
-games.forEach(game=>{
+window.logout = async () => {
+ await supabase.auth.signOut()
+ location.reload()
+}
+
+const GAME_ID = "browser-games"
+
+function escapeHTML(text){
+ return text.replace(/[&<>"']/g, m => ({
+   "&":"&amp;",
+   "<":"&lt;",
+   ">":"&gt;",
+   '"':"&quot;",
+   "'":"&#039;"
+ })[m])
+}
+
+async function loadComments(){
+
+const { data } = await supabase
+.from("comments")
+.select("*")
+.eq("game", GAME_ID)
+.order("id",{ascending:false})
+
+const { data:{session} } = await supabase.auth.getSession()
+const userId = session?.user?.id
+
+const list=document.getElementById("commentsList")
+list.innerHTML=""
+
+if(!data) return
+
+data.forEach(c=>{
 
 const div=document.createElement("div")
-div.className="game"
 
-div.innerHTML=`
+div.style.display="flex"
+div.style.gap="10px"
+div.style.padding="12px"
+div.style.borderBottom="1px solid #333"
 
-<img src="${game.thumbnail}">
+const deleteBtn = userId===c.user_id
+? `<button onclick="deleteComment(${c.id})">🗑</button>`
+: ""
 
-<h3>${game.title}</h3>
+div.innerHTML = `
 
-<p>${game.short_description}</p>
+<a href="https://github.com/${c.username}" target="_blank">
+<img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
+</a>
 
-<button>Play Game</button>
+<div style="flex:1">
 
+<strong>
+<a href="https://github.com/${c.username}" target="_blank">
+${c.username}
+</a>
+</strong>
+
+<br>
+
+${escapeHTML(c.text)}
+
+<br>
+
+<button onclick="likeComment(${c.id},${c.likes||0})">
+👍 ${c.likes||0}
+</button>
+
+${deleteBtn}
+
+</div>
 `
 
-div.querySelector("button").onclick=()=>{
-openGame(game.game_url)
-}
-
-container.appendChild(div)
+list.appendChild(div)
 
 })
 
 }
 
-function openGame(url){
+window.addComment = async function(event){
 
-document.getElementById("player").style.display="block"
-document.getElementById("frame").src=url
+event.preventDefault()
+
+const { data:{session} } = await supabase.auth.getSession()
+
+if(!session){
+alert("Login with GitHub to comment.")
+return
+}
+
+const text=document.getElementById("commentInput").value.trim()
+
+if(text.length<2){
+alert("Comment too short")
+return
+}
+
+if(text.length>300){
+alert("Comment too long")
+return
+}
+
+await supabase.from("comments").insert({
+game: GAME_ID,
+text: text,
+user_id: session.user.id,
+username: session.user.user_metadata.user_name,
+avatar_url: session.user.user_metadata.avatar_url,
+likes:0
+})
+
+document.getElementById("commentInput").value=""
 
 }
 
-document.getElementById("close").onclick=function(){
+window.likeComment = async function(id,currentLikes){
 
-document.getElementById("player").style.display="none"
-document.getElementById("frame").src=""
+await supabase
+.from("comments")
+.update({likes:currentLikes+1})
+.eq("id",id)
 
 }
 
-document.addEventListener("keydown",function(e){
+window.deleteComment = async function(id){
 
-if(e.key==="Escape"){
+if(!confirm("Delete this comment?")) return
 
-document.getElementById("player").style.display="none"
-document.getElementById("frame").src=""
+await supabase
+.from("comments")
+.delete()
+.eq("id",id)
+
+}
+
+supabase
+.channel("comments")
+.on("postgres_changes",
+{ event:"*", schema:"public", table:"comments" },
+payload=>{
+loadComments()
+})
+.subscribe()
+
+supabase.auth.onAuthStateChange((event,session)=>{
+
+if(session){
+
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
 
 }
 
 })
+
+const {data:{session}} = await supabase.auth.getSession()
+
+if(session){
+
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
+
+}
+
+loadComments()
 
 </script>
 
