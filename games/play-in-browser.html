@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
 
 <meta charset="utf-8"/>
@@ -12,6 +13,18 @@
 
 <style>
 
+body{
+background:#0f0f0f;
+color:white;
+font-family:sans-serif;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
 .game-list{
 margin-top:20px;
 }
@@ -21,6 +34,7 @@ border:1px solid #333;
 padding:10px;
 margin-bottom:10px;
 border-radius:6px;
+background:#1a1a1a;
 }
 
 .game-item img{
@@ -28,7 +42,18 @@ width:200px;
 border-radius:6px;
 }
 
-/* FULLSCREEN GAME PLAYER */
+/* CATEGORY FILTER */
+
+select{
+width:100%;
+padding:10px;
+margin-bottom:20px;
+background:#111;
+color:white;
+border:1px solid #333;
+}
+
+/* FULLSCREEN OVERLAY */
 
 #gameOverlay{
 position:fixed;
@@ -41,24 +66,48 @@ display:none;
 z-index:9999;
 }
 
-#gameOverlay iframe{
+#gameFrame{
 width:100%;
 height:100%;
 border:none;
 }
 
-#closeGame{
+/* BUTTONS */
+
+.overlay-btn{
 position:absolute;
-top:15px;
-right:20px;
+top:20px;
 padding:10px 15px;
-background:red;
-color:white;
 border:none;
 border-radius:6px;
 cursor:pointer;
-font-size:16px;
-z-index:10000;
+color:white;
+}
+
+#closeGame{
+right:20px;
+background:red;
+}
+
+#fullscreenBtn{
+right:110px;
+background:#3b82f6;
+}
+
+/* LOADING */
+
+#loadingScreen{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:24px;
+z-index:5;
 }
 
 </style>
@@ -71,15 +120,28 @@ z-index:10000;
 
 <h1>Browser Games</h1>
 
+<select id="categoryFilter">
+<option value="all">All Categories</option>
+<option value="MMORPG">MMORPG</option>
+<option value="Shooter">Shooter</option>
+<option value="Strategy">Strategy</option>
+<option value="Card">Card</option>
+<option value="Racing">Racing</option>
+<option value="Sports">Sports</option>
+</select>
+
 <div id="gameList" class="game-list"></div>
 
 </main>
 
-<!-- FULLSCREEN GAME PLAYER -->
+<!-- GAME OVERLAY -->
 
 <div id="gameOverlay">
 
-<button id="closeGame">Close</button>
+<button id="closeGame" class="overlay-btn">Close</button>
+<button id="fullscreenBtn" class="overlay-btn">Fullscreen</button>
+
+<div id="loadingScreen">Loading Game...</div>
 
 <iframe id="gameFrame"></iframe>
 
@@ -89,12 +151,19 @@ z-index:10000;
 
 let allGames=[]
 
+/* LOAD GAMES */
+
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
 .then(games=>{
+
 allGames = games
+
 renderGames(games)
+
 })
+
+/* RENDER GAMES */
 
 function renderGames(games){
 
@@ -114,7 +183,11 @@ div.innerHTML=`
 
 <p>${game.short_description}</p>
 
-<br>
+<p><b>${game.genre}</b></p>
+
+<a href="${game.game_url}" target="_blank">${game.game_url}</a>
+
+<br><br>
 
 <button>Play Game</button>
 
@@ -122,8 +195,19 @@ div.innerHTML=`
 
 div.querySelector("button").onclick=()=>{
 
-document.getElementById("gameFrame").src = game.game_url
 document.getElementById("gameOverlay").style.display="block"
+
+document.getElementById("loadingScreen").style.display="flex"
+
+const frame=document.getElementById("gameFrame")
+
+frame.src = game.game_url
+
+frame.onload=()=>{
+
+document.getElementById("loadingScreen").style.display="none"
+
+}
 
 }
 
@@ -133,16 +217,59 @@ list.appendChild(div)
 
 }
 
+/* CATEGORY FILTER */
+
+document.getElementById("categoryFilter").addEventListener("change",function(){
+
+const cat=this.value
+
+if(cat==="all"){
+renderGames(allGames)
+return
+}
+
+const filtered=allGames.filter(g=>g.genre===cat)
+
+renderGames(filtered)
+
+})
+
 /* CLOSE GAME */
 
-document.getElementById("closeGame").onclick=()=>{
+function closeGame(){
 
 document.getElementById("gameOverlay").style.display="none"
+
 document.getElementById("gameFrame").src=""
+
+}
+
+document.getElementById("closeGame").onclick=closeGame
+
+/* ESC KEY CLOSE */
+
+document.addEventListener("keydown",function(e){
+
+if(e.key==="Escape"){
+closeGame()
+}
+
+})
+
+/* FULLSCREEN BUTTON */
+
+document.getElementById("fullscreenBtn").onclick=function(){
+
+const iframe=document.getElementById("gameFrame")
+
+if(iframe.requestFullscreen){
+iframe.requestFullscreen()
+}
 
 }
 
 </script>
 
 </body>
+
 </html>
