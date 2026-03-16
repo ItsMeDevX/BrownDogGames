@@ -50,30 +50,13 @@ background:black;
 
 #closeGame{
 position:absolute;
-top:20px;
+top:15px;
 right:20px;
-padding:10px;
-}
-
-#fullscreenBtn{
-position:absolute;
-top:20px;
-right:120px;
-padding:10px;
-}
-
-#loading{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:black;
-color:white;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:22px;
+padding:10px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+z-index:10000;
 }
 
 </style>
@@ -86,8 +69,6 @@ font-size:22px;
 
 <h1>Browser Games</h1>
 
-<input id="searchInput" placeholder="Search games..." style="width:100%;padding:10px;margin-bottom:20px;">
-
 <div id="gameList" class="game-list"></div>
 
 </main>
@@ -97,9 +78,6 @@ font-size:22px;
 <div id="gameOverlay">
 
 <button id="closeGame">Close</button>
-<button id="fullscreenBtn">Fullscreen</button>
-
-<div id="loading">Loading Game...</div>
 
 <iframe id="gameFrame"></iframe>
 
@@ -109,7 +87,9 @@ font-size:22px;
 
 let allGames=[]
 
-/* LOAD API */
+/* =========================
+LOAD API THROUGH PROXY
+========================= */
 
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
@@ -120,8 +100,6 @@ allGames = games
 renderGames(games)
 
 })
-
-/* RENDER GAMES */
 
 function renderGames(games){
 
@@ -155,15 +133,7 @@ div.querySelector("button").onclick=()=>{
 
 document.getElementById("gameOverlay").style.display="block"
 
-const frame=document.getElementById("gameFrame")
-
-document.getElementById("loading").style.display="flex"
-
-frame.src = game.game_url
-
-frame.onload=()=>{
-document.getElementById("loading").style.display="none"
-}
+document.getElementById("gameFrame").src = game.game_url
 
 }
 
@@ -173,51 +143,13 @@ list.appendChild(div)
 
 }
 
-/* SEARCH */
+/* CLOSE BUTTON */
 
-document.getElementById("searchInput").addEventListener("input",function(){
-
-const q=this.value.toLowerCase()
-
-const filtered=allGames.filter(g=>
-g.title.toLowerCase().includes(q)
-)
-
-renderGames(filtered)
-
-})
-
-/* CLOSE GAME */
-
-function closeGame(){
+document.getElementById("closeGame").onclick=function(){
 
 document.getElementById("gameOverlay").style.display="none"
 
 document.getElementById("gameFrame").src=""
-
-}
-
-document.getElementById("closeGame").onclick=closeGame
-
-/* ESC KEY CLOSE */
-
-document.addEventListener("keydown",function(e){
-
-if(e.key==="Escape"){
-closeGame()
-}
-
-})
-
-/* FULLSCREEN */
-
-document.getElementById("fullscreenBtn").onclick=function(){
-
-const iframe=document.getElementById("gameFrame")
-
-if(iframe.requestFullscreen){
-iframe.requestFullscreen()
-}
 
 }
 
