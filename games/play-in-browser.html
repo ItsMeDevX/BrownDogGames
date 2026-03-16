@@ -28,32 +28,18 @@ width:200px;
 border-radius:6px;
 }
 
-/* Fullscreen player */
+/* FULLSCREEN GAME */
 
-#gameOverlay{
+#gameFrame.fullscreen{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
-background:black;
-display:none;
 z-index:9999;
-}
-
-#gameFrame{
-width:100%;
-height:100%;
 border:none;
+border-radius:0;
 background:black;
-}
-
-#closeGame{
-position:absolute;
-top:15px;
-right:20px;
-padding:10px;
-z-index:10000;
 }
 
 </style>
@@ -66,24 +52,34 @@ z-index:10000;
 
 <h1>Browser Games</h1>
 
+<input id="searchInput" placeholder="Search games..." style="width:100%;padding:10px;margin-bottom:20px;">
+
 <div id="gameList" class="game-list"></div>
 
-</main>
+<h2>Game Player</h2>
 
-<div id="gameOverlay">
-<button id="closeGame">Close</button>
-<iframe id="gameFrame"></iframe>
-</div>
+<iframe id="gameFrame"
+style="width:100%;height:700px;border:none;background:black;border-radius:8px;">
+</iframe>
+
+</main>
 
 <script>
 
 let allGames=[]
 
+/* =========================
+LOAD API THROUGH PROXY
+========================= */
+
 fetch("https://api.allorigins.win/raw?url=https://www.freetogame.com/api/games?platform=browser")
 .then(res=>res.json())
 .then(games=>{
+
 allGames = games
+
 renderGames(games)
+
 })
 
 function renderGames(games){
@@ -116,9 +112,11 @@ ${game.game_url}
 
 div.querySelector("button").onclick=()=>{
 
-document.getElementById("gameOverlay").style.display="block"
+const frame=document.getElementById("gameFrame")
 
-document.getElementById("gameFrame").src = game.game_url
+frame.src = game.game_url
+
+frame.classList.add("fullscreen")
 
 }
 
@@ -128,12 +126,36 @@ list.appendChild(div)
 
 }
 
-document.getElementById("closeGame").onclick=function(){
+/* =========================
+SEARCH
+========================= */
 
-document.getElementById("gameOverlay").style.display="none"
-document.getElementById("gameFrame").src=""
+document.getElementById("searchInput").addEventListener("input",function(){
+
+const q=this.value.toLowerCase()
+
+const filtered=allGames.filter(g=>
+g.title.toLowerCase().includes(q)
+)
+
+renderGames(filtered)
+
+})
+
+/* ESC KEY TO EXIT FULLSCREEN */
+
+document.addEventListener("keydown",function(e){
+
+if(e.key==="Escape"){
+
+const frame=document.getElementById("gameFrame")
+
+frame.classList.remove("fullscreen")
+frame.src=""
 
 }
+
+})
 
 </script>
 
