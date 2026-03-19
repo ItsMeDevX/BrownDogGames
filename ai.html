@@ -1,154 +1,374 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Support — BrownDogGames</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <link rel="icon" href="/MainIcon.png" type="image/png">
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>AI Tools — BrownDogGames</title>
+
+<link rel="stylesheet" href="../styles.css"/>
+<link rel="icon" href="../assets/images/MainIcon.png" type="image/png">
+
+<meta name="description" content="Use AI tools directly in your browser.">
+<meta name="keywords" content="AI tools, NPC voice generator, AI voice">
+<meta name="author" content="BrownDogGames">
+
+<style>
+
+.tool-popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.85);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+.tool-popup-inner{
+background:#111;
+padding:20px;
+border-radius:10px;
+width:90%;
+max-width:1100px;
+position:relative;
+}
+
+.close-btn{
+position:absolute;
+top:10px;
+right:10px;
+padding:8px 14px;
+background:#ff4444;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+font-size:14px;
+z-index:10000;
+}
+
+#toolFrame{
+width:100%;
+height:720px;
+border:none;
+background:#000;
+border-radius:8px;
+margin-top:30px;
+}
+
+</style>
+
 </head>
 
-<script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
-<script>(function(s){s.dataset.zone='9368472',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-  
-<meta name="description" content="Get support for BrownDogGames. Report bugs, ask questions, or contact the developer about games, music, or Unreal Engine templates.">
-
-<meta name="keywords" content="BrownDogGames support, game support, bug reports, contact developer, indie game support">
-
-<meta name="author" content="BrownDogGames">
-  
 <body>
 
 <header class="nav">
-  <div class="nav-inner">
-    <a class="brand" href="index.html">
-      <img src="assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
-      <span>BrownDogGames</span>
-    </a>
+<div class="nav-inner">
 
-    <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="games.html">Games</a>
-      <a href="music.html">Music</a>
-      <a href="assets.html">Templates & Assets</a>
-      <a href="ai.html">AI Tools</a>
-      <a href="community.html">Community</a>
+<a class="brand" href="../index.html">
+<img src="../assets/images/MainIcon.png" alt="BrownDogGames logo" class="site-logo">
+<span>BrownDogGames</span>
+</a>
 
-      <!-- AUTH BUTTONS -->
-      <button id="loginBtn" onclick="login()">Login with GitHub</button>
-      <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
-      <span id="userDisplay" style="margin-left:10px;"></span>
+<nav class="nav-links">
 
-    </nav>
-  </div>
+<a href="../index.html">Home</a>
+<a href="../games.html">Games</a>
+<a href="../music.html">Music</a>
+<a href="../assets.html">Templates & Assets</a>
+<a href="../ai.html">AI Tools</a>
+<a href="../community.html">Community</a>
+
+<button id="loginBtn" onclick="login()">Login with GitHub</button>
+<button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+<span id="userDisplay" style="margin-left:10px;"></span>
+
+</nav>
+
+</div>
 </header>
-
 
 <main class="container">
 
-<h1 class="h1">Support</h1>
-<p class="sub">Questions, bug reports, or business enquiries.</p>
+<h1 class="h1">AI Tools</h1>
 
-<div class="grid">
+<p class="sub">
+Use powerful AI tools directly in your browser.
+</p>
 
-  <section class="card">
-    <div class="card-pad">
-      <p class="card-title">Contact</p>
-      <p class="card-muted">
-        X (Twitter): 
-        <strong>
-          <a href="https://x.com/browndoggames" target="_blank" rel="noopener">
-            x.com/browndoggames
-          </a>
-        </strong>
-      </p>
-    </div>
-  </section>
+<div class="hr"></div>
 
-  <section class="card">
-    <div class="card-pad">
-      <p class="card-title">Bug reports</p>
-      <p class="card-muted">
-        Include: game name, platform, what you did, and what happened. Screenshots/video help.
-      </p>
-    </div>
-  </section>
+<section class="card">
+<div class="card-pad">
 
-  <section class="card">
-    <div class="card-pad">
-      <p class="card-title">Quick links</p>
-      <p class="card-muted">
-        <a class="btn btn-primary" href="games.html" style="margin-top:10px;">Games</a>
-        <a class="btn btn-primary" href="music.html" style="margin-top:10px;">Music</a>
-        <a class="btn" href="assets.html" style="margin-top:10px;">Templates & Assets</a>
-        <a class="btn" href="community.html" style="margin-top:10px;">Community</a>
-      </p>
-    </div>
-  </section>
+<p class="card-title">Tool Library</p>
+
+<p class="card-muted">
+Select a tool to launch.
+</p>
+
+<div class="btn-row">
+
+<button class="btn btn-primary"
+onclick="loadTool('https://heartfelt-cannoli-2b4fc8.netlify.app/')">
+🎤 NPC Voice Generator PRO
+</button>
+
+<!-- ADD MORE TOOLS BELOW -->
+<!--
+<button class="btn" onclick="loadTool('URL')">
+Another AI Tool
+</button>
+-->
 
 </div>
 
+</div>
+</section>
 
-<footer class="footer">
-© <span id="y"></span> BrownDogGames
-</footer>
+<div class="hr"></div>
+
+<section class="card">
+<div class="card-pad">
+
+<p class="card-title">User Comments</p>
+
+<form onsubmit="addComment(event)">
+<input id="commentInput" placeholder="Write a comment..." required style="width:100%;padding:10px;margin-bottom:10px;">
+<button class="btn btn-primary">Post Comment</button>
+</form>
+
+<div id="commentsList" style="margin-top:20px;"></div>
+
+</div>
+</section>
+
+<footer class="footer">© <span id="y"></span> BrownDogGames</footer>
 
 </main>
 
+<!-- TOOL POPUP -->
+
+<div id="toolPopup" class="tool-popup">
+
+<div class="tool-popup-inner">
+
+<button class="close-btn" onclick="closeTool()">✖ Close</button>
+
+<iframe id="toolFrame"></iframe>
+
+</div>
+
+</div>
 
 <script>
-document.getElementById("y").textContent = new Date().getFullYear()
+document.getElementById("y").textContent = new Date().getFullYear();
 </script>
 
+<script>
 
-<!-- SUPABASE AUTH (SAME AS MUSIC PAGE) -->
+function loadTool(url){
+document.getElementById("toolFrame").src = url
+document.getElementById("toolPopup").style.display = "flex"
+}
+
+function closeTool(){
+document.getElementById("toolPopup").style.display = "none"
+document.getElementById("toolFrame").src = ""
+}
+
+document.addEventListener("keydown", function(e){
+if(e.key === "Escape"){
+closeTool()
+}
+})
+
+</script>
+
 <script type="module">
 
-import { login, supabase } from "./supabase.js"
+import { login, supabase } from "../supabase.js"
 
 window.login = login
 
 window.logout = async () => {
-  await supabase.auth.signOut()
-  location.reload()
+ await supabase.auth.signOut()
+ location.reload()
 }
 
+const TOOL_ID = "npc-voice-generator"
 
-// Auth state listener
-supabase.auth.onAuthStateChange((event, session) => {
+function escapeHTML(text){
+ return text.replace(/[&<>"']/g, m => ({
+   "&":"&amp;",
+   "<":"&lt;",
+   ">":"&gt;",
+   '"':"&quot;",
+   "'":"&#039;"
+ })[m])
+}
 
-  if(session){
+async function loadComments(){
 
-    document.getElementById("loginBtn").style.display="none"
-    document.getElementById("logoutBtn").style.display="inline-block"
+const { data } = await supabase
+.from("comments")
+.select("*")
+.eq("game", TOOL_ID)
+.order("id",{ascending:false})
 
-    document.getElementById("userDisplay").innerText =
-      session.user.user_metadata.user_name
+const { data:{session} } = await supabase.auth.getSession()
+const userId = session?.user?.id
 
-    if(window.location.hash.includes("access_token")){
-      history.replaceState({},document.title,window.location.pathname)
-    }
+const list=document.getElementById("commentsList")
+list.innerHTML=""
 
-  }
+if(!data) return
+
+data.forEach(c=>{
+
+const div=document.createElement("div")
+
+div.style.display="flex"
+div.style.gap="10px"
+div.style.padding="12px"
+div.style.borderBottom="1px solid #333"
+
+const deleteBtn = userId===c.user_id
+? `<button onclick="deleteComment(${c.id})">🗑</button>`
+: ""
+
+div.innerHTML = `
+
+<a href="https://github.com/${c.username}" target="_blank">
+<img src="${c.avatar_url}" style="width:40px;height:40px;border-radius:50%;">
+</a>
+
+<div style="flex:1">
+
+<strong>
+<a href="https://github.com/${c.username}" target="_blank">
+${c.username}
+</a>
+</strong>
+
+<br>
+
+${escapeHTML(c.text)}
+
+<br>
+
+<button onclick="likeComment(${c.id},${c.likes||0})">
+👍 ${c.likes||0}
+</button>
+
+${deleteBtn}
+
+</div>
+`
+
+list.appendChild(div)
 
 })
 
+}
 
-// Check existing session
+window.addComment = async function(event){
+
+event.preventDefault()
+
+const { data:{session} } = await supabase.auth.getSession()
+
+if(!session){
+alert("Login with GitHub to comment.")
+return
+}
+
+const text=document.getElementById("commentInput").value.trim()
+
+if(text.length<2){
+alert("Comment too short")
+return
+}
+
+if(text.length>300){
+alert("Comment too long")
+return
+}
+
+await supabase.from("comments").insert({
+game: TOOL_ID,
+text: text,
+user_id: session.user.id,
+username: session.user.user_metadata.user_name,
+avatar_url: session.user.user_metadata.avatar_url,
+likes:0
+})
+
+document.getElementById("commentInput").value=""
+
+}
+
+window.likeComment = async function(id,currentLikes){
+
+await supabase
+.from("comments")
+.update({likes:currentLikes+1})
+.eq("id",id)
+
+}
+
+window.deleteComment = async function(id){
+
+if(!confirm("Delete this comment?")) return
+
+await supabase
+.from("comments")
+.delete()
+.eq("id",id)
+
+}
+
+supabase
+.channel("comments")
+.on("postgres_changes",
+{ event:"*", schema:"public", table:"comments" },
+payload=>{
+loadComments()
+})
+.subscribe()
+
+supabase.auth.onAuthStateChange((event,session)=>{
+
+if(session){
+
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
+
+}
+
+})
+
 const {data:{session}} = await supabase.auth.getSession()
 
 if(session){
 
-  document.getElementById("loginBtn").style.display="none"
-  document.getElementById("logoutBtn").style.display="inline-block"
-
-  document.getElementById("userDisplay").innerText =
-    session.user.user_metadata.user_name
+document.getElementById("loginBtn").style.display="none"
+document.getElementById("logoutBtn").style.display="inline-block"
+document.getElementById("userDisplay").innerText=session.user.user_metadata.user_name
 
 }
+
+loadComments()
 
 </script>
 
 </body>
 </html>
+```
