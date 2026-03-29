@@ -96,6 +96,22 @@ function openAsset(url){
   const modal = document.getElementById("assetModal")
   const frame = document.getElementById("assetFrame")
 
+  // 🚫 Sites that block iframe embedding
+  const blockedSites = [
+    "opengameart.org",
+    "itch.io",
+    "github.com"
+  ]
+
+  const isBlocked = blockedSites.some(site => url.includes(site))
+
+  if(isBlocked){
+    // Open in new tab instead
+    window.open(url, "_blank")
+    return
+  }
+
+  // Otherwise show in modal
   modal.style.display = "block"
   frame.src = url
 }
