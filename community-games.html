@@ -6,18 +6,40 @@
 <title>Community Games — BrownDogGames</title>
 <link rel="stylesheet" href="styles.css"/>
 <link rel="icon" href="assets/images/MainIcon.png">
+
+<meta name="description" content="Discover and share indie games from the BrownDogGames community. Explore games created by developers and players.">
+<meta name="keywords" content="community games, indie games, developer games, BrownDogGames community, share your game">
+<meta name="author" content="BrownDogGames">
+
+<style>
+/* 🔥 GAME MODAL */
+#gameModal{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.9);
+  z-index:9999;
+}
+
+#gameFrame{
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+#closeGame{
+  position:absolute;
+  top:15px;
+  right:20px;
+  font-size:28px;
+  color:white;
+  cursor:pointer;
+  z-index:10000;
+}
+</style>
 </head>
 
-<script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
-<script>(function(s){s.dataset.zone='9368472',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-  
-<meta name="description" content="Discover and share indie games from the BrownDogGames community. Explore games created by developers and players.">
-
-<meta name="keywords" content="community games, indie games, developer games, BrownDogGames community, share your game">
-
-<meta name="author" content="BrownDogGames">
-  
 <body>
 
 <header class="nav">
@@ -31,7 +53,6 @@
 <a href="index.html">Home</a>
 <a href="community.html">Community</a>
 
-<!-- AUTH BUTTONS -->
 <button id="loginBtn" onclick="login()">Login with GitHub</button>
 <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
 <span id="userDisplay" style="margin-left:10px;"></span>
@@ -66,8 +87,26 @@
 
 </main>
 
+<!-- 🔥 GAME MODAL -->
+<div id="gameModal">
+  <span id="closeGame" onclick="closeGame()">✕</span>
+  <iframe id="gameFrame"></iframe>
+</div>
+
 <script>
 document.getElementById("y").textContent = new Date().getFullYear()
+
+// 🔥 OPEN GAME INSIDE SITE
+function openGame(url){
+  document.getElementById("gameModal").style.display = "block"
+  document.getElementById("gameFrame").src = url
+}
+
+// 🔥 CLOSE GAME
+function closeGame(){
+  document.getElementById("gameModal").style.display = "none"
+  document.getElementById("gameFrame").src = ""
+}
 </script>
 
 <!-- COMMUNITY + AUTH SYSTEM -->
@@ -83,14 +122,16 @@ window.logout = async () => {
   location.reload()
 }
 
-// Load games for everyone (even if not logged in)
+// 🔥 OVERRIDE LINK RENDERING
+window.openGame = openGame
+
+// Load games
 loadLinks("games")
 
-// Auth state listener
+// Auth listener
 supabase.auth.onAuthStateChange((event, session) => {
 
   if(session){
-
     document.getElementById("loginBtn").style.display="none"
     document.getElementById("logoutBtn").style.display="inline-block"
 
@@ -100,22 +141,19 @@ supabase.auth.onAuthStateChange((event, session) => {
     if(window.location.hash.includes("access_token")){
       history.replaceState({},document.title,window.location.pathname)
     }
-
   }
 
 })
 
-// Check existing session
+// Check session
 const {data:{session}} = await supabase.auth.getSession()
 
 if(session){
-
   document.getElementById("loginBtn").style.display="none"
   document.getElementById("logoutBtn").style.display="inline-block"
 
   document.getElementById("userDisplay").innerText =
     session.user.user_metadata.user_name
-
 }
 
 </script>
