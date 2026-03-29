@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -6,18 +7,16 @@
 <title>Community Music — BrownDogGames</title>
 <link rel="stylesheet" href="styles.css"/>
 <link rel="icon" href="assets/images/MainIcon.png">
-</head>
 
 <script>(function(s){s.dataset.zone='9353937',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 
 <script>(function(s){s.dataset.zone='9368472',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-  
+
 <meta name="description" content="Share and discover music from the BrownDogGames community. Explore tracks created by indie developers and creators.">
-
 <meta name="keywords" content="community music, indie music, game music, BrownDogGames community, developer music">
-
 <meta name="author" content="BrownDogGames">
-  
+</head>
+
 <body>
 
 <header class="nav">
@@ -31,10 +30,7 @@
 <a href="index.html">Home</a>
 <a href="community.html">Community</a>
 
-<!-- AUTH BUTTONS -->
-<button id="loginBtn" onclick="login()">Login with GitHub</button>
-<button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
-<span id="userDisplay" style="margin-left:10px;"></span>
+<button id="loginBtn" onclick="login()">Login with GitHub</button> <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button> <span id="userDisplay" style="margin-left:10px;"></span>
 
 </nav>
 </div>
@@ -67,11 +63,64 @@
 
 </main>
 
+<!-- 🔥 MUSIC MODAL -->
+
+<div id="musicModal" style="
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.95);
+  z-index:9999;
+">
+  <span id="closeMusic" style="
+    position:absolute;
+    top:15px;
+    right:20px;
+    font-size:28px;
+    color:white;
+    cursor:pointer;
+    z-index:10000;
+  ">✕</span>
+
+  <iframe id="musicFrame" style="
+    width:100%;
+    height:100%;
+    border:none;
+  "></iframe>
+</div>
+
 <script>
 document.getElementById("y").textContent = new Date().getFullYear()
+
+function openMusic(url){
+  const modal = document.getElementById("musicModal")
+  const frame = document.getElementById("musicFrame")
+
+  modal.style.display = "block"
+  frame.src = url
+}
+
+function closeMusic(){
+  document.getElementById("musicModal").style.display = "none"
+  document.getElementById("musicFrame").src = ""
+}
+
+document.getElementById("closeMusic").onclick = closeMusic
+
+// 🔥 Intercept clicks inside music list
+document.addEventListener("click", function(e){
+  const link = e.target.closest("a")
+
+  if(link && link.href && link.closest("#musicList")){
+    e.preventDefault()
+    openMusic(link.href)
+  }
+})
 </script>
 
 <!-- COMMUNITY + AUTH SYSTEM -->
+
 <script type="module">
 import { addLink, loadLinks } from "./community.js"
 import { login, supabase } from "./supabase.js"
@@ -84,14 +133,12 @@ window.logout = async () => {
   location.reload()
 }
 
-// Load music for everyone (even if not logged in)
+// Load music
 loadLinks("music")
 
-// Auth state listener
+// Auth listener
 supabase.auth.onAuthStateChange((event, session) => {
-
   if(session){
-
     document.getElementById("loginBtn").style.display="none"
     document.getElementById("logoutBtn").style.display="inline-block"
 
@@ -101,24 +148,19 @@ supabase.auth.onAuthStateChange((event, session) => {
     if(window.location.hash.includes("access_token")){
       history.replaceState({},document.title,window.location.pathname)
     }
-
   }
-
 })
 
-// Check existing session
+// Check session
 const {data:{session}} = await supabase.auth.getSession()
 
 if(session){
-
   document.getElementById("loginBtn").style.display="none"
   document.getElementById("logoutBtn").style.display="inline-block"
 
   document.getElementById("userDisplay").innerText =
     session.user.user_metadata.user_name
-
 }
-
 </script>
 
 </body>
