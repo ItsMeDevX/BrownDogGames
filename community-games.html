@@ -12,37 +12,29 @@
 <meta name="author" content="BrownDogGames">
 
 <style>
-#gamePlayer{
+#gameModal{
   display:none;
-  margin-bottom:20px;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.95);
+  z-index:9999;
 }
 
 #gameFrame{
   width:100%;
-  height:400px;
+  height:100%;
   border:none;
-  border-radius:10px;
 }
 
-#playerControls{
-  margin-bottom:5px;
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-}
-
-#fullscreenBtn{
+#closeGame{
+  position:absolute;
+  top:15px;
+  right:20px;
+  font-size:28px;
+  color:white;
   cursor:pointer;
-}
-
-.fullscreen{
-  position:fixed !important;
-  top:0;
-  left:0;
-  width:100% !important;
-  height:100% !important;
-  z-index:9999;
-  background:black;
+  z-index:10000;
 }
 </style>
 </head>
@@ -72,14 +64,6 @@
 <h1 class="h1">Community Games</h1>
 <p class="sub">Games shared by the community.</p>
 
-<!-- 🔥 GAME PLAYER -->
-<div id="gamePlayer">
-  <div id="playerControls">
-    <button onclick="toggleFullscreen()" id="fullscreenBtn">⛶ Expand</button>
-  </div>
-  <iframe id="gameFrame"></iframe>
-</div>
-
 <section class="card">
 <div class="card-pad">
 <p class="card-title">Add Your Game</p>
@@ -100,25 +84,32 @@
 
 </main>
 
+<!-- 🔥 GAME MODAL -->
+<div id="gameModal">
+  <span id="closeGame">✕</span>
+  <iframe id="gameFrame"></iframe>
+</div>
+
 <script>
 document.getElementById("y").textContent = new Date().getFullYear()
 
 function openGame(url){
-  const player = document.getElementById("gamePlayer")
+  const modal = document.getElementById("gameModal")
   const frame = document.getElementById("gameFrame")
 
-  player.style.display = "block"
+  modal.style.display = "block"
   frame.src = url
-
-  window.scrollTo({top:0, behavior:"smooth"})
 }
 
-function toggleFullscreen(){
-  const frame = document.getElementById("gameFrame")
-  frame.classList.toggle("fullscreen")
+function closeGame(){
+  document.getElementById("gameModal").style.display = "none"
+  document.getElementById("gameFrame").src = ""
 }
 
-// 🔥 intercept links
+document.getElementById("closeGame").onclick = closeGame
+
+// 🔥 THIS IS THE MAGIC FIX
+// Intercept ALL clicks on links inside gamesList
 document.addEventListener("click", function(e){
   const link = e.target.closest("a")
 
