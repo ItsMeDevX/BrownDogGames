@@ -82,7 +82,7 @@
     z-index:10000;
   ">✕</span>
 
-  <iframe id="assetFrame" style="
+  <iframe id="assetFrame" allow="autoplay" style="
     width:100%;
     height:100%;
     border:none;
@@ -96,6 +96,17 @@ function openAsset(url){
   const modal = document.getElementById("assetModal")
   const frame = document.getElementById("assetFrame")
 
+  // 🎮 Sketchfab short links (skfb.ly)
+  if(url.includes("skfb.ly")){
+    const id = url.split("skfb.ly/")[1]
+    url = "https://sketchfab.com/models/" + id + "/embed"
+  }
+
+  // 🎮 Sketchfab full links
+  if(url.includes("sketchfab.com") && !url.includes("/embed")){
+    url = url.replace(/\/$/, "") + "/embed"
+  }
+
   modal.style.display = "block"
   frame.src = url
 }
@@ -107,7 +118,7 @@ function closeAsset(){
 
 document.getElementById("closeAsset").onclick = closeAsset
 
-// 🔥 Same logic as games page
+// 🔥 Same click system as games page
 document.addEventListener("click", function(e){
   const link = e.target.closest("a")
 
